@@ -46,7 +46,15 @@ class ApiClient {
       key: 'customServerUrl',
     })
 
-    this.customServerURL = `${serverURL || API_URL}/api/v1`
+    // During browser development, keep API traffic on the same origin and let
+    // Vite proxy it to the backend. This avoids client-side port filtering and
+    // mixed-content/CORS failures while native and production builds retain
+    // their configured or user-selected server URL.
+    const developmentURL =
+      import.meta.env.DEV && typeof window !== 'undefined'
+        ? window.location.origin
+        : null
+    this.customServerURL = `${developmentURL || serverURL || API_URL}/api/v1`
     this.initialized = true
   }
   getApiURL() {
