@@ -470,6 +470,39 @@ const GetMeterHistory = (id, offset = 0) =>
     headers: HEADERS(),
   })
 
+const GetAssets = (includeArchived = false) =>
+  Fetch(
+    `/maintenance/assets${includeArchived ? '?includeArchived=true' : ''}`,
+    {
+      method: 'GET',
+      headers: HEADERS(),
+    },
+  )
+const GetAsset = id =>
+  Fetch(`/maintenance/assets/${id}`, { method: 'GET', headers: HEADERS() })
+const CreateAsset = asset =>
+  Fetch('/maintenance/assets', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(asset),
+  })
+const SaveAsset = asset =>
+  Fetch(`/maintenance/assets/${asset.id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(asset),
+  })
+const ArchiveAsset = id =>
+  Fetch(`/maintenance/assets/${id}`, { method: 'DELETE', headers: HEADERS() })
+const LinkAsset = (id, link) =>
+  Fetch(`/maintenance/assets/${id}/links`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(link),
+  })
+const GetMaintenance = () =>
+  Fetch('/maintenance', { method: 'GET', headers: HEADERS() })
+
 const ResetUserPoints = (circleID, userId) =>
   Fetch(`/circles/${circleID}/members/${userId}/points/reset`, {
     method: 'POST',
@@ -1029,6 +1062,7 @@ export {
   AcceptCircleMemberRequest,
   AddMeterReading,
   ApproveChore,
+  ArchiveAsset,
   ArchiveChore,
   CancelSubscription,
   ChangePassword,
@@ -1036,6 +1070,7 @@ export {
   ClearChoreTimer,
   CompleteSubTask,
   ConfirmMFA,
+  CreateAsset,
   CreateBackup,
   CreateChildUser,
   CreateChore,
@@ -1063,6 +1098,8 @@ export {
   GetAllCircleMembers,
   GetAllUsers,
   GetArchivedChores,
+  GetAsset,
+  GetAssets,
   GetChildUsers,
   GetChoreAttachments,
   GetChoreByID,
@@ -1079,6 +1116,7 @@ export {
   GetFiltersByUsage,
   GetLabels,
   GetLongLiveTokens,
+  GetMaintenance,
   GetMeterHistory,
   GetMeters,
   GetMFAStatus,
@@ -1095,6 +1133,7 @@ export {
   GetUserProfile,
   JoinCircle,
   LeaveCircle,
+  LinkAsset,
   login,
   logout,
   MarkChoreComplete,
@@ -1112,6 +1151,7 @@ export {
   ResetPassword,
   ResetUserPoints,
   RestoreBackup,
+  SaveAsset,
   SaveChore,
   SaveMeter,
   SaveThing,

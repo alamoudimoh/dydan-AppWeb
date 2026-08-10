@@ -1,7 +1,8 @@
+import './PageTransition.css'
+
 import { useLayoutEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useLocation } from 'react-router-dom'
-import './PageTransition.css'
 
 // Route hierarchy for determining navigation direction
 const routeHierarchy = {
@@ -11,6 +12,7 @@ const routeHierarchy = {
   '/chores/create': 2,
   '/settings': 1,
   '/things': 1,
+  '/maintenance': 1,
   '/activities': 1,
   '/points': 1,
   '/labels': 1,

@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import {
   Archive,
   ArrowBack,
+  Build,
   CardGiftcard,
   FilterAlt,
   FolderOpen,
@@ -12,9 +13,7 @@ import {
   MenuRounded,
   SearchRounded,
   SettingsOutlined,
-  Speed,
   Toll,
-  Widgets,
 } from '@mui/icons-material'
 import {
   Box,
@@ -67,14 +66,9 @@ const NavBar = () => {
       icon: <Archive />,
     },
     {
-      to: '/things',
-      label: t('navigation.things'),
-      icon: <Widgets />,
-    },
-    {
-      to: '/meters',
-      label: 'Meters',
-      icon: <Speed />,
+      to: '/maintenance',
+      label: 'Maintenance',
+      icon: <Build />,
     },
     {
       to: 'labels',
