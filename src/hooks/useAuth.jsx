@@ -71,9 +71,11 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json()
       const userToken = data.token || data.access_token
 
-      if (userToken) {
-        setToken(userToken)
+      if (data.mfaRequired) {
+        return { success: true, data }
+      }
 
+      if (userToken) {
         try {
           await offlineDB.clearAll()
         } catch (e) {
@@ -87,13 +89,35 @@ export const AuthProvider = ({ children }) => {
           refreshToken: data.refresh_token,
           refreshTokenExpiry: data.refresh_token_expiry,
         })
+
+        // Publish the authenticated state only after token storage is ready.
+        // Profile queries read the token from storage, so setting React state
+        // first can start them as signed out and leave the login route stuck.
+        setToken(userToken)
+
+        const profileResponse = await apiClient.get('/users/profile')
+        if (!profileResponse.ok) {
+          return {
+            success: false,
+            status: profileResponse.status,
+            error: 'Login succeeded, but the user profile could not be loaded',
+          }
+        }
+
+        const profile = await profileResponse.json()
+        setUser(profile?.res || null)
+      } else {
+        return {
+          success: false,
+          error: 'Login response did not include an access token',
+        }
       }
 
-      setIsLoading(false)
       return { success: true, data }
     } catch (error) {
-      setIsLoading(false)
       return { success: false, error: 'Network error' }
+    } finally {
+      setIsLoading(false)
     }
   }
 
