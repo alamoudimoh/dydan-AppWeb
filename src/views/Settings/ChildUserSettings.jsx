@@ -143,8 +143,8 @@ const ChildUserSettings = () => {
     <SettingsLayout title='Managed Accounts'>
       <div className='grid gap-4'>
         <Typography level='body-md'>
-          Manage sub accounts. Sub account users can log in and complete
-          assigned tasks.
+          For children or users whose account you manage. Sub account users can
+          log in and complete assigned tasks.
         </Typography>
         {!isPlusAccount(userProfile) && (
           <Typography level='body-sm' color='warning' sx={{ mt: 1 }}>
@@ -179,8 +179,8 @@ const ChildUserSettings = () => {
                 No Sub Accounts
               </Typography>
               <Typography level='body-sm' mb={3}>
-                Create sub accounts so team members can log in and complete
-                their assigned tasks.
+                Create a managed account for a child or someone whose login you
+                manage.
               </Typography>
               <Button
                 startDecorator={<PersonAddIcon />}

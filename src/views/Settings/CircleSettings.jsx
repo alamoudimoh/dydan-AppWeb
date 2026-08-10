@@ -156,10 +156,9 @@ const CircleSettings = () => {
     <SettingsLayout title='Circle Settings'>
       <div className='grid gap-4'>
         <Typography level='body-md'>
-          Your account is automatically connected to a Circle when you create or
-          join one. Easily invite friends by sharing the unique Circle code or
-          link below. You'll receive a notification below when someone requests
-          to join your Circle.
+          Invite someone to create and manage their own account and join your
+          Circle. Share the unique Circle code or link below; you'll receive a
+          request to approve before they can join.
         </Typography>
         <Box>
           <Typography level='title-sm' sx={{ mb: 1 }}>
