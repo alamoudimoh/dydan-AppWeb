@@ -445,6 +445,47 @@ const GetThingHistory = (id, offset) => {
   })
 }
 
+const GetMeters = () => Fetch('/meters', { method: 'GET', headers: HEADERS() })
+const CreateMeter = meter =>
+  Fetch('/meters', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(meter),
+  })
+const SaveMeter = meter =>
+  Fetch(`/meters/${meter.id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(meter),
+  })
+const AddMeterReading = (id, reading) =>
+  Fetch(`/meters/${id}/readings`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(reading),
+  })
+const GetMeterHistory = (id, offset = 0) =>
+  Fetch(`/meters/${id}/readings?offset=${offset}`, {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+
+const ResetUserPoints = (circleID, userId) =>
+  Fetch(`/circles/${circleID}/members/${userId}/points/reset`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+const ResetAllPoints = circleID =>
+  Fetch(`/circles/${circleID}/members/points/reset`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+const GetPointsHistory = (circleID, userId) =>
+  Fetch(
+    `/circles/${circleID}/members/points/history${userId ? `?userId=${userId}` : ''}`,
+    { method: 'GET', headers: HEADERS() },
+  )
+
 const CreateLongLiveToken = name => {
   return Fetch(`/users/tokens`, {
     method: 'POST',
@@ -740,7 +781,7 @@ const DeleteUser = (password, confirmation, transferOptions = []) => {
 const UploadChoreAttachment = (
   file,
   entityType,
-  { entityId, draftId } = {},
+  { draftId, entityId } = {},
 ) => {
   const formData = new FormData()
   formData.append('file', file)
@@ -986,11 +1027,7 @@ const TrackFilterUsage = id => {
 
 export {
   AcceptCircleMemberRequest,
-  DeleteChoreAttachment,
-  DeleteDraftAttachment,
-  GetChoreAttachments,
-  SignAssetURL,
-  UploadChoreAttachment,
+  AddMeterReading,
   ApproveChore,
   ArchiveChore,
   CancelSubscription,
@@ -1006,12 +1043,15 @@ export {
   CreateFilter,
   CreateLabel,
   CreateLongLiveToken,
+  CreateMeter,
   CreateProject,
   CreateThing,
   DeleteChildUser,
   DeleteChore,
+  DeleteChoreAttachment,
   DeleteChoreHistory,
   DeleteCircleMember,
+  DeleteDraftAttachment,
   DeleteFilter,
   DeleteLabel,
   DeleteLongLiveToken,
@@ -1024,6 +1064,7 @@ export {
   GetAllUsers,
   GetArchivedChores,
   GetChildUsers,
+  GetChoreAttachments,
   GetChoreByID,
   GetChoreDetailById,
   GetChoreHistory,
@@ -1038,8 +1079,11 @@ export {
   GetFiltersByUsage,
   GetLabels,
   GetLongLiveTokens,
+  GetMeterHistory,
+  GetMeters,
   GetMFAStatus,
   GetPinnedFilters,
+  GetPointsHistory,
   GetProjectById,
   GetProjects,
   GetResource,
@@ -1063,12 +1107,16 @@ export {
   RegenerateBackupCodes,
   RegisterDeviceToken,
   RejectChore,
+  ResetAllPoints,
   ResetChoreTimer,
   ResetPassword,
+  ResetUserPoints,
   RestoreBackup,
   SaveChore,
+  SaveMeter,
   SaveThing,
   SetupMFA,
+  SignAssetURL,
   signUp,
   SkipChore,
   StartChore,
@@ -1091,5 +1139,6 @@ export {
   UpdateThingState,
   UpdateTimeSession,
   UpdateUserDetails,
+  UploadChoreAttachment,
   VerifyMFA,
 }

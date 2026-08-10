@@ -33,6 +33,7 @@ import {
   RadioGroup,
   Select,
   Sheet,
+  Stack,
   Typography,
 } from '@mui/joy'
 import moment from 'moment'
@@ -58,6 +59,7 @@ import {
   DeleteChoreAttachment,
   DeleteDraftAttachment,
   GetAllCircleMembers,
+  GetMeters,
   GetThings,
   UploadChoreAttachment,
 } from '../../utils/Fetcher'
@@ -128,6 +130,8 @@ const ChoreEdit = () => {
   const [deadlineOffset, setDeadlineOffset] = useState(-1)
   const [allUserThings, setAllUserThings] = useState([])
   const [thingTrigger, setThingTrigger] = useState(null)
+  const [meters, setMeters] = useState([])
+  const [meterSchedule, setMeterSchedule] = useState(null)
   const [isThingValid, setIsThingValid] = useState(false)
 
   const [notificationMetadata, setNotificationMetadata] = useState({})
@@ -252,6 +256,13 @@ const ChoreEdit = () => {
       if (!isThingValid) {
         errors.thingTrigger = 'Thing trigger is invalid'
       }
+    }
+    if (
+      meterSchedule &&
+      (!meterSchedule.meterId || Number(meterSchedule.interval) <= 0)
+    ) {
+      errors.meterSchedule =
+        'Choose a meter and enter an interval greater than zero'
     }
 
     // if there is any error then return false:
@@ -388,6 +399,12 @@ const ChoreEdit = () => {
       subTasks: subTasks,
       notificationMetadata: notificationMetadata,
       thingTrigger: thingTrigger,
+      meterSchedule: meterSchedule
+        ? {
+            meterId: Number(meterSchedule.meterId),
+            interval: Number(meterSchedule.interval),
+          }
+        : null,
       points: points < 0 ? null : points,
       requireApproval: requireApproval,
       isPrivate: isPrivate,
@@ -443,6 +460,9 @@ const ChoreEdit = () => {
         setAllUserThings(data.res)
       })
     })
+    GetMeters()
+      .then(response => response.json())
+      .then(data => setMeters(data.res || []))
 
     // Load default privacy setting for new chores
     if (!choreId) {
@@ -600,6 +620,14 @@ const ChoreEdit = () => {
 
       setIsNotificable(data.res.notification)
       setThingTrigger(data.res.thingChore)
+      setMeterSchedule(
+        data.res.meterSchedule
+          ? {
+              meterId: data.res.meterSchedule.meterId,
+              interval: data.res.meterSchedule.interval,
+            }
+          : null,
+      )
 
       // Parse existing due date into date and time components
       if (data.res.nextDueDate) {
@@ -1404,6 +1432,76 @@ const ChoreEdit = () => {
           isAttemptToSave={attemptToSave}
           selectedThing={thingTrigger}
         />
+        <Card sx={{ mt: 2 }}>
+          <Typography level='h4'>Meter service interval</Typography>
+          <Checkbox
+            label='Make this task due from a meter'
+            checked={!!meterSchedule}
+            onChange={e =>
+              setMeterSchedule(
+                e.target.checked
+                  ? { meterId: meters[0]?.id || null, interval: 1 }
+                  : null,
+              )
+            }
+          />
+          {meterSchedule && (
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              alignItems='center'
+            >
+              <Typography>Every</Typography>
+              <Input
+                type='number'
+                slotProps={{ input: { min: 1 } }}
+                value={meterSchedule.interval}
+                onChange={e =>
+                  setMeterSchedule({
+                    ...meterSchedule,
+                    interval: e.target.value,
+                  })
+                }
+              />
+              <Typography>
+                {meters.find(m => m.id === meterSchedule.meterId)?.unit ||
+                  'units'}{' '}
+                using
+              </Typography>
+              <Select
+                value={meterSchedule.meterId}
+                onChange={(_, value) =>
+                  setMeterSchedule({ ...meterSchedule, meterId: value })
+                }
+                placeholder='Select meter'
+                sx={{ minWidth: 220 }}
+              >
+                {meters.map(meter => (
+                  <Option key={meter.id} value={meter.id}>
+                    {meter.name} ({meter.currentReading.toLocaleString()}{' '}
+                    {meter.unit})
+                  </Option>
+                ))}
+              </Select>
+            </Stack>
+          )}
+          {meterSchedule && (
+            <FormHelperText>
+              When a calendar repeat is also configured, whichever threshold
+              arrives first makes the task due.
+            </FormHelperText>
+          )}
+          {errors?.meterSchedule && (
+            <FormHelperText color='danger'>
+              {errors.meterSchedule}
+            </FormHelperText>
+          )}
+          {meterSchedule && meters.length === 0 && (
+            <Button variant='soft' onClick={() => Navigate('/meters')}>
+              Create a meter first
+            </Button>
+          )}
+        </Card>
 
         <Box mt={3} mb={3}>
           <Typography level='h4'>

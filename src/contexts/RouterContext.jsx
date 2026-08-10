@@ -29,6 +29,7 @@ import FilterView from '../views/Filters/FilterView'
 import ChoreHistory from '../views/History/ChoreHistory'
 import LabelView from '../views/Labels/LabelView'
 import Landing from '../views/Landing/Landing'
+import MetersView from '../views/Meters/MetersView'
 import CircleSetupView from '../views/Onboarding/CircleSetupView'
 import GetStartedView from '../views/Onboarding/GetStartedView'
 import HeardAboutView from '../views/Onboarding/HeardAboutView'
@@ -248,6 +249,10 @@ const Router = createBrowserRouter([
       {
         path: 'things',
         element: <ThingsView />,
+      },
+      {
+        path: 'meters',
+        element: <MetersView />,
       },
       {
         path: 'things/:id',

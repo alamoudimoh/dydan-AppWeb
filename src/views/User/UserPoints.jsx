@@ -1,13 +1,4 @@
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts'
-
-import {
   AccountBalanceWallet,
   Analytics,
   AssignmentTurnedIn,
@@ -40,28 +31,44 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
-import LoadingComponent from '../components/Loading.jsx'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 import { useChoresHistory } from '../../queries/ChoreQueries.jsx'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
-import { RedeemPoints } from '../../utils/Fetcher.jsx'
+import { useNotification } from '../../service/NotificationProvider.jsx'
+import {
+  GetPointsHistory,
+  RedeemPoints,
+  ResetAllPoints,
+  ResetUserPoints,
+} from '../../utils/Fetcher.jsx'
 import { resolvePhotoURL } from '../../utils/Helpers.jsx'
+import LoadingComponent from '../components/Loading.jsx'
 import RedeemPointsModal from '../Modals/RedeemPointsModal'
 const UserPoints = () => {
   const [tabValue, setTabValue] = useState(7)
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false)
+  const [pointsHistory, setPointsHistory] = useState([])
   const [leaderboardMode, setLeaderboardMode] = useState('points') // 'points' or 'tasks'
+  const { showError, showNotification } = useNotification()
 
   const {
     data: circleMembersData,
-    isLoading: isCircleMembersLoading,
     handleRefetch: handleCircleMembersRefetch,
+    isLoading: isCircleMembersLoading,
   } = useCircleMembers()
 
   const {
     data: choresHistoryData,
-    isLoading: isChoresHistoryLoading,
     handleLimitChange: handleChoresHistoryLimitChange,
+    isLoading: isChoresHistoryLoading,
   } = useChoresHistory(7, true)
 
   const { data: userProfile } = useUserProfile()
@@ -97,6 +104,67 @@ const UserPoints = () => {
   useEffect(() => {
     setSelectedUser(userProfile?.id)
   }, [userProfile])
+
+  useEffect(() => {
+    if (userProfile?.circleID && selectedUser)
+      GetPointsHistory(userProfile.circleID, selectedUser)
+        .then(r => r.json())
+        .then(data => setPointsHistory(data.res || []))
+  }, [userProfile?.circleID, selectedUser, circleMembersData])
+
+  const resetUser = async () => {
+    const member = circleUsers.find(item => item.userId === selectedUser)
+    const balance = (member?.points || 0) - (member?.pointsRedeemed || 0)
+    if (
+      !window.confirm(
+        `Reset ${member?.displayName || member?.username}'s ${balance} points to zero? Their complete points history will not be deleted.`,
+      )
+    )
+      return
+    const response = await ResetUserPoints(userProfile.circleID, selectedUser)
+    if (!response.ok) {
+      showError({
+        title: 'Reset failed',
+        message: 'Unable to reset this member’s points.',
+      })
+      return
+    }
+    handleCircleMembersRefetch()
+    showNotification({
+      type: 'success',
+      title: 'Points reset',
+      message: 'The balance is now zero and history was preserved.',
+    })
+  }
+
+  const resetAll = async () => {
+    if (
+      !window.confirm(
+        'Reset every member’s current balance to zero? All historical point activity will be preserved.',
+      )
+    )
+      return
+    if (
+      !window.confirm(
+        'Confirm reset all points for this circle. This adds an auditable reset entry for each non-zero balance.',
+      )
+    )
+      return
+    const response = await ResetAllPoints(userProfile.circleID)
+    if (!response.ok) {
+      showError({
+        title: 'Reset failed',
+        message: 'Unable to reset circle points.',
+      })
+      return
+    }
+    handleCircleMembersRefetch()
+    showNotification({
+      type: 'success',
+      title: 'Points reset',
+      message: 'Circle balances are now zero and history was preserved.',
+    })
+  }
 
   const generateWeeklySummary = (history, userId) => {
     const daysAggregated = []
@@ -761,6 +829,22 @@ const UserPoints = () => {
                 >
                   Redeem Points
                 </Button>
+                <Button
+                  variant='outlined'
+                  color='danger'
+                  size='md'
+                  onClick={resetUser}
+                >
+                  Reset selected
+                </Button>
+                <Button
+                  variant='solid'
+                  color='danger'
+                  size='md'
+                  onClick={resetAll}
+                >
+                  Reset all points
+                </Button>
               </Box>
             )}
           </Stack>
@@ -867,6 +951,22 @@ const UserPoints = () => {
           ))
         })()}
       </Grid>
+      {pointsHistory.filter(entry => entry.action === 3).length > 0 && (
+        <Card variant='outlined' sx={{ mb: 3 }}>
+          <Typography level='title-md'>Reset history</Typography>
+          {pointsHistory
+            .filter(entry => entry.action === 3)
+            .map(entry => (
+              <Typography level='body-sm' key={entry.id}>
+                Points reset by{' '}
+                {circleUsers.find(user => user.userId === entry.created_by)
+                  ?.displayName || `user #${entry.created_by}`}
+                : {entry.previousBalance} → {entry.resultingBalance} ·{' '}
+                {new Date(entry.created_at).toLocaleString()}
+              </Typography>
+            ))}
+        </Card>
+      )}
 
       {/* Current Filter Summary */}
       <Box sx={{ mb: 3, textAlign: 'center' }}>
@@ -947,7 +1047,7 @@ const UserPoints = () => {
             isOpen: isRedeemModalOpen,
             available: availablePoints,
             user: user,
-            onSave: ({ userId, points }) => {
+            onSave: ({ points, userId }) => {
               RedeemPoints(userId, points, userProfile.circleID)
                 .then(() => {
                   setIsRedeemModalOpen(false)

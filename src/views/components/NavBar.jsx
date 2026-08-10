@@ -11,6 +11,7 @@ import {
   MenuRounded,
   SearchRounded,
   SettingsOutlined,
+  Speed,
   Toll,
   Widgets,
 } from '@mui/icons-material'
@@ -68,6 +69,11 @@ const NavBar = () => {
       to: '/things',
       label: t('navigation.things'),
       icon: <Widgets />,
+    },
+    {
+      to: '/meters',
+      label: 'Meters',
+      icon: <Speed />,
     },
     {
       to: 'labels',
