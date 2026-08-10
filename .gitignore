@@ -48,3 +48,16 @@ vendor/bundle
 # Claude Code skills cache
 .agents/
 skills-lock.json
+
+# Taskier runtime state belongs to the backend persistent data volume.
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+jwt-secret
+data/
+uploads/
+taskier-zero-config-*
+taskier-container-*
