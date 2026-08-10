@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import {
   Archive,
   ArrowBack,
+  CardGiftcard,
   FilterAlt,
   FolderOpen,
   History,
@@ -99,6 +100,11 @@ const NavBar = () => {
       to: 'points',
       label: t('navigation.points'),
       icon: <Toll />,
+    },
+    {
+      to: 'rewards',
+      label: 'Rewards',
+      icon: <CardGiftcard />,
     },
     {
       to: '/settings',

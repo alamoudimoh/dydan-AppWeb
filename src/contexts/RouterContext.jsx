@@ -39,6 +39,7 @@ import PaymentCancelledView from '../views/Payments/PaymentFailView'
 import PaymentSuccessView from '../views/Payments/PaymentSuccessView'
 import PrivacyPolicyView from '../views/PrivacyPolicy/PrivacyPolicyView'
 import ProjectView from '../views/Projects/ProjectView'
+import RewardsView from '../views/Rewards/RewardsView'
 import APITokenSettings from '../views/Settings/APITokenSettings'
 import LocalizationSettings from '../views/Settings/LocalizationSettings'
 import MFASettings from '../views/Settings/MFASettings'
@@ -172,6 +173,10 @@ const Router = createBrowserRouter([
       {
         path: '/points',
         element: <UserPoints />,
+      },
+      {
+        path: '/rewards',
+        element: <RewardsView />,
       },
       {
         path: '/login',
