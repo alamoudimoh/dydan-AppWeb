@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import { API_URL } from '../Config'
 import { apiClient } from '../utils/ApiClient'
 import { offlineDB } from '../utils/OfflineDB'
 import { clearAllTokens, saveTokens } from '../utils/TokenStorage'
@@ -55,7 +57,19 @@ export const AuthProvider = ({ children }) => {
         config.credentials = 'include'
       }
 
-      const response = await fetch(`${currentBaseURL}/auth/login`, config)
+      let response
+      try {
+        response = await fetch(`${currentBaseURL}/auth/login`, config)
+      } catch (error) {
+        const defaultBaseURL = `${API_URL}/api/v1`
+        if (currentBaseURL === defaultBaseURL) throw error
+
+        // A previously saved self-hosted URL may outlive that server. Keep the
+        // preference intact, but let this deployment's configured API recover
+        // password login without asking the user to clear browser storage.
+        response = await fetch(`${defaultBaseURL}/auth/login`, config)
+        apiClient.useDefaultServer()
+      }
 
       if (!response.ok) {
         const res = await response.json()

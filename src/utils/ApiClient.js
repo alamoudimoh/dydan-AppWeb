@@ -53,6 +53,11 @@ class ApiClient {
     return this.customServerURL
   }
 
+  useDefaultServer() {
+    this.customServerURL = `${API_URL}/api/v1`
+    this.initialized = true
+  }
+
   async refreshToken() {
     // No session exists yet while an OAuth code exchange is in flight, so there
     // is nothing to refresh. Callers must treat this as a non-fatal failure
