@@ -18,7 +18,7 @@ import {
   Table,
   Typography,
 } from '@mui/joy'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useNotification } from '../../service/NotificationProvider'
 import {
@@ -43,11 +43,17 @@ const MetersView = () => {
   const [correctionNote, setCorrectionNote] = useState('')
   const { showError, showNotification } = useNotification()
 
-  const load = () =>
-    GetMeters()
-      .then(r => r.json())
-      .then(d => setMeters(d.res || []))
-  useEffect(load, [])
+  const load = useCallback(
+    () =>
+      GetMeters()
+        .then(r => r.json())
+        .then(d => setMeters(d.res || [])),
+    [],
+  )
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   const save = async () => {
     const response = editing?.id
