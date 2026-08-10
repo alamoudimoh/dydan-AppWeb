@@ -52,6 +52,13 @@ import {
 import { resolvePhotoURL } from '../../utils/Helpers.jsx'
 import LoadingComponent from '../components/Loading.jsx'
 import RedeemPointsModal from '../Modals/RedeemPointsModal'
+
+const getAvailablePoints = user =>
+  user?.pointsAvailable ??
+  (user?.points || 0) -
+    (user?.pointsRedeemed || 0) -
+    (user?.pointsAdjusted || 0)
+
 const UserPoints = () => {
   const [tabValue, setTabValue] = useState(7)
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false)
@@ -114,7 +121,7 @@ const UserPoints = () => {
 
   const resetUser = async () => {
     const member = circleUsers.find(item => item.userId === selectedUser)
-    const balance = (member?.points || 0) - (member?.pointsRedeemed || 0)
+    const balance = getAvailablePoints(member)
     if (
       !window.confirm(
         `Reset ${member?.displayName || member?.username}'s ${balance} points to zero? Their complete points history will not be deleted.`,
@@ -305,7 +312,7 @@ const UserPoints = () => {
         displayName: user.displayName,
         image: user.image,
         totalPoints: user.points || 0,
-        availablePoints: (user.points || 0) - (user.pointsRedeemed || 0),
+        availablePoints: getAvailablePoints(user),
         periodPoints: 0,
         periodTasks: 0,
       }
@@ -746,7 +753,7 @@ const UserPoints = () => {
                       variant='soft'
                       startDecorator={<Toll />}
                     >
-                      {user.points - user.pointsRedeemed}
+                      {getAvailablePoints(user)}
                     </Chip>
                   </Option>
                 ))}
@@ -859,7 +866,7 @@ const UserPoints = () => {
           )
           const totalPoints = selectedUserData?.points || 0
           const redeemedPoints = selectedUserData?.pointsRedeemed || 0
-          const availablePoints = totalPoints - redeemedPoints
+          const availablePoints = getAvailablePoints(selectedUserData)
 
           const periodStats = leaderboardData.find(
             user => user.userId === selectedUser,
@@ -1036,9 +1043,7 @@ const UserPoints = () => {
       <RedeemPointsModal
         config={(() => {
           const user = circleUsers.find(u => u.userId === selectedUser)
-          const availablePoints = user
-            ? (user.points || 0) - (user.pointsRedeemed || 0)
-            : 0
+          const availablePoints = getAvailablePoints(user)
 
           return {
             onClose: () => {
