@@ -43,6 +43,7 @@ import PaymentSuccessView from '../views/Payments/PaymentSuccessView'
 import PrivacyPolicyView from '../views/PrivacyPolicy/PrivacyPolicyView'
 import ProjectView from '../views/Projects/ProjectView'
 import RewardsView from '../views/Rewards/RewardsView'
+import RoutinesView from '../views/Routines/RoutinesView'
 import APITokenSettings from '../views/Settings/APITokenSettings'
 import LocalizationSettings from '../views/Settings/LocalizationSettings'
 import MFASettings from '../views/Settings/MFASettings'
@@ -265,6 +266,10 @@ const Router = createBrowserRouter([
       {
         path: 'maintenance',
         element: <MaintenanceView />,
+      },
+      {
+        path: 'routines',
+        element: <RoutinesView />,
       },
       {
         path: 'maintenance/assets/:id',

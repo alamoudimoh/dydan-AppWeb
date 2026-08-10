@@ -1,6 +1,7 @@
 import {
   Archive,
   AttachFile,
+  BookmarkAdd,
   CalendarMonth,
   Check,
   Checklist,
@@ -34,6 +35,11 @@ import {
   Menu,
   MenuButton,
   MenuItem,
+  Modal,
+  ModalClose,
+  ModalDialog,
+  Option,
+  Select,
   Sheet,
   Typography,
 } from '@mui/joy'
@@ -52,6 +58,10 @@ import {
   useChoreDetails,
   useChoreHistory,
 } from '../../queries/ChoreQueries.jsx'
+import {
+  useRoutineMutation,
+  useRoutines,
+} from '../../queries/RoutineQueries.jsx'
 import {
   useChoreTimer,
   useDeleteTimeSession,
@@ -129,6 +139,10 @@ const ChoreView = () => {
   const [noteViewerConfig, setNoteViewerConfig] = useState({ isOpen: false })
   const [timerActionConfig, setTimerActionConfig] = useState({ isOpen: false })
   const [attachmentBrowserOpen, setAttachmentBrowserOpen] = useState(false)
+  const [saveRoutineOpen, setSaveRoutineOpen] = useState(false)
+  const [targetRoutine, setTargetRoutine] = useState(null)
+  const { data: routinesData } = useRoutines(false)
+  const routineMutation = useRoutineMutation()
   const { data: circleMembersData, isLoading: isCircleMembersLoading } =
     useCircleMembers()
   const { data: userProfile } = useUserProfile()
@@ -921,7 +935,66 @@ const ChoreView = () => {
             <Edit />
             Edit
           </Button>
+          <Button
+            size='sm'
+            color='neutral'
+            variant='plain'
+            fullWidth
+            sx={{
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: 1,
+            }}
+            onClick={() => setSaveRoutineOpen(true)}
+          >
+            <BookmarkAdd />
+            Save to Routine
+          </Button>
         </Box>
+
+        <Modal open={saveRoutineOpen} onClose={() => setSaveRoutineOpen(false)}>
+          <ModalDialog sx={{ width: 'min(440px, calc(100vw - 32px))' }}>
+            <ModalClose />
+            <Typography level='h3'>Save Task to Routine</Typography>
+            <Typography level='body-sm'>
+              Reusable settings are copied. History, status, due-date progress,
+              and meter readings are not copied.
+            </Typography>
+            <FormControl required>
+              <Select
+                placeholder='Choose a Routine Pack'
+                value={targetRoutine}
+                onChange={(_, value) => setTargetRoutine(value)}
+              >
+                {(routinesData?.res || []).map(routine => (
+                  <Option key={routine.id} value={routine.id}>
+                    {routine.name}
+                  </Option>
+                ))}
+              </Select>
+            </FormControl>
+            <Button
+              loading={routineMutation.isPending}
+              disabled={!targetRoutine}
+              onClick={async () => {
+                try {
+                  await routineMutation.mutateAsync({
+                    path: `/routines/${targetRoutine}/from-chore/${choreId}`,
+                    method: 'post',
+                  })
+                  setSaveRoutineOpen(false)
+                  setTargetRoutine(null)
+                  showSuccess('Task saved to Routine')
+                } catch (error) {
+                  showError(error.message)
+                }
+              }}
+            >
+              Save to Routine
+            </Button>
+          </ModalDialog>
+        </Modal>
 
         {chore.description && (
           <>

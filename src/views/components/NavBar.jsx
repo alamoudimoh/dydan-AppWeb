@@ -11,6 +11,7 @@ import {
   ListAlt,
   Logout,
   MenuRounded,
+  PlaylistAddCheck,
   SearchRounded,
   SettingsOutlined,
   Toll,
@@ -69,6 +70,11 @@ const NavBar = () => {
       to: '/maintenance',
       label: 'Maintenance',
       icon: <Build />,
+    },
+    {
+      to: '/routines',
+      label: 'Routines',
+      icon: <PlaylistAddCheck />,
     },
     {
       to: 'labels',
