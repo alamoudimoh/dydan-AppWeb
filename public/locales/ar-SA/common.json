@@ -20,6 +20,7 @@
   "logout": "تسجيل الخروج",
   "version": "النسخة",
   "navigation": {
+    "notifications": "الإشعارات",
     "allTasks": "جميع المهام",
     "archived": "المؤرشفة",
     "things": "الأشياء",
@@ -29,5 +30,14 @@
     "activities": "الأنشطة",
     "points": "النقاط",
     "settings": "الإعدادات"
+  },
+  "notificationsCenter": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "loading": "جارٍ تحميل الإشعارات",
+    "loadError": "تعذر تحميل الإشعارات.",
+    "emptyTitle": "أنت على اطلاع بكل شيء.",
+    "emptyMessage": "ستظهر هنا التحديثات الجديدة والأمور التي تحتاج إلى انتباهك.",
+    "loadMore": "تحميل المزيد"
   }
 }

@@ -34,6 +34,7 @@ import MaintenanceView, {
   AssetDetail,
 } from '../views/Maintenance/MaintenanceView'
 import MetersView from '../views/Meters/MetersView'
+import NotificationsView from '../views/Notifications/NotificationsView'
 import CircleSetupView from '../views/Onboarding/CircleSetupView'
 import GetStartedView from '../views/Onboarding/GetStartedView'
 import HeardAboutView from '../views/Onboarding/HeardAboutView'
@@ -182,6 +183,10 @@ const Router = createBrowserRouter([
       {
         path: '/rewards',
         element: <RewardsView />,
+      },
+      {
+        path: '/notifications',
+        element: <NotificationsView />,
       },
       {
         path: '/login',

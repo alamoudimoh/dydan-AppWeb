@@ -20,6 +20,7 @@
   "logout": "Logout",
   "version": "Version",
   "navigation": {
+    "notifications": "Notifications",
     "search": "Search",
     "allTasks": "All Tasks",
     "archived": "Archived",
@@ -30,6 +31,15 @@
     "activities": "Activities",
     "points": "Points",
     "settings": "Settings"
+  },
+  "notificationsCenter": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading notifications",
+    "loadError": "Notifications could not be loaded.",
+    "emptyTitle": "You're all caught up.",
+    "emptyMessage": "New updates and things needing attention will appear here.",
+    "loadMore": "Load more"
   },
   "feedback": {
     "later": "Maybe later",

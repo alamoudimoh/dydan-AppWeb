@@ -12,12 +12,14 @@ import {
   ListAlt,
   Logout,
   MenuRounded,
+  Notifications,
   PlaylistAddCheck,
   SearchRounded,
   SettingsOutlined,
   Toll,
 } from '@mui/icons-material'
 import {
+  Badge,
   Box,
   Drawer,
   IconButton,
@@ -35,6 +37,7 @@ import { version } from '../../../package.json'
 import UserProfileAvatar from '../../components/UserProfileAvatar'
 import Z_INDEX from '../../constants/zIndex'
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { useNotificationCount } from '../../queries/NotificationQueries'
 import { useResource } from '../../queries/ResourceQueries'
 import { useGlobalSearch } from '../../search/GlobalSearchContext'
 import { apiClient } from '../../utils/ApiClient'
@@ -50,6 +53,7 @@ const NavBar = () => {
 
   const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { data: notificationCount } = useNotificationCount()
 
   const links = [
     {
@@ -236,6 +240,21 @@ const NavBar = () => {
       <Box className='flex-1' />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <SyncStatusIndicator />
+        <IconButton
+          aria-label={t('navigation.notifications')}
+          title={t('navigation.notifications')}
+          variant='plain'
+          onClick={() => navigate('/notifications')}
+        >
+          <Badge
+            badgeContent={notificationCount?.unreadCount || 0}
+            color='danger'
+            invisible={!notificationCount?.unreadCount}
+            size='sm'
+          >
+            <Notifications />
+          </Badge>
+        </IconButton>
         <UserProfileAvatar />
         {/* <ThemeToggleButton /> */}
       </Box>
