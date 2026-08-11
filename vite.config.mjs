@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import pkg from './package.json'
+import { parseAllowedHosts } from './vite.allowed-hosts.mjs'
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
   define: {
@@ -91,6 +93,9 @@ export default defineConfig(({ command }) => ({
     ],
   },
   server: {
+    // Development-only seam for installation-specific trusted hostnames.
+    // Public/canonical URLs remain separate runtime configuration concerns.
+    allowedHosts: parseAllowedHosts(process.env.TASKIER_ALLOWED_HOSTS),
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:2021',
