@@ -9,9 +9,10 @@ import {
 } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import imageCompression from 'browser-image-compression'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Cropper from 'react-easy-crop'
 import { useTranslation } from 'react-i18next'
+
 import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -20,16 +21,23 @@ import { apiClient } from '../../utils/ApiClient'
 import { UpdateUserDetails } from '../../utils/Fetcher'
 import { resolvePhotoURL } from '../../utils/Helpers'
 import { getCroppedImg } from '../../utils/imageCropUtils'
+import {
+  browserTimezone,
+  isValidIanaTimezone,
+  supportedTimezones,
+} from '../../utils/SchedulingDate'
 import SettingsLayout from './SettingsLayout'
 
 const ProfileSettings = () => {
   const { t } = useTranslation('settings')
   const queryClient = useQueryClient()
   const { data: userProfile, refetch: refetchUserProfile } = useUserProfile()
-  const { showSuccess, showError } = useNotification()
+  const { showError, showSuccess } = useNotification()
   const [displayName, setDisplayName] = useState(userProfile?.displayName || '')
   const [timezone, setTimezone] = useState(
-    userProfile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    isValidIanaTimezone(userProfile?.timezone)
+      ? userProfile.timezone
+      : browserTimezone(),
   )
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -41,7 +49,13 @@ const ProfileSettings = () => {
   const [selectedFile, setSelectedFile] = useState(null)
 
   // Get available timezones
-  const timezones = Intl.supportedValuesOf('timeZone')
+  const timezones = supportedTimezones()
+
+  useEffect(() => {
+    if (isValidIanaTimezone(userProfile?.timezone)) {
+      setTimezone(userProfile.timezone)
+    }
+  }, [userProfile?.timezone])
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -108,6 +122,13 @@ const ProfileSettings = () => {
   }
 
   const handleSave = async () => {
+    if (!isValidIanaTimezone(timezone)) {
+      showError({
+        title: t('profile.updateFailed'),
+        message: 'Choose a valid timezone.',
+      })
+      return
+    }
     setIsSaving(true)
     try {
       const userDetails = { displayName, timezone }
@@ -122,14 +143,15 @@ const ProfileSettings = () => {
           message: t('profile.profileUpdatedMessage'),
         })
       } else {
-        throw new Error('Failed to update profile')
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to update profile')
       }
     } catch (err) {
       console.log(err)
 
       showError({
         title: t('profile.updateFailed'),
-        message: t('profile.updateFailedMessage'),
+        message: err.message || t('profile.updateFailedMessage'),
       })
     } finally {
       setIsSaving(false)

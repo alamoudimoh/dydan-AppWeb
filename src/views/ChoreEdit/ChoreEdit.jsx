@@ -112,6 +112,8 @@ const ChoreEdit = () => {
   const [performers, setPerformers] = useState([])
   const [assignStrategy, setAssignStrategy] = useState(DEFAULT_ASSIGN_STRATEGY)
   const [dueDate, setDueDate] = useState(null)
+  const [originalDueDate, setOriginalDueDate] = useState(null)
+  const [dueDateDirty, setDueDateDirty] = useState(false)
   const [dueDateOnly, setDueDateOnly] = useState(null)
   const [dueTime, setDueTime] = useState(null)
   const [useCustomTime, setUseCustomTime] = useState(false)
@@ -284,6 +286,7 @@ const ChoreEdit = () => {
   }
 
   const handleDueDateChange = e => {
+    setDueDateDirty(true)
     const dateValue = e.target.value // YYYY-MM-DD format
     setDueDateOnly(dateValue)
 
@@ -313,6 +316,7 @@ const ChoreEdit = () => {
   }
 
   const handleDueTimeChange = e => {
+    setDueDateDirty(true)
     const timeValue = e.target.value // HH:mm format
     setDueTime(timeValue)
 
@@ -335,6 +339,7 @@ const ChoreEdit = () => {
   }
 
   const handleUseCustomTimeChange = checked => {
+    setDueDateDirty(true)
     setUseCustomTime(checked)
 
     if (checked) {
@@ -384,8 +389,16 @@ const ChoreEdit = () => {
       name: name,
       description: description,
       assignees: assignees,
-      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-      nextDueDate: dueDate ? new Date(dueDate).toISOString() : null,
+      dueDate: dueDateDirty
+        ? dueDate
+          ? new Date(dueDate).toISOString()
+          : null
+        : originalDueDate,
+      nextDueDate: dueDateDirty
+        ? dueDate
+          ? new Date(dueDate).toISOString()
+          : null
+        : originalDueDate,
       frequencyType: frequencyType,
       frequency: Number(frequency),
       frequencyMetadata: frequencyMetadata,
@@ -631,6 +644,8 @@ const ChoreEdit = () => {
 
       // Parse existing due date into date and time components
       if (data.res.nextDueDate) {
+        setOriginalDueDate(data.res.nextDueDate)
+        setDueDateDirty(false)
         const dueDateMoment = moment(data.res.nextDueDate)
         const dateOnly = dueDateMoment.format('YYYY-MM-DD')
         const timeOnly = dueDateMoment.format('HH:mm')
@@ -648,6 +663,8 @@ const ChoreEdit = () => {
           setDueTime(null)
         }
       } else {
+        setOriginalDueDate(null)
+        setDueDateDirty(false)
         setDueDateOnly(null)
         setDueDate(null)
         setUseCustomTime(false)
@@ -671,6 +688,7 @@ const ChoreEdit = () => {
   useEffect(() => {
     // if frequency type change to something need a due date then set it to the current date:
     if (!NO_DUE_DATE_REQUIRED_TYPE.includes(frequencyType) && !dueDate) {
+      setDueDateDirty(true)
       const today = moment(new Date()).format('YYYY-MM-DD')
       setDueDateOnly(today)
       // Default to end of day
@@ -679,6 +697,7 @@ const ChoreEdit = () => {
       setDueTime(null)
     }
     if (NO_DUE_DATE_ALLOWED_TYPE.includes(frequencyType)) {
+      setDueDateDirty(true)
       setDueDate(null)
       setDueDateOnly(null)
       setUseCustomTime(false)
@@ -1517,6 +1536,7 @@ const ChoreEdit = () => {
             <FormControl sx={{ mt: 1 }}>
               <Checkbox
                 onChange={e => {
+                  setDueDateDirty(true)
                   if (e.target.checked) {
                     const today = moment(new Date()).format('YYYY-MM-DD')
                     setDueDateOnly(today)
