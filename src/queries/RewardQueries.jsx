@@ -13,18 +13,18 @@ const send = (path, method, data) =>
 
 export const useRewards = includeArchived =>
   useQuery({
-    queryKey: ['rewards', includeArchived],
+    queryKey: ['rewards', localStorage.getItem('token'), includeArchived],
     queryFn: () =>
       get(`/rewards${includeArchived ? '?includeArchived=true' : ''}`),
   })
 export const useMyRewardRequests = () =>
   useQuery({
-    queryKey: ['rewardRequests', 'mine'],
+    queryKey: ['rewardRequests', localStorage.getItem('token'), 'mine'],
     queryFn: () => get('/rewards/requests/mine'),
   })
 export const useAdminRewardRequests = enabled =>
   useQuery({
-    queryKey: ['rewardRequests', 'admin'],
+    queryKey: ['rewardRequests', localStorage.getItem('token'), 'admin'],
     queryFn: () => get('/rewards/requests'),
     enabled,
   })

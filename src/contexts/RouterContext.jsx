@@ -25,6 +25,7 @@ import ArchivedTasks from '../views/Chores/ArchivedTasks'
 import MyChores from '../views/Chores/MyChores'
 import JoinCircleView from '../views/Circles/JoinCircle'
 import NotFound from '../views/components/NotFound'
+import Dashboard from '../views/Dashboard/Dashboard'
 import FilterView from '../views/Filters/FilterView'
 import ChoreHistory from '../views/History/ChoreHistory'
 import LabelView from '../views/Labels/LabelView'
@@ -66,7 +67,7 @@ const Router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <MyChores />,
+        element: <Dashboard />,
       },
       {
         path: '/settings',

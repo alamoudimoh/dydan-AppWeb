@@ -7,6 +7,7 @@ import {
   FilterAlt,
   FolderOpen,
   History,
+  HomeRounded,
   Inbox,
   ListAlt,
   Logout,
@@ -51,6 +52,11 @@ const NavBar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const links = [
+    {
+      to: '/',
+      label: 'Home',
+      icon: <HomeRounded />,
+    },
     {
       label: t('navigation.search'),
       icon: <SearchRounded />,

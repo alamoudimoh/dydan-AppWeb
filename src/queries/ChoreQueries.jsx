@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+
 import { networkManager } from '../hooks/NetworkManager'
 import { commandQueue, CommandType } from '../utils/CommandQueue'
 import {
@@ -14,6 +15,7 @@ import {
   GetChoreHistory,
   GetChoresHistory,
   GetChoresNew,
+  GetPersonalChores,
   MarkChoreComplete,
   RejectChore,
   SaveChore,
@@ -142,6 +144,12 @@ export const useChores = (includeArchive = false) => {
     },
   })
 }
+export const usePersonalChores = () =>
+  useQuery({
+    queryKey: ['chores', 'personal', localStorage.getItem('token')],
+    queryFn: GetPersonalChores,
+    refetchOnWindowFocus: true,
+  })
 export const useDeleteChores = () => {
   const queryClient = useQueryClient()
 
@@ -305,9 +313,10 @@ export const useUpdateChore = () => {
 
 export const useChoresHistory = (initialLimit, includeMembers) => {
   const [limit, setLimit] = useState(initialLimit) // Initially, no limit is selected
+  const token = localStorage.getItem('token')
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ['choresHistory', limit],
+    queryKey: ['choresHistory', token, limit, Boolean(includeMembers)],
     queryFn: async () => {
       try {
         const resp = await GetChoresHistory(limit, includeMembers)
@@ -458,7 +467,7 @@ export const useUpdateChoreHistory = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ choreId, historyId, historyData }) => {
+    mutationFn: async ({ choreId, historyData, historyId }) => {
       const applyOptimisticUpdate = async () => {
         queryClient.setQueryData(['choreHistory', choreId], oldData => {
           if (!oldData?.res) return oldData
@@ -581,7 +590,7 @@ export const useMarkChoreComplete = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ choreId, body, completedDate, performer }) => {
+    mutationFn: async ({ body, choreId, completedDate, performer }) => {
       if (isOfflineFeatureEnabled() && !networkManager.isOnline) {
         await commandQueue.enqueue(CommandType.COMPLETE_CHORE, choreId, {
           id: choreId,

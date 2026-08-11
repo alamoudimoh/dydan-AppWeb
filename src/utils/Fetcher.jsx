@@ -112,6 +112,14 @@ const GetChores = () => {
     headers: HEADERS(),
   })
 }
+const GetPersonalChores = async () => {
+  const resp = await Fetch('/chores/?personal=true', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+  if (!resp.ok) throw new Error('Unable to load your tasks')
+  return resp.json()
+}
 const GetArchivedChores = () => {
   return Fetch(`/chores/archived`, {
     method: 'GET',
@@ -1127,6 +1135,7 @@ export {
   GetMeterHistory,
   GetMeters,
   GetMFAStatus,
+  GetPersonalChores,
   GetPinnedFilters,
   GetPointsHistory,
   GetProjectById,
