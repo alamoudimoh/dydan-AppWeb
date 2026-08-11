@@ -416,6 +416,7 @@ const ChoreEdit = () => {
         ? {
             meterId: Number(meterSchedule.meterId),
             interval: Number(meterSchedule.interval),
+            warnBefore: Number(meterSchedule.warnBefore || 0),
           }
         : null,
       points: points < 0 ? null : points,
@@ -638,6 +639,7 @@ const ChoreEdit = () => {
           ? {
               meterId: data.res.meterSchedule.meterId,
               interval: data.res.meterSchedule.interval,
+              warnBefore: data.res.meterSchedule.warnBefore || 0,
             }
           : null,
       )
@@ -1452,14 +1454,23 @@ const ChoreEdit = () => {
           selectedThing={thingTrigger}
         />
         <Card sx={{ mt: 2 }}>
-          <Typography level='h4'>Meter service interval</Typography>
+          <Typography level='h4'>Maintenance trigger</Typography>
+          <Typography level='body-sm'>
+            Choose a calendar repeat, a meter interval, or both. With both
+            configured, the task is due by time OR meter — whichever comes
+            first.
+          </Typography>
           <Checkbox
             label='Make this task due from a meter'
             checked={!!meterSchedule}
             onChange={e =>
               setMeterSchedule(
                 e.target.checked
-                  ? { meterId: meters[0]?.id || null, interval: 1 }
+                  ? {
+                      meterId: meters[0]?.id || null,
+                      interval: 1,
+                      warnBefore: 0,
+                    }
                   : null,
               )
             }
@@ -1502,6 +1513,31 @@ const ChoreEdit = () => {
                   </Option>
                 ))}
               </Select>
+            </Stack>
+          )}
+          {meterSchedule && (
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              alignItems='center'
+            >
+              <Typography>Warn when within</Typography>
+              <Input
+                type='number'
+                slotProps={{ input: { min: 0 } }}
+                value={meterSchedule.warnBefore || 0}
+                onChange={e =>
+                  setMeterSchedule({
+                    ...meterSchedule,
+                    warnBefore: Number(e.target.value),
+                  })
+                }
+              />
+              <Typography>
+                {meters.find(m => m.id === meterSchedule.meterId)?.unit ||
+                  'units'}{' '}
+                (optional)
+              </Typography>
             </Stack>
           )}
           {meterSchedule && (

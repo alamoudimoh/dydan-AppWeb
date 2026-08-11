@@ -26,6 +26,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { useNotification } from '../../service/NotificationProvider'
+import { getRecurrentChipText } from '../../utils/ChoreCardHelpers'
 import {
   AddMeterReading,
   ArchiveAsset,
@@ -86,8 +87,19 @@ const MaintenanceCard = ({ item, onComplete }) => (
           </Typography>
         )}
       </Box>
-      <Chip color={item.status === 'due' ? 'danger' : 'neutral'} variant='soft'>
-        {dueReason(item.dueReason)}
+      <Chip
+        color={
+          item.status === 'due'
+            ? 'danger'
+            : item.status === 'approaching'
+              ? 'warning'
+              : 'neutral'
+        }
+        variant='soft'
+      >
+        {item.status === 'approaching'
+          ? 'Approaching'
+          : dueReason(item.dueReason)}
       </Chip>
       {onComplete && <Button onClick={() => onComplete(item)}>Complete</Button>}
     </Stack>
@@ -257,6 +269,25 @@ export const AssetDetail = () => {
                   <Typography level='body-xs'>
                     Updated {new Date(meter.updatedAt).toLocaleString()}
                   </Typography>
+                  {meter.updateReminder && (
+                    <Typography
+                      level='body-xs'
+                      color={
+                        meter.updateReminder.updateStatus === 'overdue'
+                          ? 'warning'
+                          : 'neutral'
+                      }
+                    >
+                      Update reminder:{' '}
+                      {getRecurrentChipText(meter.updateReminder)}
+                      {meter.updateReminder.nextUpdateDue
+                        ? ` · Next ${new Date(meter.updateReminder.nextUpdateDue).toLocaleString()}`
+                        : ''}
+                      {meter.updateReminder.updateStatus === 'overdue'
+                        ? ' · Reading may be outdated'
+                        : ''}
+                    </Typography>
+                  )}
                 </Box>
                 <Typography level='h3'>
                   {meter.currentReading.toLocaleString()} {meter.unit}
@@ -361,7 +392,12 @@ export const AssetDetail = () => {
 
 const MaintenanceView = () => {
   const navigate = useNavigate()
-  const [data, setData] = useState({ due: [], upcoming: [], assets: [] })
+  const [data, setData] = useState({
+    due: [],
+    approaching: [],
+    upcoming: [],
+    assets: [],
+  })
   const [creating, setCreating] = useState(false)
   const load = useCallback(async () => {
     const response = await GetMaintenance()
@@ -400,6 +436,7 @@ const MaintenanceView = () => {
       <Tabs defaultValue={0}>
         <TabList>
           <Tab>Due now ({data.due.length})</Tab>
+          <Tab>Approaching ({data.approaching.length})</Tab>
           <Tab>Upcoming</Tab>
           <Tab>Assets</Tab>
         </TabList>
@@ -424,12 +461,19 @@ const MaintenanceView = () => {
         </TabPanel>
         <TabPanel value={1}>
           <Stack spacing={1}>
-            {data.upcoming.map(item => (
+            {data.approaching.map(item => (
               <MaintenanceCard key={item.choreId} item={item} />
             ))}
           </Stack>
         </TabPanel>
         <TabPanel value={2}>
+          <Stack spacing={1}>
+            {data.upcoming.map(item => (
+              <MaintenanceCard key={item.choreId} item={item} />
+            ))}
+          </Stack>
+        </TabPanel>
+        <TabPanel value={3}>
           <Stack spacing={1}>
             {data.assets.map(asset => (
               <Card

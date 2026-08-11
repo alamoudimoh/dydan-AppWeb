@@ -20,6 +20,7 @@ import {
 } from '@mui/joy'
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCircleMembers } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import {
   AddMeterReading,
@@ -28,6 +29,7 @@ import {
   GetMeters,
   SaveMeter,
 } from '../../utils/Fetcher'
+import RepeatPickerField from '../components/RepeatPickerField'
 
 const units = ['km', 'miles', 'hours', 'cycles', 'count']
 
@@ -37,11 +39,20 @@ const MetersView = () => {
   const [readingMeter, setReadingMeter] = useState(null)
   const [historyMeter, setHistoryMeter] = useState(null)
   const [history, setHistory] = useState([])
-  const [form, setForm] = useState({ name: '', unit: 'km', initialReading: 0 })
+  const emptyForm = {
+    name: '',
+    unit: 'km',
+    initialReading: 0,
+    reminderEnabled: false,
+    reminder: null,
+    assignedTo: null,
+  }
+  const [form, setForm] = useState(emptyForm)
   const [reading, setReading] = useState('')
   const [isCorrection, setIsCorrection] = useState(false)
   const [correctionNote, setCorrectionNote] = useState('')
   const { showError, showNotification } = useNotification()
+  const { data: circleMembers } = useCircleMembers()
 
   const load = useCallback(
     () =>
@@ -56,9 +67,15 @@ const MetersView = () => {
   }, [load])
 
   const save = async () => {
+    const payload = {
+      ...form,
+      reminder: form.reminderEnabled
+        ? { enabled: true, ...form.reminder, assignedTo: form.assignedTo }
+        : { enabled: false },
+    }
     const response = editing?.id
-      ? await SaveMeter({ ...form, id: editing.id })
-      : await CreateMeter(form)
+      ? await SaveMeter({ ...payload, id: editing.id })
+      : await CreateMeter(payload)
     if (!response.ok) {
       showError({
         title: 'Unable to save meter',
@@ -67,7 +84,7 @@ const MetersView = () => {
       return
     }
     setEditing(null)
-    setForm({ name: '', unit: 'km', initialReading: 0 })
+    setForm(emptyForm)
     await load()
     showNotification({
       type: 'success',
@@ -119,7 +136,7 @@ const MetersView = () => {
           startDecorator={<Add />}
           onClick={() => {
             setEditing({})
-            setForm({ name: '', unit: 'km', initialReading: 0 })
+            setForm(emptyForm)
           }}
         >
           New meter
@@ -169,6 +186,16 @@ const MetersView = () => {
                   name: meter.name,
                   unit: meter.unit,
                   initialReading: meter.currentReading,
+                  reminderEnabled: !!meter.updateReminder,
+                  reminder: meter.updateReminder
+                    ? {
+                        frequencyType: meter.updateReminder.frequencyType,
+                        frequency: meter.updateReminder.frequency,
+                        frequencyMetadata:
+                          meter.updateReminder.frequencyMetadata || {},
+                      }
+                    : null,
+                  assignedTo: meter.updateReminder?.assignedTo || null,
                 })
               }}
             >
@@ -216,7 +243,50 @@ const MetersView = () => {
               />
             </FormControl>
           )}
-          <Button onClick={save}>Save</Button>
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
+            <Typography level='title-md'>Manual Reading Updates</Typography>
+            <Checkbox
+              label='Remind me to update this meter'
+              checked={form.reminderEnabled}
+              onChange={e =>
+                setForm({ ...form, reminderEnabled: e.target.checked })
+              }
+            />
+            {form.reminderEnabled && (
+              <Stack spacing={1} mt={1}>
+                <Stack direction='row' alignItems='center' spacing={1}>
+                  <FormLabel>Update frequency</FormLabel>
+                  <RepeatPickerField
+                    value={form.reminder}
+                    onChange={reminder => setForm({ ...form, reminder })}
+                    onClear={() => setForm({ ...form, reminder: null })}
+                  />
+                </Stack>
+                <FormControl>
+                  <FormLabel>Who updates this meter?</FormLabel>
+                  <Select
+                    value={form.assignedTo || null}
+                    placeholder='Me'
+                    onChange={(_, assignedTo) =>
+                      setForm({ ...form, assignedTo })
+                    }
+                  >
+                    {(circleMembers?.res || []).map(member => (
+                      <Option key={member.userId} value={member.userId}>
+                        {member.displayName || member.username}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+            )}
+          </Box>
+          <Button
+            onClick={save}
+            disabled={form.reminderEnabled && !form.reminder}
+          >
+            Save
+          </Button>
         </ModalDialog>
       </Modal>
 

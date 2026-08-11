@@ -80,6 +80,7 @@ import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
 import { commandQueue, CommandType } from '../../utils/CommandQueue'
 import {
   ApproveChore,
+  CompleteMeterReminder,
   GetChoreDetailById,
   MarkChoreComplete,
   RejectChore,
@@ -140,6 +141,8 @@ const ChoreView = () => {
   const [timerActionConfig, setTimerActionConfig] = useState({ isOpen: false })
   const [attachmentBrowserOpen, setAttachmentBrowserOpen] = useState(false)
   const [saveRoutineOpen, setSaveRoutineOpen] = useState(false)
+  const [meterReadingOpen, setMeterReadingOpen] = useState(false)
+  const [meterReading, setMeterReading] = useState('')
   const [targetRoutine, setTargetRoutine] = useState(null)
   const { data: routinesData } = useRoutines(false)
   const routineMutation = useRoutineMutation()
@@ -258,6 +261,11 @@ const ChoreView = () => {
     })
   }
   const handleTaskCompletion = async () => {
+    if (chore.meterUpdateReminder) {
+      setMeterReading(chore.meterUpdateReminder.currentReading)
+      setMeterReadingOpen(true)
+      return
+    }
     try {
       const resp = await MarkChoreComplete(
         choreId,
@@ -346,6 +354,25 @@ const ChoreView = () => {
         })
       }
     }
+  }
+  const completeMeterUpdate = async () => {
+    const response = await CompleteMeterReminder(
+      chore.meterUpdateReminder.meterId,
+      { reading: Number(meterReading), expectedDue: chore.nextDueDate },
+    )
+    const data = await response.json()
+    if (!response.ok) {
+      showError({ title: 'Unable to update meter', message: data.error })
+      return
+    }
+    setMeterReadingOpen(false)
+    queryClient.invalidateQueries(['chores'])
+    const detailResponse = await GetChoreDetailById(choreId)
+    if (detailResponse.ok) setChore((await detailResponse.json()).res)
+    showSuccess({
+      title: 'Meter updated',
+      message: 'The reading was saved and the next reminder was scheduled.',
+    })
   }
   const handleSkippingTask = async () => {
     try {
@@ -1451,6 +1478,37 @@ const ChoreView = () => {
         )}
 
         <ConfirmationModal config={confirmModelConfig} />
+        <Modal
+          open={meterReadingOpen}
+          onClose={() => setMeterReadingOpen(false)}
+        >
+          <ModalDialog>
+            <ModalClose />
+            <Typography level='h4'>
+              Update {chore.meterUpdateReminder?.meterName}
+            </Typography>
+            <Typography level='body-sm'>
+              Previous reading:{' '}
+              {chore.meterUpdateReminder?.currentReading?.toLocaleString()}{' '}
+              {chore.meterUpdateReminder?.unit}
+            </Typography>
+            <FormControl required>
+              <FormLabel>New reading</FormLabel>
+              <Input
+                type='number'
+                value={meterReading}
+                onChange={e => setMeterReading(e.target.value)}
+                endDecorator={chore.meterUpdateReminder?.unit}
+              />
+            </FormControl>
+            <Button
+              onClick={completeMeterUpdate}
+              disabled={meterReading === ''}
+            >
+              Update &amp; Complete
+            </Button>
+          </ModalDialog>
+        </Modal>
         <ConfirmationModal config={timerActionConfig} />
         <NoteViewerModal config={noteViewerConfig} />
         <AttachmentBrowserModal

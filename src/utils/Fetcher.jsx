@@ -464,6 +464,12 @@ const AddMeterReading = (id, reading) =>
     headers: HEADERS(),
     body: JSON.stringify(reading),
   })
+const CompleteMeterReminder = (id, reading) =>
+  Fetch(`/meters/${id}/reminder/complete`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(reading),
+  })
 const GetMeterHistory = (id, offset = 0) =>
   Fetch(`/meters/${id}/readings?offset=${offset}`, {
     method: 'GET',
@@ -1068,6 +1074,7 @@ export {
   ChangePassword,
   CheckUserDeletion,
   ClearChoreTimer,
+  CompleteMeterReminder,
   CompleteSubTask,
   ConfirmMFA,
   CreateAsset,
