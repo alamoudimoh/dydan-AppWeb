@@ -89,7 +89,10 @@ const TaskSummary = ({ item, members }) => (
   <Stack spacing={0.35} sx={{ minWidth: 0 }}>
     <Typography level='title-sm'>{item.name}</Typography>
     <Typography level='body-xs'>
-      {recurrence(item)} · {item.points || 0} pts
+      {recurrence(item)} ·{' '}
+      <Box component='span' className='taskier-metric'>
+        {item.points || 0} pts
+      </Box>
       {item.requireApproval ? ' · Approval required' : ''}
     </Typography>
     <Typography level='body-xs'>

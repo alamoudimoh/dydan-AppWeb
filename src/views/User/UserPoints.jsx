@@ -348,13 +348,15 @@ const UserPoints = () => {
   const getTrophyIcon = rank => {
     switch (rank) {
       case 1:
-        return <EmojiEvents sx={{ color: '#FFD700', fontSize: '1.2rem' }} /> // Gold
+        return <EmojiEvents sx={{ color: 'primary.500', fontSize: '1.2rem' }} />
       case 2:
         return (
-          <WorkspacePremium sx={{ color: '#C0C0C0', fontSize: '1.2rem' }} />
-        ) // Silver
+          <WorkspacePremium sx={{ color: 'info.500', fontSize: '1.2rem' }} />
+        )
       case 3:
-        return <MilitaryTech sx={{ color: '#CD7F32', fontSize: '1.2rem' }} /> // Bronze
+        return (
+          <MilitaryTech sx={{ color: 'neutral.500', fontSize: '1.2rem' }} />
+        )
       default:
         return <Star sx={{ color: 'text.secondary', fontSize: '1rem' }} />
     }
@@ -374,7 +376,7 @@ const UserPoints = () => {
         <Stack spacing={2}>
           {/* Title Row */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <EmojiEvents sx={{ fontSize: '2rem', color: '#FFD700' }} />
+            <EmojiEvents sx={{ fontSize: '2rem', color: 'primary.500' }} />
             <Stack sx={{ flex: 1 }}>
               <Typography
                 level='h3'
@@ -618,6 +620,8 @@ const UserPoints = () => {
                         sx={{
                           fontWeight: 'bold',
                           color: 'success.600',
+                          fontFamily: 'var(--taskier-font-data)',
+                          fontVariantNumeric: 'tabular-nums',
                         }}
                       >
                         {leaderboardMode === 'points'
@@ -677,10 +681,8 @@ const UserPoints = () => {
           width: '100%',
           p: 2,
           mb: 3,
-          borderRadius: 12,
-          background:
-            'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-          backdropFilter: 'blur(10px)',
+          borderRadius: 'lg',
+          backgroundColor: 'background.surface',
         }}
       >
         <Stack spacing={2}>
@@ -1030,7 +1032,7 @@ const UserPoints = () => {
               <XAxis dataKey='label' axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} />
               <Bar
-                fill='#4183F2'
+                fill='var(--taskier-signal)'
                 dataKey='points'
                 barSize={30}
                 radius={[5, 5, 0, 0]}

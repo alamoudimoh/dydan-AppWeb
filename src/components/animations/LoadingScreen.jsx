@@ -8,7 +8,7 @@ const LoadingContainer = styled(Box)({
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: 'var(--joy-palette-background-body)',
   backdropFilter: 'blur(8px)',
   display: 'flex',
   flexDirection: 'column',
@@ -82,12 +82,15 @@ const LoadingScreen = ({
                 mb: 1,
               }}
             >
-              Done
-              <span style={{ color: '#06b6d4' }}>tick</span>
+              Task
+              <Box component='span' sx={{ color: 'var(--taskier-signal)' }}>
+                i
+              </Box>
+              er
             </Typography>
           </LogoContainer>
         )}
-        
+
         <CircularProgress
           size={size}
           sx={{
@@ -95,7 +98,7 @@ const LoadingScreen = ({
             mb: 2,
           }}
         />
-        
+
         <PulsingText level='body-md'>{message}</PulsingText>
       </LoadingContent>
     </LoadingContainer>

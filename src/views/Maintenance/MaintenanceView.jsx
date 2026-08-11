@@ -289,7 +289,7 @@ export const AssetDetail = () => {
                     </Typography>
                   )}
                 </Box>
-                <Typography level='h3'>
+                <Typography level='h3' className='taskier-metric'>
                   {meter.currentReading.toLocaleString()} {meter.unit}
                 </Typography>
                 <Button

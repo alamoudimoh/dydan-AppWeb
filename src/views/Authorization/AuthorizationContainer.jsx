@@ -1,6 +1,5 @@
-// import Logo from 'Components/Logo'
-import { Box, Paper } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import { Box, Sheet } from '@mui/joy'
+import { styled } from '@mui/joy/styles'
 
 const Container = styled('div')(({ theme }) => ({
   minHeight: '100vh',
@@ -13,11 +12,12 @@ const Container = styled('div')(({ theme }) => ({
   },
 }))
 
-const AuthCard = styled(Paper)(({ theme }) => ({
-  //   border: "1px solid #c4c4c4",
+const AuthCard = styled(Sheet)(({ theme }) => ({
   padding: 24,
   paddingTop: 32,
   borderRadius: 24,
+  border: '1px solid var(--joy-palette-divider)',
+  backgroundColor: 'var(--joy-palette-background-surface)',
   width: '100%',
   maxWidth: '400px',
   [theme.breakpoints.down('sm')]: {
@@ -28,7 +28,7 @@ const AuthCard = styled(Paper)(({ theme }) => ({
 export default function AuthCardContainer({ children, ...props }) {
   return (
     <Container>
-      <AuthCard elevation={0}>
+      <AuthCard>
         <Box
           sx={{
             display: 'grid',

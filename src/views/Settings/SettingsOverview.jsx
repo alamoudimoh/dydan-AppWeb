@@ -178,7 +178,6 @@ const SettingsOverview = () => {
   return (
     <Container maxWidth='lg' sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        {/* <EmojiEvents sx={{ fontSize: '2rem', color: '#FFD700' }} /> */}
         <Stack sx={{ flex: 1 }}>
           <Typography
             level='h3'
@@ -200,7 +199,7 @@ const SettingsOverview = () => {
             sx={{
               cursor: 'pointer',
               transition: 'all 0.2s ease-in-out',
-              background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
+              backgroundColor: 'var(--taskier-ink)',
               border: 'none',
               color: 'white',
               '&:hover': {
@@ -233,7 +232,7 @@ const SettingsOverview = () => {
                   <Avatar
                     sx={{
                       '--Avatar-size': { xs: '36px', md: '60px' },
-                      background: 'rgba(255, 255, 255, 0.2)',
+                      background: 'var(--joy-palette-neutral-800)',
                       backdropFilter: 'blur(10px)',
                     }}
                   >
@@ -256,7 +255,7 @@ const SettingsOverview = () => {
                     <Typography
                       level='body-md'
                       sx={{
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: 'var(--joy-palette-neutral-100)',
                         mb: { xs: 0.5, md: 1 },
                         fontSize: { xs: '0.75rem', md: '1rem' },
                         lineHeight: { xs: 1.3, md: 1.5 },
@@ -270,7 +269,7 @@ const SettingsOverview = () => {
                         flexWrap: 'wrap',
                         gap: 1,
                         fontSize: '0.875rem',
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: 'var(--joy-palette-neutral-200)',
                       }}
                     >
                       <span>• {t('overview.upgrade.features.richText')}</span>
@@ -290,9 +289,9 @@ const SettingsOverview = () => {
                   variant='solid'
                   size='sm'
                   sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    bgcolor: 'var(--joy-palette-neutral-800)',
                     color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    border: '1px solid var(--joy-palette-neutral-500)',
                     backdropFilter: 'blur(10px)',
                     px: { xs: 1.5, md: 3 },
                     py: { xs: 0.5, md: 1.5 },
@@ -301,7 +300,7 @@ const SettingsOverview = () => {
                     width: { xs: '100%', md: 'auto' },
                     fontSize: { xs: '0.75rem', md: '0.875rem' },
                     '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.3)',
+                      bgcolor: 'var(--joy-palette-neutral-700)',
                       transform: 'scale(1.05)',
                     },
                   }}

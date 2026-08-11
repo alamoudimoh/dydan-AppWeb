@@ -1,8 +1,8 @@
 import { Box, Button, Container, Typography } from '@mui/joy'
 import { useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { useState } from 'react'
 import Logo from '../Logo'
 const Home = () => {
   const Navigate = useNavigate()
@@ -19,14 +19,11 @@ const Home = () => {
       <Box className='flex flex-col items-center justify-center'>
         <Logo />
         <Typography level='h1'>
-          Done
-          <span
-            style={{
-              color: '#06b6d4',
-            }}
-          >
-            tick
-          </span>
+          Task
+          <Box component='span' sx={{ color: 'var(--taskier-signal)' }}>
+            i
+          </Box>
+          er
         </Typography>
       </Box>
       <Box className='flex flex-col items-center justify-center' mt={10}>
