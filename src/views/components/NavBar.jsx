@@ -3,6 +3,7 @@ import {
   Archive,
   ArrowBack,
   Build,
+  CalendarMonthRounded,
   CardGiftcard,
   FilterAlt,
   FolderOpen,
@@ -70,6 +71,11 @@ const NavBar = () => {
       to: '/chores',
       label: t('navigation.allTasks'),
       icon: <Inbox />,
+    },
+    {
+      to: '/calendar',
+      label: 'Calendar',
+      icon: <CalendarMonthRounded />,
     },
     {
       to: '/archived',

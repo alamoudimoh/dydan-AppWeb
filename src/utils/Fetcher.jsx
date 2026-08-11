@@ -120,6 +120,15 @@ const GetPersonalChores = async () => {
   if (!resp.ok) throw new Error('Unable to load your tasks')
   return resp.json()
 }
+const GetCalendar = async (from, to) => {
+  const params = new URLSearchParams({ from, to })
+  const resp = await Fetch(`/chores/calendar?${params}`, {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+  if (!resp.ok) throw new Error('Unable to load your calendar')
+  return resp.json()
+}
 const GetArchivedChores = () => {
   return Fetch(`/chores/archived`, {
     method: 'GET',
@@ -1115,6 +1124,7 @@ export {
   GetArchivedChores,
   GetAsset,
   GetAssets,
+  GetCalendar,
   GetChildUsers,
   GetChoreAttachments,
   GetChoreByID,

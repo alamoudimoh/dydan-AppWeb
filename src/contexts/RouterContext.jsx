@@ -20,6 +20,7 @@ import LoginSettings from '../views/Authorization/LoginSettings'
 import LoginView from '../views/Authorization/LoginView'
 import SignupView from '../views/Authorization/Signup'
 import UpdatePasswordView from '../views/Authorization/UpdatePasswordView'
+import CalendarView from '../views/Calendar/CalendarView'
 import ChoreView from '../views/ChoreEdit/ChoreView'
 import ArchivedTasks from '../views/Chores/ArchivedTasks'
 import MyChores from '../views/Chores/MyChores'
@@ -139,6 +140,10 @@ const Router = createBrowserRouter([
       {
         path: '/chores',
         element: <MyChores />,
+      },
+      {
+        path: '/calendar',
+        element: <CalendarView />,
       },
       {
         path: '/search',
