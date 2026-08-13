@@ -6,19 +6,17 @@ import {
   SetCategoryArchived,
   UpdateCategory,
 } from '../utils/Fetcher'
+import { activeCategories, categoryCatalog } from './categoryModel'
 
-export const categoryKey = (token, archived = false) => [
-  'categories',
-  token,
-  archived,
-]
+export const categoryKey = token => ['categories', token]
 
 export const useCategories = (includeArchived = false) => {
   const token = localStorage.getItem('token')
   return useQuery({
-    queryKey: categoryKey(token, includeArchived),
-    queryFn: async () => (await GetCategories(includeArchived)).res || [],
+    queryKey: categoryKey(token),
+    queryFn: async () => categoryCatalog(await GetCategories(true)),
     enabled: Boolean(token),
+    select: includeArchived ? undefined : activeCategories,
   })
 }
 
@@ -26,7 +24,7 @@ export const useCategoryActions = () => {
   const client = useQueryClient()
   const refresh = () =>
     Promise.all([
-      client.invalidateQueries({ queryKey: ['categories'] }),
+      client.invalidateQueries({ queryKey: ['categories'], exact: false }),
       client.invalidateQueries({ queryKey: ['calendar'] }),
       client.invalidateQueries({ queryKey: ['chores'] }),
     ])
