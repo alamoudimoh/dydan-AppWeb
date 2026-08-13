@@ -37,6 +37,7 @@ export const useRewardMutation = () => {
       client.invalidateQueries({ queryKey: ['rewards'] })
       client.invalidateQueries({ queryKey: ['rewardRequests'] })
       client.invalidateQueries({ queryKey: ['allCircleMembers'] })
+      client.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
   return mutation

@@ -80,7 +80,9 @@ const NavBar = () => {
     },
     {
       to: '/family',
-      label: 'Family Progress',
+      label: t('navigation.familyProgress', {
+        defaultValue: 'Family Progress',
+      }),
       icon: <Groups />,
     },
     {

@@ -189,6 +189,7 @@ export const useDeleteChores = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -245,6 +246,7 @@ export const useCreateChore = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -307,6 +309,7 @@ export const useUpdateChore = () => {
       queryClient.invalidateQueries(['chores'])
       queryClient.invalidateQueries(['choreHistory', variables.id])
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -397,6 +400,7 @@ export const useChore = choreId => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -408,6 +412,7 @@ export const useArchiveChore = () => {
     mutationFn: ArchiveChore,
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -419,6 +424,7 @@ export const useUnArchiveChore = () => {
     mutationFn: UnArchiveChore,
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -523,6 +529,7 @@ export const useUpdateChoreHistory = () => {
         queryClient.invalidateQueries(['choreHistory', choreId])
       }
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -582,6 +589,7 @@ export const useDeleteChoreHistory = () => {
         queryClient.invalidateQueries(['choreHistory', choreId])
       }
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -662,6 +670,7 @@ export const useMarkChoreComplete = () => {
       queryClient.invalidateQueries(['choreHistory', choreId])
       queryClient.invalidateQueries(['choreDetails', choreId])
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -712,6 +721,7 @@ export const useSkipChore = () => {
       queryClient.invalidateQueries(['choreHistory', choreId])
       queryClient.invalidateQueries(['choreDetails', choreId])
       queryClient.invalidateQueries(['pendingCommands'])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -725,6 +735,7 @@ export const useApproveChore = () => {
       queryClient.invalidateQueries(['chores'])
       queryClient.invalidateQueries(['choreHistory', choreId])
       queryClient.invalidateQueries(['choreDetails', choreId])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }
@@ -738,6 +749,7 @@ export const useRejectChore = () => {
       queryClient.invalidateQueries(['chores'])
       queryClient.invalidateQueries(['choreHistory', choreId])
       queryClient.invalidateQueries(['choreDetails', choreId])
+      queryClient.invalidateQueries({ queryKey: ['familyProgress'] })
     },
   })
 }

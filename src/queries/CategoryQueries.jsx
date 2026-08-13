@@ -27,6 +27,7 @@ export const useCategoryActions = () => {
       client.invalidateQueries({ queryKey: ['categories'], exact: false }),
       client.invalidateQueries({ queryKey: ['calendar'] }),
       client.invalidateQueries({ queryKey: ['chores'] }),
+      client.invalidateQueries({ queryKey: ['familyProgress'] }),
     ])
   return {
     create: useMutation({ mutationFn: CreateCategory, onSuccess: refresh }),

@@ -1,6 +1,8 @@
 import {
   Add,
+  Archive,
   CheckCircle,
+  Edit,
   Flag,
   Groups,
   Insights,
@@ -26,7 +28,9 @@ import {
   Tabs,
   Typography,
 } from '@mui/joy'
+import PropTypes from 'prop-types'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import {
@@ -54,7 +58,18 @@ const Section = ({ children, title }) => (
   </Card>
 )
 
+Metric.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+}
+
+Section.propTypes = {
+  children: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+}
+
 const Workload = () => {
+  const { t } = useTranslation()
   const [range, setRange] = useState('week')
   const [category, setCategory] = useState('')
   const { data, error, isLoading } = useWorkload(range, '', category)
@@ -68,17 +83,17 @@ const Workload = () => {
           onChange={(_, value) => setRange(value)}
           aria-label='Workload range'
         >
-          <Option value='today'>Today</Option>
-          <Option value='week'>This week</Option>
-          <Option value='30d'>Next 30 days</Option>
+          <Option value='today'>{t('familyProgress.today')}</Option>
+          <Option value='week'>{t('familyProgress.thisWeek')}</Option>
+          <Option value='30d'>{t('familyProgress.next30Days')}</Option>
         </Select>
         <Select
           value={category}
           onChange={(_, value) => setCategory(value || '')}
-          placeholder='All categories'
+          placeholder={t('familyProgress.allCategories')}
           aria-label='Category filter'
         >
-          <Option value=''>All categories</Option>
+          <Option value=''>{t('familyProgress.allCategories')}</Option>
           {data?.categories
             ?.filter(x => x.categoryId)
             .map(x => (
@@ -99,9 +114,15 @@ const Workload = () => {
           <Card key={member.userId} variant='soft'>
             <Typography level='title-md'>{member.name}</Typography>
             <Stack direction='row' spacing={2} flexWrap='wrap'>
-              <Metric label='today' value={member.today} />
-              <Metric label='overdue' value={member.overdue} />
-              <Metric label='upcoming' value={member.upcoming} />
+              <Metric label={t('familyProgress.today')} value={member.today} />
+              <Metric
+                label={t('familyProgress.overdue')}
+                value={member.overdue}
+              />
+              <Metric
+                label={t('familyProgress.upcoming')}
+                value={member.upcoming}
+              />
             </Stack>
             <Stack spacing={0.5}>
               {data.tasks
@@ -117,12 +138,17 @@ const Workload = () => {
         ))}
         {data.canViewFamily && (
           <Card variant='soft'>
-            <Typography level='title-md'>Unassigned</Typography>
-            <Metric label='active tasks' value={data.unassigned} />
+            <Typography level='title-md'>
+              {t('familyProgress.unassigned')}
+            </Typography>
+            <Metric
+              label={t('familyProgress.activeTasks')}
+              value={data.unassigned}
+            />
           </Card>
         )}
       </Box>
-      <Section title='Work by category'>
+      <Section title={t('familyProgress.workByCategory')}>
         <Stack spacing={1}>
           {data.categories.map(row => (
             <Box
@@ -140,6 +166,7 @@ const Workload = () => {
 }
 
 const Reports = () => {
+  const { t } = useTranslation()
   const [range, setRange] = useState('30d')
   const { data, error, isLoading } = useReport(range)
   if (isLoading) return <CircularProgress />
@@ -151,10 +178,11 @@ const Reports = () => {
         onChange={(_, value) => setRange(value)}
         aria-label='Report range'
       >
-        <Option value='7d'>7 days</Option>
-        <Option value='30d'>30 days</Option>
-        <Option value='90d'>90 days</Option>
-        <Option value='month'>This month</Option>
+        <Option value='week'>{t('familyProgress.thisWeek')}</Option>
+        <Option value='7d'>{t('familyProgress.sevenDays')}</Option>
+        <Option value='30d'>{t('familyProgress.thirtyDays')}</Option>
+        <Option value='90d'>{t('familyProgress.ninetyDays')}</Option>
+        <Option value='month'>{t('familyProgress.thisMonth')}</Option>
       </Select>
       <Box
         sx={{
@@ -163,29 +191,57 @@ const Reports = () => {
           gap: 1.5,
         }}
       >
-        <Section title='Completion'>
-          <Metric label='completed tasks' value={data.completed} />
-        </Section>
-        <Section title='Points'>
-          <Stack direction='row' spacing={2}>
-            <Metric label='earned' value={data.points.earned} />
-            <Metric label='redeemed' value={data.points.redeemed} />
+        <Section title={t('familyProgress.completion')}>
+          <Stack direction='row' spacing={2} flexWrap='wrap'>
+            <Metric
+              label={t('familyProgress.completedTasks')}
+              value={data.completed}
+            />
+            <Metric
+              label={t('familyProgress.currentlyOverdue')}
+              value={data.overdue}
+            />
           </Stack>
         </Section>
-        <Section title='Maintenance'>
+        <Section title={t('familyProgress.points')}>
           <Stack direction='row' spacing={2}>
-            <Metric label='completed' value={data.maintenance.completed} />
-            <Metric label='overdue' value={data.maintenance.overdue} />
-            <Metric label='approaching' value={data.maintenance.approaching} />
+            <Metric
+              label={t('familyProgress.earned')}
+              value={data.points.earned}
+            />
+            <Metric
+              label={t('familyProgress.redeemed')}
+              value={data.points.redeemed}
+            />
+            <Metric
+              label={t('familyProgress.available')}
+              value={data.points.available}
+            />
+          </Stack>
+        </Section>
+        <Section title={t('familyProgress.maintenance')}>
+          <Stack direction='row' spacing={2}>
+            <Metric
+              label={t('familyProgress.completed')}
+              value={data.maintenance.completed}
+            />
+            <Metric
+              label={t('familyProgress.overdue')}
+              value={data.maintenance.overdue}
+            />
+            <Metric
+              label={t('familyProgress.approaching')}
+              value={data.maintenance.approaching}
+            />
           </Stack>
         </Section>
       </Box>
-      <Section title='Deterministic insights'>
+      <Section title={t('familyProgress.deterministicInsights')}>
         {data.insights.map(text => (
           <Typography key={text}>{text}</Typography>
         ))}
       </Section>
-      <Section title='Completed by category'>
+      <Section title={t('familyProgress.completedByCategory')}>
         {data.categories.map(row => (
           <Box
             key={row.id || 'none'}
@@ -197,7 +253,7 @@ const Reports = () => {
         ))}
       </Section>
       {data.canViewFamily && (
-        <Section title='Completed by member'>
+        <Section title={t('familyProgress.completedByMember')}>
           {data.members.map(row => (
             <Box
               key={row.id}
@@ -209,7 +265,7 @@ const Reports = () => {
           ))}
         </Section>
       )}
-      <Section title='Reward activity'>
+      <Section title={t('familyProgress.rewardActivity')}>
         {data.rewards.length ? (
           data.rewards.map(row => (
             <Box
@@ -224,7 +280,7 @@ const Reports = () => {
           ))
         ) : (
           <Typography textColor='text.tertiary'>
-            No reward activity in this period.
+            {t('familyProgress.noRewardActivity')}
           </Typography>
         )}
       </Section>
@@ -233,6 +289,7 @@ const Reports = () => {
 }
 
 const Goals = () => {
+  const { t } = useTranslation()
   const { data, isLoading } = useGoals()
   const { data: workload } = useWorkload('week', '', '')
   const mutation = useGoalMutation()
@@ -247,22 +304,64 @@ const Goals = () => {
   if (isLoading) return <CircularProgress />
   const submit = e => {
     e.preventDefault()
-    mutation.mutate({ data: form }, { onSuccess: () => setOpen(false) })
+    mutation.mutate(
+      { data: form, id: form.id },
+      { onSuccess: () => setOpen(false) },
+    )
   }
+
+  const editGoal = goal => {
+    setForm({
+      id: goal.id,
+      name: goal.name,
+      metricType: goal.metricType,
+      categoryId: goal.categoryId,
+      target: goal.target,
+      startDate: goal.startDate.slice(0, 10),
+      endDate: new Date(new Date(goal.endDate).getTime() - 86400000)
+        .toISOString()
+        .slice(0, 10),
+    })
+    setOpen(true)
+  }
+
+  const archiveGoal = goal =>
+    mutation.mutate({
+      id: goal.id,
+      data: {
+        ...goal,
+        startDate: goal.startDate.slice(0, 10),
+        endDate: new Date(new Date(goal.endDate).getTime() - 86400000)
+          .toISOString()
+          .slice(0, 10),
+        status: 'ARCHIVED',
+      },
+    })
   return (
     <Stack spacing={2}>
-      <Button
-        startDecorator={<Add />}
-        onClick={() => setOpen(!open)}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        Create family goal
-      </Button>
+      {data.canManage && (
+        <Button
+          startDecorator={<Add />}
+          onClick={() => {
+            setForm({
+              name: '',
+              metricType: 'TASK_COMPLETIONS',
+              target: 10,
+              startDate: new Date().toISOString().slice(0, 10),
+              endDate: new Date().toISOString().slice(0, 10),
+            })
+            setOpen(!open)
+          }}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          {t('familyProgress.createGoal')}
+        </Button>
+      )}
       {open && (
         <Card component='form' onSubmit={submit}>
           <Stack spacing={1.5}>
             <FormControl>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{t('familyProgress.name')}</FormLabel>
               <Input
                 required
                 value={form.name}
@@ -270,21 +369,25 @@ const Goals = () => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Metric</FormLabel>
+              <FormLabel>{t('familyProgress.metric')}</FormLabel>
               <Select
                 value={form.metricType}
                 onChange={(_, v) => setForm({ ...form, metricType: v })}
               >
-                <Option value='TASK_COMPLETIONS'>Task completions</Option>
-                <Option value='CATEGORY_COMPLETIONS'>
-                  Category completions
+                <Option value='TASK_COMPLETIONS'>
+                  {t('familyProgress.taskCompletions')}
                 </Option>
-                <Option value='POINTS_EARNED'>Points earned</Option>
+                <Option value='CATEGORY_COMPLETIONS'>
+                  {t('familyProgress.categoryCompletions')}
+                </Option>
+                <Option value='POINTS_EARNED'>
+                  {t('familyProgress.pointsEarned')}
+                </Option>
               </Select>
             </FormControl>
             {form.metricType === 'CATEGORY_COMPLETIONS' && (
               <FormControl>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>{t('familyProgress.category')}</FormLabel>
                 <Select
                   required
                   value={form.categoryId || ''}
@@ -306,7 +409,7 @@ const Goals = () => {
               </FormControl>
             )}
             <FormControl>
-              <FormLabel>Target</FormLabel>
+              <FormLabel>{t('familyProgress.target')}</FormLabel>
               <Input
                 type='number'
                 min='1'
@@ -319,7 +422,7 @@ const Goals = () => {
             </FormControl>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               <FormControl>
-                <FormLabel>Start</FormLabel>
+                <FormLabel>{t('familyProgress.start')}</FormLabel>
                 <Input
                   type='date'
                   value={form.startDate}
@@ -329,7 +432,7 @@ const Goals = () => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>End</FormLabel>
+                <FormLabel>{t('familyProgress.end')}</FormLabel>
                 <Input
                   type='date'
                   value={form.endDate}
@@ -341,12 +444,16 @@ const Goals = () => {
               <Alert color='danger'>{mutation.error.message}</Alert>
             )}
             <Button type='submit' loading={mutation.isPending}>
-              Save goal
+              {form.id
+                ? t('familyProgress.updateGoal')
+                : t('familyProgress.saveGoal')}
             </Button>
           </Stack>
         </Card>
       )}
-      {!data.goals.length && <Alert variant='soft'>No family goals yet.</Alert>}
+      {!data.goals.length && (
+        <Alert variant='soft'>{t('familyProgress.noGoals')}</Alert>
+      )}
       {data.goals.map(goal => (
         <Card key={goal.id}>
           <Stack direction='row' justifyContent='space-between'>
@@ -357,7 +464,13 @@ const Goals = () => {
                 goal.status === 'COMPLETED' ? <CheckCircle /> : null
               }
             >
-              {goal.status.toLowerCase()}
+              {t(
+                `familyProgress.${
+                  goal.status === 'COMPLETED'
+                    ? 'completedStatus'
+                    : goal.status.toLowerCase()
+                }`,
+              )}
             </Chip>
           </Stack>
           <Typography>
@@ -369,8 +482,38 @@ const Goals = () => {
             aria-label={`${goal.name} progress`}
           />
           <Typography level='body-xs'>
-            {goal.metricType.replaceAll('_', ' ')}
+            {t(
+              `familyProgress.${
+                goal.metricType === 'TASK_COMPLETIONS'
+                  ? 'taskCompletions'
+                  : goal.metricType === 'CATEGORY_COMPLETIONS'
+                    ? 'categoryCompletions'
+                    : 'pointsEarned'
+              }`,
+            )}
           </Typography>
+          {data.canManage && goal.status === 'ACTIVE' && (
+            <Stack direction='row' spacing={1}>
+              <Button
+                size='sm'
+                variant='outlined'
+                startDecorator={<Edit />}
+                onClick={() => editGoal(goal)}
+              >
+                {t('edit')}
+              </Button>
+              <Button
+                size='sm'
+                variant='plain'
+                color='neutral'
+                startDecorator={<Archive />}
+                onClick={() => archiveGoal(goal)}
+                loading={mutation.isPending}
+              >
+                {t('familyProgress.archive')}
+              </Button>
+            </Stack>
+          )}
         </Card>
       ))}
     </Stack>
@@ -378,6 +521,7 @@ const Goals = () => {
 }
 
 export default function FamilyProgress() {
+  const { t } = useTranslation()
   const { data: streak } = useStreak()
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: { xs: 1.5, sm: 3 } }}>
@@ -385,32 +529,35 @@ export default function FamilyProgress() {
         <Stack direction='row' spacing={1} alignItems='center'>
           <Groups />
           <Box>
-            <Typography level='h2'>Family Progress</Typography>
+            <Typography level='h2'>{t('familyProgress.title')}</Typography>
             <Typography textColor='text.tertiary'>
-              Visibility, balance, consistency, and shared progress.
+              {t('familyProgress.subtitle')}
             </Typography>
           </Box>
         </Stack>
         <Card variant='soft' color='primary'>
           <Stack direction='row' spacing={3}>
             <Metric
-              label='current streak'
-              value={`${streak?.current || 0} days`}
+              label={t('familyProgress.currentStreak')}
+              value={t('familyProgress.days', { count: streak?.current || 0 })}
             />
-            <Metric label='best streak' value={`${streak?.best || 0} days`} />
+            <Metric
+              label={t('familyProgress.bestStreak')}
+              value={t('familyProgress.days', { count: streak?.best || 0 })}
+            />
           </Stack>
           <Typography level='body-xs'>{streak?.rule}</Typography>
         </Card>
         <Tabs defaultValue={0}>
           <TabList sx={{ overflowX: 'auto' }}>
             <Tab>
-              <Work /> Workload
+              <Work /> {t('familyProgress.workload')}
             </Tab>
             <Tab>
-              <Insights /> Insights
+              <Insights /> {t('familyProgress.insights')}
             </Tab>
             <Tab>
-              <Flag /> Goals
+              <Flag /> {t('familyProgress.goals')}
             </Tab>
           </TabList>
           <TabPanel value={0}>
