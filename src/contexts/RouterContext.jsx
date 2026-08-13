@@ -28,6 +28,7 @@ import MyChores from '../views/Chores/MyChores'
 import JoinCircleView from '../views/Circles/JoinCircle'
 import NotFound from '../views/components/NotFound'
 import Dashboard from '../views/Dashboard/Dashboard'
+import FamilyProgress from '../views/FamilyProgress/FamilyProgress'
 import FilterView from '../views/Filters/FilterView'
 import ChoreHistory from '../views/History/ChoreHistory'
 import Landing from '../views/Landing/Landing'
@@ -144,6 +145,10 @@ const Router = createBrowserRouter([
       {
         path: '/calendar',
         element: <CalendarView />,
+      },
+      {
+        path: '/family',
+        element: <FamilyProgress />,
       },
       {
         path: '/search',

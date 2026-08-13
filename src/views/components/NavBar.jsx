@@ -7,6 +7,7 @@ import {
   CardGiftcard,
   FilterAlt,
   FolderOpen,
+  Groups,
   History,
   HomeRounded,
   Inbox,
@@ -76,6 +77,11 @@ const NavBar = () => {
       to: '/calendar',
       label: 'Calendar',
       icon: <CalendarMonthRounded />,
+    },
+    {
+      to: '/family',
+      label: 'Family Progress',
+      icon: <Groups />,
     },
     {
       to: '/archived',
