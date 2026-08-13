@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiClient } from '../utils/ApiClient'
+import {
+  normalizeGoals,
+  normalizeReport,
+  normalizeWorkload,
+} from './progressModel'
 
 const json = async response => {
   const body = await response.json().catch(() => ({}))
@@ -25,13 +30,14 @@ export const useWorkload = (range, memberId, categoryId) =>
       const query = new URLSearchParams({ range })
       if (memberId) query.set('memberId', memberId)
       if (categoryId) query.set('categoryId', categoryId)
-      return get(`/progress/workload?${query}`)
+      return get(`/progress/workload?${query}`).then(normalizeWorkload)
     },
   })
 export const useReport = range =>
   useQuery({
     queryKey: ['familyProgress', token(), 'report', range],
-    queryFn: () => get(`/progress/reports?range=${range}`),
+    queryFn: () =>
+      get(`/progress/reports?range=${range}`).then(normalizeReport),
   })
 export const useStreak = () =>
   useQuery({
@@ -41,7 +47,7 @@ export const useStreak = () =>
 export const useGoals = () =>
   useQuery({
     queryKey: ['familyProgress', token(), 'goals'],
-    queryFn: () => get('/progress/goals'),
+    queryFn: () => get('/progress/goals').then(normalizeGoals),
   })
 export const useGoalMutation = () => {
   const client = useQueryClient()
