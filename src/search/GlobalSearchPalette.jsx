@@ -42,7 +42,7 @@ const GROUP_LABELS = {
   tasks: 'Tasks',
   history: 'Notes',
   projects: 'Projects',
-  labels: 'Labels',
+  labels: 'Categories',
   people: 'People',
   settings: 'Settings',
   actions: 'Quick actions',

@@ -28,6 +28,7 @@ import AdvancedOptionsSection, {
 } from './AdvancedOptionsSection'
 import AssigneePickerField from './AssigneePickerField'
 import AttachmentPickerField from './AttachmentPickerField'
+import CategoryPickerField from './CategoryPickerField'
 import {
   parseAssignees,
   parseDueDate,
@@ -37,7 +38,6 @@ import {
   parseRepeatV2,
 } from './CustomParsers'
 import DueDatePickerField from './DueDatePickerField'
-import LabelsPickerField from './LabelsPickerField'
 import NotificationPickerField from './NotificationPickerField'
 import PriorityPickerField from './PriorityPickerField'
 import RepeatPickerField from './RepeatPickerField'
@@ -271,6 +271,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
   const [description, setDescription] = useState(null)
   const [assignees, setAssignees] = useState([])
   const [labelsV2, setLabelsV2] = useState([])
+  const [categoryId, setCategoryId] = useState(null)
   const [frequency, setFrequency] = useState(null)
   // Lazy initializers: these read localStorage, which must not happen on
   // every render
@@ -1020,6 +1021,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
       assignStrategy: finalAssignStrategy,
       isRolling: false,
       labelsV2: labelsV2,
+      categoryId,
       priority: priority ? Number(priority) : 0,
       points: points > -1 ? points : null,
       deadlineOffset: deadlineOffset < 0 ? null : deadlineOffset,
@@ -1338,16 +1340,9 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                 currentUserId={userProfile?.id}
                 members={circleMembers?.res || []}
               />
-              <LabelsPickerField
-                emptyDisplay={pickerEmptyDisplay}
-                values={(labelsV2 || []).map(label => label.id)}
-                onChange={ids =>
-                  setLabelsV2(
-                    (userLabels || []).filter(label => ids.includes(label.id)),
-                  )
-                }
-                onClear={() => setLabelsV2([])}
-                labels={userLabels || []}
+              <CategoryPickerField
+                value={categoryId}
+                onChange={setCategoryId}
               />
               <AttachmentPickerField
                 attachments={attachments}

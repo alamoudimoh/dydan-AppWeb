@@ -29,11 +29,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCalendar } from '../../queries/CalendarQueries'
+import { useCategories } from '../../queries/CategoryQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { MarkChoreComplete } from '../../utils/Fetcher'
 import {
   addDays,
   dateKey,
+  filterByCategory,
   filterOccurrences,
   groupOccurrences,
   monthGrid,
@@ -102,6 +104,11 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
                 Projected
               </Chip>
             )}
+            {item.category && (
+              <Chip size='sm' variant='outlined' color='neutral'>
+                {item.category.name}
+              </Chip>
+            )}
             {item.meterUpdateReminder && (
               <Chip size='sm' color='info'>
                 Meter update
@@ -159,18 +166,25 @@ export default function CalendarView() {
   const range = [7, 14, 30].includes(Number(params.get('range')))
     ? Number(params.get('range'))
     : 7
-  const filter = ['all', 'tasks', 'maintenance', 'meter'].includes(
-    params.get('filter'),
+  const typeFilter = ['all', 'tasks', 'maintenance', 'meter'].includes(
+    params.get('type'),
   )
-    ? params.get('filter')
+    ? params.get('type')
     : 'all'
+  const categoryFilter = params.get('category') || 'all'
+  const { data: categories = [] } = useCategories()
   const grid = monthGrid(selected, Number(firstDayOfWeek) || 0)
   const fromKey = view === 'month' ? grid[0] : selected
   const toKey =
     view === 'month' ? addDays(grid[41], 1) : addDays(selected, range)
   const from = zonedMidnight(fromKey, timeZone)
   const to = zonedMidnight(toKey, timeZone)
-  const calendar = useCalendar({ from, to, filter })
+  const calendar = useCalendar({
+    from,
+    to,
+    filter: typeFilter,
+    category: categoryFilter,
+  })
   const [completing, setCompleting] = useState(null)
   const [actionError, setActionError] = useState('')
   const setState = updates => {
@@ -215,8 +229,18 @@ export default function CalendarView() {
     }
   }
   const raw = calendar.data?.res?.occurrences || []
-  const overdue = filterOccurrences(calendar.data?.res?.overdue || [], filter)
-  const visible = filterOccurrences(raw, filter)
+  const overdue = filterByCategory(
+    filterOccurrences(calendar.data?.res?.overdue || [], typeFilter),
+    categoryFilter,
+  )
+  const visible = filterByCategory(
+    filterOccurrences(raw, typeFilter),
+    categoryFilter,
+  )
+  const hasUncategorized = [
+    ...raw,
+    ...(calendar.data?.res?.overdue || []),
+  ].some(item => !item.category)
   const groups = groupOccurrences(visible, timeZone)
   const selectedItems = groups[selected] || []
   const weekdays = Array.from({ length: 7 }, (_, index) => {
@@ -300,11 +324,30 @@ export default function CalendarView() {
             </Select>
           )}
           <Select
-            aria-label='Calendar filter'
-            value={filter}
-            onChange={(_, value) => setState({ filter: value })}
+            aria-label='Category filter'
+            value={categoryFilter}
+            onChange={(_, value) => setState({ category: value })}
           >
             <Option value='all'>All</Option>
+            {[...categories]
+              .sort((a, b) => new Intl.Collator(locale).compare(a.name, b.name))
+              .map(category => (
+                <Option key={category.id} value={String(category.id)}>
+                  {category.name}
+                </Option>
+              ))}
+            {hasUncategorized && (
+              <Option value='uncategorized'>Uncategorized</Option>
+            )}
+          </Select>
+          <Select
+            aria-label='System type filter'
+            value={typeFilter}
+            onChange={(_, value) => setState({ type: value })}
+            size='sm'
+            variant='plain'
+          >
+            <Option value='all'>All types</Option>
             <Option value='tasks'>Tasks</Option>
             <Option value='maintenance'>Maintenance</Option>
             <Option value='meter'>Meter updates</Option>

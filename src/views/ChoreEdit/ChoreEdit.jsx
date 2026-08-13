@@ -71,6 +71,7 @@ import { getIconComponent } from '../../utils/ProjectIcons'
 import { getSafeBottomPadding } from '../../utils/SafeAreaUtils.js'
 import { generateUUID } from '../../utils/UUID'
 import { useProjectFilter } from '../Chores/hooks/useProjectFilter.js'
+import CategoryPickerField from '../components/CategoryPickerField.jsx'
 import LoadingComponent from '../components/Loading.jsx'
 import RichTextEditor from '../components/RichTextEditor.jsx'
 import SubTasks from '../components/SubTask.jsx'
@@ -123,6 +124,7 @@ const ChoreEdit = () => {
   const [frequencyMetadata, setFrequencyMetadata] = useState({})
   const [labels, setLabels] = useState([])
   const [labelsV2, setLabelsV2] = useState([])
+  const [categoryId, setCategoryId] = useState(null)
   const [priority, setPriority] = useState(0)
   const [points, setPoints] = useState(-1)
   const [requireApproval, setRequireApproval] = useState(false)
@@ -409,6 +411,7 @@ const ChoreEdit = () => {
       notification: isNotificable,
       labels: labels.map(l => l.name),
       labelsV2: labelsV2,
+      categoryId,
       subTasks: subTasks,
       notificationMetadata: notificationMetadata,
       thingTrigger: thingTrigger,
@@ -604,6 +607,7 @@ const ChoreEdit = () => {
       )
 
       setLabelsV2(data.res.labelsV2)
+      setCategoryId(data.res.categoryId || null)
 
       setPriority(data.res.priority)
       setAssignStrategy(
@@ -991,72 +995,11 @@ const ChoreEdit = () => {
         )}
 
         <Box mb={3}>
-          <Typography level='h4'>Labels</Typography>
+          <Typography level='h4'>Category</Typography>
           <Typography level='body-md'>
-            Things to remember about this task or to tag it
+            Organize this task without changing how it behaves.
           </Typography>
-          <Select
-            multiple
-            onChange={(event, newValue) => {
-              setLabelsV2(userLabels.filter(l => newValue.indexOf(l.name) > -1))
-            }}
-            value={labelsV2?.map(l => l.name)}
-            renderValue={selected => (
-              <Box sx={{ display: 'flex', gap: '0.25rem' }}>
-                {labelsV2.map(selectedOption => {
-                  return (
-                    <Chip
-                      variant='soft'
-                      color='primary'
-                      key={selectedOption.id}
-                      size='lg'
-                      sx={{
-                        background: selectedOption.color,
-                        color: getTextColorFromBackgroundColor(
-                          selectedOption.color,
-                        ),
-                      }}
-                    >
-                      {selectedOption.name}
-                    </Chip>
-                  )
-                })}
-              </Box>
-            )}
-            sx={{ minWidth: '15rem' }}
-            slotProps={{
-              listbox: {
-                sx: {
-                  width: '100%',
-                },
-              },
-            }}
-          >
-            {userLabels &&
-              userLabels.map(label => (
-                <Option key={label.id + label.name} value={label.name}>
-                  <div
-                    style={{
-                      width: '20 px',
-                      height: '20 px',
-                      borderRadius: '50%',
-                      background: label.color,
-                    }}
-                  />
-                  {label.name}
-                </Option>
-              ))}
-            <MenuItem
-              key={'addNewLabel'}
-              value={' New Label'}
-              onClick={() => {
-                setAddLabelModalOpen(true)
-              }}
-            >
-              <Add />
-              Add New Label
-            </MenuItem>
-          </Select>
+          <CategoryPickerField value={categoryId} onChange={setCategoryId} />
         </Box>
 
         <Box>

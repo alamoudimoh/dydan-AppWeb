@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 
 import { GetCalendar } from '../utils/Fetcher'
 
-export const useCalendar = ({ filter, from, to }) => {
+export const useCalendar = ({ category, filter, from, to }) => {
   const token = localStorage.getItem('token')
   return useQuery({
-    queryKey: ['calendar', token, from, to, filter],
+    queryKey: ['calendar', token, from, to, category, filter],
     queryFn: () => GetCalendar(from, to),
     enabled: Boolean(token && from && to),
     placeholderData: previous => previous,

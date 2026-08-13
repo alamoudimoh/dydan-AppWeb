@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   addDays,
   dateKey,
+  filterByCategory,
   filterOccurrences,
   groupOccurrences,
   monthGrid,
@@ -50,4 +51,20 @@ test('groups occurrences once and filters loaded results without requests', () =
   assert.equal(filterOccurrences(items, 'meter').length, 1)
   assert.equal(filterOccurrences(items, 'tasks').length, 1)
   assert.equal(addDays('2026-02-28', 1), '2026-03-01')
+})
+
+test('combines primary category and secondary system type filters', () => {
+  const items = [
+    { category: { id: 4, name: 'السيارة' }, meterSchedule: {} },
+    { category: { id: 4, name: 'السيارة' }, meterUpdateReminder: {} },
+    { category: { id: 7, name: 'Home' } },
+    {},
+  ]
+  assert.equal(filterByCategory(items, '4').length, 2)
+  assert.equal(
+    filterOccurrences(filterByCategory(items, '4'), 'maintenance').length,
+    1,
+  )
+  assert.equal(filterByCategory(items, 'uncategorized').length, 1)
+  assert.equal(filterByCategory(items, 'all').length, 4)
 })

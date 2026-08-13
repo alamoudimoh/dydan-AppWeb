@@ -8,15 +8,19 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
+
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
+import { useCategories } from '../../../queries/CategoryQueries'
 
-function CreateThingModal({ isOpen, onClose, onSave, currentThing }) {
+function CreateThingModal({ currentThing, isOpen, onClose, onSave }) {
   const { ResponsiveModal } = useResponsiveModal()
 
   const [name, setName] = useState(currentThing?.name || '')
   const [type, setType] = useState(currentThing?.type || 'number')
   const [state, setState] = useState(currentThing?.state || '')
+  const [categoryId, setCategoryId] = useState(currentThing?.categoryId || null)
+  const { data: categories = [] } = useCategories()
   const [errors, setErrors] = useState({})
   useEffect(() => {
     if (type === 'boolean') {
@@ -54,7 +58,13 @@ function CreateThingModal({ isOpen, onClose, onSave, currentThing }) {
     if (!isValid()) {
       return
     }
-    onSave({ name, type, id: currentThing?.id, state: state || null })
+    onSave({
+      name,
+      type,
+      id: currentThing?.id,
+      state: state || null,
+      categoryId,
+    })
     onClose()
   }
 
@@ -86,6 +96,25 @@ function CreateThingModal({ isOpen, onClose, onSave, currentThing }) {
           sx={{ minWidth: 300 }}
         />
         <FormHelperText color='danger'>{errors.name}</FormHelperText>
+      </FormControl>
+      <FormControl>
+        <Typography>Category</Typography>
+        <Select
+          value={categoryId}
+          placeholder={
+            categories.length ? 'Select category' : 'No categories yet'
+          }
+          onChange={(_, value) => setCategoryId(value)}
+        >
+          <Option value={null}>Uncategorized</Option>
+          {[...categories]
+            .sort((a, b) => new Intl.Collator().compare(a.name, b.name))
+            .map(category => (
+              <Option key={category.id} value={category.id}>
+                {category.name}
+              </Option>
+            ))}
+        </Select>
       </FormControl>
       <FormControl>
         <Typography>Type</Typography>

@@ -608,6 +608,32 @@ const DeleteLabel = id => {
     headers: HEADERS(),
   })
 }
+const GetCategories = async (includeArchived = false) => {
+  const resp = await Fetch(`/categories?includeArchived=${includeArchived}`, {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+  if (!resp.ok) throw new Error('Unable to load categories')
+  return resp.json()
+}
+const CreateCategory = category =>
+  Fetch('/categories', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(category),
+  })
+const UpdateCategory = category =>
+  Fetch('/categories', {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(category),
+  })
+const SetCategoryArchived = (id, archived) =>
+  Fetch(`/categories/${id}/archive`, {
+    method: 'PATCH',
+    headers: HEADERS(),
+    body: JSON.stringify({ archived }),
+  })
 
 const ChangePassword = (verifiticationCode, password) => {
   const baseURL = apiManager.getApiURL()
@@ -1096,6 +1122,7 @@ export {
   ConfirmMFA,
   CreateAsset,
   CreateBackup,
+  CreateCategory,
   CreateChildUser,
   CreateChore,
   createChore,
@@ -1125,6 +1152,7 @@ export {
   GetAsset,
   GetAssets,
   GetCalendar,
+  GetCategories,
   GetChildUsers,
   GetChoreAttachments,
   GetChoreByID,
@@ -1181,6 +1209,7 @@ export {
   SaveChore,
   SaveMeter,
   SaveThing,
+  SetCategoryArchived,
   SetupMFA,
   SignAssetURL,
   signUp,
@@ -1191,6 +1220,7 @@ export {
   UnArchiveChore,
   UndoChoreAction,
   UnregisterDeviceToken,
+  UpdateCategory,
   UpdateChildPassword,
   UpdateChoreAssignee,
   UpdateChoreHistory,

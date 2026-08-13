@@ -21,6 +21,7 @@ import LoginView from '../views/Authorization/LoginView'
 import SignupView from '../views/Authorization/Signup'
 import UpdatePasswordView from '../views/Authorization/UpdatePasswordView'
 import CalendarView from '../views/Calendar/CalendarView'
+import CategoryView from '../views/Categories/CategoryView'
 import ChoreView from '../views/ChoreEdit/ChoreView'
 import ArchivedTasks from '../views/Chores/ArchivedTasks'
 import MyChores from '../views/Chores/MyChores'
@@ -29,7 +30,6 @@ import NotFound from '../views/components/NotFound'
 import Dashboard from '../views/Dashboard/Dashboard'
 import FilterView from '../views/Filters/FilterView'
 import ChoreHistory from '../views/History/ChoreHistory'
-import LabelView from '../views/Labels/LabelView'
 import Landing from '../views/Landing/Landing'
 import MaintenanceView, {
   AssetDetail,
@@ -292,7 +292,7 @@ const Router = createBrowserRouter([
       },
       {
         path: 'labels/',
-        element: <LabelView />,
+        element: <CategoryView />,
       },
       {
         path: 'projects/',

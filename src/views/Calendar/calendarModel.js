@@ -71,3 +71,9 @@ export const filterOccurrences = (items, filter) => {
     )
   return items
 }
+
+export const filterByCategory = (items, category) => {
+  if (!category || category === 'all') return items
+  if (category === 'uncategorized') return items.filter(item => !item.category)
+  return items.filter(item => String(item.category?.id) === String(category))
+}

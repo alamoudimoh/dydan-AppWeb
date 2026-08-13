@@ -94,7 +94,7 @@ const NavBar = () => {
     },
     {
       to: 'labels',
-      label: t('navigation.labels'),
+      label: 'Categories',
       icon: <ListAlt />,
     },
     {

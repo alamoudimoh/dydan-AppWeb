@@ -102,6 +102,11 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
           </Typography>
         </Button>
         <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
+          {chore.category && (
+            <Chip size='sm' variant='outlined' color='neutral'>
+              {chore.category.name}
+            </Chip>
+          )}
           {overdue && (
             <Typography level='body-sm' color='danger'>
               Overdue
