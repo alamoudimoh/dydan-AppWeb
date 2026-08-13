@@ -1,7 +1,6 @@
 import { AddRounded } from '@mui/icons-material'
 import {
   Button,
-  FormControl,
   FormLabel,
   Input,
   Option,
@@ -9,12 +8,16 @@ import {
   Stack,
   Typography,
 } from '@mui/joy'
+import PropTypes from 'prop-types'
 import { useState } from 'react'
 
+import { Z_INDEX } from '../../constants/zIndex'
 import {
   useCategories,
   useCategoryActions,
 } from '../../queries/CategoryQueries'
+
+const UNCATEGORIZED_VALUE = 'uncategorized'
 
 const CategoryPickerField = ({ onChange, value }) => {
   const { data: categories = [] } = useCategories()
@@ -26,6 +29,8 @@ const CategoryPickerField = ({ onChange, value }) => {
   const sorted = [...categories].sort((a, b) =>
     collator.compare(a.name, b.name),
   )
+  const selectedId =
+    value === null || value === undefined ? null : Number(value)
   const save = async () => {
     const trimmed = name.trim()
     if (!trimmed) return setError('Category name is required')
@@ -36,7 +41,7 @@ const CategoryPickerField = ({ onChange, value }) => {
       const body = await response.json()
       if (!response.ok)
         throw new Error(body.error || 'Unable to create category')
-      onChange(body.res.id)
+      onChange(Number(body.res.id))
       setName('')
       setCreating(false)
       setError('')
@@ -45,16 +50,31 @@ const CategoryPickerField = ({ onChange, value }) => {
     }
   }
   return (
-    <FormControl>
+    <Stack spacing={1}>
       <FormLabel>Category</FormLabel>
       <Select
-        value={value || null}
+        aria-label='Category'
+        value={selectedId ?? UNCATEGORIZED_VALUE}
         placeholder={sorted.length ? 'Select category' : 'No categories yet'}
-        onChange={(_, next) => onChange(next)}
+        onChange={(_, next) =>
+          onChange(
+            next === UNCATEGORIZED_VALUE || next === null || next === undefined
+              ? null
+              : Number(next),
+          )
+        }
+        slotProps={{
+          listbox: {
+            sx: {
+              maxWidth: 'calc(100vw - 24px)',
+              zIndex: Z_INDEX.MODAL_POPOVER,
+            },
+          },
+        }}
       >
-        <Option value={null}>Uncategorized</Option>
+        <Option value={UNCATEGORIZED_VALUE}>Uncategorized</Option>
         {sorted.map(category => (
-          <Option key={category.id} value={category.id}>
+          <Option key={category.id} value={Number(category.id)}>
             {category.name}
           </Option>
         ))}
@@ -96,8 +116,13 @@ const CategoryPickerField = ({ onChange, value }) => {
           {error}
         </Typography>
       )}
-    </FormControl>
+    </Stack>
   )
+}
+
+CategoryPickerField.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 }
 
 export default CategoryPickerField
