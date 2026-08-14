@@ -38,8 +38,13 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useUserProfile } from '../../queries/UserQueries'
+import { useCircleMembers } from '../../queries/UserQueries'
 import { isPlusAccount } from '../../utils/Helpers'
-import { isParentUser } from '../../utils/UserHelpers'
+import {
+  hasPermission,
+  resolveEffectiveRole,
+  SETTINGS_PERMISSIONS,
+} from '../../utils/PermissionModel'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 
@@ -47,8 +52,13 @@ const SettingsOverview = () => {
   const { t } = useTranslation('settings')
   const navigate = useNavigate()
   const { data: userProfile } = useUserProfile()
+  const { data: circleMembersData } = useCircleMembers()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const effectiveRole = resolveEffectiveRole(
+    userProfile,
+    circleMembersData?.res || [],
+  )
 
   const settingsCards = [
     {
@@ -154,25 +164,11 @@ const SettingsOverview = () => {
     navigate(`/settings/${setting.id}`)
   }
 
-  // Filter settings based on user type
   const getAvailableSettings = () => {
-    const parentOnlySettings = [
-      'children',
-      'mfa',
-      'apitokens',
-      'circle',
-      'account',
-    ]
-
-    if (isParentUser(userProfile)) {
-      // Parent users can access all settings
-      return settingsCards
-    } else {
-      // Child users can only access basic settings
-      return settingsCards.filter(
-        setting => !parentOnlySettings.includes(setting.id),
-      )
-    }
+    return settingsCards.filter(setting => {
+      const permission = SETTINGS_PERMISSIONS[setting.id]
+      return !permission || hasPermission(effectiveRole, permission)
+    })
   }
 
   return (
@@ -192,130 +188,132 @@ const SettingsOverview = () => {
       </Box>
 
       {/* Upgrade Card - Only show if user is not a Plus member */}
-      {userProfile && !isPlusAccount(userProfile) && (
-        <Box sx={{ mb: 3 }}>
-          <Card
-            variant='outlined'
-            sx={{
-              cursor: 'pointer',
-              transition: 'all 0.2s ease-in-out',
-              backgroundColor: 'var(--taskier-ink)',
-              border: 'none',
-              color: 'white',
-              '&:hover': {
-                boxShadow: 'xl',
-                transform: 'translateY(-3px)',
-              },
-            }}
-            onClick={() => navigate('/settings/account')}
-          >
-            <CardContent sx={{ p: { xs: 1.5, md: 3 } }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexDirection: { xs: 'column', md: 'row' },
-                  gap: { xs: 1.5, md: 2 },
-                  textAlign: { xs: 'center', md: 'left' },
-                }}
-              >
+      {userProfile &&
+        hasPermission(effectiveRole, SETTINGS_PERMISSIONS.account) &&
+        !isPlusAccount(userProfile) && (
+          <Box sx={{ mb: 3 }}>
+            <Card
+              variant='outlined'
+              sx={{
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                backgroundColor: 'var(--taskier-ink)',
+                border: 'none',
+                color: 'white',
+                '&:hover': {
+                  boxShadow: 'xl',
+                  transform: 'translateY(-3px)',
+                },
+              }}
+              onClick={() => navigate('/settings/account')}
+            >
+              <CardContent sx={{ p: { xs: 1.5, md: 3 } }}>
                 <Box
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
                     flexDirection: { xs: 'column', md: 'row' },
-                    gap: { xs: 1, md: 3 },
-                    width: { xs: '100%', md: 'auto' },
+                    gap: { xs: 1.5, md: 2 },
+                    textAlign: { xs: 'center', md: 'left' },
                   }}
                 >
-                  <Avatar
+                  <Box
                     sx={{
-                      '--Avatar-size': { xs: '36px', md: '60px' },
-                      background: 'var(--joy-palette-neutral-800)',
-                      backdropFilter: 'blur(10px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexDirection: { xs: 'column', md: 'row' },
+                      gap: { xs: 1, md: 3 },
+                      width: { xs: '100%', md: 'auto' },
                     }}
                   >
-                    <Star
-                      sx={{ fontSize: { xs: 18, md: 30 }, color: 'white' }}
-                    />
-                  </Avatar>
-                  <Box>
-                    <Typography
-                      level='title-lg'
+                    <Avatar
                       sx={{
-                        color: 'white',
-                        mb: { xs: 0.25, md: 0.5 },
-                        fontWeight: 'bold',
-                        fontSize: { xs: '0.95rem', md: '1.25rem' },
+                        '--Avatar-size': { xs: '36px', md: '60px' },
+                        background: 'var(--joy-palette-neutral-800)',
+                        backdropFilter: 'blur(10px)',
                       }}
                     >
-                      {t('overview.upgrade.title')}
-                    </Typography>
-                    <Typography
-                      level='body-md'
-                      sx={{
-                        color: 'var(--joy-palette-neutral-100)',
-                        mb: { xs: 0.5, md: 1 },
-                        fontSize: { xs: '0.75rem', md: '1rem' },
-                        lineHeight: { xs: 1.3, md: 1.5 },
-                      }}
-                    >
-                      {t('overview.upgrade.description')}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: { xs: 'none', sm: 'flex' },
-                        flexWrap: 'wrap',
-                        gap: 1,
-                        fontSize: '0.875rem',
-                        color: 'var(--joy-palette-neutral-200)',
-                      }}
-                    >
-                      <span>• {t('overview.upgrade.features.richText')}</span>
-                      <span>
-                        • {t('overview.upgrade.features.notifications')}
-                      </span>
-                      <span>
-                        • {t('overview.upgrade.features.apiIntegrations')}
-                      </span>
-                      <span>
-                        • {t('overview.upgrade.features.advancedAutomation')}
-                      </span>
+                      <Star
+                        sx={{ fontSize: { xs: 18, md: 30 }, color: 'white' }}
+                      />
+                    </Avatar>
+                    <Box>
+                      <Typography
+                        level='title-lg'
+                        sx={{
+                          color: 'white',
+                          mb: { xs: 0.25, md: 0.5 },
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.95rem', md: '1.25rem' },
+                        }}
+                      >
+                        {t('overview.upgrade.title')}
+                      </Typography>
+                      <Typography
+                        level='body-md'
+                        sx={{
+                          color: 'var(--joy-palette-neutral-100)',
+                          mb: { xs: 0.5, md: 1 },
+                          fontSize: { xs: '0.75rem', md: '1rem' },
+                          lineHeight: { xs: 1.3, md: 1.5 },
+                        }}
+                      >
+                        {t('overview.upgrade.description')}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: { xs: 'none', sm: 'flex' },
+                          flexWrap: 'wrap',
+                          gap: 1,
+                          fontSize: '0.875rem',
+                          color: 'var(--joy-palette-neutral-200)',
+                        }}
+                      >
+                        <span>• {t('overview.upgrade.features.richText')}</span>
+                        <span>
+                          • {t('overview.upgrade.features.notifications')}
+                        </span>
+                        <span>
+                          • {t('overview.upgrade.features.apiIntegrations')}
+                        </span>
+                        <span>
+                          • {t('overview.upgrade.features.advancedAutomation')}
+                        </span>
+                      </Box>
                     </Box>
                   </Box>
+                  <Button
+                    variant='solid'
+                    size='sm'
+                    sx={{
+                      bgcolor: 'var(--joy-palette-neutral-800)',
+                      color: 'white',
+                      border: '1px solid var(--joy-palette-neutral-500)',
+                      backdropFilter: 'blur(10px)',
+                      px: { xs: 1.5, md: 3 },
+                      py: { xs: 0.5, md: 1.5 },
+                      fontWeight: 'bold',
+                      minWidth: { xs: '80px', md: '120px' },
+                      width: { xs: '100%', md: 'auto' },
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      '&:hover': {
+                        bgcolor: 'var(--joy-palette-neutral-700)',
+                        transform: 'scale(1.05)',
+                      },
+                    }}
+                    onClick={e => {
+                      e.stopPropagation()
+                      navigate('/settings/account')
+                    }}
+                  >
+                    {t('overview.upgrade.button')}
+                  </Button>
                 </Box>
-                <Button
-                  variant='solid'
-                  size='sm'
-                  sx={{
-                    bgcolor: 'var(--joy-palette-neutral-800)',
-                    color: 'white',
-                    border: '1px solid var(--joy-palette-neutral-500)',
-                    backdropFilter: 'blur(10px)',
-                    px: { xs: 1.5, md: 3 },
-                    py: { xs: 0.5, md: 1.5 },
-                    fontWeight: 'bold',
-                    minWidth: { xs: '80px', md: '120px' },
-                    width: { xs: '100%', md: 'auto' },
-                    fontSize: { xs: '0.75rem', md: '0.875rem' },
-                    '&:hover': {
-                      bgcolor: 'var(--joy-palette-neutral-700)',
-                      transform: 'scale(1.05)',
-                    },
-                  }}
-                  onClick={e => {
-                    e.stopPropagation()
-                    navigate('/settings/account')
-                  }}
-                >
-                  {t('overview.upgrade.button')}
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-      )}
+              </CardContent>
+            </Card>
+          </Box>
+        )}
 
       <Box sx={{ mx: 'auto' }}>
         <List

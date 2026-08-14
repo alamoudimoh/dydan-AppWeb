@@ -31,6 +31,11 @@ import {
   LeaveCircle,
   UpdateMemberRole,
 } from '../../utils/Fetcher'
+import {
+  hasPermission,
+  PERMISSIONS,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
@@ -46,7 +51,6 @@ const CircleSettings = () => {
   const [circleMemberRequests, setCircleMemberRequests] = useState([])
   const [circleInviteCode, setCircleInviteCode] = useState('')
   const [circleMembers, setCircleMembers] = useState([])
-  const [isAdmin, setIsAdmin] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [confirmModalConfig, setConfirmModalConfig] = useState({})
@@ -109,14 +113,10 @@ const CircleSettings = () => {
     })
   }, [])
 
-  useEffect(() => {
-    if (userProfile && userProfile.id) {
-      const isUserAdmin = circleMembers.some(
-        member => member.userId === userProfile.id && member.role === 'admin',
-      )
-      setIsAdmin(isUserAdmin)
-    }
-  }, [circleMembers, userProfile])
+  const canManageCircle = hasPermission(
+    resolveEffectiveRole(userProfile, circleMembers),
+    PERMISSIONS.MANAGE_CIRCLE,
+  )
 
   const inviteCode = userCircles[0]?.invite_code
   const apiURL = new URL(apiClient.getApiURL(), window.location.origin)
@@ -162,9 +162,9 @@ const CircleSettings = () => {
         </Typography>
         <Box>
           <Typography level='title-sm' sx={{ mb: 1 }}>
-          {userCircles[0]?.userRole === 'member'
-            ? `You part of ${userCircles[0]?.name} `
-            : `You circle code is:`}
+            {userCircles[0]?.userRole === 'member'
+              ? `You part of ${userCircles[0]?.name} `
+              : `You circle code is:`}
           </Typography>
           <Input
             value={inviteCode}
@@ -266,7 +266,7 @@ const CircleSettings = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {member.userId !== userProfile.id && isAdmin && (
+                {member.userId !== userProfile.id && canManageCircle && (
                   <Select
                     size='sm'
                     sx={{ mr: 1 }}
@@ -340,7 +340,7 @@ const CircleSettings = () => {
                     ))}
                   </Select>
                 )}
-                {isAdmin &&
+                {canManageCircle &&
                   member.userId !== userProfile.id &&
                   member.isActive && (
                     <Button

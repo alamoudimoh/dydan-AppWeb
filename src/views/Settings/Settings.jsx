@@ -21,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import RealTimeSettings from '../../components/RealTimeSettings'
 import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -41,6 +42,11 @@ import {
   UpdatePassword,
 } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
+import {
+  hasPermission,
+  PERMISSIONS,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import NativeCancelSubscriptionModal from '../Modals/Inputs/NativeCancelSubscriptionModal'
@@ -68,7 +74,6 @@ const Settings = () => {
   const [circleMembers, setCircleMembers] = useState([])
   const [webhookURL, setWebhookURL] = useState(null)
   const [webhookError, setWebhookError] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -150,15 +155,10 @@ const Settings = () => {
     configurePurchases()
   }, [userProfile])
 
-  // useEffect when circleMembers and userprofile:
-  useEffect(() => {
-    if (userProfile && userProfile.id) {
-      const isUserAdmin = circleMembers.some(
-        member => member.userId === userProfile.id && member.role === 'admin',
-      )
-      setIsAdmin(isUserAdmin)
-    }
-  }, [circleMembers, userProfile])
+  const canManageCircle = hasPermission(
+    resolveEffectiveRole(userProfile, circleMembers),
+    PERMISSIONS.MANAGE_CIRCLE,
+  )
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -347,14 +347,13 @@ const Settings = () => {
                   </Typography>
                 ) : (
                   <Typography level='body-sm' color='danger'>
-                    Request to join{' '}
-                    {fmt.date(member.updatedAt)}
+                    Request to join {fmt.date(member.updatedAt)}
                   </Typography>
                 )}
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {member.userId !== userProfile.id && isAdmin && (
+                {member.userId !== userProfile.id && canManageCircle && (
                   <Select
                     size='sm'
                     sx={{ mr: 1 }}
@@ -428,7 +427,7 @@ const Settings = () => {
                     ))}
                   </Select>
                 )}
-                {isAdmin &&
+                {canManageCircle &&
                   member.userId !== userProfile.id &&
                   member.isActive && (
                     <Button
@@ -718,9 +717,8 @@ const Settings = () => {
             onClick={async () => {
               if (Capacitor.isNativePlatform()) {
                 try {
-                  const { RevenueCatUI } = await import(
-                    '@revenuecat/purchases-capacitor-ui'
-                  )
+                  const { RevenueCatUI } =
+                    await import('@revenuecat/purchases-capacitor-ui')
 
                   const offering = await Purchases.getOfferings()
                   await RevenueCatUI.presentPaywall({

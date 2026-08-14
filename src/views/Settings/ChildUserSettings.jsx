@@ -13,8 +13,13 @@ import {
 } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+
 import useConfirmationModal from '../../hooks/useConfirmationModal'
-import { useChildUsers, useUserProfile } from '../../queries/UserQueries'
+import {
+  useChildUsers,
+  useCircleMembers,
+  useUserProfile,
+} from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import {
   CreateChildUser,
@@ -22,6 +27,11 @@ import {
   UpdateChildPassword,
 } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
+import {
+  hasPermission,
+  PERMISSIONS,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import CreateChildUserModal from '../Modals/Inputs/CreateChildUserModal'
 import PasswordChangeModal from '../Modals/Inputs/PasswordChangeModal'
@@ -29,6 +39,7 @@ import SettingsLayout from './SettingsLayout'
 
 const ChildUserSettings = () => {
   const { data: userProfile } = useUserProfile()
+  const { data: circleMembersData } = useCircleMembers()
   const { data: childUsers, isLoading, refetch } = useChildUsers()
   const { showNotification } = useNotification()
   const queryClient = useQueryClient()
@@ -39,8 +50,10 @@ const ChildUserSettings = () => {
   const [selectedChildId, setSelectedChildId] = useState(null)
   const [deletingChildId, setDeletingChildId] = useState(null)
 
-  // Check if user is a parent (not a child user)
-  const isParentUser = userProfile?.userType === 0 && !userProfile?.parentUserId
+  const canManageSubaccounts = hasPermission(
+    resolveEffectiveRole(userProfile, circleMembersData?.res || []),
+    PERMISSIONS.MANAGE_SUBACCOUNTS,
+  )
 
   const handleCreateChild = async childData => {
     try {
@@ -129,7 +142,7 @@ const ChildUserSettings = () => {
     )
   }
 
-  if (!isParentUser) {
+  if (!canManageSubaccounts) {
     return (
       <SettingsLayout title='Sub Account Management'>
         <Typography level='body-md' color='warning'>

@@ -10,6 +10,7 @@ import {
 } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+
 import RealTimeSettings from '../../components/RealTimeSettings'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
@@ -22,6 +23,11 @@ import {
   setOfflineFeatureEnabled,
   subscribeToOfflineFeature,
 } from '../../utils/OfflineFeatureToggle'
+import {
+  hasPermission,
+  PERMISSIONS,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import { syncEngine } from '../../utils/SyncEngine'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
@@ -34,7 +40,6 @@ const AdvancedSettings = () => {
   const [userCircles, setUserCircles] = useState([])
   const [webhookURL, setWebhookURL] = useState(null)
   const [webhookError, setWebhookError] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [offlineEnabled, setOfflineEnabled] = useState(
     isOfflineFeatureEnabled(),
   )
@@ -55,12 +60,16 @@ const AdvancedSettings = () => {
     })
   }, [])
 
-  // Check if user is admin based on userRole from the circle data
-  useEffect(() => {
-    if (userCircles.length > 0) {
-      setIsAdmin(userCircles[0]?.userRole === 'admin')
-    }
-  }, [userCircles])
+  const canManageCircle = hasPermission(
+    resolveEffectiveRole(userProfile, [
+      {
+        userId: userProfile?.id,
+        role: userCircles[0]?.userRole,
+        isActive: true,
+      },
+    ]),
+    PERMISSIONS.MANAGE_CIRCLE,
+  )
 
   const disableOfflineSupport = async () => {
     setOfflineLoading(true)
@@ -177,7 +186,7 @@ const AdvancedSettings = () => {
         </FormControl>
 
         {/* Webhook Settings - Only show for admins */}
-        {isAdmin && (
+        {canManageCircle && (
           <>
             <Typography level='title-lg' mt={2}>
               Webhook Integration

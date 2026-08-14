@@ -10,10 +10,12 @@ import CircleSettings from '@/views/Settings/CircleSettings'
 import DeveloperSettings from '@/views/Settings/DeveloperSettings'
 import Settings from '@/views/Settings/Settings'
 import SettingsOverview from '@/views/Settings/SettingsOverview'
+import SettingsPermissionGuard from '@/views/Settings/SettingsPermissionGuard'
 import SettingsRoutes from '@/views/Settings/SettingsRoutes'
 import ThemeSettings from '@/views/Settings/ThemeSettings'
 
 import GlobalSearchPage from '../search/GlobalSearchPage'
+import { PERMISSIONS } from '../utils/PermissionModel'
 import AuthenticationLoading from '../views/Authorization/Authenticating'
 import ForgotPasswordView from '../views/Authorization/ForgotPasswordView'
 import LoginSettings from '../views/Authorization/LoginSettings'
@@ -62,6 +64,13 @@ import ThingsView from '../views/Things/ThingsView'
 import TimerDetails from '../views/Timer/TimerDetails'
 import UserActivities from '../views/User/UserActivities'
 import UserPoints from '../views/User/UserPoints'
+
+const restrictedSetting = (permission, element) => (
+  <SettingsPermissionGuard permission={permission}>
+    {element}
+  </SettingsPermissionGuard>
+)
+
 const Router = createBrowserRouter([
   {
     path: '/',
@@ -82,7 +91,10 @@ const Router = createBrowserRouter([
           },
           {
             path: 'detailed',
-            element: <Settings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <Settings />,
+            ),
           },
           {
             path: 'profile',
@@ -90,15 +102,24 @@ const Router = createBrowserRouter([
           },
           {
             path: 'circle',
-            element: <CircleSettings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <CircleSettings />,
+            ),
           },
           {
             path: 'account',
-            element: <AccountSettings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <AccountSettings />,
+            ),
           },
           {
             path: 'subaccounts',
-            element: <ChildUserSettings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_SUBACCOUNTS,
+              <ChildUserSettings />,
+            ),
           },
           {
             path: 'notifications',
@@ -106,11 +127,17 @@ const Router = createBrowserRouter([
           },
           {
             path: 'mfa',
-            element: <MFASettings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <MFASettings />,
+            ),
           },
           {
             path: 'apitokens',
-            element: <APITokenSettings />,
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <APITokenSettings />,
+            ),
           },
           {
             path: 'storage',

@@ -9,7 +9,7 @@ import {
 } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import imageCompression from 'browser-image-compression'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Cropper from 'react-easy-crop'
 import { useTranslation } from 'react-i18next'
 
@@ -21,24 +21,21 @@ import { apiClient } from '../../utils/ApiClient'
 import { UpdateUserDetails } from '../../utils/Fetcher'
 import { resolvePhotoURL } from '../../utils/Helpers'
 import { getCroppedImg } from '../../utils/imageCropUtils'
+import { initialProfileForm } from '../../utils/ProfileFormState'
 import {
-  browserTimezone,
   isValidIanaTimezone,
   supportedTimezones,
 } from '../../utils/SchedulingDate'
+import LoadingComponent from '../components/Loading'
 import SettingsLayout from './SettingsLayout'
 
-const ProfileSettings = () => {
+const ProfileSettingsForm = ({ refetchUserProfile, userProfile }) => {
   const { t } = useTranslation('settings')
   const queryClient = useQueryClient()
-  const { data: userProfile, refetch: refetchUserProfile } = useUserProfile()
   const { showError, showSuccess } = useNotification()
-  const [displayName, setDisplayName] = useState(userProfile?.displayName || '')
-  const [timezone, setTimezone] = useState(
-    isValidIanaTimezone(userProfile?.timezone)
-      ? userProfile.timezone
-      : browserTimezone(),
-  )
+  const initialForm = initialProfileForm(userProfile)
+  const [displayName, setDisplayName] = useState(initialForm.displayName)
+  const [timezone, setTimezone] = useState(initialForm.timezone)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const fileInputRef = useRef()
@@ -50,12 +47,6 @@ const ProfileSettings = () => {
 
   // Get available timezones
   const timezones = supportedTimezones()
-
-  useEffect(() => {
-    if (isValidIanaTimezone(userProfile?.timezone)) {
-      setTimezone(userProfile.timezone)
-    }
-  }, [userProfile?.timezone])
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -303,6 +294,20 @@ const ProfileSettings = () => {
         </Box>
       </div>
     </SettingsLayout>
+  )
+}
+
+const ProfileSettings = () => {
+  const { data: userProfile, isLoading, refetch } = useUserProfile()
+
+  if (isLoading || !userProfile) return <LoadingComponent />
+
+  return (
+    <ProfileSettingsForm
+      key={userProfile.id}
+      userProfile={userProfile}
+      refetchUserProfile={refetch}
+    />
   )
 }
 
