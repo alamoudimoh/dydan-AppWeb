@@ -71,5 +71,17 @@
       "reset": "Reset Timer",
       "delete": "Delete Session"
     }
+  },
+  "choreLoadState": {
+    "notFoundTitle": "Task not found",
+    "notFoundDescription": "This task may have been deleted or the link is no longer valid.",
+    "forbiddenTitle": "You can't open this task",
+    "forbiddenDescription": "It may belong to another Circle or your access changed.",
+    "networkTitle": "Couldn't load this task",
+    "networkDescription": "Check your connection and try again.",
+    "errorTitle": "Couldn't load this task",
+    "errorDescription": "Something went wrong while loading task details.",
+    "retry": "Try again",
+    "backToTasks": "Back to tasks"
   }
 }

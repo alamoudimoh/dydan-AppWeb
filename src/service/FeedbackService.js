@@ -1,7 +1,13 @@
-import { InAppReview } from '@capacitor-community/in-app-review'
 import { Capacitor } from '@capacitor/core'
 import { Device } from '@capacitor/device'
 import { Preferences } from '@capacitor/preferences'
+import { InAppReview } from '@capacitor-community/in-app-review'
+
+import {
+  APP_REPORT_SOURCE,
+  FEEDBACK_ISSUES_NEW_URL,
+  TASKIER_APP_REPO,
+} from '../config/ReportDestinations.js'
 import { isOfficialDonetickInstance } from '../utils/FeatureToggle'
 
 const STATE_KEY = 'feedbackState'
@@ -17,7 +23,7 @@ const APP_STORE_URL =
   'https://apps.apple.com/app/apple-store/id6742807441?pt=127258663&ct=website&mt=8'
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.donetick.app'
-const GITHUB_URL = 'https://github.com/donetick/donetick'
+const GITHUB_URL = TASKIER_APP_REPO
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -348,10 +354,10 @@ export const SUBMIT_RESULT = {
  * see and edit it before anything is published.
  */
 export const buildGithubIssueUrl = ({
-  sentiment,
   category,
-  message,
   context,
+  message,
+  sentiment,
 }) => {
   const labelFor = {
     bugs: 'bug',
@@ -388,7 +394,7 @@ export const buildGithubIssueUrl = ({
     '</details>',
   ].join('\n')
 
-  return `${GITHUB_URL}/issues/new?title=${encodeURIComponent(
+  return `${FEEDBACK_ISSUES_NEW_URL}?title=${encodeURIComponent(
     title,
   )}&body=${encodeURIComponent(body)}`
 }
@@ -402,33 +408,36 @@ export const buildGithubIssueUrl = ({
  * pre-filled GitHub issue URL to send the user to instead.
  */
 export const submitFeedback = async ({
-  sentiment,
   category,
-  message,
   feature,
+  message,
+  sentiment,
   userProfile,
 }) => {
   const context = await collectFeedbackContext({ feature, userProfile })
   const payload = {
-    source: 'donetick-app',
+    source: APP_REPORT_SOURCE,
     sentiment,
     category: category || null,
     message: message?.trim() || null,
     context,
   }
+  const fallback = () => ({
+    githubUrl: buildGithubIssueUrl({ sentiment, category, message, context }),
+  })
 
   // Enforced here rather than only in the UI so no future caller can leak a
   // self-hosted user's feedback to the hosted relay.
   if (context.hosting !== 'cloud') {
     return {
       result: SUBMIT_RESULT.SELF_HOSTED,
-      githubUrl: buildGithubIssueUrl({ sentiment, category, message, context }),
+      ...fallback(),
     }
   }
 
   if (!WEBHOOK_URL) {
     console.info('FeedbackService: no webhook configured, feedback:', payload)
-    return { result: SUBMIT_RESULT.UNCONFIGURED }
+    return { result: SUBMIT_RESULT.UNCONFIGURED, ...fallback() }
   }
 
   if (isRawChatWebhook(WEBHOOK_URL)) {
@@ -440,7 +449,7 @@ export const submitFeedback = async ({
         'workers/feedback and point the variable at the Worker instead.',
       payload,
     )
-    return { result: SUBMIT_RESULT.MISCONFIGURED }
+    return { result: SUBMIT_RESULT.MISCONFIGURED, ...fallback() }
   }
 
   try {
@@ -449,12 +458,13 @@ export const submitFeedback = async ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    return {
-      result: response.ok ? SUBMIT_RESULT.SENT : SUBMIT_RESULT.FAILED,
+    if (response.ok) {
+      return { result: SUBMIT_RESULT.SENT }
     }
+    return { result: SUBMIT_RESULT.FAILED, ...fallback() }
   } catch (error) {
     console.warn('FeedbackService: submission failed', error)
-    return { result: SUBMIT_RESULT.FAILED }
+    return { result: SUBMIT_RESULT.FAILED, ...fallback() }
   }
 }
 

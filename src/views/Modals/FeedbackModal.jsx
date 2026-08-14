@@ -1,4 +1,5 @@
 import { Browser } from '@capacitor/browser'
+import { Capacitor } from '@capacitor/core'
 import { Android, Apple, Favorite, GitHub } from '@mui/icons-material'
 import {
   Box,
@@ -15,6 +16,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+
 import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
 import { useUserProfile } from '../../queries/UserQueries'
 import {
@@ -24,10 +26,9 @@ import {
   requestStoreReview,
   SENTIMENTS,
   storeLinks,
-  submitFeedback,
   SUBMIT_RESULT,
+  submitFeedback,
 } from '../../service/FeedbackService'
-import { Capacitor } from '@capacitor/core'
 
 const STEP = {
   SENTIMENT: 'sentiment',
@@ -35,6 +36,7 @@ const STEP = {
   THANKS: 'thanks',
   WEB_REVIEW: 'webReview',
   GITHUB: 'github',
+  DELIVERY_FAILED: 'deliveryFailed',
 }
 
 // Native webviews swallow target="_blank"; route through the system browser.
@@ -57,7 +59,7 @@ const SENTIMENT_OPTIONS = [
  * dialog (or star links on web); anything else collects structured feedback
  * and never asks for a review.
  */
-const FeedbackModal = ({ open, onClose, onDismiss }) => {
+const FeedbackModal = ({ onClose, onDismiss, open }) => {
   const { t } = useTranslation()
   const { ResponsiveModal } = useResponsiveModal()
   const { data: userProfile } = useUserProfile()
@@ -70,6 +72,7 @@ const FeedbackModal = ({ open, onClose, onDismiss }) => {
   const [submitting, setSubmitting] = useState(false)
   const [isCloud, setIsCloud] = useState(true)
   const [githubUrl, setGithubUrl] = useState(null)
+  const [deliveryResult, setDeliveryResult] = useState(null)
 
   useEffect(() => {
     if (open) {
@@ -79,6 +82,7 @@ const FeedbackModal = ({ open, onClose, onDismiss }) => {
       setMessage('')
       setSubmitting(false)
       setGithubUrl(null)
+      setDeliveryResult(null)
       isCloudInstance().then(setIsCloud)
     }
   }, [open])
@@ -110,7 +114,7 @@ const FeedbackModal = ({ open, onClose, onDismiss }) => {
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    const { result, githubUrl: url } = await submitFeedback({
+    const { githubUrl: url, result } = await submitFeedback({
       sentiment,
       category,
       message,
@@ -119,14 +123,20 @@ const FeedbackModal = ({ open, onClose, onDismiss }) => {
     })
     setSubmitting(false)
 
-    // Self-hosted feedback is never relayed; hand the user a pre-filled issue
-    // instead so they choose what gets published.
+    if (result === SUBMIT_RESULT.SENT) {
+      setStep(STEP.THANKS)
+      return
+    }
+
+    setGithubUrl(url)
+    setDeliveryResult(result)
+
     if (result === SUBMIT_RESULT.SELF_HOSTED) {
-      setGithubUrl(url)
       setStep(STEP.GITHUB)
       return
     }
-    setStep(STEP.THANKS)
+
+    setStep(STEP.DELIVERY_FAILED)
   }
 
   const canSubmit = Boolean(category) || message.trim().length > 0
@@ -300,6 +310,46 @@ const FeedbackModal = ({ open, onClose, onDismiss }) => {
             <Button variant='plain' color='neutral' onClick={onClose}>
               {t('close')}
             </Button>
+          </>
+        )}
+
+        {step === STEP.DELIVERY_FAILED && (
+          <>
+            <Typography level='h4' sx={{ fontWeight: 600 }}>
+              {t(`feedback.deliveryFailed.${deliveryResult}.title`, {
+                defaultValue: t('feedback.deliveryFailed.failed.title'),
+              })}
+            </Typography>
+            <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
+              {t(`feedback.deliveryFailed.${deliveryResult}.subtitle`, {
+                defaultValue: t('feedback.deliveryFailed.failed.subtitle'),
+              })}
+            </Typography>
+            <Stack spacing={1}>
+              {githubUrl && (
+                <Button
+                  variant='solid'
+                  color='primary'
+                  startDecorator={<GitHub />}
+                  onClick={() => {
+                    openUrl(githubUrl)
+                    onClose()
+                  }}
+                >
+                  {t('feedback.deliveryFailed.openIssue')}
+                </Button>
+              )}
+              <Button
+                variant='outlined'
+                color='neutral'
+                onClick={() => setStep(STEP.DETAILS)}
+              >
+                {t('feedback.deliveryFailed.retry')}
+              </Button>
+              <Button variant='plain' color='neutral' onClick={onClose}>
+                {t('close')}
+              </Button>
+            </Stack>
           </>
         )}
 

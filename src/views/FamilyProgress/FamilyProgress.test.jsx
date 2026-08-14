@@ -11,6 +11,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const progressMocks = vi.hoisted(() => ({
   canManage: true,
   mutate: vi.fn(),
+  goalsState: {
+    data: {
+      canManage: true,
+      goals: [
+        {
+          id: 5,
+          name: 'Home Focus',
+          metricType: 'CATEGORY_COMPLETIONS',
+          categoryId: 7,
+          target: 10,
+          progress: 7,
+          percent: 70,
+          status: 'ACTIVE',
+          startDate: '2026-08-01T00:00:00Z',
+          endDate: '2026-09-01T00:00:00Z',
+        },
+      ],
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  },
 }))
 
 vi.mock('react-i18next', () => ({
@@ -30,6 +53,8 @@ vi.mock('react-i18next', () => ({
         'familyProgress.bestStreak': 'best streak',
         'familyProgress.createGoal': 'Create family goal',
         'familyProgress.archive': 'Archive',
+        'familyProgress.goalsLoadError': 'Family goals could not be loaded.',
+        'familyProgress.retry': 'Retry',
         edit: 'Edit',
       }
       if (key === 'familyProgress.days') return `${options.count} days`
@@ -75,24 +100,11 @@ vi.mock('../../queries/ProgressQueries', () => ({
     data: { current: 6, best: 9, rule: 'Free days are neutral.' },
   }),
   useGoals: () => ({
+    ...progressMocks.goalsState,
     data: {
+      ...progressMocks.goalsState.data,
       canManage: progressMocks.canManage,
-      goals: [
-        {
-          id: 5,
-          name: 'Home Focus',
-          metricType: 'CATEGORY_COMPLETIONS',
-          categoryId: 7,
-          target: 10,
-          progress: 7,
-          percent: 70,
-          status: 'ACTIVE',
-          startDate: '2026-08-01T00:00:00Z',
-          endDate: '2026-09-01T00:00:00Z',
-        },
-      ],
     },
-    isLoading: false,
   }),
   useGoalMutation: () => ({
     mutate: progressMocks.mutate,
@@ -129,6 +141,29 @@ describe('Family Progress', () => {
   beforeEach(() => {
     progressMocks.canManage = true
     progressMocks.mutate.mockReset()
+    progressMocks.goalsState = {
+      data: {
+        canManage: true,
+        goals: [
+          {
+            id: 5,
+            name: 'Home Focus',
+            metricType: 'CATEGORY_COMPLETIONS',
+            categoryId: 7,
+            target: 10,
+            progress: 7,
+            percent: 70,
+            status: 'ACTIVE',
+            startDate: '2026-08-01T00:00:00Z',
+            endDate: '2026-09-01T00:00:00Z',
+          },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }
   })
   afterEach(cleanup)
 
@@ -171,6 +206,21 @@ describe('Family Progress', () => {
     expect(
       screen.queryByRole('button', { name: 'Archive' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows an isolated goals error without crashing the page', async () => {
+    progressMocks.goalsState = {
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Goals unavailable'),
+      refetch: vi.fn(),
+    }
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    expect(screen.getByText('Goals unavailable')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible()
   })
 
   it('archives an active goal without deleting its history', async () => {

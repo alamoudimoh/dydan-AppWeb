@@ -27,6 +27,7 @@ import {
   SUBMIT_RESULT,
   submitErrorReport,
 } from '../../service/ErrorReportService'
+import { copyToClipboard } from '../../utils/Clipboard.js'
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
@@ -113,6 +114,7 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
   const [email, setEmail] = useState('')
   const [showDetails, setShowDetails] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [githubUrl, setGithubUrl] = useState(null)
   const [step, setStep] = useState(STEP.FORM)
@@ -123,6 +125,7 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
     setDescription('')
     setShowDetails(false)
     setCopied(false)
+    setCopyFailed(false)
     setSubmitting(false)
     setGithubUrl(null)
     // Snapshot the environment at open time so it reflects the crash, not
@@ -132,11 +135,28 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
 
   const reportText = report ? formatErrorReport(report) : ''
 
-  const copyDetails = () => {
-    navigator.clipboard.writeText(reportText).then(() => {
+  const copyDetails = async () => {
+    const result = await copyToClipboard(reportText)
+    if (result.ok) {
       setCopied(true)
+      setCopyFailed(false)
       setTimeout(() => setCopied(false), 2000)
-    })
+      return
+    }
+    setCopied(false)
+    setCopyFailed(true)
+  }
+
+  const copyReference = async () => {
+    const result = await copyToClipboard(report?.reportId ?? '')
+    if (result.ok) {
+      setCopied(true)
+      setCopyFailed(false)
+      setTimeout(() => setCopied(false), 2000)
+      return
+    }
+    setCopied(false)
+    setCopyFailed(true)
   }
 
   const handleSubmit = async () => {
@@ -255,7 +275,7 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
                 <Button
                   size='sm'
                   variant='soft'
-                  color={copied ? 'success' : 'neutral'}
+                  color={copied ? 'success' : copyFailed ? 'danger' : 'neutral'}
                   onClick={copyDetails}
                   sx={{ position: 'absolute', top: 6, right: 6, minWidth: 0 }}
                   aria-label='Copy diagnostics'
@@ -284,7 +304,9 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
               level='body-xs'
               sx={{ color: 'text.tertiary', mt: 1, display: 'block' }}
             >
-              No chore names, notes or attachments are included.
+              {copyFailed
+                ? 'Copy failed — select the text above and copy manually.'
+                : 'No chore names, notes or attachments are included.'}
             </Typography>
           </Box>
 
@@ -364,12 +386,8 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
             </Box>
             <Button
               variant='soft'
-              color={copied ? 'success' : 'primary'}
-              onClick={() => {
-                navigator.clipboard.writeText(report?.reportId ?? '')
-                setCopied(true)
-                setTimeout(() => setCopied(false), 2000)
-              }}
+              color={copied ? 'success' : copyFailed ? 'danger' : 'primary'}
+              onClick={copyReference}
               sx={{ minWidth: 0 }}
               aria-label='Copy reference'
             >
@@ -421,7 +439,11 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
               }
               onClick={copyDetails}
             >
-              {copied ? 'Copied' : 'Copy details instead'}
+              {copied
+                ? 'Copied'
+                : copyFailed
+                  ? 'Copy failed — try again'
+                  : 'Copy details instead'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
               <Link

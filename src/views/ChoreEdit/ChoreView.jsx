@@ -50,6 +50,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import ChoreQueryStateView from '../../components/chores/ChoreQueryStateView.jsx'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
@@ -157,8 +158,13 @@ const ChoreView = () => {
     choreId: chore?.id,
   })
 
-  const { data: choreData, isLoading: isChoreLoading } =
-    useChoreDetails(choreId)
+  const {
+    data: choreData,
+    error: choreError,
+    isError: isChoreError,
+    isLoading: isChoreLoading,
+    refetch: refetchChore,
+  } = useChoreDetails(choreId)
   const { data: choreHistoryData } = useChoreHistory(choreId)
 
   const { data: pendingCmds } = usePendingCommands(choreId)
@@ -644,9 +650,19 @@ const ChoreView = () => {
   }
 
   if (isChoreLoading || isCircleMembersLoading) {
-    // while loading the chore or circle members, return a loading state
     return <LoadingComponent />
   }
+
+  if (isChoreError || !choreData?.res) {
+    return (
+      <ChoreQueryStateView
+        error={choreError}
+        hasData={Boolean(choreData?.res)}
+        onRetry={() => refetchChore()}
+      />
+    )
+  }
+
   return (
     <Container
       maxWidth='sm'

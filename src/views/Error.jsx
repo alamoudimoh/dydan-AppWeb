@@ -17,6 +17,7 @@ import {
   collectErrorReport,
   formatErrorReport,
 } from '../service/ErrorReportService'
+import { copyToClipboard } from '../utils/Clipboard.js'
 import ErrorReportModal from './Modals/ErrorReportModal'
 
 const getErrorKind = error => {
@@ -58,6 +59,7 @@ const Error = () => {
   const error = useRouteError()
   const [showDetails, setShowDetails] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [reportText, setReportText] = useState('')
 
@@ -76,10 +78,15 @@ const Error = () => {
     }
   }, [error])
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(reportText).then(() => {
+  const handleCopy = async () => {
+    const result = await copyToClipboard(reportText)
+    if (result.ok) {
       setCopied(true)
-    })
+      setCopyFailed(false)
+      return
+    }
+    setCopied(false)
+    setCopyFailed(true)
   }
 
   return (
@@ -273,7 +280,8 @@ const Error = () => {
           textAlign='center'
           sx={{ color: 'text.tertiary', mb: 1.5 }}
         >
-          If this keeps happening, send us a report please consider sending us report so we can take a look. 
+          If this keeps happening, send us a report please consider sending us
+          report so we can take a look.
         </Typography>
 
         {(error?.stack || message) && (
@@ -348,6 +356,16 @@ const Error = () => {
         size='sm'
       >
         Error details copied to clipboard
+      </Snackbar>
+      <Snackbar
+        open={copyFailed}
+        autoHideDuration={3000}
+        onClose={() => setCopyFailed(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        size='sm'
+        color='danger'
+      >
+        Copy failed — select the details above and copy manually.
       </Snackbar>
     </Box>
   )

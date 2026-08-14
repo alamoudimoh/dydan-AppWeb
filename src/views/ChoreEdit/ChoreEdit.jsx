@@ -40,6 +40,7 @@ import moment from 'moment'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import ChoreQueryStateView from '../../components/chores/ChoreQueryStateView.jsx'
 import DurationInput from '../../components/common/DurationInput'
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
 import NotificationTemplate from '../../components/NotificationTemplate.jsx'
@@ -179,6 +180,8 @@ const ChoreEdit = () => {
   const deleteChores = useDeleteChores()
   const {
     data: choreData,
+    error: choreError,
+    isError: isChoreError,
     isLoading: isChoreLoading,
     refetch: refetchChore,
   } = useChore(choreId)
@@ -829,6 +832,17 @@ const ChoreEdit = () => {
   ) {
     return <LoadingComponent />
   }
+
+  if (choreId && (isChoreError || !choreData?.res)) {
+    return (
+      <ChoreQueryStateView
+        error={choreError}
+        hasData={Boolean(choreData?.res)}
+        onRetry={() => refetchChore()}
+      />
+    )
+  }
+
   return (
     <Container maxWidth='md'>
       {/* Section 1: Basic Information */}

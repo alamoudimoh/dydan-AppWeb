@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { networkManager } from '../hooks/NetworkManager'
+import { shouldUseOfflineChoreCache } from '../utils/ChoreQueryState'
 import { commandQueue, CommandType } from '../utils/CommandQueue'
 import {
   ApproveChore,
@@ -88,6 +89,30 @@ const errorFromResponse = async (resp, fallbackMessage) => {
   const error = new Error(serverMessage || fallbackMessage)
   error.isServerMessage = Boolean(serverMessage)
   return error
+}
+
+const attachResponseStatus = async (response, fallbackMessage) => {
+  const error = await errorFromResponse(response, fallbackMessage)
+  if (response?.status) error.status = response.status
+  return error
+}
+
+const fetchChoreWithOfflineFallback = async (choreId, request) => {
+  try {
+    const response = await request(choreId)
+    if (response?.ok) {
+      return await response.json()
+    }
+    throw await attachResponseStatus(response, 'Unable to load task')
+  } catch (error) {
+    if (isOfflineFeatureEnabled() && shouldUseOfflineChoreCache(error)) {
+      const cached = await offlineDB.getChore(choreId)
+      if (cached) {
+        return { res: cached }
+      }
+    }
+    throw error
+  }
 }
 
 const buildOfflineChore = task => ({
@@ -356,22 +381,8 @@ export const useChoreDetails = choreId => {
   return useQuery({
     queryKey: ['choreDetails', choreId],
     refetchOnWindowFocus: true,
-    queryFn: async () => {
-      try {
-        const response = await GetChoreDetailById(choreId)
-        if (response && response.ok) {
-          return await response.json()
-        }
-        throw new Error('Failed to fetch chore detail')
-      } catch {
-        // Fall back to cached chore (without timer details)
-        const cached = await offlineDB.getChore(choreId)
-        if (cached) {
-          return { res: cached }
-        }
-        throw new Error('Chore detail not available offline')
-      }
-    },
+    enabled: Boolean(choreId),
+    queryFn: () => fetchChoreWithOfflineFallback(choreId, GetChoreDetailById),
   })
 }
 
@@ -380,29 +391,13 @@ export const useChore = choreId => {
 
   return useQuery({
     queryKey: ['chore', choreId],
+    enabled: Boolean(choreId),
     queryFn: async () => {
-      if (!choreId) {
-        throw new Error('Chore ID is required to fetch chore details')
-      }
-
-      try {
-        const response = await GetChoreByID(choreId)
-        if (response && response.ok) {
-          const data = await response.json()
-          // Fire-and-forget: store this chore's images (incl. attachments,
-          // which only appear in detail responses) for offline use
-          if (data?.res) cacheChoreImages(data.res)
-          return data
-        }
-        throw new Error('Failed to fetch chore')
-      } catch {
-        // API failed — try offline cache
-        const cached = await offlineDB.getChore(choreId)
-        if (cached) {
-          return { res: cached }
-        }
-        throw new Error('Chore not available offline')
-      }
+      const data = await fetchChoreWithOfflineFallback(choreId, GetChoreByID)
+      // Fire-and-forget: store this chore's images (incl. attachments,
+      // which only appear in detail responses) for offline use
+      if (data?.res) cacheChoreImages(data.res)
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['chores'])

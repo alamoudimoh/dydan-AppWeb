@@ -1,7 +1,10 @@
+import {
+  APP_REPORT_SOURCE,
+  FEEDBACK_ISSUES_NEW_URL,
+  REPORT_ID_PREFIX,
+} from '../config/ReportDestinations.js'
 import { getSessionDiagnostics } from './DiagnosticsSession'
 import { collectFeedbackContext } from './FeedbackService'
-
-const GITHUB_URL = 'https://github.com/donetick/donetick'
 
 // Reports go to the same relay as feedback unless a dedicated one is set, so
 // self-hosters who point at their own Worker get both for the price of one.
@@ -33,7 +36,7 @@ const clamp = (value, max) =>
 
 /** Short, human-readable handle the user can quote back to support. */
 export const newReportId = () =>
-  `DT-${Date.now().toString(36).toUpperCase().slice(-5)}-${Math.random()
+  `${REPORT_ID_PREFIX}-${Date.now().toString(36).toUpperCase().slice(-5)}-${Math.random()
     .toString(36)
     .toUpperCase()
     .slice(2, 6)}`
@@ -235,7 +238,7 @@ export const buildErrorIssueUrl = ({ description, report }) => {
     '```',
   ].join('\n')
 
-  return `${GITHUB_URL}/issues/new?labels=bug&title=${encodeURIComponent(
+  return `${FEEDBACK_ISSUES_NEW_URL}?labels=bug&title=${encodeURIComponent(
     title,
   )}&body=${encodeURIComponent(body)}`
 }
@@ -250,7 +253,7 @@ export const submitErrorReport = async ({
   report,
 }) => {
   const payload = {
-    source: 'donetick-app',
+    source: APP_REPORT_SOURCE,
     kind: report.kind === 'bug' ? 'bug-report' : 'error-report',
     reportId: report.reportId,
     description: description?.trim() || null,

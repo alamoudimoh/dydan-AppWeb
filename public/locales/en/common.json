@@ -86,7 +86,9 @@
     "end": "End",
     "saveGoal": "Save goal",
     "updateGoal": "Update goal",
-    "archive": "Archive"
+    "archive": "Archive",
+    "goalsLoadError": "Family goals could not be loaded.",
+    "retry": "Retry"
   },
   "notificationsCenter": {
     "title": "Notifications",
@@ -141,6 +143,22 @@
       "title": "Report it on GitHub",
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
+    },
+    "deliveryFailed": {
+      "openIssue": "Open pre-filled issue",
+      "retry": "Edit and try again",
+      "failed": {
+        "title": "Feedback wasn't delivered",
+        "subtitle": "Nothing was sent. Your notes are still here — try again or finish on GitHub."
+      },
+      "unconfigured": {
+        "title": "Feedback relay isn't set up",
+        "subtitle": "This build has no delivery endpoint configured. Open a pre-filled Taskier issue or copy your notes manually."
+      },
+      "misconfigured": {
+        "title": "Feedback relay is misconfigured",
+        "subtitle": "The configured endpoint can't accept app feedback. Open a pre-filled Taskier issue instead."
+      }
     }
   }
 }

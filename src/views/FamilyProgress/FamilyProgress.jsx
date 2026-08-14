@@ -290,7 +290,7 @@ const Reports = () => {
 
 const Goals = () => {
   const { t } = useTranslation()
-  const { data, isLoading } = useGoals()
+  const { data, error, isError, isLoading, refetch } = useGoals()
   const { data: workload } = useWorkload('week', '', '')
   const mutation = useGoalMutation()
   const [open, setOpen] = useState(false)
@@ -302,6 +302,28 @@ const Goals = () => {
     endDate: new Date().toISOString().slice(0, 10),
   })
   if (isLoading) return <CircularProgress />
+  if (isError) {
+    return (
+      <Alert
+        color='danger'
+        variant='soft'
+        endDecorator={
+          <Button size='sm' variant='soft' onClick={() => refetch()}>
+            {t('familyProgress.retry')}
+          </Button>
+        }
+      >
+        {error?.message || t('familyProgress.goalsLoadError')}
+      </Alert>
+    )
+  }
+  if (!data) {
+    return (
+      <Alert color='danger' variant='soft'>
+        {t('familyProgress.goalsLoadError')}
+      </Alert>
+    )
+  }
   const submit = e => {
     e.preventDefault()
     mutation.mutate(
