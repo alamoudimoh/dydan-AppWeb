@@ -106,7 +106,10 @@ export const useDeviceTokens = () => {
         return null
       }
       const resp = await GetDeviceTokens(true) // Only get active devices
-      const result = await resp.json()
+      const result = await resp.json().catch(() => ({}))
+      if (!resp.ok) {
+        throw new Error(result.error || 'Failed to load registered devices')
+      }
       return result.res || []
     },
     staleTime: 0, // Always fetch fresh data
@@ -131,7 +134,10 @@ export const useChildUsers = () => {
         return null
       }
       const resp = await GetChildUsers()
-      const result = await resp.json()
+      const result = await resp.json().catch(() => ({}))
+      if (!resp.ok) {
+        throw new Error(result.error || 'Failed to load sub accounts')
+      }
       return result.res || []
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

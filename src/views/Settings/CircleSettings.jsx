@@ -18,6 +18,7 @@ import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -52,6 +53,8 @@ const CircleSettings = () => {
   const [circleMemberRequests, setCircleMemberRequests] = useState([])
   const [circleInviteCode, setCircleInviteCode] = useState('')
   const [circleMembers, setCircleMembers] = useState([])
+  const [circleDataLoading, setCircleDataLoading] = useState(true)
+  const [circleDataError, setCircleDataError] = useState(null)
   const [lastRefresh, setLastRefresh] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [confirmModalConfig, setConfirmModalConfig] = useState({})
@@ -97,16 +100,30 @@ const CircleSettings = () => {
     }
   }
 
+  const loadCircleData = async () => {
+    setCircleDataLoading(true)
+    setCircleDataError(null)
+    try {
+      const [requestsResp, membersData] = await Promise.all([
+        GetCircleMemberRequests(),
+        GetAllCircleMembers(),
+      ])
+      const requestsBody = await requestsResp.json().catch(() => ({}))
+      if (!requestsResp.ok) {
+        throw new Error(requestsBody?.error || 'Failed to load member requests')
+      }
+      setCircleMemberRequests(requestsBody.res ? requestsBody.res : [])
+      setCircleMembers(membersData?.res ? membersData.res : [])
+      setLastRefresh(new Date())
+    } catch (err) {
+      setCircleDataError(err)
+    } finally {
+      setCircleDataLoading(false)
+    }
+  }
+
   useEffect(() => {
-    GetCircleMemberRequests().then(resp => {
-      resp.json().then(data => {
-        setCircleMemberRequests(data.res ? data.res : [])
-        setLastRefresh(new Date())
-      })
-    })
-    GetAllCircleMembers().then(data => {
-      setCircleMembers(data.res ? data.res : [])
-    })
+    loadCircleData()
   }, [])
 
   const canManageCircle = hasPermission(
@@ -146,6 +163,22 @@ const CircleSettings = () => {
 
   if (!userProfile) {
     return <LoadingComponent />
+  }
+
+  if (circleDataLoading) {
+    return (
+      <SettingsLayout title='Circle Settings'>
+        <LoadingComponent />
+      </SettingsLayout>
+    )
+  }
+
+  if (circleDataError) {
+    return (
+      <SettingsLayout title='Circle Settings'>
+        <SettingsQueryStateView onRetry={loadCircleData} />
+      </SettingsLayout>
+    )
   }
 
   return (

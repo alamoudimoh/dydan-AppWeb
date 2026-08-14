@@ -14,6 +14,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import useConfirmationModal from '../../hooks/useConfirmationModal'
 import {
   useChildUsers,
@@ -32,6 +33,10 @@ import {
   PERMISSIONS,
   resolveEffectiveRole,
 } from '../../utils/PermissionModel'
+import {
+  resolveSettingsQueryState,
+  SETTINGS_QUERY_STATE,
+} from '../../utils/SettingsQueryState'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import CreateChildUserModal from '../Modals/Inputs/CreateChildUserModal'
 import PasswordChangeModal from '../Modals/Inputs/PasswordChangeModal'
@@ -40,7 +45,12 @@ import SettingsLayout from './SettingsLayout'
 const ChildUserSettings = () => {
   const { data: userProfile } = useUserProfile()
   const { data: circleMembersData } = useCircleMembers()
-  const { data: childUsers, isLoading, refetch } = useChildUsers()
+  const { data: childUsers, error, isLoading, refetch } = useChildUsers()
+  const childUsersState = resolveSettingsQueryState({
+    isLoading,
+    isError: Boolean(error),
+    hasData: Array.isArray(childUsers),
+  })
   const { showNotification } = useNotification()
   const queryClient = useQueryClient()
   const { confirmModalConfig, showConfirmation } = useConfirmationModal()
@@ -183,8 +193,10 @@ const ChildUserSettings = () => {
           </Button>
         </Box>
 
-        {isLoading ? (
+        {childUsersState === SETTINGS_QUERY_STATE.LOADING ? (
           <Typography>Loading sub accounts...</Typography>
+        ) : childUsersState === SETTINGS_QUERY_STATE.ERROR ? (
+          <SettingsQueryStateView onRetry={() => refetch()} />
         ) : childUsers?.length === 0 ? (
           <Card variant='soft' sx={{ textAlign: 'center', py: 4 }}>
             <CardContent>

@@ -4,18 +4,33 @@ import { Purchases } from '@revenuecat/purchases-capacitor'
 import { useQueryClient } from '@tanstack/react-query'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
+
+import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
-import { useUserProfile } from '../../queries/UserQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { CancelSubscription, UpdatePassword } from '../../utils/Fetcher'
+import {
+  resolveSettingsQueryState,
+  SETTINGS_QUERY_STATE,
+} from '../../utils/SettingsQueryState'
+import LoadingComponent from '../components/Loading'
 import NativeCancelSubscriptionModal from '../Modals/Inputs/NativeCancelSubscriptionModal'
 import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
 import UserDeletionModal from '../Modals/Inputs/UserDeletionModal'
 import SettingsLayout from './SettingsLayout'
 
 const AccountSettings = () => {
-  const { data: userProfile } = useUserProfile()
+  const { data: userProfile, error, isLoading, refetch } = useUserProfile()
+  const { data: membersData } = useCircleMembers()
+  const circleMembers = membersData?.res || []
+  const profileState = resolveSettingsQueryState({
+    isLoading,
+    isError: Boolean(error),
+    hasData: Boolean(userProfile),
+  })
   const queryClient = useQueryClient()
   const { showNotification } = useNotification()
   const { fmt } = useLocalization()
@@ -63,10 +78,21 @@ const AccountSettings = () => {
     }
   }
 
-  if (!userProfile) {
+  if (profileState === SETTINGS_QUERY_STATE.LOADING) {
     return (
       <SettingsLayout title='Account Settings'>
-        <div>Loading...</div>
+        <LoadingComponent />
+      </SettingsLayout>
+    )
+  }
+
+  if (profileState === SETTINGS_QUERY_STATE.ERROR) {
+    return (
+      <SettingsLayout title='Account Settings'>
+        <SettingsQueryStateView
+          onRetry={() => refetch()}
+          description={error?.message}
+        />
       </SettingsLayout>
     )
   }
@@ -77,6 +103,10 @@ const AccountSettings = () => {
         <Typography level='body-md'>
           Change your account settings, type or update your password
         </Typography>
+        <AccountIdentityCard
+          profile={userProfile}
+          circleMembers={circleMembers}
+        />
         <Typography level='title-md' mb={-1}>
           Account Type : {getSubscriptionStatus()}
         </Typography>
@@ -95,9 +125,8 @@ const AccountSettings = () => {
             onClick={async () => {
               if (Capacitor.isNativePlatform()) {
                 try {
-                  const { RevenueCatUI } = await import(
-                    '@revenuecat/purchases-capacitor-ui'
-                  )
+                  const { RevenueCatUI } =
+                    await import('@revenuecat/purchases-capacitor-ui')
 
                   const offering = await Purchases.getOfferings()
                   await RevenueCatUI.presentPaywall({

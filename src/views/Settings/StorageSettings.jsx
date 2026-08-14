@@ -1,13 +1,9 @@
 import { Capacitor } from '@capacitor/core'
-import {
-  Button,
-  Card,
-  Chip,
-  LinearProgress,
-  Typography,
-} from '@mui/joy'
+import { Button, Card, Chip, LinearProgress, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useUserProfile } from '../../queries/UserQueries'
 import { GetStorageUsage } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
@@ -19,6 +15,7 @@ const StorageSettings = () => {
   const { data: userProfile } = useUserProfile()
   const [usage, setUsage] = useState({ used: 0, total: 0 })
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [confirmModalConfig, setConfirmModalConfig] = useState({})
 
   const showConfirmation = (
@@ -45,15 +42,31 @@ const StorageSettings = () => {
     })
   }
 
-  useEffect(() => {
-    if (isPlusAccount(userProfile)) {
-      GetStorageUsage().then(resp => {
-        resp.json().then(data => {
-          setUsage(data.res)
-          setLoading(false)
-        })
-      })
+  const loadUsage = async () => {
+    if (!isPlusAccount(userProfile)) {
+      setLoading(false)
+      setLoadError(null)
+      return
     }
+
+    setLoading(true)
+    setLoadError(null)
+    try {
+      const resp = await GetStorageUsage()
+      const data = await resp.json().catch(() => ({}))
+      if (!resp.ok) {
+        throw new Error(data?.error || 'Failed to load storage usage')
+      }
+      setUsage(data.res || { used: 0, total: 0 })
+    } catch (err) {
+      setLoadError(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadUsage()
   }, [userProfile])
 
   const percent =
@@ -103,6 +116,8 @@ const StorageSettings = () => {
               <LinearProgress sx={{ mb: 1 }} />
               <Typography level='body-xs'>Loading...</Typography>
             </>
+          ) : loadError ? (
+            <SettingsQueryStateView onRetry={loadUsage} />
           ) : (
             <>
               <LinearProgress determinate value={percent} sx={{ mb: 1 }} />
@@ -165,9 +180,8 @@ const StorageSettings = () => {
                   'Clear App Preferences',
                   async () => {
                     try {
-                      const { Preferences } = await import(
-                        '@capacitor/preferences'
-                      )
+                      const { Preferences } =
+                        await import('@capacitor/preferences')
                       await Preferences.clear()
                       Navigate('/login')
                     } catch (e) {

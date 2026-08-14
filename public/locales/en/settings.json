@@ -86,6 +86,15 @@
   "profile": {
     "title": "Profile Settings",
     "description": "Update your display name and profile photo.",
+    "accountIdentity": {
+      "title": "Account information",
+      "description": "Login identifier, email, sign-in method, and family role are shown here for reference. Change them only through supported account workflows.",
+      "username": "Username",
+      "email": "Email",
+      "provider": "Sign-in method",
+      "familyRole": "Family role",
+      "notSet": "Not set"
+    },
     "photoUpdated": "Photo Updated",
     "photoUpdatedMessage": "Your profile photo has been updated successfully!",
     "uploadFailed": "Upload Failed",
@@ -101,6 +110,11 @@
     "timezonePlaceholder": "Select your timezone",
     "save": "Save",
     "cancel": "Cancel"
+  },
+  "queryState": {
+    "errorTitle": "Couldn't load this section",
+    "errorDescription": "Something went wrong while loading settings. Check your connection and try again.",
+    "retry": "Try again"
   },
   "overview": {
     "title": "Settings",

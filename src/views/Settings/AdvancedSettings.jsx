@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 import RealTimeSettings from '../../components/RealTimeSettings'
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
@@ -29,12 +30,22 @@ import {
   PERMISSIONS,
   resolveEffectiveRole,
 } from '../../utils/PermissionModel'
+import {
+  resolveSettingsQueryState,
+  SETTINGS_QUERY_STATE,
+} from '../../utils/SettingsQueryState'
 import { syncEngine } from '../../utils/SyncEngine'
+import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
 
 const AdvancedSettings = () => {
-  const { data: userProfile } = useUserProfile()
+  const {
+    data: userProfile,
+    error: profileError,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useUserProfile()
   const queryClient = useQueryClient()
   const { showNotification } = useNotification()
   const { activeCircle } = useActiveCircle()
@@ -132,13 +143,30 @@ const AdvancedSettings = () => {
     showDisableOfflineConfirmation()
   }
 
-  // if (!userProfile) {
-  //   return (
-  //     <SettingsLayout title="Advanced Settings">
-  //       <div>Loading...</div>
-  //     </SettingsLayout>
-  //   )
-  // }
+  const profileState = resolveSettingsQueryState({
+    isLoading: profileLoading,
+    isError: Boolean(profileError),
+    hasData: Boolean(userProfile),
+  })
+
+  if (profileState === SETTINGS_QUERY_STATE.LOADING) {
+    return (
+      <SettingsLayout title='Advanced Settings'>
+        <LoadingComponent />
+      </SettingsLayout>
+    )
+  }
+
+  if (profileState === SETTINGS_QUERY_STATE.ERROR) {
+    return (
+      <SettingsLayout title='Advanced Settings'>
+        <SettingsQueryStateView
+          onRetry={() => refetchProfile()}
+          description={profileError?.message}
+        />
+      </SettingsLayout>
+    )
+  }
 
   return (
     <SettingsLayout title='Advanced Settings'>

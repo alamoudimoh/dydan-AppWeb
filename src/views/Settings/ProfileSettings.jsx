@@ -15,7 +15,9 @@ import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
-import { useUserProfile } from '../../queries/UserQueries'
+import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { apiClient } from '../../utils/ApiClient'
 import { UpdateUserDetails } from '../../utils/Fetcher'
@@ -26,10 +28,18 @@ import {
   isValidIanaTimezone,
   supportedTimezones,
 } from '../../utils/SchedulingDate'
+import {
+  resolveSettingsQueryState,
+  SETTINGS_QUERY_STATE,
+} from '../../utils/SettingsQueryState'
 import LoadingComponent from '../components/Loading'
 import SettingsLayout from './SettingsLayout'
 
-const ProfileSettingsForm = ({ refetchUserProfile, userProfile }) => {
+const ProfileSettingsForm = ({
+  circleMembers,
+  refetchUserProfile,
+  userProfile,
+}) => {
   const { t } = useTranslation('settings')
   const queryClient = useQueryClient()
   const { showError, showSuccess } = useNotification()
@@ -155,6 +165,10 @@ const ProfileSettingsForm = ({ refetchUserProfile, userProfile }) => {
     <SettingsLayout title={t('profile.title')}>
       <div className='grid gap-4 py-4' id='profile'>
         <Typography level='body-md'>{t('profile.description')}</Typography>
+        <AccountIdentityCard
+          profile={userProfile}
+          circleMembers={circleMembers}
+        />
         <Card
           sx={{
             display: 'flex',
@@ -298,14 +312,36 @@ const ProfileSettingsForm = ({ refetchUserProfile, userProfile }) => {
 }
 
 const ProfileSettings = () => {
-  const { data: userProfile, isLoading, refetch } = useUserProfile()
+  const { t } = useTranslation('settings')
+  const { data: userProfile, error, isLoading, refetch } = useUserProfile()
+  const { data: membersData } = useCircleMembers()
+  const circleMembers = membersData?.res || []
+  const profileState = resolveSettingsQueryState({
+    isLoading,
+    isError: Boolean(error),
+    hasData: Boolean(userProfile),
+  })
 
-  if (isLoading || !userProfile) return <LoadingComponent />
+  if (profileState === SETTINGS_QUERY_STATE.LOADING) {
+    return <LoadingComponent />
+  }
+
+  if (profileState === SETTINGS_QUERY_STATE.ERROR) {
+    return (
+      <SettingsLayout title={t('profile.title')}>
+        <SettingsQueryStateView
+          onRetry={() => refetch()}
+          description={error?.message}
+        />
+      </SettingsLayout>
+    )
+  }
 
   return (
     <ProfileSettingsForm
       key={userProfile.id}
       userProfile={userProfile}
+      circleMembers={circleMembers}
       refetchUserProfile={refetch}
     />
   )

@@ -2,8 +2,10 @@ import { CheckCircle, Security, Smartphone } from '@mui/icons-material'
 import { Alert, Box, Button, Card, Input, Stack, Typography } from '@mui/joy'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
+
 import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import {
   ConfirmMFA,
   DisableMFA,
@@ -26,6 +28,7 @@ const MFASettings = () => {
   const [backupCodes, setBackupCodes] = useState([])
   const [setupStep, setSetupStep] = useState(1) // 1: QR Code, 2: Verification, 3: Backup Codes
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState(null)
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
@@ -35,13 +38,18 @@ const MFASettings = () => {
   const fetchMFAStatus = async () => {
     try {
       setLoading(true)
+      setLoadError(null)
       const response = await GetMFAStatus()
       if (response.ok) {
         const data = await response.json()
         setMfaEnabled(data.mfaEnabled)
+      } else {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.error || 'Failed to load MFA status')
       }
-    } catch (error) {
-      console.error('Error fetching MFA status:', error)
+    } catch (err) {
+      console.error('Error fetching MFA status:', err)
+      setLoadError(err)
     } finally {
       setLoading(false)
     }
@@ -175,6 +183,14 @@ const MFASettings = () => {
 
   if (loading) {
     return <LoadingComponent />
+  }
+
+  if (loadError) {
+    return (
+      <SettingsLayout title='Multi-Factor Authentication'>
+        <SettingsQueryStateView onRetry={fetchMFAStatus} />
+      </SettingsLayout>
+    )
   }
 
   return (

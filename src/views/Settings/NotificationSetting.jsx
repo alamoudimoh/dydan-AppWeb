@@ -21,6 +21,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { registerPushNotifications } from '../../CapacitorListener'
+import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useDeviceTokens, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { isOfficialDonetickInstanceSync } from '../../utils/FeatureToggle'
@@ -33,7 +34,11 @@ import SettingsLayout from './SettingsLayout'
 const NotificationSetting = () => {
   const { showWarning } = useNotification()
   const { data: userProfile, refetch: refetchUserProfile } = useUserProfile()
-  const { data: deviceTokens, refetch: refetchDevices } = useDeviceTokens()
+  const {
+    data: deviceTokens,
+    error: deviceTokensError,
+    refetch: refetchDevices,
+  } = useDeviceTokens()
 
   const getNotificationPreferences = async () => {
     const ret = await Preferences.get({ key: 'notificationPreferences' })
@@ -484,125 +489,149 @@ const NotificationSetting = () => {
               Devices registered to receive push notifications for your account
             </Typography>
 
-            {/* Show register current device option if not registered */}
-            {Capacitor.isNativePlatform() &&
-              currentDevice &&
-              !isCurrentDeviceRegistered && (
-                <Card
-                  variant='outlined'
-                  sx={{ p: 2, mb: 2, bgcolor: 'background.level1' }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {currentDevice.platform === 'ios' ? (
-                        <Apple sx={{ fontSize: 24, color: '#007AFF' }} />
-                      ) : (
-                        <Android sx={{ fontSize: 24, color: '#3DDC84' }} />
-                      )}
-                      <Box>
-                        <Typography level='body-md' sx={{ fontWeight: 'bold' }}>
-                          Current Device:{' '}
-                          {currentDevice.platform === 'ios' ? 'iOS' : 'Android'}{' '}
-                          {currentDevice.model}
-                        </Typography>
-                        <Typography level='body-sm' color='neutral'>
-                          This device is not registered for push notifications
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Button
-                      variant='solid'
-                      color='primary'
-                      size='sm'
-                      disabled={deviceTokens && deviceTokens.length >= 5}
-                      onClick={handleRegisterCurrentDevice}
-                    >
-                      {deviceTokens && deviceTokens.length >= 5
-                        ? 'Limit Reached'
-                        : 'Register Device'}
-                    </Button>
-                  </Box>
-                </Card>
-              )}
-
-            {deviceTokens && deviceTokens.length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {deviceTokens.map(device => (
-                  <Card key={device.id} variant='outlined' sx={{ p: 2 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
+            {deviceTokensError ? (
+              <SettingsQueryStateView onRetry={() => refetchDevices()} />
+            ) : (
+              <>
+                {/* Show register current device option if not registered */}
+                {Capacitor.isNativePlatform() &&
+                  currentDevice &&
+                  !isCurrentDeviceRegistered && (
+                    <Card
+                      variant='outlined'
+                      sx={{ p: 2, mb: 2, bgcolor: 'background.level1' }}
                     >
                       <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-                      >
-                        {device.platform === 'ios' ? (
-                          <Apple sx={{ fontSize: 24, color: '#007AFF' }} />
-                        ) : (
-                          <Android sx={{ fontSize: 24, color: '#3DDC84' }} />
-                        )}
-                        <Box>
-                          <Typography
-                            level='body-md'
-                            sx={{ fontWeight: 'bold' }}
-                          >
-                            {device.platform === 'ios' ? 'iOS' : 'Android'}{' '}
-                            {device.deviceModel || 'Unknown Device'}
-                          </Typography>
-
-                          {device.createdAt && (
-                            <Typography level='body-sm' color='neutral'>
-                              Created At:{' '}
-                              {new Date(device.createdAt).toLocaleDateString()}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                      <Button
-                        variant='outlined'
-                        color='danger'
-                        size='sm'
-                        onClick={async () => {
-                          try {
-                            const resp = await UnregisterDeviceToken(
-                              device.deviceId,
-                              null,
-                            )
-                            if (resp.ok) {
-                              refetchDevices()
-                            } else {
-                              showWarning({
-                                title: 'Error',
-                                message: 'Failed to unregister device',
-                              })
-                            }
-                          } catch (error) {
-                            showWarning({
-                              title: 'Error',
-                              message: 'Failed to unregister device',
-                            })
-                          }
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
                         }}
                       >
-                        Remove
-                      </Button>
-                    </Box>
-                  </Card>
-                ))}
-              </Box>
-            ) : (
-              <Typography level='body-md' color='neutral'>
-                No devices registered for push notifications
-              </Typography>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          {currentDevice.platform === 'ios' ? (
+                            <Apple sx={{ fontSize: 24, color: '#007AFF' }} />
+                          ) : (
+                            <Android sx={{ fontSize: 24, color: '#3DDC84' }} />
+                          )}
+                          <Box>
+                            <Typography
+                              level='body-md'
+                              sx={{ fontWeight: 'bold' }}
+                            >
+                              Current Device:{' '}
+                              {currentDevice.platform === 'ios'
+                                ? 'iOS'
+                                : 'Android'}{' '}
+                              {currentDevice.model}
+                            </Typography>
+                            <Typography level='body-sm' color='neutral'>
+                              This device is not registered for push
+                              notifications
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Button
+                          variant='solid'
+                          color='primary'
+                          size='sm'
+                          disabled={deviceTokens && deviceTokens.length >= 5}
+                          onClick={handleRegisterCurrentDevice}
+                        >
+                          {deviceTokens && deviceTokens.length >= 5
+                            ? 'Limit Reached'
+                            : 'Register Device'}
+                        </Button>
+                      </Box>
+                    </Card>
+                  )}
+
+                {deviceTokens && deviceTokens.length > 0 ? (
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
+                    {deviceTokens.map(device => (
+                      <Card key={device.id} variant='outlined' sx={{ p: 2 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 2,
+                            }}
+                          >
+                            {device.platform === 'ios' ? (
+                              <Apple sx={{ fontSize: 24, color: '#007AFF' }} />
+                            ) : (
+                              <Android
+                                sx={{ fontSize: 24, color: '#3DDC84' }}
+                              />
+                            )}
+                            <Box>
+                              <Typography
+                                level='body-md'
+                                sx={{ fontWeight: 'bold' }}
+                              >
+                                {device.platform === 'ios' ? 'iOS' : 'Android'}{' '}
+                                {device.deviceModel || 'Unknown Device'}
+                              </Typography>
+
+                              {device.createdAt && (
+                                <Typography level='body-sm' color='neutral'>
+                                  Created At:{' '}
+                                  {new Date(
+                                    device.createdAt,
+                                  ).toLocaleDateString()}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                          <Button
+                            variant='outlined'
+                            color='danger'
+                            size='sm'
+                            onClick={async () => {
+                              try {
+                                const resp = await UnregisterDeviceToken(
+                                  device.deviceId,
+                                  null,
+                                )
+                                if (resp.ok) {
+                                  refetchDevices()
+                                } else {
+                                  showWarning({
+                                    title: 'Error',
+                                    message: 'Failed to unregister device',
+                                  })
+                                }
+                              } catch (error) {
+                                showWarning({
+                                  title: 'Error',
+                                  message: 'Failed to unregister device',
+                                })
+                              }
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </Box>
+                      </Card>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography level='body-md' color='neutral'>
+                    No devices registered for push notifications
+                  </Typography>
+                )}
+              </>
             )}
           </>
         )}
