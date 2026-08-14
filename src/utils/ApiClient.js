@@ -6,9 +6,15 @@ import {
   recordApiFailure,
   recordServerVersionFromResponse,
 } from '../service/DiagnosticsSession'
+import { syncActiveCircleId } from './ActiveCircle'
 import { logout, RefreshToken } from './Fetcher'
 import { isOAuthExchangeInProgress } from './OAuthExchangeState'
 import { offlineDB } from './OfflineDB'
+import {
+  getCurrentReturnPath,
+  markSessionExpired,
+  storeReturnPath,
+} from './ReturnPath'
 import {
   clearAllTokens,
   isRefreshTokenExpired,
@@ -184,6 +190,7 @@ class ApiClient {
     }
 
     await clearAllTokens()
+    syncActiveCircleId(null)
     try {
       await offlineDB.clearAll()
     } catch (e) {
@@ -209,7 +216,11 @@ class ApiClient {
       console.error('Error during logout', e)
     }
 
-    if (window.location.pathname !== '/login') window.location.href = '/login'
+    if (window.location.pathname !== '/login') {
+      markSessionExpired()
+      storeReturnPath(getCurrentReturnPath())
+      window.location.href = '/login?session=expired'
+    }
     // fire and forget
   }
   async request(endpoint, options = {}) {

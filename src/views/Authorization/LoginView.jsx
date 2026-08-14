@@ -8,9 +8,8 @@ import AppleIcon from '@mui/icons-material/Apple'
 import GoogleIcon from '@mui/icons-material/Google'
 import { Avatar, Box, Button, IconButton, Link, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
-import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { LoginSocialGoogle } from 'reactjs-social-login'
 
 import { GOOGLE_CLIENT_ID, REDIRECT_URL } from '../../Config'
@@ -20,6 +19,11 @@ import { useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
 import { apiClient } from '../../utils/ApiClient'
 import { getPendingInvite } from '../../utils/PendingInvite'
+import {
+  clearSessionExpired,
+  consumeReturnPath,
+  wasSessionExpired,
+} from '../../utils/ReturnPath'
 import { saveTokens } from '../../utils/TokenStorage'
 import { buildChildUsername, getUserDisplayInfo } from '../../utils/UserHelpers'
 import {
@@ -34,7 +38,7 @@ import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
 import MFAVerificationModal from './MFAVerificationModal'
 
-const SegmentedControl = ({ value, onChange, options }) => (
+const SegmentedControl = ({ onChange, options, value }) => (
   <Box
     role='tablist'
     sx={{
@@ -111,6 +115,16 @@ const LoginView = () => {
   const { showError } = useNotification()
   const { isAuthenticated, login: authLogin, user } = useAuth()
   const Navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const sessionExpired =
+    searchParams.get('session') === 'expired' || wasSessionExpired()
+
+  useEffect(() => {
+    if (!sessionExpired) return
+    clearSessionExpired()
+  }, [sessionExpired])
+
+  const goAfterAuth = () => Navigate(consumeReturnPath('/chores'))
   useEffect(() => {
     const initializeSocialLogin = async () => {
       await SocialLogin.initialize({
@@ -140,15 +154,7 @@ const LoginView = () => {
   }, [])
   useEffect(() => {
     if (isAuthenticated && user) {
-      // An already-signed-in visitor who lands here from a deep link (a circle
-      // invite, for example) still has to end up where they were headed.
-      const redirectUrl = Cookies.get('ca_redirect')
-      if (redirectUrl && redirectUrl !== '/') {
-        Cookies.remove('ca_redirect')
-        Navigate(redirectUrl)
-      } else {
-        Navigate('/chores')
-      }
+      goAfterAuth()
     }
   }, [isAuthenticated, user, Navigate])
   const handleSubmit = async e => {
@@ -218,13 +224,7 @@ const LoginView = () => {
       // Refetch user profile after successful login
       queryClient.refetchQueries(['userProfile'])
 
-      const redirectUrl = Cookies.get('ca_redirect')
-      if (redirectUrl && redirectUrl !== '/') {
-        Cookies.remove('ca_redirect')
-        Navigate(redirectUrl)
-      } else {
-        Navigate('/chores')
-      }
+      goAfterAuth()
     } else {
       showError({
         title: 'Login Failed',
@@ -287,13 +287,7 @@ const LoginView = () => {
           // Refetch user profile after successful OAuth login
           queryClient.invalidateQueries(['userProfile'])
 
-          const redirectUrl = Cookies.get('ca_redirect')
-          if (redirectUrl) {
-            Cookies.remove('ca_redirect')
-            Navigate(redirectUrl)
-          } else {
-            getUserProfileAndNavigateToHome()
-          }
+          goAfterAuth()
         }
       } else {
         const providerName = provider === 'apple' ? 'Apple' : 'Google'
@@ -313,14 +307,7 @@ const LoginView = () => {
   const getUserProfileAndNavigateToHome = () => {
     // Refetch user profile after login using React Query
     queryClient.invalidateQueries(['userProfile']).then(() => {
-      // check if redirect url is set in cookie:
-      const redirectUrl = Cookies.get('ca_redirect')
-      if (redirectUrl) {
-        Cookies.remove('ca_redirect')
-        Navigate(redirectUrl)
-      } else {
-        Navigate('/chores')
-      }
+      Navigate(consumeReturnPath('/chores'))
     })
   }
 
@@ -339,13 +326,7 @@ const LoginView = () => {
     // Refetch user profile after MFA success
     queryClient.invalidateQueries(['userProfile'])
 
-    const redirectUrl = Cookies.get('ca_redirect')
-    if (redirectUrl) {
-      Cookies.remove('ca_redirect')
-      Navigate(redirectUrl)
-    } else {
-      Navigate('/chores')
-    }
+    goAfterAuth()
   }
 
   const handleMFAError = errorMessage => {
@@ -426,11 +407,13 @@ const LoginView = () => {
     <AuthShell
       title={userProfile ? 'Welcome back' : 'Sign in'}
       subtitle={
-        getPendingInvite()
-          ? 'Sign in and we’ll send your circle join request right after.'
-          : userProfile
-            ? 'Pick up right where you left off.'
-            : 'Sign in to your account to continue.'
+        sessionExpired
+          ? 'Your session expired. Sign in again and we’ll return you to where you were.'
+          : getPendingInvite()
+            ? 'Sign in and we’ll send your circle join request right after.'
+            : userProfile
+              ? 'Pick up right where you left off.'
+              : 'Sign in to your account to continue.'
       }
       logoSize={0}
       footer={<LegalLinks />}
@@ -579,7 +562,7 @@ const LoginView = () => {
             discoveryDocs='claims_supported'
             access_type='online'
             isOnlyGetToken={true}
-            onResolve={({ provider, data }) => {
+            onResolve={({ data, provider }) => {
               loggedWithProvider(provider, data)
             }}
             onReject={() => {

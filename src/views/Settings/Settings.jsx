@@ -26,6 +26,7 @@ import RealTimeSettings from '../../components/RealTimeSettings'
 import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import Logo from '../../Logo'
+import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import {
@@ -34,7 +35,6 @@ import {
   DeleteCircleMember,
   GetAllCircleMembers,
   GetCircleMemberRequests,
-  GetUserCircle,
   JoinCircle,
   LeaveCircle,
   PutWebhookURL,
@@ -67,8 +67,8 @@ const Settings = () => {
   const { showNotification } = useNotification()
   const navigate = useNavigate()
   const { fmt } = useLocalization()
+  const { activeCircle } = useActiveCircle()
 
-  const [userCircles, setUserCircles] = useState([])
   const [circleMemberRequests, setCircleMemberRequests] = useState([])
   const [circleInviteCode, setCircleInviteCode] = useState('')
   const [circleMembers, setCircleMembers] = useState([])
@@ -124,12 +124,12 @@ const Settings = () => {
   }
 
   useEffect(() => {
-    GetUserCircle().then(resp => {
-      resp.json().then(data => {
-        setUserCircles(data.res ? data.res : [])
-        setWebhookURL(data.res ? data.res[0].webhook_url : null)
-      })
-    })
+    if (activeCircle?.webhook_url) {
+      setWebhookURL(activeCircle.webhook_url)
+    }
+  }, [activeCircle])
+
+  useEffect(() => {
     GetCircleMemberRequests().then(resp => {
       resp.json().then(data => {
         setCircleMemberRequests(data.res ? data.res : [])
@@ -249,12 +249,12 @@ const Settings = () => {
           to join your Circle.
         </Typography>
         <Typography level='title-sm' mb={-1}>
-          {userCircles[0]?.userRole === 'member'
-            ? `You part of ${userCircles[0]?.name} `
+          {activeCircle?.userRole === 'member'
+            ? `You part of ${activeCircle?.name} `
             : `You circle code is:`}
 
           <Input
-            value={userCircles[0]?.invite_code}
+            value={activeCircle?.invite_code}
             disabled
             size='lg'
             sx={{
@@ -265,7 +265,7 @@ const Settings = () => {
           <Button
             variant='soft'
             onClick={() => {
-              navigator.clipboard.writeText(userCircles[0]?.invite_code)
+              navigator.clipboard.writeText(activeCircle?.invite_code)
               showNotification({
                 type: 'success',
                 message: 'Code copied to clipboard',
@@ -282,7 +282,7 @@ const Settings = () => {
                 window.location.protocol +
                   '//' +
                   window.location.host +
-                  `/circle/join?code=${userCircles[0]?.invite_code}`,
+                  `/circle/join?code=${activeCircle?.invite_code}`,
               )
               showNotification({
                 type: 'success',
@@ -292,7 +292,7 @@ const Settings = () => {
           >
             Copy Link
           </Button>
-          {userCircles.length > 0 && userCircles[0]?.userRole === 'member' && (
+          {activeCircle?.userRole === 'member' && (
             <Button
               color='danger'
               variant='outlined'
@@ -302,7 +302,7 @@ const Settings = () => {
                   'Are you sure you want to leave your circle?',
                   'Leave Circle',
                   () => {
-                    LeaveCircle(userCircles[0]?.id).then(resp => {
+                    LeaveCircle(activeCircle?.id).then(resp => {
                       if (resp.ok) {
                         showNotification({
                           type: 'success',

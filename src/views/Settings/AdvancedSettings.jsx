@@ -12,9 +12,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 
 import RealTimeSettings from '../../components/RealTimeSettings'
+import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
-import { GetUserCircle, PutWebhookURL } from '../../utils/Fetcher'
+import { PutWebhookURL } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
 import { offlineDB } from '../../utils/OfflineDB'
 import {
@@ -36,8 +37,8 @@ const AdvancedSettings = () => {
   const { data: userProfile } = useUserProfile()
   const queryClient = useQueryClient()
   const { showNotification } = useNotification()
+  const { activeCircle } = useActiveCircle()
 
-  const [userCircles, setUserCircles] = useState([])
   const [webhookURL, setWebhookURL] = useState(null)
   const [webhookError, setWebhookError] = useState(null)
   const [offlineEnabled, setOfflineEnabled] = useState(
@@ -52,19 +53,16 @@ const AdvancedSettings = () => {
   }, [])
 
   useEffect(() => {
-    GetUserCircle().then(resp => {
-      resp.json().then(data => {
-        setUserCircles(data.res ? data.res : [])
-        setWebhookURL(data.res ? data.res[0].webhook_url : null)
-      })
-    })
-  }, [])
+    if (activeCircle?.webhook_url) {
+      setWebhookURL(activeCircle.webhook_url)
+    }
+  }, [activeCircle])
 
   const canManageCircle = hasPermission(
     resolveEffectiveRole(userProfile, [
       {
         userId: userProfile?.id,
-        role: userCircles[0]?.userRole,
+        role: activeCircle?.userRole,
         isActive: true,
       },
     ]),

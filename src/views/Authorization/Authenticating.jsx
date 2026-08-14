@@ -1,14 +1,14 @@
+import { Capacitor } from '@capacitor/core'
 import { Box, Button, LinearProgress } from '@mui/joy'
 import { useEffect, useState } from 'react'
-
-import { Capacitor } from '@capacitor/core'
-import Cookies from 'js-cookie'
 import { useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+
 import { useUserProfile } from '../../queries/UserQueries'
 import { apiClient } from '../../utils/ApiClient'
-import { endOAuthExchange } from '../../utils/OAuthExchangeState'
 import { GetUserProfile } from '../../utils/Fetcher'
+import { endOAuthExchange } from '../../utils/OAuthExchangeState'
+import { consumeReturnPath } from '../../utils/ReturnPath'
 import { saveTokens } from '../../utils/TokenStorage'
 import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
@@ -41,14 +41,7 @@ const AuthenticationLoading = () => {
     GetUserProfile().then(response => {
       response.json().then(() => {
         refetchUserProfile().then(() => {
-          // check if redirect url is set in cookie:
-          const redirectUrl = Cookies.get('ca_redirect')
-          if (redirectUrl) {
-            Cookies.remove('ca_redirect')
-            Navigate(redirectUrl)
-          } else {
-            Navigate('/chores')
-          }
+          Navigate(consumeReturnPath('/chores'))
         })
       })
     })
@@ -149,13 +142,7 @@ const AuthenticationLoading = () => {
           refreshTokenExpiry: data.refresh_token_expiry,
         })
 
-        const redirectUrl = Cookies.get('ca_redirect')
-        if (redirectUrl) {
-          Cookies.remove('ca_redirect')
-          Navigate(redirectUrl)
-        } else {
-          getUserProfileAndNavigateToHome()
-        }
+        getUserProfileAndNavigateToHome()
       } catch (error) {
         console.error('Authentication request failed', error)
         setMessage('Sign-in failed')

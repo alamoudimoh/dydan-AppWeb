@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { getStoredCircleId } from '../utils/ActiveCircle'
 import { apiClient } from '../utils/ApiClient'
 import {
   normalizeGoals,
@@ -14,13 +15,14 @@ const json = async response => {
   return body
 }
 const token = () => localStorage.getItem('token')
+const progressScope = () => [token(), getStoredCircleId()]
 const get = path => apiClient.get(path).then(json)
 
 export const useWorkload = (range, memberId, categoryId) =>
   useQuery({
     queryKey: [
       'familyProgress',
-      token(),
+      ...progressScope(),
       'workload',
       range,
       memberId,
@@ -35,18 +37,18 @@ export const useWorkload = (range, memberId, categoryId) =>
   })
 export const useReport = range =>
   useQuery({
-    queryKey: ['familyProgress', token(), 'report', range],
+    queryKey: ['familyProgress', ...progressScope(), 'report', range],
     queryFn: () =>
       get(`/progress/reports?range=${range}`).then(normalizeReport),
   })
 export const useStreak = () =>
   useQuery({
-    queryKey: ['familyProgress', token(), 'streak'],
+    queryKey: ['familyProgress', ...progressScope(), 'streak'],
     queryFn: () => get('/progress/streak'),
   })
 export const useGoals = () =>
   useQuery({
-    queryKey: ['familyProgress', token(), 'goals'],
+    queryKey: ['familyProgress', ...progressScope(), 'goals'],
     queryFn: () => get('/progress/goals').then(normalizeGoals),
   })
 export const useGoalMutation = () => {

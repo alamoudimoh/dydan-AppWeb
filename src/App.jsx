@@ -9,6 +9,7 @@ import NavBar from '@/views/components/NavBar'
 
 import { registerCapacitorListeners } from './CapacitorListener'
 import PageTransition from './components/animations/PageTransition'
+import RequireAuth from './components/auth/RequireAuth'
 import { ImpersonateUserProvider } from './contexts/ImpersonateUserContext'
 import SSEProvider from './contexts/SSEContext'
 import { AuthProvider } from './hooks/useAuth.jsx'
@@ -99,14 +100,16 @@ const AppContent = () => {
   if (isRedirectingToOnboarding) return null
 
   return (
-    <div>
-      <ImpersonateUserProvider>
-        <NavBar />
-        <PageTransition>
-          <Outlet />
-        </PageTransition>
-      </ImpersonateUserProvider>
-    </div>
+    <RequireAuth>
+      <div>
+        <ImpersonateUserProvider>
+          <NavBar />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
+        </ImpersonateUserProvider>
+      </div>
+    </RequireAuth>
   )
 }
 

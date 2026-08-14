@@ -1,6 +1,7 @@
 import { Share } from '@capacitor/share'
 import { CopyAll, Delete, IosShare, Refresh } from '@mui/icons-material'
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -18,6 +19,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { apiClient } from '../../utils/ApiClient'
@@ -26,7 +28,6 @@ import {
   DeleteCircleMember,
   GetAllCircleMembers,
   GetCircleMemberRequests,
-  GetUserCircle,
   JoinCircle,
   LeaveCircle,
   UpdateMemberRole,
@@ -46,8 +47,8 @@ const CircleSettings = () => {
   const { showNotification } = useNotification()
   const navigate = useNavigate()
   const { fmt } = useLocalization()
+  const { activeCircle, hasMultipleCircles } = useActiveCircle()
 
-  const [userCircles, setUserCircles] = useState([])
   const [circleMemberRequests, setCircleMemberRequests] = useState([])
   const [circleInviteCode, setCircleInviteCode] = useState('')
   const [circleMembers, setCircleMembers] = useState([])
@@ -97,11 +98,6 @@ const CircleSettings = () => {
   }
 
   useEffect(() => {
-    GetUserCircle().then(resp => {
-      resp.json().then(data => {
-        setUserCircles(data.res ? data.res : [])
-      })
-    })
     GetCircleMemberRequests().then(resp => {
       resp.json().then(data => {
         setCircleMemberRequests(data.res ? data.res : [])
@@ -118,7 +114,7 @@ const CircleSettings = () => {
     PERMISSIONS.MANAGE_CIRCLE,
   )
 
-  const inviteCode = userCircles[0]?.invite_code
+  const inviteCode = activeCircle?.invite_code
   const apiURL = new URL(apiClient.getApiURL(), window.location.origin)
   const inviteOrigin =
     apiURL.hostname === 'api.donetick.com'
@@ -129,7 +125,7 @@ const CircleSettings = () => {
     : ''
 
   const shareInvite = async () => {
-    const circleName = userCircles[0]?.name || 'my Circle'
+    const circleName = activeCircle?.name || 'my Circle'
 
     try {
       await Share.share({
@@ -160,10 +156,16 @@ const CircleSettings = () => {
           Circle. Share the unique Circle code or link below; you'll receive a
           request to approve before they can join.
         </Typography>
+        {hasMultipleCircles && activeCircle && (
+          <Alert variant='soft' color='neutral'>
+            You belong to more than one Circle. This session uses your active
+            Circle ({activeCircle.name}).
+          </Alert>
+        )}
         <Box>
           <Typography level='title-sm' sx={{ mb: 1 }}>
-            {userCircles[0]?.userRole === 'member'
-              ? `You part of ${userCircles[0]?.name} `
+            {activeCircle?.userRole === 'member'
+              ? `You part of ${activeCircle?.name} `
               : `You circle code is:`}
           </Typography>
           <Input
@@ -187,7 +189,7 @@ const CircleSettings = () => {
               variant='soft'
               startDecorator={<CopyAll />}
               onClick={() => {
-                navigator.clipboard.writeText(userCircles[0]?.invite_code)
+                navigator.clipboard.writeText(activeCircle?.invite_code)
                 showNotification({
                   type: 'success',
                   message: 'Code copied to clipboard',
@@ -204,39 +206,38 @@ const CircleSettings = () => {
             >
               Share Invite
             </Button>
-            {userCircles.length > 0 &&
-              userCircles[0]?.userRole === 'member' && (
-                <Button
-                  color='danger'
-                  variant='outlined'
-                  onClick={() => {
-                    showConfirmation(
-                      'Are you sure you want to leave your circle?',
-                      'Leave Circle',
-                      () => {
-                        LeaveCircle(userCircles[0]?.id).then(resp => {
-                          if (resp.ok) {
-                            showNotification({
-                              type: 'success',
-                              message: 'Left circle successfully',
-                            })
-                          } else {
-                            showNotification({
-                              type: 'error',
-                              message: 'Failed to leave circle',
-                            })
-                          }
-                        })
-                      },
-                      'Leave',
-                      'Cancel',
-                      'danger',
-                    )
-                  }}
-                >
-                  Leave Circle
-                </Button>
-              )}
+            {activeCircle && activeCircle?.userRole === 'member' && (
+              <Button
+                color='danger'
+                variant='outlined'
+                onClick={() => {
+                  showConfirmation(
+                    'Are you sure you want to leave your circle?',
+                    'Leave Circle',
+                    () => {
+                      LeaveCircle(activeCircle?.id).then(resp => {
+                        if (resp.ok) {
+                          showNotification({
+                            type: 'success',
+                            message: 'Left circle successfully',
+                          })
+                        } else {
+                          showNotification({
+                            type: 'error',
+                            message: 'Failed to leave circle',
+                          })
+                        }
+                      })
+                    },
+                    'Leave',
+                    'Cancel',
+                    'danger',
+                  )
+                }}
+              >
+                Leave Circle
+              </Button>
+            )}
           </Box>
         </Box>
 

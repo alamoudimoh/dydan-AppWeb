@@ -5,12 +5,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 
+import { getStoredCircleId } from '../utils/ActiveCircle'
 import { apiClient } from '../utils/ApiClient'
 
-const scope = () => [
-  localStorage.getItem('token'),
-  localStorage.getItem('circleId'),
-]
+const scope = () => [localStorage.getItem('token'), getStoredCircleId()]
 const json = async response => {
   const body = await response.json().catch(() => ({}))
   if (!response.ok)

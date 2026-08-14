@@ -1,10 +1,15 @@
 import Cookies from 'js-cookie'
 
+import {
+  consumeReturnPath,
+  RETURN_PATH_COOKIE,
+  storeReturnPath,
+} from './ReturnPath'
+
 // A circle invite link is often the very first thing a new user opens, so the
 // code has to survive the trip through login/signup (including OAuth, which
 // leaves and re-enters the app) and be replayed once a session exists.
 const INVITE_KEY = 'pending_circle_invite'
-const REDIRECT_COOKIE = 'ca_redirect'
 
 // `auto=1` tells the join view this visit is the return leg of an auth
 // round-trip, so it can submit the request instead of asking a second time.
@@ -19,9 +24,7 @@ export const setPendingInvite = code => {
   } catch {
     // The redirect cookie still preserves the invite through authentication.
   }
-  // Every post-auth landing point (password login, OAuth callback, MFA) already
-  // consumes `ca_redirect`, so reusing it is all the routing this needs.
-  Cookies.set(REDIRECT_COOKIE, joinCirclePath(code), { expires: 1 })
+  storeReturnPath(joinCirclePath(code))
 }
 
 export const getPendingInvite = () => {
@@ -39,8 +42,10 @@ export const clearPendingInvite = () => {
     // Ignore unavailable storage during cleanup.
   }
 
-  const redirect = Cookies.get(REDIRECT_COOKIE)
+  const redirect = Cookies.get(RETURN_PATH_COOKIE)
   if (redirect?.startsWith('/circle/join')) {
-    Cookies.remove(REDIRECT_COOKIE)
+    Cookies.remove(RETURN_PATH_COOKIE)
   }
 }
+
+export { consumeReturnPath }
