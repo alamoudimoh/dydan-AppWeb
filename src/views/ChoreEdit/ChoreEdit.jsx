@@ -37,7 +37,7 @@ import {
   Typography,
 } from '@mui/joy'
 import moment from 'moment'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import DurationInput from '../../components/common/DurationInput'
@@ -173,6 +173,7 @@ const ChoreEdit = () => {
 
   const updateChoreMutation = useUpdateChore()
   const createChoreMutation = useCreateChore()
+  const saveInFlightRef = useRef(false)
   const archiveChore = useArchiveChore()
   const unarchiveChore = useUnArchiveChore()
   const deleteChores = useDeleteChores()
@@ -375,12 +376,14 @@ const ChoreEdit = () => {
     }
   }
   const HandleSaveChore = () => {
+    if (saveInFlightRef.current) return
     setAttemptToSave(true)
     if (!HandleValidateChore()) {
       console.log('validation failed')
       console.log(errors)
       return
     }
+    saveInFlightRef.current = true
     let newChoreId = choreId
     if (searchParams.get('clone') === 'true') {
       newChoreId = null
@@ -465,6 +468,9 @@ const ChoreEdit = () => {
             ? error.message
             : 'Failed to save chore, please try again.',
         })
+      })
+      .finally(() => {
+        saveInFlightRef.current = false
       })
   }
   useEffect(() => {
@@ -2096,7 +2102,17 @@ const ChoreEdit = () => {
             <KeyboardShortcutHint shortcut='Esc' sx={{ ml: 1 }} />
           )}
         </Button>
-        <Button color='primary' variant='solid' onClick={HandleSaveChore}>
+        <Button
+          color='primary'
+          variant='solid'
+          onClick={HandleSaveChore}
+          loading={
+            createChoreMutation.isPending || updateChoreMutation.isPending
+          }
+          disabled={
+            createChoreMutation.isPending || updateChoreMutation.isPending
+          }
+        >
           {choreId > 0 ? 'Save' : 'Create'}
           {showKeyboardShortcuts && (
             <KeyboardShortcutHint shortcut='Enter' sx={{ ml: 1 }} />

@@ -1,4 +1,7 @@
 import { apiClient } from './ApiClient'
+import { createSingleFlight, ensureOperationId } from './SubmissionGuards'
+
+const runCompletion = createSingleFlight()
 
 // Migration helpers to maintain compatibility with existing code
 const Fetch = async (endpoint, options = {}) => {
@@ -161,6 +164,7 @@ const GetChoreDetailById = id => {
   })
 }
 const MarkChoreComplete = (id, body, completedDate, performer) => {
+  const payload = ensureOperationId(body)
   var markChoreURL = `/chores/${id}/do`
 
   let completedDateFormated = ''
@@ -171,7 +175,7 @@ const MarkChoreComplete = (id, body, completedDate, performer) => {
     markChoreURL += completedDateFormated
   }
   if (performer) {
-    body.performer = Number(performer)
+    payload.performer = Number(performer)
     if (completedDateFormated === '') {
       markChoreURL += `&performer=${performer}`
     } else {
@@ -179,20 +183,22 @@ const MarkChoreComplete = (id, body, completedDate, performer) => {
     }
   }
 
-  return Fetch(markChoreURL, {
-    method: 'POST',
-    headers: HEADERS(),
-    body: JSON.stringify(body),
-  }).then(response => {
-    if (response?.ok) {
-      // Single choke point for completions, so queued offline completions are
-      // counted once, when they sync.
-      import('../service/FeedbackService')
-        .then(({ recordTaskCompleted }) => recordTaskCompleted())
-        .catch(() => {})
-    }
-    return response
-  })
+  return runCompletion(id, () =>
+    Fetch(markChoreURL, {
+      method: 'POST',
+      headers: HEADERS(),
+      body: JSON.stringify(payload),
+    }).then(response => {
+      if (response?.ok) {
+        // Single choke point for completions, so queued offline completions are
+        // counted once, when they sync.
+        import('../service/FeedbackService')
+          .then(({ recordTaskCompleted }) => recordTaskCompleted())
+          .catch(() => {})
+      }
+      return response
+    }),
+  )
 }
 
 const StartChore = id => {

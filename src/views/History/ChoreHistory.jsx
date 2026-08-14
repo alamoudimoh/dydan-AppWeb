@@ -1,13 +1,15 @@
+import '@meauxt/react-swipeable-list/dist/styles.css'
+
 import {
-  Type as ListType,
   SwipeableList,
   SwipeableListItem,
   SwipeAction,
   TrailingActions,
+  Type as ListType,
 } from '@meauxt/react-swipeable-list'
-import '@meauxt/react-swipeable-list/dist/styles.css'
 import {
   Analytics,
+  Block,
   CalendarMonth,
   Check,
   Checklist,
@@ -32,6 +34,7 @@ import { Box, Card, Container, Grid, Sheet, Typography } from '@mui/joy'
 import moment from 'moment'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+
 import EmptyState from '../../components/common/EmptyState'
 import FilterBar from '../../components/common/FilterBar'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -64,7 +67,7 @@ const ChoreHistory = () => {
   const [showMoreInfoId, setShowMoreInfoId] = useState(null)
   const [noteViewerConfig, setNoteViewerConfig] = useState({ isOpen: false })
   const [detailModalConfig, setDetailModalConfig] = useState({ isOpen: false })
-  const { showSuccess, showError } = useNotification()
+  const { showError, showSuccess } = useNotification()
   // React Query hooks
   const { data: choreHistoryData, isLoading } = useChoreHistory(choreId)
   const { data: circleMembersData } = useCircleMembers()
@@ -136,6 +139,12 @@ const ChoreHistory = () => {
             color: 'warning',
             icon: <Schedule sx={{ fontSize: 14 }} />,
           },
+          {
+            value: ChoreHistoryStatus.VOIDED,
+            label: 'Voided',
+            color: 'neutral',
+            icon: <Block sx={{ fontSize: 14 }} />,
+          },
         ],
         filterFn: (item, values) => values.includes(item.status),
       },
@@ -175,11 +184,11 @@ const ChoreHistory = () => {
   )
 
   const {
-    filteredData: filteredHistory,
-    activeFilters,
-    setFilter,
-    clearAll,
     activeFilterCount,
+    activeFilters,
+    clearAll,
+    filteredData: filteredHistory,
+    setFilter,
   } = useFilter(choreHistory, filterDefs)
 
   const sortedHistory = useMemo(
@@ -194,15 +203,15 @@ const ChoreHistory = () => {
 
   const handleDelete = historyEntry => {
     showConfirmation(
-      `Are you sure you want to delete this history record?`,
-      'Delete History Record',
+      `Are you sure you want to void this history record? The record will remain in the audit trail.`,
+      'Void History Record',
       () => {
         deleteChoreHistory.mutate({
           choreId,
           historyId: historyEntry.id,
         })
       },
-      'Delete',
+      'Void',
       'Cancel',
       'danger',
     )
@@ -443,55 +452,57 @@ const ChoreHistory = () => {
                     : null
                 }
                 trailingActions={
-                  <TrailingActions>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        boxShadow: 'inset 2px 0 4px rgba(0,0,0,0.06)',
-                        zIndex: 0,
-                      }}
-                    >
-                      <SwipeAction onClick={() => handleEdit(historyEntry)}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'neutral.softBg',
-                            color: 'neutral.700',
-                            px: 3,
-                            height: '100%',
-                            width: '100%',
-                          }}
-                        >
-                          <EditIcon sx={{ fontSize: 20 }} />
-                          <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                            Edit
-                          </Typography>
-                        </Box>
-                      </SwipeAction>
-                      <SwipeAction onClick={() => handleDelete(historyEntry)}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'danger.softBg',
-                            color: 'danger.700',
-                            px: 3,
-                            height: '100%',
-                          }}
-                        >
-                          <DeleteIcon sx={{ fontSize: 20 }} />
-                          <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                            Delete
-                          </Typography>
-                        </Box>
-                      </SwipeAction>
-                    </Box>
-                  </TrailingActions>
+                  historyEntry.status === ChoreHistoryStatus.VOIDED ? null : (
+                    <TrailingActions>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          boxShadow: 'inset 2px 0 4px rgba(0,0,0,0.06)',
+                          zIndex: 0,
+                        }}
+                      >
+                        <SwipeAction onClick={() => handleEdit(historyEntry)}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: 'neutral.softBg',
+                              color: 'neutral.700',
+                              px: 3,
+                              height: '100%',
+                              width: '100%',
+                            }}
+                          >
+                            <EditIcon sx={{ fontSize: 20 }} />
+                            <Typography level='body-xs' sx={{ mt: 0.5 }}>
+                              Edit
+                            </Typography>
+                          </Box>
+                        </SwipeAction>
+                        <SwipeAction onClick={() => handleDelete(historyEntry)}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: 'danger.softBg',
+                              color: 'danger.700',
+                              px: 3,
+                              height: '100%',
+                            }}
+                          >
+                            <DeleteIcon sx={{ fontSize: 20 }} />
+                            <Typography level='body-xs' sx={{ mt: 0.5 }}>
+                              Void
+                            </Typography>
+                          </Box>
+                        </SwipeAction>
+                      </Box>
+                    </TrailingActions>
+                  )
                 }
               >
                 <HistoryCard
@@ -505,11 +516,14 @@ const ChoreHistory = () => {
                       entry: historyEntry,
                       performers,
                       onClose: () => setDetailModalConfig({ isOpen: false }),
-                      onEdit: record => {
-                        setDetailModalConfig({ isOpen: false })
-                        setEditHistory(record)
-                        setIsEditModalOpen(true)
-                      },
+                      onEdit:
+                        historyEntry.status === ChoreHistoryStatus.VOIDED
+                          ? undefined
+                          : record => {
+                              setDetailModalConfig({ isOpen: false })
+                              setEditHistory(record)
+                              setIsEditModalOpen(true)
+                            },
                     })
                   }}
                   pendingCommands={pendingByHistoryId[historyEntry.id] || []}
@@ -590,14 +604,14 @@ const ChoreHistory = () => {
                   setEditHistory(null)
                   if (data?.queued) {
                     showSuccess({
-                      title: 'History Delete Queued',
+                      title: 'History Void Queued',
                       message:
-                        'You are offline. The history delete will sync when connection is restored.',
+                        'You are offline. The history void will sync when connection is restored.',
                     })
                   } else {
                     showSuccess({
-                      title: 'History Deleted',
-                      message: `The history record has been deleted successfully.`,
+                      title: 'History Voided',
+                      message: `The history record has been voided and retained in the audit trail.`,
                     })
                   }
                 },

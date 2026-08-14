@@ -26,7 +26,10 @@ import {
 import { cacheChoreImages } from '../utils/ImageCache'
 import { offlineDB } from '../utils/OfflineDB'
 import { isOfflineFeatureEnabled } from '../utils/OfflineFeatureToggle'
+import { createSingleFlight } from '../utils/SubmissionGuards'
 import { syncEngine } from '../utils/SyncEngine'
+
+const runChoreCreation = createSingleFlight()
 
 const mergePendingCreates = async chores => {
   const pending = await commandQueue.getPending()
@@ -227,7 +230,10 @@ export const useCreateChore = () => {
       }
 
       try {
-        const resp = await CreateChore(newTask)
+        const create = () => CreateChore(newTask)
+        const resp = newTask.draftId
+          ? await runChoreCreation(newTask.draftId, create)
+          : await create()
         if (!resp || !resp.ok) {
           throw await errorFromResponse(resp, 'Failed to create chore')
         }
