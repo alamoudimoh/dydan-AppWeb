@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
+import { useLocalization } from '../../contexts/LocalizationContext'
 import useConfirmationModal from '../../hooks/useConfirmationModal'
 import {
   useChildUsers,
@@ -44,6 +45,7 @@ import SettingsLayout from './SettingsLayout'
 
 const ChildUserSettings = () => {
   const { data: userProfile } = useUserProfile()
+  const { fmt } = useLocalization()
   const { data: circleMembersData } = useCircleMembers()
   const { data: childUsers, error, isLoading, refetch } = useChildUsers()
   const childUsersState = resolveSettingsQueryState({
@@ -234,8 +236,7 @@ const ChildUserSettings = () => {
                         Username: {child.username}
                       </Typography>
                       <Typography level='body-xs' color='neutral'>
-                        Created:{' '}
-                        {new Date(child.createdAt).toLocaleDateString()}
+                        Created: {fmt.date(child.createdAt)}
                       </Typography>
                     </Box>
 

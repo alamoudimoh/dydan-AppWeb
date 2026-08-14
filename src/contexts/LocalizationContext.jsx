@@ -4,6 +4,12 @@ import { useTranslation } from 'react-i18next'
 
 import useStickyState from '@/hooks/useStickyState'
 
+import i18n from '../i18n/config'
+import {
+  CALENDAR_LABEL_KEYS,
+  resolveIntlLocale,
+} from '../utils/localizationModel'
+
 const LocalizationContext = createContext()
 
 export const DATE_FORMATS = {
@@ -51,8 +57,23 @@ export const LocalizationProvider = ({ children }) => {
 
   useEffect(() => {
     i18n.changeLanguage(language)
-    moment.locale(language)
+    const momentLocale =
+      language.toLowerCase() === 'zh-cn'
+        ? 'zh-cn'
+        : language.toLowerCase() === 'pt'
+          ? 'pt-br'
+          : language
+    moment.locale(momentLocale)
   }, [language, i18n])
+
+  const intlLocale = resolveIntlLocale(language)
+
+  const formatIntlDateTime = (date, options = {}) => {
+    if (!date) return ''
+    const value = date instanceof Date ? date : new Date(date)
+    if (Number.isNaN(value.getTime())) return ''
+    return new Intl.DateTimeFormat(intlLocale, options).format(value)
+  }
 
   useEffect(() => {
     const isRTL = RTL_LANGUAGES.includes(language.split('-')[0])
@@ -83,12 +104,18 @@ export const LocalizationProvider = ({ children }) => {
 
   const formatCalendar = date => {
     if (!date) return ''
+    const labels = Object.fromEntries(
+      Object.entries(CALENDAR_LABEL_KEYS).map(([momentKey, i18nKey]) => [
+        momentKey,
+        i18n.t(i18nKey),
+      ]),
+    )
     return moment(date).calendar(null, {
-      sameDay: `[Today] ${timeFormat}`,
-      nextDay: `[Tomorrow] ${timeFormat}`,
+      sameDay: `[${labels.sameDay}] ${timeFormat}`,
+      nextDay: `[${labels.nextDay}] ${timeFormat}`,
       nextWeek: `dddd ${timeFormat}`,
-      lastDay: `[Yesterday] ${timeFormat}`,
-      lastWeek: `[Last] dddd ${timeFormat}`,
+      lastDay: `[${labels.lastDay}] ${timeFormat}`,
+      lastWeek: `[${labels.lastWeek}] dddd ${timeFormat}`,
       sameElse: `${dateFormat} ${timeFormat}`,
     })
   }
@@ -101,6 +128,7 @@ export const LocalizationProvider = ({ children }) => {
     time: formatTime,
     relative: formatRelative,
     calendar: formatCalendar,
+    intlDateTime: formatIntlDateTime,
   }
 
   const value = {
@@ -113,6 +141,7 @@ export const LocalizationProvider = ({ children }) => {
     language,
     setLanguage,
     isRTL,
+    intlLocale,
     fmt,
     availableLanguages: AVAILABLE_LANGUAGES,
   }

@@ -37,12 +37,12 @@ const AccountIdentityCard = ({ circleMembers, profile }) => {
       />
       <IdentityRow
         label={t('profile.accountIdentity.provider')}
-        value={identity.providerLabel}
+        value={t(`profile.accountIdentity.providers.${identity.providerKey}`)}
         notSetLabel={notSet}
       />
       <IdentityRow
         label={t('profile.accountIdentity.familyRole')}
-        value={identity.effectiveRoleLabel}
+        value={t(`profile.accountIdentity.roles.${identity.effectiveRoleKey}`)}
         notSetLabel={notSet}
       />
     </Card>

@@ -26,6 +26,8 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import {
   DEFAULT_SIDEPANEL_CONFIG,
   getSidepanelConfig,
@@ -34,6 +36,7 @@ import {
 import SettingsLayout from './SettingsLayout'
 
 const SidepanelSettings = () => {
+  const { t } = useTranslation('settings')
   const [config, setConfig] = useState(getSidepanelConfig())
 
   const getIcon = iconName => {
@@ -93,15 +96,14 @@ const SidepanelSettings = () => {
   }
 
   return (
-    <SettingsLayout title='Sidepanel Customization'>
+    <SettingsLayout title={t('sidepanel.title')}>
       <div className='grid gap-4'>
         <Box>
           <Typography level='h4' sx={{ mb: 2 }}>
-            Sidepanel Settings
+            {t('sidepanel.settingsHeading')}
           </Typography>
           <Typography level='body-md' sx={{ mb: 3 }}>
-            Customize which cards appear in the sidepanel and their order. Drag
-            and drop to reorder, or toggle visibility for each card.
+            {t('sidepanel.description')}
           </Typography>
 
           <DragDropContext onDragEnd={handleDragEnd}>
@@ -134,8 +136,8 @@ const SidepanelSettings = () => {
                             sx={{
                               width: '100%',
                               display: 'flex',
-                              alignItems: 'center',
-                              flexDirection: 'row',
+                              alignItems: { xs: 'stretch', sm: 'center' },
+                              flexDirection: { xs: 'column', sm: 'row' },
                               gap: 2,
                               p: 2,
                               opacity: item.enabled ? 1 : 0.6,
@@ -144,32 +146,45 @@ const SidepanelSettings = () => {
                                 : '1px solid var(--joy-palette-divider)',
                             }}
                           >
-                            <ListItemDecorator>
-                              <IconButton
-                                {...provided.dragHandleProps}
-                                variant='plain'
-                                size='sm'
-                                sx={{
-                                  cursor: 'grab',
-                                  '&:active': { cursor: 'grabbing' },
-                                }}
-                              >
-                                <DragIndicator />
-                              </IconButton>
-                            </ListItemDecorator>
-
-                            <IconButton
-                              sx={{ color: 'var(--joy-palette-primary-500)' }}
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                                minWidth: 0,
+                              }}
                             >
-                              {getIcon(item.iconName)}
-                            </IconButton>
+                              <ListItemDecorator>
+                                <IconButton
+                                  {...provided.dragHandleProps}
+                                  variant='plain'
+                                  size='sm'
+                                  sx={{
+                                    cursor: 'grab',
+                                    '&:active': { cursor: 'grabbing' },
+                                  }}
+                                >
+                                  <DragIndicator />
+                                </IconButton>
+                              </ListItemDecorator>
 
-                            <ListItemContent sx={{ flex: 1 }}>
+                              <IconButton
+                                sx={{ color: 'var(--joy-palette-primary-500)' }}
+                              >
+                                {getIcon(item.iconName)}
+                              </IconButton>
+                            </Box>
+
+                            <ListItemContent sx={{ flex: 1, minWidth: 0 }}>
                               <Box
                                 sx={{
                                   display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 2,
+                                  flexDirection: { xs: 'column', sm: 'row' },
+                                  alignItems: {
+                                    xs: 'flex-start',
+                                    sm: 'center',
+                                  },
+                                  gap: { xs: 0.5, sm: 2 },
                                 }}
                               >
                                 <Typography
@@ -182,26 +197,37 @@ const SidepanelSettings = () => {
                                   level='body-xs'
                                   sx={{
                                     color: 'var(--joy-palette-text-tertiary)',
+                                    wordBreak: 'break-word',
                                   }}
                                 >
-                                  - {item.description}
+                                  {item.description}
                                 </Typography>
                               </Box>
                             </ListItemContent>
 
-                            <FormControl>
-                              <Checkbox
-                                checked={item.enabled}
-                                onChange={e =>
-                                  handleToggleEnabled(item.id, e.target.checked)
-                                }
-                                overlay
-                                variant='plain'
-                                size='lg'
-                                checkedIcon={<Visibility />}
-                                uncheckedIcon={<VisibilityOff />}
-                              />
-                            </FormControl>
+                            <Box
+                              sx={{
+                                alignSelf: { xs: 'flex-end', sm: 'center' },
+                                flexShrink: 0,
+                              }}
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={item.enabled}
+                                  onChange={e =>
+                                    handleToggleEnabled(
+                                      item.id,
+                                      e.target.checked,
+                                    )
+                                  }
+                                  overlay
+                                  variant='plain'
+                                  size='lg'
+                                  checkedIcon={<Visibility />}
+                                  uncheckedIcon={<VisibilityOff />}
+                                />
+                              </FormControl>
+                            </Box>
                           </Card>
                         </ListItem>
                       )}
@@ -226,10 +252,10 @@ const SidepanelSettings = () => {
               onClick={resetToDefaults}
               size='sm'
             >
-              Reset to Defaults
+              {t('sidepanel.resetDefaults')}
             </Button>
             <FormHelperText sx={{ mt: 1 }}>
-              This will restore all cards to their default visibility and order.
+              {t('sidepanel.resetHelp')}
             </FormHelperText>
           </Box>
         </Box>

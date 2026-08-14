@@ -17,7 +17,8 @@ import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
 import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import { useLocalization } from '../../contexts/LocalizationContext'
+import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { apiClient } from '../../utils/ApiClient'
 import { UpdateUserDetails } from '../../utils/Fetcher'
@@ -37,6 +38,7 @@ import SettingsLayout from './SettingsLayout'
 
 const ProfileSettingsForm = ({
   circleMembers,
+  intlLocale,
   refetchUserProfile,
   userProfile,
 }) => {
@@ -271,7 +273,7 @@ const ProfileSettingsForm = ({
             options={timezones}
             getOptionLabel={tz => {
               const formattedTimezone = tz.replace(/_/g, ' ')
-              const currentTime = new Date().toLocaleString('en-US', {
+              const currentTime = new Date().toLocaleString(intlLocale, {
                 timeZone: tz,
                 timeStyle: 'short',
               })
@@ -313,6 +315,7 @@ const ProfileSettingsForm = ({
 
 const ProfileSettings = () => {
   const { t } = useTranslation('settings')
+  const { intlLocale } = useLocalization()
   const { data: userProfile, error, isLoading, refetch } = useUserProfile()
   const { data: membersData } = useCircleMembers()
   const circleMembers = membersData?.res || []
@@ -342,6 +345,7 @@ const ProfileSettings = () => {
       key={userProfile.id}
       userProfile={userProfile}
       circleMembers={circleMembers}
+      intlLocale={intlLocale}
       refetchUserProfile={refetch}
     />
   )

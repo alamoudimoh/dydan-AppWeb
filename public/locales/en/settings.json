@@ -24,6 +24,24 @@
     "makeAdmin": "Make Admin",
     "makeMember": "Make Member",
     "remove": "Remove",
+    "you": "(You)",
+    "pendingApproval": "Pending approval",
+    "joinedOn": "Joined on {{date}}",
+    "requestToJoin": "Request to join {{date}}",
+    "lastUpdated": "Last updated: {{date}}",
+    "refreshing": "Refreshing...",
+    "refresh": "Refresh",
+    "requestWantsToJoin": "{{name}} wants to join your circle.",
+    "joinSomeoneElse": "Want to join someone else's Circle? Ask them for their unique Circle code or join link. Enter the code below to join their Circle.",
+    "enterCircleCode": "Enter Circle code:",
+    "enterCodePlaceholder": "Enter code",
+    "orDivider": "or",
+    "roleMember": "Member",
+    "roleManager": "Manager",
+    "roleAdmin": "Admin",
+    "roleMemberDescription": "Just a regular member of the circle",
+    "roleManagerDescription": "Can impersonate users and perform actions on their behalf",
+    "roleAdminDescription": "Full access to the circle",
     "webhookURL": "Webhook URL",
     "webhookDescription": "Enter a webhook URL to receive notifications for circle events",
     "webhookPlaceholder": "https://your-webhook-url.com"
@@ -58,6 +76,19 @@
     "sunday": "Sunday",
     "monday": "Monday",
     "saturday": "Saturday",
+    "preview": "Preview",
+    "rtlNotice": "This language uses right-to-left (RTL) text direction.",
+    "languages": {
+      "ar-SA": "Arabic",
+      "de": "German",
+      "en": "English",
+      "es": "Spanish",
+      "fr": "French",
+      "nl": "Dutch",
+      "ja": "Japanese",
+      "pt": "Portuguese (Brazil)",
+      "zh-CN": "Chinese (Simplified)"
+    },
     "formats": {
       "mdy": "MM/DD/YYYY (US)",
       "dmy": "DD/MM/YYYY (Europe)",
@@ -68,7 +99,10 @@
   },
   "sidepanel": {
     "title": "Sidepanel Customization",
-    "description": "Customize the layout and visibility of cards in the sidepanel. This section is only available on large screen devices such as tablets and desktops."
+    "description": "Customize the layout and visibility of cards in the sidepanel. This section is only available on large screen devices such as tablets and desktops.",
+    "settingsHeading": "Sidepanel settings",
+    "resetDefaults": "Reset to defaults",
+    "resetHelp": "This will restore all cards to their default visibility and order."
   },
   "theme": {
     "title": "Theme preferences",
@@ -93,7 +127,19 @@
       "email": "Email",
       "provider": "Sign-in method",
       "familyRole": "Family role",
-      "notSet": "Not set"
+      "notSet": "Not set",
+      "providers": {
+        "password": "Email and password",
+        "sso": "SSO",
+        "google": "Google",
+        "apple": "Apple"
+      },
+      "roles": {
+        "owner": "Owner",
+        "adult": "Adult",
+        "child": "Child",
+        "none": "None"
+      }
     },
     "photoUpdated": "Photo Updated",
     "photoUpdatedMessage": "Your profile photo has been updated successfully!",

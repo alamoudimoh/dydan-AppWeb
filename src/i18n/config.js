@@ -1,7 +1,14 @@
 import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpBackend from 'i18next-http-backend'
+import 'moment/locale/ar'
+import 'moment/locale/de'
+import 'moment/locale/es'
+import 'moment/locale/fr'
 import 'moment/locale/ja'
+import 'moment/locale/nl'
+import 'moment/locale/pt-br'
+import 'moment/locale/zh-cn'
 import { initReactI18next } from 'react-i18next'
 
 i18n

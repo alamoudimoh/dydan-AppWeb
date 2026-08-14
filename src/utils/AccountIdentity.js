@@ -1,27 +1,27 @@
 import { EFFECTIVE_ROLES, resolveEffectiveRole } from './PermissionModel.js'
 
-export const AUTH_PROVIDER_LABELS = Object.freeze({
-  0: 'Email and password',
-  1: 'SSO',
-  2: 'Google',
-  3: 'Apple',
+export const AUTH_PROVIDER_KEYS = Object.freeze({
+  0: 'password',
+  1: 'sso',
+  2: 'google',
+  3: 'apple',
 })
 
-export const formatAuthProvider = provider => {
+export const formatAuthProviderKey = provider => {
   const key = Number(provider)
-  return AUTH_PROVIDER_LABELS[key] ?? AUTH_PROVIDER_LABELS[0]
+  return AUTH_PROVIDER_KEYS[key] ?? AUTH_PROVIDER_KEYS[0]
 }
 
-export const formatEffectiveRoleLabel = role => {
+export const formatEffectiveRoleKey = role => {
   switch (role) {
     case EFFECTIVE_ROLES.OWNER:
-      return 'Owner'
+      return 'owner'
     case EFFECTIVE_ROLES.ADULT:
-      return 'Adult'
+      return 'adult'
     case EFFECTIVE_ROLES.CHILD:
-      return 'Child'
+      return 'child'
     default:
-      return 'None'
+      return 'none'
   }
 }
 
@@ -39,7 +39,7 @@ export const buildAccountIdentity = (profile, circleMembers = []) => {
     username,
     email,
     loginIdentifier: username || email,
-    providerLabel: formatAuthProvider(profile?.provider),
-    effectiveRoleLabel: formatEffectiveRoleLabel(effectiveRole),
+    providerKey: formatAuthProviderKey(profile?.provider),
+    effectiveRoleKey: formatEffectiveRoleKey(effectiveRole),
   }
 }

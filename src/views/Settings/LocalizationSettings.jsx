@@ -1,9 +1,4 @@
 import {
-  DATE_FORMATS,
-  TIME_FORMATS,
-  useLocalization,
-} from '@/contexts/LocalizationContext'
-import {
   Box,
   Button,
   ButtonGroup,
@@ -16,21 +11,30 @@ import {
 } from '@mui/joy'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
+
+import {
+  DATE_FORMATS,
+  TIME_FORMATS,
+  useLocalization,
+} from '@/contexts/LocalizationContext'
+
+import { getLanguageDisplayName } from '../../utils/localizationModel'
 import SettingsLayout from './SettingsLayout'
 
 const LocalizationSettings = () => {
   const { t } = useTranslation('settings')
   const {
-    language,
-    setLanguage,
-    dateFormat,
-    setDateFormat,
-    timeFormat,
-    setTimeFormat,
-    firstDayOfWeek,
-    setFirstDayOfWeek,
     availableLanguages,
+    dateFormat,
+    firstDayOfWeek,
+    fmt,
     isRTL,
+    language,
+    setDateFormat,
+    setFirstDayOfWeek,
+    setLanguage,
+    setTimeFormat,
+    timeFormat,
   } = useLocalization()
 
   const sampleDate = moment('2024-01-15 14:30:00')
@@ -44,7 +48,7 @@ const LocalizationSettings = () => {
   ]
 
   return (
-    <SettingsLayout title='Localization'>
+    <SettingsLayout title={t('localization.title')}>
       <div className='grid gap-4 py-4'>
         <Typography level='body-md'>{t('localization.description')}</Typography>
 
@@ -61,22 +65,12 @@ const LocalizationSettings = () => {
           >
             {availableLanguages.map(lang => (
               <Option key={lang.code} value={lang.code}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography>{lang.nativeName}</Typography>
-                  <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-                    ({lang.name})
-                  </Typography>
-                </Box>
+                {getLanguageDisplayName(lang.code, t, availableLanguages)}
               </Option>
             ))}
           </Select>
           {isRTL && (
-            <FormHelperText>
-              {t(
-                'localization.rtlNotice',
-                'This language uses right-to-left (RTL) text direction',
-              )}
-            </FormHelperText>
+            <FormHelperText>{t('localization.rtlNotice')}</FormHelperText>
           )}
         </FormControl>
 
@@ -110,7 +104,7 @@ const LocalizationSettings = () => {
             ))}
           </Select>
           <FormHelperText>
-            Preview: {sampleDate.format(dateFormat)}
+            {t('localization.preview')}: {fmt.date(sampleDate)}
           </FormHelperText>
         </FormControl>
 
@@ -157,7 +151,7 @@ const LocalizationSettings = () => {
             </Option>
           </Select>
           <FormHelperText>
-            Preview: {sampleDate.format(timeFormat)}
+            {t('localization.preview')}: {fmt.time(sampleDate)}
           </FormHelperText>
         </FormControl>
 

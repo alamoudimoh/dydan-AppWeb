@@ -20,6 +20,7 @@ import {
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
 
+import { useLocalization } from '../../contexts/LocalizationContext'
 import { registerPushNotifications } from '../../CapacitorListener'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useDeviceTokens, useUserProfile } from '../../queries/UserQueries'
@@ -33,6 +34,7 @@ import SettingsLayout from './SettingsLayout'
 
 const NotificationSetting = () => {
   const { showWarning } = useNotification()
+  const { fmt } = useLocalization()
   const { data: userProfile, refetch: refetchUserProfile } = useUserProfile()
   const {
     data: deviceTokens,
@@ -586,10 +588,7 @@ const NotificationSetting = () => {
 
                               {device.createdAt && (
                                 <Typography level='body-sm' color='neutral'>
-                                  Created At:{' '}
-                                  {new Date(
-                                    device.createdAt,
-                                  ).toLocaleDateString()}
+                                  Created At: {fmt.date(device.createdAt)}
                                 </Typography>
                               )}
                             </Box>

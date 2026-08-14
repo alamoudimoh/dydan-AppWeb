@@ -19,6 +19,12 @@
   "backToCalendar": "العودة إلى التقويم",
   "logout": "تسجيل الخروج",
   "version": "النسخة",
+  "dates": {
+    "today": "اليوم",
+    "tomorrow": "غدًا",
+    "yesterday": "أمس",
+    "last": "آخر"
+  },
   "navigation": {
     "notifications": "الإشعارات",
     "allTasks": "جميع المهام",

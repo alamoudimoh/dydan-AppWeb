@@ -3,21 +3,21 @@ import test from 'node:test'
 
 import {
   buildAccountIdentity,
-  formatAuthProvider,
-  formatEffectiveRoleLabel,
+  formatAuthProviderKey,
+  formatEffectiveRoleKey,
   formatIdentityValue,
 } from './AccountIdentity.js'
 import { EFFECTIVE_ROLES } from './PermissionModel.js'
 
-test('formatAuthProvider maps known provider ids', () => {
-  assert.equal(formatAuthProvider(0), 'Email and password')
-  assert.equal(formatAuthProvider(2), 'Google')
-  assert.equal(formatAuthProvider(3), 'Apple')
+test('formatAuthProviderKey maps known provider ids', () => {
+  assert.equal(formatAuthProviderKey(0), 'password')
+  assert.equal(formatAuthProviderKey(2), 'google')
+  assert.equal(formatAuthProviderKey(3), 'apple')
 })
 
-test('formatEffectiveRoleLabel maps effective roles', () => {
-  assert.equal(formatEffectiveRoleLabel(EFFECTIVE_ROLES.OWNER), 'Owner')
-  assert.equal(formatEffectiveRoleLabel(EFFECTIVE_ROLES.CHILD), 'Child')
+test('formatEffectiveRoleKey maps effective roles', () => {
+  assert.equal(formatEffectiveRoleKey(EFFECTIVE_ROLES.OWNER), 'owner')
+  assert.equal(formatEffectiveRoleKey(EFFECTIVE_ROLES.CHILD), 'child')
 })
 
 test('buildAccountIdentity prefers username and resolves owner role', () => {
@@ -31,8 +31,8 @@ test('buildAccountIdentity prefers username and resolves owner role', () => {
   const members = [{ userId: 1, role: 'admin', isActive: true }]
   const identity = buildAccountIdentity(profile, members)
   assert.equal(identity.loginIdentifier, 'parent.user')
-  assert.equal(identity.providerLabel, 'Google')
-  assert.equal(identity.effectiveRoleLabel, 'Owner')
+  assert.equal(identity.providerKey, 'google')
+  assert.equal(identity.effectiveRoleKey, 'owner')
 })
 
 test('formatIdentityValue trims and rejects empty strings', () => {

@@ -16,6 +16,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
@@ -43,6 +44,7 @@ import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
 
 const CircleSettings = () => {
+  const { t } = useTranslation('settings')
   const { data: userProfile } = useUserProfile()
   const queryClient = useQueryClient()
   const { showNotification } = useNotification()
@@ -182,12 +184,10 @@ const CircleSettings = () => {
   }
 
   return (
-    <SettingsLayout title='Circle Settings'>
+    <SettingsLayout title={t('circleSettings.title')}>
       <div className='grid gap-4'>
         <Typography level='body-md'>
-          Invite someone to create and manage their own account and join your
-          Circle. Share the unique Circle code or link below; you'll receive a
-          request to approve before they can join.
+          {t('circleSettings.description')}
         </Typography>
         {hasMultipleCircles && activeCircle && (
           <Alert variant='soft' color='neutral'>
@@ -274,32 +274,58 @@ const CircleSettings = () => {
           </Box>
         </Box>
 
-        <Typography level='title-md'>Circle Members</Typography>
+        <Typography level='title-md'>
+          {t('circleSettings.circleMembers')}
+        </Typography>
         {circleMembers.map(member => (
           <Card key={member.id} className='p-4'>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', md: 'center' },
+                gap: 2,
+              }}
+            >
+              <Box sx={{ minWidth: 0, flex: 1 }}>
                 <Typography level='body-md'>
                   {member.displayName.charAt(0).toUpperCase() +
                     member.displayName.slice(1)}
-                  {member.userId === userProfile.id ? '(You)' : ''}{' '}
+                  {member.userId === userProfile.id
+                    ? t('circleSettings.you')
+                    : ''}{' '}
                   <Chip>
-                    {' '}
-                    {member.isActive ? member.role : 'Pending Approval'}
+                    {member.isActive
+                      ? member.role
+                      : t('circleSettings.pendingApproval')}
                   </Chip>
                 </Typography>
                 {member.isActive ? (
                   <Typography level='body-sm'>
-                    Joined on {fmt.date(member.createdAt)}
+                    {t('circleSettings.joinedOn', {
+                      date: fmt.date(member.createdAt),
+                    })}
                   </Typography>
                 ) : (
                   <Typography level='body-sm' color='danger'>
-                    Request to join {fmt.date(member.updatedAt)}
+                    {t('circleSettings.requestToJoin', {
+                      date: fmt.date(member.updatedAt),
+                    })}
                   </Typography>
                 )}
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: { xs: 'flex-start', md: 'flex-end' },
+                  gap: 1,
+                  width: { xs: '100%', md: 'auto' },
+                }}
+              >
                 {member.userId !== userProfile.id && canManageCircle && (
                   <Select
                     size='sm'
@@ -333,16 +359,18 @@ const CircleSettings = () => {
                     {[
                       {
                         value: 'member',
-                        description: 'Just a regular member of the circle',
+                        label: t('circleSettings.roleMember'),
+                        description: t('circleSettings.roleMemberDescription'),
                       },
                       {
                         value: 'manager',
-                        description:
-                          'Can impersonate users and perform actions on their behalf',
+                        label: t('circleSettings.roleManager'),
+                        description: t('circleSettings.roleManagerDescription'),
                       },
                       {
                         value: 'admin',
-                        description: 'Full access to the circle',
+                        label: t('circleSettings.roleAdmin'),
+                        description: t('circleSettings.roleAdminDescription'),
                       },
                     ].map((option, index) => (
                       <Option value={option.value} key={index}>
@@ -360,8 +388,7 @@ const CircleSettings = () => {
                             level='title-sm'
                             sx={{ mb: 0, mt: 0, lineHeight: 1.1 }}
                           >
-                            {option.value.charAt(0).toUpperCase() +
-                              option.value.slice(1)}
+                            {option.label}
                           </Typography>
                           <Typography
                             level='body-sm'
@@ -424,16 +451,29 @@ const CircleSettings = () => {
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'center' },
             justifyContent: 'space-between',
+            gap: 1,
             mb: 1,
           }}
         >
-          <Typography level='title-md'>Circle Member Requests</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography level='title-md'>
+            {t('circleSettings.circleMemberRequests')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             {lastRefresh && (
               <Typography level='body-sm' color='neutral'>
-                Last updated: {fmt.dateTime(lastRefresh)}
+                {t('circleSettings.lastUpdated', {
+                  date: fmt.dateTime(lastRefresh),
+                })}
               </Typography>
             )}
             <Button
@@ -445,73 +485,98 @@ const CircleSettings = () => {
                 isRefreshing ? <CircularProgress size='sm' /> : <Refresh />
               }
             >
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              {isRefreshing
+                ? t('circleSettings.refreshing')
+                : t('circleSettings.refresh')}
             </Button>
           </Box>
         </Box>
 
         {circleMemberRequests.map(request => (
           <Card key={request.id} className='p-4'>
-            <Typography level='body-md'>
-              {request.displayName} wants to join your circle.
-            </Typography>
-            <Button
-              variant='soft'
-              color='success'
-              onClick={() => {
-                showConfirmation(
-                  `Are you sure you want to accept ${request.displayName} (username: ${request.username}) to join your circle?`,
-                  'Accept Member Request',
-                  () => {
-                    AcceptCircleMemberRequest(request.id).then(resp => {
-                      if (resp.ok) {
-                        showNotification({
-                          type: 'success',
-                          message: 'Accepted request successfully',
-                        })
-                        queryClient.invalidateQueries(['circleMembers'])
-                        queryClient.invalidateQueries(['circleMemberRequests'])
-                        queryClient.invalidateQueries(['userCircle'])
-                        queryClient.refetchQueries(['circleMembers'])
-                        queryClient.refetchQueries(['circleMemberRequests'])
-                        queryClient.refetchQueries(['userCircle'])
-                        refreshMemberRequests()
-                        GetAllCircleMembers().then(data => {
-                          setCircleMembers(data.res ? data.res : [])
-                        })
-                      }
-                    })
-                  },
-                  'Accept',
-                  'Cancel',
-                )
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                justifyContent: 'space-between',
+                gap: 2,
               }}
             >
-              Accept
-            </Button>
+              <Typography level='body-md' sx={{ minWidth: 0 }}>
+                {t('circleSettings.requestWantsToJoin', {
+                  name: request.displayName,
+                })}
+              </Typography>
+              <Button
+                variant='soft'
+                color='success'
+                sx={{ alignSelf: { xs: 'stretch', sm: 'center' } }}
+                onClick={() => {
+                  showConfirmation(
+                    `Are you sure you want to accept ${request.displayName} (username: ${request.username}) to join your circle?`,
+                    'Accept Member Request',
+                    () => {
+                      AcceptCircleMemberRequest(request.id).then(resp => {
+                        if (resp.ok) {
+                          showNotification({
+                            type: 'success',
+                            message: 'Accepted request successfully',
+                          })
+                          queryClient.invalidateQueries(['circleMembers'])
+                          queryClient.invalidateQueries([
+                            'circleMemberRequests',
+                          ])
+                          queryClient.invalidateQueries(['userCircle'])
+                          queryClient.refetchQueries(['circleMembers'])
+                          queryClient.refetchQueries(['circleMemberRequests'])
+                          queryClient.refetchQueries(['userCircle'])
+                          refreshMemberRequests()
+                          GetAllCircleMembers().then(data => {
+                            setCircleMembers(data.res ? data.res : [])
+                          })
+                        }
+                      })
+                    },
+                    'Accept',
+                    'Cancel',
+                  )
+                }}
+              >
+                {t('circleSettings.accept')}
+              </Button>
+            </Box>
           </Card>
         ))}
-        <Divider> or </Divider>
+        <Divider>{t('circleSettings.orDivider')}</Divider>
 
         <Typography level='body-md'>
-          if want to join someone else's Circle? Ask them for their unique
-          Circle code or join link. Enter the code below to join their Circle.
+          {t('circleSettings.joinSomeoneElse')}
         </Typography>
 
-        <Typography level='title-sm' mb={-1}>
-          Enter Circle code:
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 1,
+            alignItems: { xs: 'stretch', sm: 'center' },
+          }}
+        >
+          <Typography level='title-sm' sx={{ flexShrink: 0 }}>
+            {t('circleSettings.enterCircleCode')}
+          </Typography>
           <Input
-            placeholder='Enter code'
+            placeholder={t('circleSettings.enterCodePlaceholder')}
             value={circleInviteCode}
             onChange={e => setCircleInviteCode(e.target.value)}
             size='lg'
             sx={{
-              width: '220px',
-              mb: 1,
+              width: { xs: '100%', sm: '220px' },
             }}
           />
           <Button
             variant='soft'
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
             onClick={() => {
               JoinCircle(circleInviteCode).then(resp => {
                 if (resp.ok) {
@@ -538,9 +603,9 @@ const CircleSettings = () => {
               })
             }}
           >
-            Join Circle
+            {t('circleSettings.joinCircle')}
           </Button>
-        </Typography>
+        </Box>
       </div>
 
       {confirmModalConfig?.isOpen && (

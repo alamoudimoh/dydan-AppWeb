@@ -19,6 +19,12 @@
   "backToCalendar": "Back to Calendar",
   "logout": "Logout",
   "version": "Version",
+  "dates": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "last": "Last"
+  },
   "navigation": {
     "notifications": "Notifications",
     "search": "Search",
