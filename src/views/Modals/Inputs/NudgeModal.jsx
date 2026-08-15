@@ -132,7 +132,7 @@ function NudgeModal({ config }) {
       {!isOfficialInstance && (
         <Alert color='warning' sx={{ mb: 2 }}>
           <Typography level='body-sm'>
-            <strong>Heads up!</strong>This feature avaiable on Donetick Cloud!
+            <strong>Heads up!</strong>This feature is available on DayDan Cloud!
             Since you&apos;re using a self-hosted instance, nudges will requires
             you to setup Google cloud account and Firebase Cloud Messaging
             (FCM). and build the Android or the iOS app by yourself.

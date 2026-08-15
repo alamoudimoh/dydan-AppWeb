@@ -59,7 +59,7 @@ const LoginSettings = () => {
       }
       return {
         ok: false,
-        message: `Server responded with error ${response.status}. Please check your Donetick server.`,
+        message: `Server responded with error ${response.status}. Please check your DayDan server.`,
       }
     } catch (err) {
       clearTimeout(timeoutId)
@@ -87,7 +87,7 @@ const LoginSettings = () => {
           return {
             ok: false,
             message:
-              'Server is reachable but blocked the request (CORS). Ensure your Donetick server allows requests from this origin, or check the server CORS config.',
+              'Server is reachable but blocked the request (CORS). Ensure your DayDan server allows requests from this origin, or check the server CORS config.',
           }
         }
         // Opaque is the only expected type for no-cors success; anything else is odd
@@ -111,7 +111,7 @@ const LoginSettings = () => {
           return {
             ok: false,
             message:
-              'Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default Donetick port is 2021).',
+              'Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default DayDan port is 2021).',
           }
         }
         // no-cors also timed out → server/host truly unreachable
@@ -188,7 +188,7 @@ const LoginSettings = () => {
   return (
     <AuthShell
       title='Server settings'
-      subtitle='Point the app at your own self-hosted Donetick server.'
+      subtitle='Point the app at your own self-hosted DayDan server.'
     >
       <Box
         component='form'
@@ -222,7 +222,7 @@ const LoginSettings = () => {
               <ErrorOutlineIcon color='error' fontSize='small' />
             ) : null
           }
-          helper='Include the protocol (http:// or https://) and the port if needed. Donetick defaults to port 2021.'
+          helper='Include the protocol (http:// or https://) and the port if needed. DayDan defaults to port 2021.'
         />
 
         {status === 'error' && (

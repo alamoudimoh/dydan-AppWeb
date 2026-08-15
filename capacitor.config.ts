@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.donetick.app',
-  appName: 'Donetick',
+  appName: 'DayDan',
   webDir: 'dist',
   android: {
     allowMixedContent: true,

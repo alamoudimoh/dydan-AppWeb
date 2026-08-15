@@ -3,7 +3,7 @@ const PrivacyPolicyView = () => {
     <div>
       <h1>Privacy Policy</h1>
       <p>
-        Favoro LLC ("we," "us," or "our") operates the Donetick application and
+        Favoro LLC ("we," "us," or "our") operates the DayDan application and
         website (collectively, the "Service"). This Privacy Policy informs you
         of our policies regarding the collection, use, and disclosure of
         personal data when you use our Service and the choices you have

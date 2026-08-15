@@ -35,7 +35,7 @@ const TabletInstallationSection = () => {
             px: { xs: 1, sm: 0 },
           }}
         >
-          Mount Donetick on your tablet for easy family task management. Perfect
+          Mount DayDan on your tablet for easy family task management. Perfect
           for kitchens, offices, or any shared space.
         </Typography>
       </Box>

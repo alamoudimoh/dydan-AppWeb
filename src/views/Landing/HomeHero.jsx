@@ -7,6 +7,8 @@ import Grid from '@mui/material/Grid'
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { TASKIER_APP_REPO } from '@/config/ReportDestinations'
+
 import Logo from '@/assets/logo.svg'
 import screenShotMyChoreDark from '@/assets/screenshot-my-chore-dark.png'
 import screenShotMyChore from '@/assets/screenshot-my-chore.png'
@@ -156,8 +158,8 @@ const HomeHero = () => {
               }}
               className='hover:scale-105'
               onClick={() => {
-                // new window open to https://github.com/Donetick:
-                window.open('https://github.com/donetick/donetick', '_blank')
+                // new window open to https://github.com/DayDan:
+                window.open(TASKIER_APP_REPO, '_blank')
               }}
               startDecorator={<GitHub />}
             >

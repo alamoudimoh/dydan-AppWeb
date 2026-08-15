@@ -8,7 +8,7 @@ const TermsView = () => {
 
       <p>
         These Terms of Service ("Terms") govern your access to and use of the
-        Donetick task management platform provided by Favoro LLC ("Donetick", "we", "us", or "our"). 
+        DayDan task management platform provided by Favoro LLC ("DayDan", "we", "us", or "our"). 
         By accessing or using our services, you agree to be bound by these Terms. If you do not agree to
         these Terms, you may not access or use our services.
       </p>
@@ -16,7 +16,7 @@ const TermsView = () => {
       <div style={{ backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '5px', margin: '20px 0' }}>
         <h3>Important: Cloud vs. Self-Hosted Services</h3>
         <p>
-          Donetick is available in two deployment models with different terms and responsibilities:
+          DayDan is available in two deployment models with different terms and responsibilities:
         </p>
         <ul>
           <li><strong>Cloud-Hosted Service:</strong> Hosted at donetick.com where we provide infrastructure and data management</li>
@@ -27,8 +27,8 @@ const TermsView = () => {
 
       <h2>1. Definitions</h2>
       <ul>
-        <li><strong>"Cloud Service"</strong> refers to the Donetick platform hosted at donetick.com and managed by Favoro LLC</li>
-        <li><strong>"Self-Hosted Service"</strong> refers to the open-source Donetick software deployed on user-controlled infrastructure</li>
+        <li><strong>"Cloud Service"</strong> refers to the DayDan platform hosted at donetick.com and managed by Favoro LLC</li>
+        <li><strong>"Self-Hosted Service"</strong> refers to the open-source DayDan software deployed on user-controlled infrastructure</li>
         <li><strong>"Content"</strong> means all data, information, tasks, files, and other materials you create, upload, or store using our services</li>
         <li><strong>"Circle"</strong> means a collaborative workspace shared between users for task management</li>
       </ul>
@@ -79,13 +79,13 @@ const TermsView = () => {
       </ul>
 
       <h2>4. Self-Hosted Service Terms</h2>
-      <p><em>This section applies to users deploying Donetick on their own infrastructure</em></p>
+      <p><em>This section applies to users deploying DayDan on their own infrastructure</em></p>
 
       <h3>4.1 Open Source License</h3>
       <ul>
         <li>The Self-Hosted Service is provided under the MIT License</li>
         <li>You may modify, distribute, and use the software for any purpose</li>
-        <li>Attribution to Donetick must be maintained in derivative works</li>
+        <li>Attribution to DayDan must be maintained in derivative works</li>
         <li>No warranty or support is provided for self-hosted deployments</li>
       </ul>
 
@@ -146,14 +146,14 @@ const TermsView = () => {
 
       <h2>8. Intellectual Property</h2>
       <ul>
-        <li>The Donetick name, logo, and proprietary features are our intellectual property</li>
+        <li>The DayDan name, logo, and proprietary features are our intellectual property</li>
         <li>The open-source codebase is licensed under MIT License</li>
         <li>You may not use our trademarks without written permission</li>
       </ul>
 
       <h2>9. Third-Party Integrations</h2>
       <ul>
-        <li>Donetick integrates with third-party services (Telegram, Discord, webhooks, etc.)</li>
+        <li>DayDan integrates with third-party services (Telegram, Discord, webhooks, etc.)</li>
         <li>Your use of these integrations is subject to their respective terms</li>
         <li>We are not responsible for third-party service availability or functionality</li>
       </ul>
@@ -233,7 +233,7 @@ const TermsView = () => {
       </p>
       <ul>
         <li><strong>Email:</strong> legal@donetick.com</li>
-        <li><strong>Support:</strong> support@donetick.com</li>
+        <li><strong>Support:</strong> <a href="https://github.com/alamoudimoh/Taskier-App/issues">DayDan support on GitHub</a></li>
         <li><strong>Address:</strong> Favoro LLC, [Address to be provided]</li>
       </ul>
 

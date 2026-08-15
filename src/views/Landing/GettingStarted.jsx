@@ -9,7 +9,7 @@ import {
   Storage,
 } from '@mui/icons-material'
 import { Box, Button, Card, Container, Grid, Typography } from '@mui/joy'
-import { useNavigate } from 'react-router-dom'
+import { TASKIER_APP_REPO } from '@/config/ReportDestinations'
 
 function StartOptionCard({ icon: Icon, title, description, button, index }) {
   return (
@@ -135,10 +135,10 @@ const GettingStarted = () => {
   const navigate = useNavigate()
   const information = [
     {
-      title: 'Donetick Web',
+      title: 'DayDan Web',
       icon: <Cloud />,
       description:
-        'The easiest way! Just create account and start using Donetick',
+        'The easiest way! Just create account and start using DayDan',
       button: (
         <Button
           size='lg'
@@ -155,17 +155,14 @@ const GettingStarted = () => {
     {
       title: 'Selfhosted',
       icon: <Storage />,
-      description: 'Download the binary and manage your own Donetick instance',
+      description: 'Download the binary and manage your own DayDan instance',
       button: (
         <Button
           size='lg'
           fullWidth
           startDecorator={<GitHub />}
           onClick={() => {
-            window.open(
-              'https://github.com/donetick/donetick/releases',
-              '_blank',
-            )
+            window.open(`${TASKIER_APP_REPO}/releases`, '_blank')
           }}
         >
           Github Releases
@@ -176,16 +173,14 @@ const GettingStarted = () => {
       title: 'Hassio Addon',
       icon: <AddHome />,
       description:
-        'Have Home Assistant? Install Donetick as a Home Assistant Addon with single click',
+        'Have Home Assistant? Install DayDan as a Home Assistant Addon with single click',
       button: (
         <Button
           size='lg'
           fullWidth
           startDecorator={<InstallMobile />}
           onClick={() => {
-            window.open(
-              'https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fdonetick%2Fhassio-addons',
-            )
+            window.open(TASKIER_APP_REPO, '_blank')
           }}
         >
           Add Addon
@@ -278,7 +273,7 @@ const GettingStarted = () => {
               mx: 'auto',
             }}
           >
-            Get the full Donetick experience with notifications, realtime
+            Get the full DayDan experience with notifications, realtime
             updates, and seamless task management on the go
           </Typography>
 

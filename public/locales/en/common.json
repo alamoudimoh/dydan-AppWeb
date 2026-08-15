@@ -124,7 +124,7 @@
   "feedback": {
     "later": "Maybe later",
     "sentiment": {
-      "title": "How's Donetick working for you?",
+      "title": "How's DayDan working for you?",
       "subtitle": "Your answer helps us decide what to build next.",
       "options": {
         "love": "Love it",
@@ -152,7 +152,7 @@
     },
     "review": {
       "title": "Glad you're enjoying it!",
-      "subtitle": "A rating or a star helps other people find Donetick.",
+      "subtitle": "A rating or a star helps other people find DayDan.",
       "github": "Star on GitHub",
       "appStore": "Rate on the App Store",
       "playStore": "Rate on Google Play"
@@ -175,11 +175,11 @@
       },
       "unconfigured": {
         "title": "Feedback relay isn't set up",
-        "subtitle": "This build has no delivery endpoint configured. Open a pre-filled Taskier issue or copy your notes manually."
+        "subtitle": "This build has no delivery endpoint configured. Open a pre-filled DayDan issue or copy your notes manually."
       },
       "misconfigured": {
         "title": "Feedback relay is misconfigured",
-        "subtitle": "The configured endpoint can't accept app feedback. Open a pre-filled Taskier issue instead."
+        "subtitle": "The configured endpoint can't accept app feedback. Open a pre-filled DayDan issue instead."
       }
     }
   }

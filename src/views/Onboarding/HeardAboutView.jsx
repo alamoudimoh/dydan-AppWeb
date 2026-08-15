@@ -94,7 +94,7 @@ const AcquisitionSurvey = ({ onDone }) => {
             textWrap: 'balance',
           }}
         >
-          Where&apos;d you hear about Donetick?
+          Where&apos;d you hear about DayDan?
         </Typography>
         <Typography
           level='body-md'
@@ -200,7 +200,7 @@ const PRIVACY_TOGGLES = [
     key: 'crashReports',
     label: 'Share crash reports',
     description:
-      "When Donetick crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster.",
+      "When DayDan crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster.",
   },
   {
     key: 'analytics',
@@ -245,7 +245,7 @@ const PrivacyPreferences = ({ onDone }) => {
             textWrap: 'balance',
           }}
         >
-          Help us improve Donetick
+          Help us improve DayDan
         </Typography>
         <Typography
           level='body-md'

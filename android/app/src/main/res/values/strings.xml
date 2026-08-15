@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Donetick</string>
-    <string name="title_activity_main">Donetick</string>
+    <string name="app_name">DayDan</string>
+    <string name="title_activity_main">DayDan</string>
     <string name="package_name">com.donetick.app</string>
     <string name="custom_url_scheme">com.donetick.app</string>
 
@@ -14,7 +14,7 @@
     <string name="widget_week_title">Next 7 days</string>
     <string name="widget_empty_today">All caught up!\nNothing due today</string>
     <string name="widget_empty_week">All caught up!\nNothing due this week</string>
-    <string name="widget_signed_out">Open Donetick and sign in\nto see your tasks</string>
+    <string name="widget_signed_out">Open DayDan and sign in\nto see your tasks</string>
     <string name="widget_meta_overdue">Overdue</string>
     <string name="widget_meta_approval">Approve</string>
     <string name="widget_group_approval">Needs approval</string>

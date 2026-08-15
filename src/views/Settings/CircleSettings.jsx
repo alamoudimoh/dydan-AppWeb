@@ -41,6 +41,7 @@ import {
 } from '../../utils/PermissionModel'
 import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
+import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import SettingsLayout from './SettingsLayout'
 
 const CircleSettings = () => {
@@ -148,8 +149,8 @@ const CircleSettings = () => {
 
     try {
       await Share.share({
-        title: `Join ${circleName} on Donetick`,
-        text: `I'd like to invite you to join ${circleName} on Donetick.`,
+        title: `Join ${circleName} on ${APP_DISPLAY_NAME}`,
+        text: `I'd like to invite you to join ${circleName} on ${APP_DISPLAY_NAME}.`,
         url: inviteLink,
         dialogTitle: 'Share Circle invite',
       })

@@ -916,7 +916,7 @@ const MyChores = () => {
           variant='error'
           fullHeight
           icon={<CloudOff />}
-          title={"Can't reach Donetick"}
+          title={"Can't reach DayDan"}
           description={
             choresErrorDetails?.message ||
             'Your tasks are safe. We just could not load them right now, check your connection and try again.'
@@ -1097,7 +1097,7 @@ const MyChores = () => {
               fullHeight
               icon={<EditCalendar />}
               title='No tasks yet'
-              description='Create your first task and Donetick keeps track of when it is due, whose turn it is, and what comes next.'
+              description='Create your first task and DayDan keeps track of when it is due, whose turn it is, and what comes next.'
               primaryAction={{
                 label: 'Create a task',
                 startDecorator: <Add />,

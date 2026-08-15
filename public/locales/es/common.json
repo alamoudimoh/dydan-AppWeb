@@ -52,7 +52,7 @@
   "feedback": {
     "later": "Maybe later",
     "sentiment": {
-      "title": "How's Donetick working for you?",
+      "title": "How's DayDan working for you?",
       "subtitle": "Your answer helps us decide what to build next.",
       "options": {
         "love": "Love it",
@@ -80,7 +80,7 @@
     },
     "review": {
       "title": "Glad you're enjoying it!",
-      "subtitle": "A rating or a star helps other people find Donetick.",
+      "subtitle": "A rating or a star helps other people find DayDan.",
       "github": "Star on GitHub",
       "appStore": "Rate on the App Store",
       "playStore": "Rate on Google Play"

@@ -27,6 +27,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
+import { formatSearchPlaceholder } from '../config/AppBranding'
 import EmptyState from '../components/common/EmptyState'
 import QueryLoadingView from '../components/common/QueryLoadingView'
 
@@ -314,7 +315,7 @@ const GlobalSearchPalette = ({
             setSelectedIndex(0)
           }}
           onKeyDown={onInputKeyDown}
-          placeholder='Search Donetick'
+          placeholder={formatSearchPlaceholder()}
           startDecorator={<SearchRounded />}
           endDecorator={
             isLoading ? (

@@ -25,7 +25,7 @@ const SWIPE_THRESHOLD = 56
 
 /**
  * Five messages, in the order that sells: the problem first, then the two
- * things Donetick does better than a reminders app, then the reasons to come
+ * things DayDan does better than a reminders app, then the reasons to come
  * back. Every title is an outcome — nobody buys "reschedule from completion
  * date", they buy never arguing about trash day again.
  */
@@ -33,13 +33,13 @@ const SLIDES = [
   {
     key: 'problem',
     title: 'Stop forgetting the little things',
-    body: "Donetick remembers the last time it happened, and when it's due next. So nobody else has to.",
+    body: "DayDan remembers the last time it happened, and when it's due next. So nobody else has to.",
     Visual: ProblemVignette,
   },
   {
     key: 'capture',
     title: 'Add it before you forget it',
-    body: "Type it, say it out loud, or snap a photo. Donetick fills in the due date, priority, labels, and who's on it.",
+    body: "Type it, say it out loud, or snap a photo. DayDan fills in the due date, priority, labels, and who's on it.",
     Visual: CaptureVignette,
   },
   // {
@@ -51,7 +51,7 @@ const SLIDES = [
   {
     key: 'circle',
     title: 'Everyone gets a turn, No more arguing',
-    body: 'Rotate in the order you pick, or at random. Donetick remembers who went last, so turns stay fair.',
+    body: 'Rotate in the order you pick, or at random. DayDan remembers who went last, so turns stay fair.',
     Visual: TakesTurnsVignette,
   },
   {
@@ -229,7 +229,7 @@ const OnboardingView = () => {
         ref={viewportRef}
         role='group'
         aria-roledescription='carousel'
-        aria-label='What you can do with Donetick'
+        aria-label='What you can do with DayDan'
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}

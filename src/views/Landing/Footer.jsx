@@ -10,8 +10,8 @@ import {
   Typography,
 } from '@mui/joy'
 import { version } from '../../../package.json'
-import DiscordIcon from '../../components/icons/DiscordIcon'
-import RedditIcon from '../../components/icons/RedditIcon'
+import { APP_SUPPORT_URL } from '@/config/AppBranding'
+import { TASKIER_APP_REPO } from '@/config/ReportDestinations'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -23,42 +23,36 @@ const Footer = () => {
       { label: 'Getting Started', href: '#getting-started' },
     ],
     resources: [
-      { label: 'Documentation', href: 'https://docs.donetick.com/' },
       {
-        label: 'API Reference',
-        href: 'https://docs.donetick.com/advance-settings/api',
+        label: 'Documentation',
+        href: `${TASKIER_APP_REPO}#readme`,
+      },
+      {
+        label: 'Report an issue',
+        href: `${TASKIER_APP_REPO}/issues`,
       },
       {
         label: 'Discussions',
-        href: 'https://github.com/donetick/donetick/discussions',
+        href: `${TASKIER_APP_REPO}/discussions`,
       },
-      { label: 'Roadmap', href: 'https://github.com/orgs/donetick/projects/3' },
     ],
     downloads: [
       {
-        label: 'GitHub Release',
-        href: 'https://github.com/donetick/donetick/releases',
+        label: 'GitHub Releases',
+        href: `${TASKIER_APP_REPO}/releases`,
       },
-      {
-        label: 'Docker Hub',
-        href: 'https://hub.docker.com/r/donetick/donetick',
-      },
-      {
-        label: 'Home Assistant',
-        href: 'https://github.com/donetick/hassio-addons',
-      },
-      { label: 'Source Code', href: 'https://github.com/donetick/donetick' },
+      { label: 'Source Code', href: TASKIER_APP_REPO },
     ],
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
       {
         label: 'License',
-        href: 'https://github.com/donetick/donetick/blob/main/LICENSE',
+        href: `${TASKIER_APP_REPO}/blob/develop/LICENSE`,
       },
       {
         label: 'Changelog',
-        href: 'https://github.com/donetick/donetick/releases',
+        href: `${TASKIER_APP_REPO}/releases`,
       },
     ],
   }
@@ -66,20 +60,14 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: <GitHub />,
-      href: 'https://github.com/donetick/donetick',
+      href: TASKIER_APP_REPO,
       label: 'GitHub',
     },
     {
-      icon: <DiscordIcon />,
-      href: 'https://discord.gg/6hSH6F33q7',
-      label: 'Discord',
+      icon: <Email />,
+      href: APP_SUPPORT_URL,
+      label: 'Support',
     },
-    {
-      icon: <RedditIcon />,
-      href: 'https://reddit.com/r/donetick',
-      label: 'Reddit',
-    },
-    { icon: <Email />, href: 'mailto:support@donetick.com', label: 'Email' },
   ]
 
   return (
@@ -102,7 +90,7 @@ const Footer = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <img
                   src={LogoSVG}
-                  alt='Donetick Logo'
+                  alt='DayDan Logo'
                   width='48px'
                   height='48px'
                 />
@@ -326,7 +314,7 @@ const Footer = () => {
               gap: 1,
             }}
           >
-            © {currentYear} Donetick. All rights reserved.
+            © {currentYear} DayDan. All rights reserved.
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>

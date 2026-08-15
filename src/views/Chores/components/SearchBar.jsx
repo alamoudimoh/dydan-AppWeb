@@ -2,6 +2,7 @@ import { CancelRounded, SearchRounded } from '@mui/icons-material'
 import { Box, Input } from '@mui/joy'
 
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
+import { formatSearchPlaceholder } from '../../../config/AppBranding'
 import { useGlobalSearch } from '../../../search/GlobalSearchContext'
 
 const SearchBar = ({
@@ -21,7 +22,7 @@ const SearchBar = ({
   return (
     <Input
       slotProps={{ input: { ref: inputRef, readOnly: true } }}
-      placeholder='Search Donetick'
+      placeholder={formatSearchPlaceholder()}
       value={value}
       onFocus={handleOpen}
       onMouseDown={event => {

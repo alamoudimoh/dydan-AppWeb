@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>NFCReaderUsageDescription</key>
-	<string>Donetick uses NFC to read and write chore tags for quick task completion.</string>
+	<string>DayDan uses NFC to read and write chore tags for quick task completion.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Donetick</string>
+	<string>DayDan</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

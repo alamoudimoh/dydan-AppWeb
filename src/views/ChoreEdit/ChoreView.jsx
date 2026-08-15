@@ -50,7 +50,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
-import ChoreQueryStateView from '../../components/chores/ChoreQueryStateView.jsx'
+import { formatPageTitle } from '../../config/AppBranding'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
@@ -191,7 +191,7 @@ const ChoreView = () => {
     }
     setChore(choreData.res)
     setChorePriority(Priorities.find(p => p.value === choreData.res.priority))
-    document.title = 'Donetick: ' + choreData.res.name
+    document.title = formatPageTitle(choreData.res.name)
 
     setPerformers(circleMembersData.res)
     if (searchParams.get('auto_complete') === 'true') {

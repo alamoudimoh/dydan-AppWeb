@@ -117,14 +117,14 @@ const JoinCircleView = () => {
         sx={authButtonSx}
         onClick={() => navigate('/chores')}
       >
-        Go to Donetick
+        Go to DayDan
       </Button>
     )
     // A token that no longer resolves to a profile is as good as signed out —
     // better to offer sign-in than to spin forever.
   } else if (!isAuthenticated || (!isProfileLoading && !userProfile)) {
     subtitle =
-      "Sign in or create a Donetick account to continue. We'll send your join request once you're signed in."
+      "Sign in or create a DayDan account to continue. We'll send your join request once you're signed in."
     body = (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {inviteCodeField}

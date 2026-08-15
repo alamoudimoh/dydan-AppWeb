@@ -11,8 +11,7 @@ import {
   Link,
   Typography,
 } from '@mui/joy'
-import { useState } from 'react'
-import { authButtonSx, authInputSx } from './authStyles'
+import { Link as RouterLink } from 'react-router-dom'
 
 const labelSx = { fontSize: '0.875rem', fontWeight: 600, mb: 0.75 }
 
@@ -138,9 +137,8 @@ export const LegalLinks = () => (
     sx={{ textAlign: 'center', color: 'text.secondary' }}
   >
     <Link
-      href='https://donetick.com/privacy'
-      target='_blank'
-      rel='noopener'
+      component={RouterLink}
+      to='/privacy'
       color='neutral'
       underline='hover'
     >
@@ -148,9 +146,8 @@ export const LegalLinks = () => (
     </Link>
     {' · '}
     <Link
-      href='https://donetick.com/terms'
-      target='_blank'
-      rel='noopener'
+      component={RouterLink}
+      to='/terms'
       color='neutral'
       underline='hover'
     >
