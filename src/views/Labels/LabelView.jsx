@@ -4,7 +4,6 @@ import {
   Avatar,
   Box,
   Chip,
-  CircularProgress,
   Container,
   IconButton,
   Stack,
@@ -23,6 +22,9 @@ import {
 import '@meauxt/react-swipeable-list/dist/styles.css'
 import { Add, MoreVert, Style } from '@mui/icons-material'
 import EmptyState from '../../components/common/EmptyState'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import { listPageContainerSx } from '../../theme/appLayout'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUserProfile } from '../../queries/UserQueries'
 import { getTextColorFromBackgroundColor } from '../../utils/Colors'
@@ -149,7 +151,8 @@ const LabelCardContent = ({ label, currentUserId, onToggleActions }) => {
 }
 
 const LabelView = () => {
-  const { data: labels, isLabelsLoading, isError } = useLabels()
+  const { data: labels, isLoading: isLabelsLoading, isError, refetch } =
+    useLabels()
   const { data: userProfile } = useUserProfile()
 
   const [userLabels, setUserLabels] = useState([])
@@ -215,44 +218,28 @@ const LabelView = () => {
   }, [labels])
 
   if (isLabelsLoading) {
-    return (
-      <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        height='100vh'
-      >
-        <CircularProgress />
-      </Box>
-    )
+    return <QueryLoadingView />
   }
 
   if (isError) {
     return (
-      <Typography color='danger' textAlign='center'>
-        Failed to load labels. Please try again.
-      </Typography>
+      <EmptyState
+        variant='error'
+        size='sm'
+        title='Failed to load labels'
+        description='Please try again.'
+        primaryAction={{ label: 'Retry', onClick: () => refetch() }}
+      />
     )
   }
 
   return (
-    <Container maxWidth='md' sx={{ px: 0 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2 }}>
-        {/* <EmojiEvents sx={{ fontSize: '2rem', color: '#FFD700' }} /> */}
-        <Stack sx={{ flex: 1 }}>
-          <Typography
-            level='h3'
-            sx={{ fontWeight: 'lg', color: 'text.primary' }}
-          >
-            Labels
-          </Typography>
-          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            Manage your labels and organize your tasks effectively. Labels will
-            be automatically shared with your circle if they are used on a
-            shared task.
-          </Typography>
-        </Stack>
-      </Box>
+    <Container maxWidth='md' sx={listPageContainerSx}>
+      <PageHeader
+        sx={{ px: 2 }}
+        title='Labels'
+        subtitle='Manage your labels and organize your tasks effectively. Labels will be automatically shared with your circle if they are used on a shared task.'
+      />
       <Box
         sx={{
           overflow: 'hidden',

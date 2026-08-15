@@ -27,6 +27,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
+import EmptyState from '../components/common/EmptyState'
+import QueryLoadingView from '../components/common/QueryLoadingView'
 
 const RECENTS_KEY = 'donetick.globalSearch.recents'
 const GROUPS = [
@@ -345,16 +347,17 @@ const GlobalSearchPalette = ({
           pb: 'var(--safe-area-inset-bottom, 0px)',
         }}
       >
+        {isLoading && !query.trim() && (
+          <QueryLoadingView size='sm' />
+        )}
         {!isLoading && query.trim() && results.length === 1 && (
-          <Box sx={{ px: 3, py: 6, textAlign: 'center' }}>
-            <InboxOutlined
-              sx={{ fontSize: 36, color: 'text.tertiary', mb: 1 }}
-            />
-            <Typography level='title-md'>No direct matches</Typography>
-            <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-              You can still filter the task list with this search.
-            </Typography>
-          </Box>
+          <EmptyState
+            variant='no-results'
+            size='sm'
+            icon={<InboxOutlined />}
+            title='No direct matches'
+            description='You can still filter the task list with this search.'
+          />
         )}
 
         <List aria-live='polite' sx={{ px: 1, py: 1 }}>

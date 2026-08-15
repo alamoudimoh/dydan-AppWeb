@@ -8,10 +8,8 @@ import {
   Alert,
   Box,
   Button,
-  Card,
   Container,
   FormControl,
-  FormLabel,
   IconButton,
   Input,
   Stack,
@@ -19,6 +17,14 @@ import {
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
 
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
+import {
+  inlineErrorAlertSx,
+  listPageContainerSx,
+  pageStackSpacing,
+} from '../../theme/appLayout'
 import {
   useCategories,
   useCategoryActions,
@@ -49,20 +55,21 @@ const CategoryView = () => {
       setError(reason.message)
     }
   }
+
+  if (isLoading) {
+    return <QueryLoadingView />
+  }
+
   return (
-    <Container maxWidth='md' sx={{ py: 4, pb: 10 }}>
-      <Stack spacing={2}>
-        <Box>
-          <Typography level='h1'>Categories</Typography>
-          <Typography color='neutral'>
-            Organize your Circle’s tasks and Assets in your own language.
-          </Typography>
-        </Box>
-        <Card variant='outlined'>
+    <Container maxWidth='md' sx={listPageContainerSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          sx={{ px: 2 }}
+          title='Categories'
+          subtitle='Organize your Circle’s tasks and Assets in your own language.'
+        />
+        <SectionCard title={editing?.id ? 'Rename category' : 'Create category'}>
           <FormControl>
-            <FormLabel>
-              {editing?.id ? 'Rename category' : 'Create category'}
-            </FormLabel>
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
               <Input
                 value={name}
@@ -87,20 +94,26 @@ const CategoryView = () => {
               )}
             </Stack>
           </FormControl>
-          {error && <Alert color='danger'>{error}</Alert>}
-        </Card>
+          {error && (
+            <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+              {error}
+            </Alert>
+          )}
+        </SectionCard>
         {isError && (
-          <Alert color='danger'>Categories could not be loaded.</Alert>
+          <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+            Categories could not be loaded.
+          </Alert>
         )}
         {!isLoading && categories.length === 0 && (
-          <Card variant='outlined'>
+          <SectionCard>
             <Typography>
               No categories yet. Create your first category above.
             </Typography>
-          </Card>
+          </SectionCard>
         )}
         {categories.map(category => (
-          <Card key={category.id} variant='outlined'>
+          <SectionCard key={category.id}>
             <Stack
               direction='row'
               alignItems='center'
@@ -131,18 +144,15 @@ const CategoryView = () => {
                     })
                   }
                 >
-                  {category.archivedAt ? (
-                    <UnarchiveRounded />
-                  ) : (
-                    <ArchiveRounded />
-                  )}
+                  {category.archivedAt ? <UnarchiveRounded /> : <ArchiveRounded />}
                 </IconButton>
               </Stack>
             </Stack>
-          </Card>
+          </SectionCard>
         ))}
       </Stack>
     </Container>
   )
 }
+
 export default CategoryView

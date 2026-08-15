@@ -9,9 +9,6 @@ import {
   Select,
   Typography,
 } from '@mui/joy'
-import moment from 'moment'
-import { useTranslation } from 'react-i18next'
-
 import {
   DATE_FORMATS,
   TIME_FORMATS,
@@ -19,6 +16,7 @@ import {
 } from '@/contexts/LocalizationContext'
 
 import { getLanguageDisplayName } from '../../utils/localizationModel'
+import { formStackSx } from '../../theme/appLayout'
 import SettingsLayout from './SettingsLayout'
 
 const LocalizationSettings = () => {
@@ -49,7 +47,7 @@ const LocalizationSettings = () => {
 
   return (
     <SettingsLayout title={t('localization.title')}>
-      <div className='grid gap-4 py-4'>
+      <Box sx={formStackSx}>
         <Typography level='body-md'>{t('localization.description')}</Typography>
 
         <Typography level='h3'>{t('localization.language')}</Typography>
@@ -182,7 +180,7 @@ const LocalizationSettings = () => {
             </Button>
           </ButtonGroup>
         </FormControl>
-      </div>
+      </Box>
     </SettingsLayout>
   )
 }

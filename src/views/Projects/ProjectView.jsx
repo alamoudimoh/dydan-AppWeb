@@ -4,7 +4,6 @@ import {
   Avatar,
   Box,
   Chip,
-  CircularProgress,
   Container,
   IconButton,
   Stack,
@@ -23,6 +22,10 @@ import {
 } from '@meauxt/react-swipeable-list'
 import '@meauxt/react-swipeable-list/dist/styles.css'
 import { Add, MoreVert, Task } from '@mui/icons-material'
+import EmptyState from '../../components/common/EmptyState'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import { listPageContainerSx } from '../../theme/appLayout'
 import { useQueryClient } from '@tanstack/react-query'
 import { useChores } from '../../queries/ChoreQueries'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -218,10 +221,10 @@ const ProjectCardContent = ({
 }
 
 const ProjectView = () => {
-  const { data: projects, isProjectsLoading, isError } = useProjects()
+  const { data: projectsData = [], isLoading: projectsLoading, isError, refetch } =
+    useProjects()
   const { data: userProfile } = useUserProfile()
-  const { data: chores = { res: [] } } = useChores(false) // false to exclude archived
-  const { data: projectsData = [], isLoading: projectsLoading } = useProjects()
+  const { data: chores = { res: [] } } = useChores(false)
   const { setSelectedProjectWithCache } = useProjectFilter(
     projectsData,
     !projectsLoading,
@@ -294,10 +297,10 @@ const ProjectView = () => {
   }
 
   useEffect(() => {
-    if (projects) {
-      setUserProjects(projects)
+    if (projectsData) {
+      setUserProjects(projectsData)
     }
-  }, [projects])
+  }, [projectsData])
 
   // Calculate real task counts from chores data
   useEffect(() => {
@@ -331,43 +334,29 @@ const ProjectView = () => {
     }
   }, [chores, userProjects])
 
-  if (isProjectsLoading) {
-    return (
-      <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        height='100vh'
-      >
-        <CircularProgress />
-      </Box>
-    )
+  if (projectsLoading) {
+    return <QueryLoadingView />
   }
 
   if (isError) {
     return (
-      <Typography color='danger' textAlign='center'>
-        Failed to load projects. Please try again.
-      </Typography>
+      <EmptyState
+        variant='error'
+        size='sm'
+        title='Failed to load projects'
+        description='Please try again.'
+        primaryAction={{ label: 'Retry', onClick: () => refetch() }}
+      />
     )
   }
 
   return (
-    <Container maxWidth='md' sx={{ px: 0 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2 }}>
-        <Stack sx={{ flex: 1 }}>
-          <Typography
-            level='h3'
-            sx={{ fontWeight: 'lg', color: 'text.primary' }}
-          >
-            Projects
-          </Typography>
-          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            Organize your tasks into projects. Create custom workspaces to keep
-            your tasks organized and easily accessible.
-          </Typography>
-        </Stack>
-      </Box>
+    <Container maxWidth='md' sx={listPageContainerSx}>
+      <PageHeader
+        sx={{ px: 2 }}
+        title='Projects'
+        subtitle='Organize your tasks into projects. Create custom workspaces to keep your tasks organized and easily accessible.'
+      />
 
       <Box
         sx={{

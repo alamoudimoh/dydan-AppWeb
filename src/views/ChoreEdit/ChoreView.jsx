@@ -72,6 +72,7 @@ import {
 } from '../../queries/TimeQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
+import { settingsPageSx } from '../../theme/appLayout'
 import {
   ChoreHistoryStatus,
   ChoreStatus,
@@ -667,11 +668,10 @@ const ChoreView = () => {
     <Container
       maxWidth='sm'
       sx={{
+        ...settingsPageSx,
         display: 'flex',
         flexDirection: 'column',
-        // space between :
         justifyContent: 'space-between',
-        // max height of the container:
         maxHeight: 'calc(100vh - 500px)',
       }}
     >

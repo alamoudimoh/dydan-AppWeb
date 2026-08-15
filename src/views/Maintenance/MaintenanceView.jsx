@@ -26,6 +26,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { useNotification } from '../../service/NotificationProvider'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
+import {
+  listPageContainerSx,
+  pageStackSpacing,
+  settingsPageSx,
+} from '../../theme/appLayout'
 import { getRecurrentChipText } from '../../utils/ChoreCardHelpers'
 import {
   AddMeterReading,
@@ -220,12 +228,12 @@ export const AssetDetail = () => {
   }
   if (!asset)
     return (
-      <Container sx={{ py: 2 }}>
-        <Typography>Loading asset…</Typography>
+      <Container sx={settingsPageSx}>
+        <QueryLoadingView label='Loading asset…' />
       </Container>
     )
   return (
-    <Container maxWidth='md' sx={{ py: 2 }}>
+    <Container maxWidth='md' sx={settingsPageSx}>
       <Stack spacing={2}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -416,23 +424,17 @@ const MaintenanceView = () => {
     if ((await ArchiveAsset(id)).ok) await load()
   }
   return (
-    <Container maxWidth='lg' sx={{ py: 2 }}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        justifyContent='space-between'
-        gap={1}
-        mb={2}
-      >
-        <Box>
-          <Typography level='h2'>Maintenance</Typography>
-          <Typography level='body-sm'>
-            Assets, meter readings, and service schedules for your circle.
-          </Typography>
-        </Box>
-        <Button startDecorator={<Add />} onClick={() => setCreating(true)}>
-          New asset
-        </Button>
-      </Stack>
+    <Container maxWidth='lg' sx={listPageContainerSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          title='Maintenance'
+          subtitle='Assets, meter readings, and service schedules for your circle.'
+          action={
+            <Button startDecorator={<Add />} onClick={() => setCreating(true)}>
+              New asset
+            </Button>
+          }
+        />
       <Tabs defaultValue={0}>
         <TabList>
           <Tab>Due now ({data.due.length})</Tab>
@@ -451,11 +453,11 @@ const MaintenanceView = () => {
                 />
               ))
             ) : (
-              <Card>
+              <SectionCard>
                 <Typography>
                   Nothing is due. Your maintenance is on track.
                 </Typography>
-              </Card>
+              </SectionCard>
             )}
           </Stack>
         </TabPanel>
@@ -522,6 +524,7 @@ const MaintenanceView = () => {
       {creating && (
         <AssetForm onClose={() => setCreating(false)} onSaved={load} />
       )}
+      </Stack>
     </Container>
   )
 }

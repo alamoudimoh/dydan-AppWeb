@@ -25,6 +25,27 @@ export const narrowPageShellSx = {
   py: { xs: 2, sm: 3 },
 }
 
+/** List screens with edge-to-edge rows inside a padded page shell. */
+export const listPageContainerSx = {
+  ...settingsPageSx,
+  px: 0,
+  pb: 10,
+}
+
+export const detailPageContainerSx = {
+  ...settingsPageSx,
+  px: { xs: 1.5, sm: 3 },
+}
+
+export const widePageContainerSx = {
+  ...settingsPageSx,
+  pb: 10,
+}
+
+export const listPageHeaderSx = {
+  px: 2,
+}
+
 export const pageHeaderTitleSx = {
   fontWeight: 'lg',
   color: 'text.primary',

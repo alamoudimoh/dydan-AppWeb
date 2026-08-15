@@ -26,6 +26,7 @@ import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import TextModal from '../Modals/Inputs/TextModal'
 import SettingsLayout from './SettingsLayout'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 
 const APITokenSettings = () => {
   const { data: userProfile } = useUserProfile()
@@ -99,7 +100,7 @@ const APITokenSettings = () => {
 
   return (
     <SettingsLayout title='API Tokens'>
-      <div className='grid gap-4 py-4' id='apitokens'>
+      <Box sx={formStackSx} id='apitokens'>
         <Typography level='h3'>Access Token</Typography>
         <Divider />
         <Typography level='body-sm'>
@@ -126,7 +127,7 @@ const APITokenSettings = () => {
         ) : (
           <>
             {tokens.map(token => (
-              <Card key={token.token} className='p-4'>
+              <Card key={token.token} sx={sectionCardSx}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Box>
                     <Typography level='body-md'>{token.name}</Typography>
@@ -242,7 +243,7 @@ const APITokenSettings = () => {
         {confirmModalConfig?.isOpen && (
           <ConfirmationModal config={confirmModalConfig} />
         )}
-      </div>
+      </Box>
     </SettingsLayout>
   )
 }

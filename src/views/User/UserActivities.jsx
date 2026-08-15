@@ -31,6 +31,9 @@ import {
 import React, { useEffect, useMemo, useState } from 'react'
 import EmptyState from '../../components/common/EmptyState'
 import FilterBar from '../../components/common/FilterBar'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import { listPageContainerSx } from '../../theme/appLayout'
 import { useFilter } from '../../hooks/useFilter'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -47,7 +50,6 @@ import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useLabels } from '../Labels/LabelQueries'
 import { ChoresGrouper } from '../../utils/Chores'
 import { COLORS, TASK_COLOR } from '../../utils/Colors.jsx'
-import LoadingComponent from '../components/Loading'
 
 const groupByDate = history => {
   const aggregated = {}
@@ -914,7 +916,7 @@ const UserActivites = () => {
     return result
   }
   if (isChoresHistoryLoading || isChoresLoading) {
-    return <LoadingComponent />
+    return <QueryLoadingView />
   }
   const chartData = {
     history: {
@@ -959,26 +961,12 @@ const UserActivites = () => {
     },
   }
   if (!userProfile) {
-    return <LoadingComponent />
+    return <QueryLoadingView />
   }
   // Calculate activities analytics
   return (
-    <Container
-      maxWidth='lg'
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Timeline sx={{ fontSize: '1.5rem' }} />
-        <Typography
-          level='title-md'
-          sx={{ fontWeight: 'lg', color: 'text.primary' }}
-        >
-          Activities
-        </Typography>
-      </Box>
+    <Container maxWidth='lg' sx={listPageContainerSx}>
+      <PageHeader icon={<Timeline />} title='Activities' />
 
       <FilterBar
         filterDefs={filterDefs}

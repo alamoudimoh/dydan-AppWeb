@@ -43,6 +43,8 @@ import {
 import { useChoresHistory } from '../../queries/ChoreQueries.jsx'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider.jsx'
+import PageHeader from '../../components/common/PageHeader'
+import { detailPageContainerSx } from '../../theme/appLayout'
 import {
   GetPointsHistory,
   RedeemPoints,
@@ -366,35 +368,21 @@ const UserPoints = () => {
     <Container
       maxWidth='md'
       sx={{
+        ...detailPageContainerSx,
         display: 'flex',
         flexDirection: 'column',
-        px: { xs: 2, sm: 3 },
       }}
     >
-      {/* Enhanced Leaderboard Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Stack spacing={2}>
-          {/* Title Row */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <EmojiEvents sx={{ fontSize: '2rem', color: 'primary.500' }} />
-            <Stack sx={{ flex: 1 }}>
-              <Typography
-                level='h3'
-                sx={{ fontWeight: 'lg', color: 'text.primary' }}
-              >
-                {leaderboardMode === 'points' ? 'Points' : 'Tasks'} Leaderboard
-              </Typography>
-              <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-                Rankings based on{' '}
-                {leaderboardMode === 'points'
-                  ? 'points earned'
-                  : 'tasks completed'}{' '}
-                during the selected time period
-              </Typography>
-            </Stack>
-          </Box>
-
-          {/* Filters Row - Responsive */}
+      <Box sx={{ mb: 3 }}>
+        <PageHeader
+          icon={<EmojiEvents sx={{ fontSize: '2rem', color: 'primary.500' }} />}
+          title={`${leaderboardMode === 'points' ? 'Points' : 'Tasks'} Leaderboard`}
+          subtitle={`Rankings based on ${
+            leaderboardMode === 'points'
+              ? 'points earned'
+              : 'tasks completed'
+          } during the selected time period`}
+        />
           <Box
             sx={{
               display: 'flex',
@@ -501,7 +489,6 @@ const UserPoints = () => {
               </Chip>
             </Box>
           </Box>
-        </Stack>
 
         {/* Leaderboard Cards */}
         <Card

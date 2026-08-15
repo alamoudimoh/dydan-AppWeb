@@ -24,8 +24,13 @@ import { syncEngine } from '../../utils/SyncEngine'
 import { getRefreshTokenExpiry, isNative } from '../../utils/TokenStorage'
 import FeedbackModal from '../Modals/FeedbackModal'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
+import SettingsLayout from './SettingsLayout'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
+
+import { useTranslation } from 'react-i18next'
 
 const DeveloperSettings = () => {
+  const { t } = useTranslation('settings')
   const queryClient = useQueryClient()
   const { confirmModalConfig, showConfirmation } = useConfirmationModal()
   const { data: userProfile } = useUserProfile()
@@ -433,16 +438,15 @@ const DeveloperSettings = () => {
   }
 
   return (
-    <div className='grid gap-4 py-4' id='developer'>
-      <Typography level='h3'>Developer Settings</Typography>
-      <Divider />
-      <Typography level='body-md'>
-        View technical information about your authentication tokens and session
-        state. This information is useful for debugging and development
-        purposes.
-      </Typography>
+    <SettingsLayout title={t('overview.sections.developer.title')}>
+      <Box sx={formStackSx} id='developer'>
+        <Typography level='body-md'>
+          View technical information about your authentication tokens and session
+          state. This information is useful for debugging and development
+          purposes.
+        </Typography>
 
-      <Card variant='outlined'>
+      <Card variant='outlined' sx={sectionCardSx}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box
             sx={{
@@ -1211,7 +1215,8 @@ const DeveloperSettings = () => {
       />
 
       <ConfirmationModal config={confirmModalConfig} />
-    </div>
+      </Box>
+    </SettingsLayout>
   )
 }
 

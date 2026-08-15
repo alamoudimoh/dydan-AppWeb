@@ -55,6 +55,7 @@ import {
 } from '../../queries/ChoreQueries.jsx'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
+import { settingsPageSx } from '../../theme/appLayout'
 import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
 import {
   DeleteChoreAttachment,
@@ -844,7 +845,7 @@ const ChoreEdit = () => {
   }
 
   return (
-    <Container maxWidth='md'>
+    <Container maxWidth='md' sx={settingsPageSx}>
       {/* Section 1: Basic Information */}
       <Box mb={4}>
         {/* <Typography

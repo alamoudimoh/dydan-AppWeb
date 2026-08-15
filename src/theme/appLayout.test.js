@@ -3,11 +3,14 @@ import test from 'node:test'
 
 import {
   APP_PAGE_MAX_WIDTH,
+  detailPageContainerSx,
   formStackSpacing,
+  listPageContainerSx,
   pageStackSpacing,
   pageShellSx,
   sectionCardSx,
   settingsPageSx,
+  widePageContainerSx,
 } from './appLayout.js'
 
 test('APP_PAGE_MAX_WIDTH defines wide and narrow content rails', () => {
@@ -32,4 +35,11 @@ test('stack spacing tokens stay aligned', () => {
 
 test('sectionCardSx uses responsive density', () => {
   assert.deepEqual(sectionCardSx.p, { xs: 1.5, sm: 2 })
+})
+
+test('list and detail containers share vertical rhythm', () => {
+  assert.deepEqual(listPageContainerSx.py, settingsPageSx.py)
+  assert.deepEqual(detailPageContainerSx.py, settingsPageSx.py)
+  assert.equal(listPageContainerSx.pb, 10)
+  assert.equal(widePageContainerSx.pb, 10)
 })

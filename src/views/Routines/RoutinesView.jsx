@@ -31,6 +31,10 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import EmptyState from '../../components/common/EmptyState'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
+import { inlineErrorAlertSx, listPageContainerSx, pageStackSpacing } from '../../theme/appLayout'
 import { useRoutineMutation, useRoutines } from '../../queries/RoutineQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { GetAllCircleMembers, GetAssets, GetMeters } from '../../utils/Fetcher'
@@ -666,30 +670,28 @@ const RoutinesView = () => {
   }
 
   return (
-    <Container sx={{ py: 3, pb: 10 }}>
-      <Stack spacing={2.5}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={1.5}
-          justifyContent='space-between'
-          alignItems={{ sm: 'center' }}
-        >
-          <Box>
-            <Typography level='h2'>Routines</Typography>
-            <Typography level='body-sm'>
-              Save repeatable sets of Tasks and use them whenever you need them.
-            </Typography>
-          </Box>
-          <Button startDecorator={<Add />} onClick={() => setPackEditor({})}>
-            New Routine
-          </Button>
-        </Stack>
+    <Container maxWidth='lg' sx={listPageContainerSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          title='Routines'
+          subtitle='Save repeatable sets of Tasks and use them whenever you need them.'
+          action={
+            <Button startDecorator={<Add />} onClick={() => setPackEditor({})}>
+              New Routine
+            </Button>
+          }
+        />
         <Checkbox
           label='Show archived Routines'
           checked={includeArchived}
           onChange={event => setIncludeArchived(event.target.checked)}
         />
-        {error && <Typography color='danger'>{error.message}</Typography>}
+        {isLoading && <QueryLoadingView />}
+        {error && (
+          <Typography color='danger' sx={inlineErrorAlertSx}>
+            {error.message}
+          </Typography>
+        )}
         {!isLoading && packs.length === 0 && (
           <EmptyState
             title='No Routines yet'
@@ -698,7 +700,7 @@ const RoutinesView = () => {
         )}
         <Stack spacing={1.5}>
           {packs.map(pack => (
-            <Card key={pack.id} variant='outlined'>
+            <SectionCard key={pack.id}>
               <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 spacing={1.5}
@@ -733,7 +735,7 @@ const RoutinesView = () => {
                   )}
                 </Stack>
               </Stack>
-            </Card>
+            </SectionCard>
           ))}
         </Stack>
       </Stack>

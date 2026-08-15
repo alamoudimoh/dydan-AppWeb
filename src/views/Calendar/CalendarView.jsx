@@ -28,9 +28,15 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
+import {
+  inlineErrorAlertSx,
+  pageStackSpacing,
+  widePageContainerSx,
+} from '../../theme/appLayout'
 import { useCalendar } from '../../queries/CalendarQueries'
 import { useCategories } from '../../queries/CategoryQueries'
 import { useUserProfile } from '../../queries/UserQueries'
+import PageHeader from '../../components/common/PageHeader'
 import { MarkChoreComplete } from '../../utils/Fetcher'
 import {
   addDays,
@@ -267,36 +273,30 @@ export default function CalendarView() {
     )
 
   return (
-    <Container maxWidth='xl' sx={{ py: { xs: 2, md: 4 }, pb: 10 }}>
-      <Stack spacing={2}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent='space-between'
-          gap={1}
-        >
-          <Box>
-            <Typography level='h1'>Calendar</Typography>
-            <Typography color='neutral'>
-              Your personal scheduled work
-            </Typography>
-          </Box>
-          <ButtonGroup aria-label='Calendar view'>
-            <Button
-              variant={view === 'agenda' ? 'solid' : 'outlined'}
-              onClick={() => switchView('agenda')}
-              startDecorator={<EventNoteRounded />}
-            >
-              Agenda
-            </Button>
-            <Button
-              variant={view === 'month' ? 'solid' : 'outlined'}
-              onClick={() => switchView('month')}
-              startDecorator={<CalendarMonthRounded />}
-            >
-              Calendar
-            </Button>
-          </ButtonGroup>
-        </Stack>
+    <Container maxWidth='xl' sx={widePageContainerSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          title='Calendar'
+          subtitle='Your personal scheduled work'
+          action={
+            <ButtonGroup aria-label='Calendar view'>
+              <Button
+                variant={view === 'agenda' ? 'solid' : 'outlined'}
+                onClick={() => switchView('agenda')}
+                startDecorator={<EventNoteRounded />}
+              >
+                Agenda
+              </Button>
+              <Button
+                variant={view === 'month' ? 'solid' : 'outlined'}
+                onClick={() => switchView('month')}
+                startDecorator={<CalendarMonthRounded />}
+              >
+                Calendar
+              </Button>
+            </ButtonGroup>
+          }
+        />
         <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
           <Button onClick={() => setState({ date: today })}>Today</Button>
           {view === 'month' && (
@@ -362,6 +362,8 @@ export default function CalendarView() {
         {calendar.isError && (
           <Alert
             color='danger'
+            variant='soft'
+            sx={inlineErrorAlertSx}
             endDecorator={
               <Button size='sm' onClick={() => calendar.refetch()}>
                 Retry
@@ -371,7 +373,11 @@ export default function CalendarView() {
             Calendar could not be loaded.
           </Alert>
         )}
-        {actionError && <Alert color='danger'>{actionError}</Alert>}
+        {actionError && (
+          <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+            {actionError}
+          </Alert>
+        )}
         {!calendar.isLoading && !calendar.isError && view === 'agenda' && (
           <>
             {overdue.length > 0 && (

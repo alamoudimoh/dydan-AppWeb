@@ -9,6 +9,7 @@ import { GetStorageUsage } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 
 const StorageSettings = () => {
   const Navigate = useNavigate()
@@ -76,8 +77,8 @@ const StorageSettings = () => {
 
   return (
     <SettingsLayout title='Storage Settings'>
-      <div className='grid gap-4 py-4' id='storage'>
-        <Card className='p-4' sx={{ maxWidth: 500, mb: 2 }}>
+      <Box sx={formStackSx} id='storage'>
+        <Card sx={{ ...sectionCardSx, maxWidth: 500 }}>
           <Typography level='title-md' sx={{ mb: 1 }}>
             Server Storage Usage
             {!isPlusAccount(userProfile) && (
@@ -128,7 +129,7 @@ const StorageSettings = () => {
           )}
         </Card>
 
-        <Card className='p-4' sx={{ maxWidth: 500, mb: 2 }}>
+        <Card sx={{ ...sectionCardSx, maxWidth: 500 }}>
           <Typography level='title-md' sx={{ mb: 1 }}>
             {Capacitor.isNativePlatform() ? 'App' : 'Browser'} Local Storage &
             Cache
@@ -159,7 +160,7 @@ const StorageSettings = () => {
         </Card>
 
         {Capacitor.isNativePlatform() && (
-          <Card className='p-4' sx={{ maxWidth: 500, mb: 2 }}>
+          <Card sx={{ ...sectionCardSx, maxWidth: 500 }}>
             <Typography level='title-md' sx={{ mb: 1 }}>
               App Preferences
               <Chip variant='soft' color='info' sx={{ ml: 1 }}>
@@ -203,7 +204,7 @@ const StorageSettings = () => {
         {confirmModalConfig?.isOpen && (
           <ConfirmationModal config={confirmModalConfig} />
         )}
-      </div>
+      </Box>
     </SettingsLayout>
   )
 }

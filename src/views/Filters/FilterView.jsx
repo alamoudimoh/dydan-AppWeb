@@ -12,7 +12,6 @@ import {
   Avatar,
   Box,
   Chip,
-  CircularProgress,
   Container,
   IconButton,
   Stack,
@@ -30,6 +29,9 @@ import {
   Task,
 } from '@mui/icons-material'
 import EmptyState from '../../components/common/EmptyState'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import { listPageContainerSx } from '../../theme/appLayout'
 import { useChores } from '../../queries/ChoreQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { getFilterCount, getFilterOverdueCount } from '../../utils/FilterEngine'
@@ -383,34 +385,16 @@ const FilterView = () => {
   }
 
   if (isLoading) {
-    return (
-      <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        height='100vh'
-      >
-        <CircularProgress />
-      </Box>
-    )
+    return <QueryLoadingView />
   }
 
   return (
-    <Container maxWidth='md' sx={{ px: 0 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 2 }}>
-        <Stack sx={{ flex: 1 }}>
-          <Typography
-            level='h3'
-            sx={{ fontWeight: 'lg', color: 'text.primary' }}
-          >
-            Filters
-          </Typography>
-          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            Save your favorite filter combinations for quick access. Create
-            custom views to organize and find tasks faster.
-          </Typography>
-        </Stack>
-      </Box>
+    <Container maxWidth='md' sx={listPageContainerSx}>
+      <PageHeader
+        sx={{ px: 2 }}
+        title='Filters'
+        subtitle='Save your favorite filter combinations for quick access. Create custom views to organize and find tasks faster.'
+      />
 
       <Box
         sx={{

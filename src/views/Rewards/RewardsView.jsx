@@ -30,7 +30,10 @@ import {
   useRewards,
 } from '../../queries/RewardQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
-import LoadingComponent from '../components/Loading'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
+import { inlineErrorAlertSx, listPageContainerSx, pageStackSpacing } from '../../theme/appLayout'
 
 const statusColor = {
   pending: 'warning',
@@ -127,18 +130,20 @@ export default function RewardsView() {
   const act = async (path, message) => {
     if (window.confirm(message)) await mutation.mutateAsync({ path, data: {} })
   }
-  if (rewards.isLoading || mine.isLoading) return <LoadingComponent />
+  if (rewards.isLoading || mine.isLoading) {
+    return <QueryLoadingView />
+  }
   return (
-    <Container sx={{ py: 3, pb: 8 }}>
-      <Stack spacing={3}>
-        <Box>
-          <Typography level='h1'>Rewards</Typography>
-          <Typography level='body-md' color='neutral'>
-            Turn earned points into something worth looking forward to.
-          </Typography>
-        </Box>
+    <Container maxWidth='lg' sx={listPageContainerSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          title='Rewards'
+          subtitle='Turn earned points into something worth looking forward to.'
+        />
         {mutation.error && (
-          <Alert color='danger'>{mutation.error.message}</Alert>
+          <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+            {mutation.error.message}
+          </Alert>
         )}
         <Grid container spacing={2}>
           {[
