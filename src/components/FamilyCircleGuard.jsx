@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import PageHeader from './common/PageHeader'
 import { hasActiveFamilyCircle } from '../navigation/navModel'
-import { useUserProfile } from '../queries/UserQueries'
+import { useCircleMembers, useUserProfile } from '../queries/UserQueries'
 import { pageShellSx, pageStackSpacing } from '../theme/appLayout'
 import LoadingComponent from '../views/components/Loading'
 
@@ -15,13 +15,15 @@ const isManagedAccount = profile =>
 const FamilyCircleGuard = ({ children }) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const { data: profile, isLoading } = useUserProfile()
+  const { data: profile, isLoading: profileLoading } = useUserProfile()
+  const { data: circleMembersData, isLoading: membersLoading } =
+    useCircleMembers()
 
-  if (isLoading) {
+  if (profileLoading || membersLoading) {
     return <LoadingComponent />
   }
 
-  if (hasActiveFamilyCircle(profile)) {
+  if (hasActiveFamilyCircle(profile, circleMembersData)) {
     return children
   }
 

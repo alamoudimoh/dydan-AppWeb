@@ -40,7 +40,7 @@ import {
 } from '../../navigation/navModel'
 import { useNotificationCount } from '../../queries/NotificationQueries'
 import { useResource } from '../../queries/ResourceQueries'
-import { useUserProfile } from '../../queries/UserQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useGlobalSearch } from '../../search/GlobalSearchContext'
 import { apiClient } from '../../utils/ApiClient'
 import ErrorReportModal from '../Modals/ErrorReportModal'
@@ -54,6 +54,7 @@ const NavBar = () => {
   const { isRTL } = useLocalization()
   const { data: resource } = useResource()
   const { data: userProfile } = useUserProfile()
+  const { data: circleMembersData } = useCircleMembers()
   const { openSearch } = useGlobalSearch()
 
   const navigate = useNavigate()
@@ -69,7 +70,9 @@ const NavBar = () => {
       openFeedback: () => setFeedbackOpen(true),
       openBugReport: () => setBugReportOpen(true),
     })
-    const plan = buildNavSectionPlan(hasActiveFamilyCircle(userProfile))
+    const plan = buildNavSectionPlan(
+      hasActiveFamilyCircle(userProfile, circleMembersData),
+    )
     return plan.map(section => ({
       id: section.id,
       links: section.linkIds
@@ -80,7 +83,7 @@ const NavBar = () => {
         })
         .filter(Boolean),
     }))
-  }, [t, openSearch, userProfile])
+  }, [t, openSearch, userProfile, circleMembersData])
 
   const closeDrawer = () => setDrawerOpen(false)
   const location = useLocation()

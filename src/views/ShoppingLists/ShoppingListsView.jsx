@@ -97,7 +97,7 @@ const ShoppingListsView = () => {
   const { t } = useTranslation(['shoppingLists', 'common'])
   const navigate = useNavigate()
   const { data: profile } = useUserProfile()
-  const { data: members = [] } = useCircleMembers()
+  const { data: membersData } = useCircleMembers()
   const { data: lists = [], isLoading, isError, refetch } = useShoppingLists()
   const archiveList = useArchiveShoppingList()
   const deleteList = useDeleteShoppingList()
@@ -107,8 +107,8 @@ const ShoppingListsView = () => {
   const [editingList, setEditingList] = useState(null)
   const [confirmationModel, setConfirmationModel] = useState({})
 
-  const hasFamilyCircle = hasActiveFamilyCircle(profile)
-  const effectiveRole = resolveEffectiveRole(profile, members)
+  const hasFamilyCircle = hasActiveFamilyCircle(profile, membersData)
+  const effectiveRole = resolveEffectiveRole(profile, membersData)
   const { personal, family } = useMemo(() => partitionShoppingLists(lists), [lists])
 
   const openCreate = scope => {

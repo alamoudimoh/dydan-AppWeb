@@ -28,11 +28,48 @@ const ROUTE_REGISTRY = {
   [NAV_LINK_IDS.SETTINGS]: { to: '/settings' },
 }
 
-test('hasActiveFamilyCircle uses profile circle id', () => {
-  assert.equal(hasActiveFamilyCircle({ circleID: 3 }), true)
-  assert.equal(hasActiveFamilyCircle({ circleId: 5 }), true)
-  assert.equal(hasActiveFamilyCircle({ circleID: 0 }), false)
-  assert.equal(hasActiveFamilyCircle(null), false)
+const profile = { id: 1, circleID: 3 }
+const onlyCurrentUser = [{ userId: 1, isActive: true, role: 'admin' }]
+const withPendingMember = [
+  { userId: 1, isActive: true, role: 'admin' },
+  { userId: 2, isActive: false, role: 'member' },
+]
+const withInactiveMember = [
+  { userId: 1, isActive: true, role: 'admin' },
+  { userId: 2, isActive: false, role: 'member' },
+]
+const withActiveSecondMember = [
+  { userId: 1, isActive: true, role: 'admin' },
+  { userId: 2, isActive: true, role: 'member' },
+]
+
+test('hasActiveFamilyCircle hides family when only the current user is active', () => {
+  assert.equal(hasActiveFamilyCircle(profile, onlyCurrentUser), false)
+  assert.equal(hasActiveFamilyCircle(profile, { res: onlyCurrentUser }), false)
+  assert.equal(
+    hasActiveFamilyCircle({ id: 1, circleId: 5 }, onlyCurrentUser),
+    false,
+  )
+})
+
+test('hasActiveFamilyCircle ignores pending circle members', () => {
+  assert.equal(hasActiveFamilyCircle(profile, withPendingMember), false)
+})
+
+test('hasActiveFamilyCircle ignores inactive circle members', () => {
+  assert.equal(hasActiveFamilyCircle(profile, withInactiveMember), false)
+})
+
+test('hasActiveFamilyCircle shows family when another active member exists', () => {
+  assert.equal(hasActiveFamilyCircle(profile, withActiveSecondMember), true)
+  assert.equal(
+    hasActiveFamilyCircle(profile, { res: withActiveSecondMember }),
+    true,
+  )
+})
+
+test('hasActiveFamilyCircle returns false without a profile', () => {
+  assert.equal(hasActiveFamilyCircle(null, withActiveSecondMember), false)
 })
 
 test('buildNavSectionPlan omits family when there is no active circle', () => {

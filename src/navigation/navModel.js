@@ -1,3 +1,5 @@
+import { normalizeCircleMembers } from '../utils/PermissionModel.js'
+
 export const NAV_SECTION_IDS = Object.freeze({
   DAILY: 'daily',
   ORGANIZE: 'organize',
@@ -64,14 +66,24 @@ export const FAMILY_CIRCLE_ROUTE_PATHS = Object.freeze([
   '/activities',
 ])
 
-/**
- * Active Circle is defined by the server-scoped profile circle id (RH-17).
- */
-export const hasActiveFamilyCircle = profile => {
-  const raw = profile?.circleID ?? profile?.circleId
-  const id = Number(raw)
-  return Number.isFinite(id) && id > 0
+/** Active membership excludes pending, removed, or disabled circle members. */
+export const isActiveCircleMember = member => member?.isActive !== false
+
+export const countOtherActiveCircleMembers = (profile, circleMembers = []) => {
+  if (!profile?.id) return 0
+  const currentUserId = Number(profile.id)
+  return normalizeCircleMembers(circleMembers).filter(
+    member =>
+      Number(member.userId) !== currentUserId && isActiveCircleMember(member),
+  ).length
 }
+
+/**
+ * Family features require at least one other active circle member.
+ * DayDan auto-creates a circle for every user, so circle id alone is not enough.
+ */
+export const hasActiveFamilyCircle = (profile, circleMembers = []) =>
+  countOtherActiveCircleMembers(profile, circleMembers) > 0
 
 /**
  * Sidebar section plan: product features, optional family block, account, support.

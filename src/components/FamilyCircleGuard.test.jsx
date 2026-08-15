@@ -24,12 +24,17 @@ vi.mock('react-i18next', () => ({
 }))
 
 const profileMock = vi.hoisted(() => ({
-  profile: { id: 1, circleID: 0, userType: 0 },
+  profile: { id: 1, circleID: 3, userType: 0 },
+  members: { res: [{ userId: 1, isActive: true, role: 'admin' }] },
 }))
 
 vi.mock('../queries/UserQueries', () => ({
   useUserProfile: () => ({
     data: profileMock.profile,
+    isLoading: false,
+  }),
+  useCircleMembers: () => ({
+    data: profileMock.members,
     isLoading: false,
   }),
 }))
@@ -62,10 +67,13 @@ const renderGuard = children =>
 describe('FamilyCircleGuard', () => {
   afterEach(() => {
     cleanup()
-    profileMock.profile = { id: 1, circleID: 0, userType: 0 }
+    profileMock.profile = { id: 1, circleID: 3, userType: 0 }
+    profileMock.members = {
+      res: [{ userId: 1, isActive: true, role: 'admin' }],
+    }
   })
 
-  it('blocks family content when there is no active circle', () => {
+  it('blocks family content when the user is the only active member', () => {
     renderGuard(<div data-testid='family-content'>Family workload</div>)
 
     expect(screen.queryByTestId('family-content')).not.toBeInTheDocument()
@@ -78,8 +86,26 @@ describe('FamilyCircleGuard', () => {
       .toBeInTheDocument()
   })
 
-  it('renders family content when the profile has an active circle', () => {
-    profileMock.profile = { id: 1, circleID: 3, userType: 0 }
+  it('blocks family content when the only other member is pending', () => {
+    profileMock.members = {
+      res: [
+        { userId: 1, isActive: true, role: 'admin' },
+        { userId: 2, isActive: false, role: 'member' },
+      ],
+    }
+
+    renderGuard(<div data-testid='family-content'>Family workload</div>)
+
+    expect(screen.queryByTestId('family-content')).not.toBeInTheDocument()
+  })
+
+  it('renders family content when another active member exists', () => {
+    profileMock.members = {
+      res: [
+        { userId: 1, isActive: true, role: 'admin' },
+        { userId: 2, isActive: true, role: 'member' },
+      ],
+    }
 
     renderGuard(<div data-testid='family-content'>Family workload</div>)
 
