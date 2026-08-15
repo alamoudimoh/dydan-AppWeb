@@ -7,11 +7,11 @@ import {
 import { Link } from 'react-router-dom'
 
 const NavBarLink = ({ link }) => {
-  const { to, icon, label, onClick } = link
+  const { icon, id, label, onClick, to } = link
   return (
     <ListItem>
       <ListItemButton
-        key={to}
+        key={id || to || label}
         {...(onClick ? { onClick } : { component: Link, to })}
         variant='plain'
         color='neutral'

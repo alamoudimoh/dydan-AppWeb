@@ -37,7 +37,23 @@
     "activities": "Activities",
     "points": "Points",
     "settings": "Settings",
-    "familyProgress": "Family Progress"
+    "familyProgress": "Family Progress",
+    "home": "Home",
+    "calendar": "Calendar",
+    "maintenance": "Maintenance",
+    "routines": "Routines",
+    "categories": "Categories",
+    "rewards": "Rewards",
+    "profile": "Profile",
+    "sendFeedback": "Send Feedback",
+    "reportBug": "Report a Bug",
+    "sections": {
+      "daily": "Today",
+      "organize": "Organize & track",
+      "family": "Family",
+      "account": "Account",
+      "support": "Support"
+    }
   },
   "familyProgress": {
     "title": "Family Progress",

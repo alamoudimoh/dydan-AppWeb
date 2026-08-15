@@ -1,24 +1,9 @@
 import { Capacitor } from '@capacitor/core'
 import {
-  Archive,
   ArrowBack,
-  Build,
-  CalendarMonthRounded,
-  CardGiftcard,
-  FilterAlt,
-  FolderOpen,
-  Groups,
-  History,
-  HomeRounded,
-  Inbox,
-  ListAlt,
   Logout,
   MenuRounded,
   Notifications,
-  PlaylistAddCheck,
-  SearchRounded,
-  SettingsOutlined,
-  Toll,
 } from '@mui/icons-material'
 import {
   Badge,
@@ -31,7 +16,7 @@ import {
   ListItemDecorator,
   Typography,
 } from '@mui/joy'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -39,103 +24,56 @@ import { version } from '../../../package.json'
 import UserProfileAvatar from '../../components/UserProfileAvatar'
 import Z_INDEX from '../../constants/zIndex'
 import { useLocalization } from '../../contexts/LocalizationContext'
+import NavBarSections from '../../navigation/NavBarSections'
+import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
+import {
+  buildNavSectionPlan,
+  hasActiveFamilyCircle,
+} from '../../navigation/navModel'
 import { useNotificationCount } from '../../queries/NotificationQueries'
 import { useResource } from '../../queries/ResourceQueries'
+import { useUserProfile } from '../../queries/UserQueries'
 import { useGlobalSearch } from '../../search/GlobalSearchContext'
 import { apiClient } from '../../utils/ApiClient'
-import NavBarLink from './NavBarLink'
+import ErrorReportModal from '../Modals/ErrorReportModal'
+import FeedbackModal from '../Modals/FeedbackModal'
 import SyncStatusIndicator from './SyncStatusIndicator'
 
 const publicPages = ['/landing', '/privacy', '/terms']
+
 const NavBar = () => {
   const { t } = useTranslation('common')
   const { isRTL } = useLocalization()
   const { data: resource } = useResource()
+  const { data: userProfile } = useUserProfile()
   const { openSearch } = useGlobalSearch()
 
   const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [bugReportOpen, setBugReportOpen] = useState(false)
   const { data: notificationCount } = useNotificationCount()
 
-  const links = [
-    {
-      to: '/',
-      label: 'Home',
-      icon: <HomeRounded />,
-    },
-    {
-      label: t('navigation.search'),
-      icon: <SearchRounded />,
-      onClick: () => openSearch(),
-    },
-    {
-      to: '/chores',
-      label: t('navigation.allTasks'),
-      icon: <Inbox />,
-    },
-    {
-      to: '/calendar',
-      label: 'Calendar',
-      icon: <CalendarMonthRounded />,
-    },
-    {
-      to: '/family',
-      label: t('navigation.familyProgress', {
-        defaultValue: 'Family Progress',
-      }),
-      icon: <Groups />,
-    },
-    {
-      to: '/archived',
-      label: t('navigation.archived'),
-      icon: <Archive />,
-    },
-    {
-      to: '/maintenance',
-      label: 'Maintenance',
-      icon: <Build />,
-    },
-    {
-      to: '/routines',
-      label: 'Routines',
-      icon: <PlaylistAddCheck />,
-    },
-    {
-      to: 'labels',
-      label: 'Categories',
-      icon: <ListAlt />,
-    },
-    {
-      to: 'projects',
-      label: t('navigation.projects'),
-      icon: <FolderOpen />,
-    },
-    {
-      to: 'filters',
-      label: t('navigation.filters'),
-      icon: <FilterAlt />,
-    },
-    {
-      to: 'activities',
-      label: t('navigation.activities'),
-      icon: <History />,
-    },
-    {
-      to: 'points',
-      label: t('navigation.points'),
-      icon: <Toll />,
-    },
-    {
-      to: 'rewards',
-      label: 'Rewards',
-      icon: <CardGiftcard />,
-    },
-    {
-      to: '/settings',
-      label: t('navigation.settings'),
-      icon: <SettingsOutlined />,
-    },
-  ]
+  const navSections = useMemo(() => {
+    const registry = createNavLinkRegistry({
+      t,
+      openSearch,
+      openFeedback: () => setFeedbackOpen(true),
+      openBugReport: () => setBugReportOpen(true),
+    })
+    const plan = buildNavSectionPlan(hasActiveFamilyCircle(userProfile))
+    return plan.map(section => ({
+      id: section.id,
+      links: section.linkIds
+        .map(linkId => {
+          const link = registry[linkId]
+          if (!link) return null
+          return { ...link, id: linkId }
+        })
+        .filter(Boolean),
+    }))
+  }, [t, openSearch, userProfile])
+
   const [openDrawer, closeDrawer] = [
     () => setDrawerOpen(true),
     () => setDrawerOpen(false),
@@ -179,10 +117,8 @@ const NavBar = () => {
         variant='plain'
         onClick={() => {
           if (location.pathname === '/chores') {
-            // Navigate back to calendar view
             navigate('/')
           } else {
-            // Default back navigation
             navigate(-1)
           }
         }}
@@ -209,13 +145,10 @@ const NavBar = () => {
       '/onboarding',
       '/get-started',
       '/ready',
-      // Reached from an invite link, often signed out: it owns its own shell
-      // and must not mount the avatar's authenticated queries.
       '/circle/join',
     ].includes(location.pathname)
   ) {
     return (
-      // no navbar but show the safe area padding
       <div
         style={{
           paddingTop: `calc(var(--safe-area-inset-top, 0px))`,
@@ -224,7 +157,6 @@ const NavBar = () => {
       />
     )
   }
-  // if url has /landing then remove the navbar:
   if (publicPages.includes(location.pathname)) {
     return null
   }
@@ -270,7 +202,6 @@ const NavBar = () => {
           </Badge>
         </IconButton>
         <UserProfileAvatar />
-        {/* <ThemeToggleButton /> */}
       </Box>
       <Drawer
         open={drawerOpen}
@@ -281,30 +212,15 @@ const NavBar = () => {
         sx={{
           '& .MuiDrawer-content': {
             position: 'fixed',
-            // pt: 'calc(var(--safe-area-inset-top, 0px))',
             ...(isRTL ? { right: 0 } : { left: 0 }),
-            // pb: 'calc(var(--safe-area-inset-bottom, 0px))',
-            // height:
-            //   'calc(100vh - var(--safe-area-inset-top, 0px) - var(--safe-area-inset-bottom, 0px))',
             overflow: 'auto',
             zIndex: Z_INDEX.DRAWER,
           },
         }}
       >
-        {/* Safe-area padding comes from the --safe-area-inset-* variables that
-            Capacitor's SystemBars keeps in sync with the live window insets.
-            Top inset is left to the inner List so it isn't applied twice. */}
         <div className='drawer-content safe-area-x safe-area-bottom'>
-          {/* <div className='align-center flex px-5 pt-4'>
-            <ModalClose size='sm' sx={{ top: 'unset', right: 20 }} />
-          </div> */}
-          <List
-            // sx={{ p: 2, height: 'min-content' }}
-
-            size='md'
-            onClick={openDrawer}
+          <Box
             sx={{
-              borderRadius: 4,
               width: '100%',
               padding: 1,
               paddingTop:
@@ -313,10 +229,8 @@ const NavBar = () => {
                   : '',
             }}
           >
-            {links.map((link, index) => (
-              <NavBarLink key={index} link={link} />
-            ))}
-          </List>
+            <NavBarSections sections={navSections} />
+          </Box>
         </div>
         <div>
           <List
@@ -332,18 +246,6 @@ const NavBar = () => {
             size='md'
             onClick={openDrawer}
           >
-            {/*  Add List item to invite the user to upgrade to Plus: */}
-            {/* <ListItemButton
-              onClick={() => navigate('/settings#subscription')}
-              sx={{
-                py: 1.2,
-              }}
-            >
-              <ListItemDecorator>
-                <SwitchAccessShortcutAdd />
-              </ListItemDecorator>
-              <ListItemContent>Upgrade to Plus</ListItemContent>
-            </ListItemButton> */}
             <ListItemButton
               onClick={() => {
                 apiClient.handleLogout()
@@ -358,18 +260,13 @@ const NavBar = () => {
               <ListItemContent>{t('logout')}</ListItemContent>
             </ListItemButton>
             <Typography
-              onClick={
-                // force service worker to update:
-                () => window.location.reload(true)
-              }
+              onClick={() => window.location.reload(true)}
               level='body-xs'
               sx={{
-                // p: 2,
                 p: 1,
                 color: 'text.tertiary',
                 textAlign: 'center',
                 mb: 'calc(var(--safe-area-inset-bottom, 0px) )',
-                // mb: -2,
               }}
             >
               V{version} (API: {resource?.api_version || 'unavailable'})
@@ -377,6 +274,14 @@ const NavBar = () => {
           </List>
         </div>
       </Drawer>
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
+      <ErrorReportModal
+        open={bugReportOpen}
+        onClose={() => setBugReportOpen(false)}
+      />
     </nav>
   )
 }
