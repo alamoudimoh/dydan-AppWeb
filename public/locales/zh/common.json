@@ -48,7 +48,8 @@
       "account": "账户",
       "support": "支持"
     },
-    "openMenu": "打开菜单"
+    "openMenu": "打开菜单",
+    "shoppingLists": "购物清单"
   },
   "feedback": {
     "later": "Maybe later",

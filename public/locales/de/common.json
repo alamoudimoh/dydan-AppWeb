@@ -53,7 +53,8 @@
       "family": "Familie",
       "account": "Konto",
       "support": "Support"
-    }
+    },
+    "shoppingLists": "Einkaufslisten"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

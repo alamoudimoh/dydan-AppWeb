@@ -48,7 +48,8 @@
       "account": "アカウント",
       "support": "サポート"
     },
-    "openMenu": "メニューを開く"
+    "openMenu": "メニューを開く",
+    "shoppingLists": "買い物リスト"
   },
   "feedback": {
     "later": "Maybe later",

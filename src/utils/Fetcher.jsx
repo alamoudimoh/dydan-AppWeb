@@ -1113,6 +1113,81 @@ const TrackFilterUsage = id => {
   })
 }
 
+const GetShoppingLists = (includeArchived = false) => {
+  const query = includeArchived ? '?includeArchived=true' : ''
+  return Fetch(`/shopping-lists${query}`, {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const GetShoppingList = id => {
+  return Fetch(`/shopping-lists/${id}`, {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const CreateShoppingList = payload => {
+  return Fetch(`/shopping-lists`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(payload),
+  })
+}
+
+const UpdateShoppingList = (id, payload) => {
+  return Fetch(`/shopping-lists/${id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(payload),
+  })
+}
+
+const ArchiveShoppingList = id => {
+  return Fetch(`/shopping-lists/${id}/archive`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+}
+
+const DeleteShoppingList = id => {
+  return Fetch(`/shopping-lists/${id}`, {
+    method: 'DELETE',
+    headers: HEADERS(),
+  })
+}
+
+const CreateShoppingListItem = (listId, payload) => {
+  return Fetch(`/shopping-lists/${listId}/items`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(payload),
+  })
+}
+
+const UpdateShoppingListItem = (listId, itemId, payload) => {
+  return Fetch(`/shopping-lists/${listId}/items/${itemId}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(payload),
+  })
+}
+
+const DeleteShoppingListItem = (listId, itemId) => {
+  return Fetch(`/shopping-lists/${listId}/items/${itemId}`, {
+    method: 'DELETE',
+    headers: HEADERS(),
+  })
+}
+
+const ClearCompletedShoppingItems = listId => {
+  return Fetch(`/shopping-lists/${listId}/clear-completed`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+}
+
 export {
   AcceptCircleMemberRequest,
   AddMeterReading,
@@ -1137,6 +1212,10 @@ export {
   CreateLongLiveToken,
   CreateMeter,
   CreateProject,
+  ArchiveShoppingList,
+  ClearCompletedShoppingItems,
+  CreateShoppingList,
+  CreateShoppingListItem,
   CreateThing,
   DeleteChildUser,
   DeleteChore,
@@ -1148,6 +1227,8 @@ export {
   DeleteLabel,
   DeleteLongLiveToken,
   DeleteProject,
+  DeleteShoppingList,
+  DeleteShoppingListItem,
   DeleteThing,
   DeleteTimeSession,
   DeleteUser,
@@ -1185,6 +1266,8 @@ export {
   GetProjectById,
   GetProjects,
   GetResource,
+  GetShoppingList,
+  GetShoppingLists,
   GetStorageUsage,
   GetSubscriptionSession,
   GetThingHistory,
@@ -1238,6 +1321,8 @@ export {
   UpdateNotificationTarget,
   UpdatePassword,
   UpdateProject,
+  UpdateShoppingList,
+  UpdateShoppingListItem,
   UpdateThingState,
   UpdateTimeSession,
   UpdateUserDetails,

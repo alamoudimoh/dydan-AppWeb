@@ -16,6 +16,7 @@ import {
   PlaylistAddCheck,
   SearchRounded,
   SettingsOutlined,
+  ShoppingCart,
   Toll,
 } from '@mui/icons-material'
 
@@ -80,6 +81,11 @@ export const createNavLinkRegistry = ({
     to: '/projects',
     label: t('navigation.projects'),
     icon: <FolderOpen />,
+  },
+  [NAV_LINK_IDS.SHOPPING_LISTS]: {
+    to: '/shopping',
+    label: t('navigation.shoppingLists'),
+    icon: <ShoppingCart />,
   },
   [NAV_LINK_IDS.FILTERS]: {
     to: '/filters',

@@ -48,7 +48,8 @@
       "account": "Compte",
       "support": "Assistance"
     },
-    "openMenu": "Ouvrir le menu"
+    "openMenu": "Ouvrir le menu",
+    "shoppingLists": "Listes de courses"
   },
   "retry": "Réessayer",
   "tryAgain": "Réessayer",

@@ -18,6 +18,7 @@ export const NAV_LINK_IDS = Object.freeze({
   ROUTINES: 'routines',
   CATEGORIES: 'categories',
   PROJECTS: 'projects',
+  SHOPPING_LISTS: 'shoppingLists',
   FILTERS: 'filters',
   ACTIVITIES: 'activities',
   POINTS: 'points',
@@ -41,6 +42,7 @@ const ORGANIZE_LINKS = [
   NAV_LINK_IDS.ROUTINES,
   NAV_LINK_IDS.CATEGORIES,
   NAV_LINK_IDS.PROJECTS,
+  NAV_LINK_IDS.SHOPPING_LISTS,
   NAV_LINK_IDS.FILTERS,
 ]
 

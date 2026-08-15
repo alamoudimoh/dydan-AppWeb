@@ -48,7 +48,8 @@
       "account": "Cuenta",
       "support": "Soporte"
     },
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "shoppingLists": "Listas de compra"
   },
   "feedback": {
     "later": "Maybe later",

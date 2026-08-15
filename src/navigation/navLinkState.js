@@ -11,6 +11,7 @@ export const NAV_LINK_PATHS = Object.freeze({
   [NAV_LINK_IDS.ROUTINES]: '/routines',
   [NAV_LINK_IDS.CATEGORIES]: '/labels',
   [NAV_LINK_IDS.PROJECTS]: '/projects',
+  [NAV_LINK_IDS.SHOPPING_LISTS]: '/shopping',
   [NAV_LINK_IDS.FILTERS]: '/filters',
   [NAV_LINK_IDS.ACTIVITIES]: '/activities',
   [NAV_LINK_IDS.POINTS]: '/points',

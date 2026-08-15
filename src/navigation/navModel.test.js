@@ -18,6 +18,7 @@ const ROUTE_REGISTRY = {
   [NAV_LINK_IDS.ROUTINES]: { to: '/routines' },
   [NAV_LINK_IDS.CATEGORIES]: { to: '/labels' },
   [NAV_LINK_IDS.PROJECTS]: { to: '/projects' },
+  [NAV_LINK_IDS.SHOPPING_LISTS]: { to: '/shopping' },
   [NAV_LINK_IDS.FILTERS]: { to: '/filters' },
   [NAV_LINK_IDS.ACTIVITIES]: { to: '/activities' },
   [NAV_LINK_IDS.POINTS]: { to: '/points' },

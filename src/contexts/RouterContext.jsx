@@ -48,6 +48,8 @@ import PaymentCancelledView from '../views/Payments/PaymentFailView'
 import PaymentSuccessView from '../views/Payments/PaymentSuccessView'
 import PrivacyPolicyView from '../views/PrivacyPolicy/PrivacyPolicyView'
 import ProjectView from '../views/Projects/ProjectView'
+import ShoppingListDetail from '../views/ShoppingLists/ShoppingListDetail'
+import ShoppingListsView from '../views/ShoppingLists/ShoppingListsView'
 import RewardsView from '../views/Rewards/RewardsView'
 import RoutinesView from '../views/Routines/RoutinesView'
 import APITokenSettings from '../views/Settings/APITokenSettings'
@@ -329,6 +331,14 @@ const Router = createBrowserRouter([
       {
         path: 'projects/',
         element: <ProjectView />,
+      },
+      {
+        path: 'shopping',
+        element: <ShoppingListsView />,
+      },
+      {
+        path: 'shopping/:id',
+        element: <ShoppingListDetail />,
       },
       {
         path: 'filters/',

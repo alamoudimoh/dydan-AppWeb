@@ -17,6 +17,7 @@ const routeHierarchy = {
   '/points': 1,
   '/labels': 1,
   '/projects': 1,
+  '/shopping': 1,
   '/login': 0,
   '/signup': 1,
   '/landing': 0,
