@@ -1,6 +1,6 @@
 import './i18n/config'
 import './index.css'
-import '@fontsource-variable/ubuntu-sans'
+import '@fontsource-variable/inter'
 import '@fontsource/cairo/400.css'
 import '@fontsource/cairo/600.css'
 import '@fontsource/cairo/700.css'

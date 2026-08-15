@@ -3,22 +3,28 @@ import { extendTheme } from '@mui/joy/styles'
 import { taskierCssVariables, taskierTokens } from './tokens'
 
 const violetLight = {
-  50: '#F5F3FF',
-  100: '#EDE9FE',
-  200: '#DDD6FE',
-  300: '#C4B5FD',
-  400: '#A78BFA',
-  500: '#7C3AED',
-  600: '#5B21B6',
-  700: '#4C1D95',
-  800: '#3B1675',
-  900: '#2E1065',
+  50: '#F5F4FF',
+  100: '#EDEBFF',
+  200: '#D4D0FF',
+  300: '#B5AFFF',
+  400: '#8B83F0',
+  500: '#4D40DB',
+  600: '#3D33B0',
+  700: '#322AA0',
+  800: '#282388',
+  900: '#1E1A66',
 }
 const violetDark = {
-  ...violetLight,
-  500: '#C4B5FD',
-  600: '#C4B5FD',
-  700: '#DDD6FE',
+  50: '#2E2A52',
+  100: '#3A3568',
+  200: '#4A4480',
+  300: '#6B63B8',
+  400: '#8B83F0',
+  500: '#A59CF5',
+  600: '#B8B0FF',
+  700: '#D4D0FF',
+  800: '#EDEBFF',
+  900: '#F5F4FF',
 }
 const signalLight = {
   50: '#F0F9FF',
@@ -39,28 +45,28 @@ const signalDark = {
   700: '#BAE6FD',
 }
 const neutralLight = {
-  50: '#FAFAFF',
-  100: '#F5F3FF',
-  200: '#E2E8F0',
-  300: '#CBD5E1',
-  400: '#838DA0',
-  500: '#64748B',
-  600: '#44516A',
-  700: '#334155',
-  800: '#1E293B',
-  900: '#0B1220',
+  50: '#F6F7F9',
+  100: '#EEF0F4',
+  200: '#E0E3EB',
+  300: '#C7CCDB',
+  400: '#ADB2C4',
+  500: '#6B7382',
+  600: '#4A5260',
+  700: '#1A1F26',
+  800: '#141820',
+  900: '#0D1017',
 }
 const neutralDark = {
   50: '#F8FAFC',
-  100: '#E2E8F0',
-  200: '#CBD5E1',
-  300: '#94A3B8',
-  400: '#64748B',
-  500: '#475569',
-  600: '#334155',
-  700: '#1E293B',
-  800: '#111827',
-  900: '#0B1220',
+  100: '#ADB2C4',
+  200: '#6B7382',
+  300: '#4A5260',
+  400: '#3A4150',
+  500: '#2B313B',
+  600: '#232830',
+  700: '#1A1F26',
+  800: '#141820',
+  900: '#0D1017',
 }
 const statusPalette = (base, lightBg, darkText) => ({
   50: lightBg,
@@ -77,6 +83,7 @@ const statusPalette = (base, lightBg, darkText) => ({
 
 const light = taskierTokens.light
 const dark = taskierTokens.dark
+const { radius } = taskierTokens
 
 export const taskierTheme = extendTheme({
   fontFamily: {
@@ -85,13 +92,56 @@ export const taskierTheme = extendTheme({
     code: taskierTokens.font.data,
     fallback: 'system-ui, sans-serif',
   },
-  radius: { xs: '6px', sm: '10px', md: '12px', lg: '18px', xl: '24px' },
+  radius: {
+    xs: '6px',
+    sm: radius.nav,
+    md: radius.control,
+    lg: radius.card,
+    xl: radius.shell,
+  },
   shadow: {
-    xs: '0 1px 2px rgba(11, 18, 32, 0.06)',
-    sm: '0 2px 8px rgba(11, 18, 32, 0.08)',
-    md: '0 8px 24px rgba(11, 18, 32, 0.10)',
-    lg: '0 16px 40px rgba(11, 18, 32, 0.14)',
-    xl: '0 24px 64px rgba(11, 18, 32, 0.18)',
+    xs: '0 1px 2px rgba(26, 31, 38, 0.05)',
+    sm: '0 2px 8px rgba(26, 31, 38, 0.06)',
+    md: '0 8px 24px rgba(26, 31, 38, 0.08)',
+    lg: '0 16px 40px rgba(26, 31, 38, 0.10)',
+    xl: '0 24px 64px rgba(26, 31, 38, 0.12)',
+  },
+  typography: {
+    h1: {
+      fontSize: '1.75rem',
+      fontWeight: 600,
+      lineHeight: 1.45,
+      letterSpacing: '-0.01em',
+    },
+    h2: {
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.45,
+    },
+    'title-lg': {
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.45,
+    },
+    'title-md': {
+      fontSize: '1rem',
+      fontWeight: 600,
+      lineHeight: 1.45,
+    },
+    'body-md': {
+      fontSize: '0.875rem',
+      lineHeight: 1.45,
+    },
+    'body-sm': {
+      fontSize: '0.75rem',
+      lineHeight: 1.45,
+    },
+    'body-xs': {
+      fontSize: '0.625rem',
+      lineHeight: 1.45,
+      letterSpacing: '0.08em',
+      textTransform: 'uppercase',
+    },
   },
   colorSchemes: {
     light: {
@@ -101,6 +151,9 @@ export const taskierTheme = extendTheme({
           solidBg: light.primary,
           solidColor: light.primaryContrast,
           solidHoverBg: light.primaryHover,
+          softBg: light.brandSoft,
+          softColor: light.primary,
+          outlinedBorder: light.boundary,
         },
         neutral: neutralLight,
         info: {
@@ -129,14 +182,14 @@ export const taskierTheme = extendTheme({
           popup: light.surface,
           level1: light.surfaceSubtle,
           level2: light.brandSoft,
-          level3: '#DDD6FE',
+          level3: '#D4D0FF',
           tooltip: light.strong,
-          backdrop: 'rgba(11, 18, 32, 0.48)',
+          backdrop: 'rgba(26, 31, 38, 0.48)',
         },
         text: {
           primary: light.text,
           secondary: light.textMuted,
-          tertiary: '#5F6B81',
+          tertiary: '#ADB2C4',
           icon: light.textMuted,
         },
         divider: light.boundary,
@@ -149,6 +202,9 @@ export const taskierTheme = extendTheme({
           solidBg: dark.primary,
           solidColor: dark.primaryContrast,
           solidHoverBg: dark.primaryHover,
+          softBg: dark.brandSoft,
+          softColor: dark.primary,
+          outlinedBorder: dark.boundary,
         },
         neutral: neutralDark,
         info: {
@@ -178,14 +234,14 @@ export const taskierTheme = extendTheme({
           popup: dark.surfaceRaised,
           level1: dark.surfaceRaised,
           level2: dark.brandSoft,
-          level3: '#312E81',
+          level3: '#3A3568',
           tooltip: dark.surfaceRaised,
           backdrop: 'rgba(0, 0, 0, 0.64)',
         },
         text: {
           primary: dark.text,
           secondary: dark.textMuted,
-          tertiary: '#94A3B8',
+          tertiary: '#6B7382',
           icon: dark.textMuted,
         },
         divider: dark.boundary,
@@ -202,8 +258,9 @@ export const taskierTheme = extendTheme({
               : ownerState.size === 'sm'
                 ? '36px'
                 : '40px',
-          borderRadius: 'var(--Button-radius, 10px)',
-          fontWeight: 600,
+          borderRadius: radius.control,
+          fontWeight: 500,
+          fontSize: '0.875rem',
           transition:
             'background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease',
           '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -213,7 +270,7 @@ export const taskierTheme = extendTheme({
     JoyIconButton: {
       styleOverrides: {
         root: {
-          borderRadius: 'var(--IconButton-radius, 10px)',
+          borderRadius: radius.control,
           transition:
             'background-color 180ms ease, border-color 180ms ease, color 180ms ease',
           '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -223,26 +280,53 @@ export const taskierTheme = extendTheme({
     JoyCard: {
       styleOverrides: {
         root: {
-          borderRadius: 'var(--Card-radius, 18px)',
+          borderRadius: radius.card,
           borderColor: 'var(--joy-palette-divider)',
+          '--Card-radius': radius.card,
         },
       },
     },
     JoyModalDialog: {
       styleOverrides: {
         root: {
-          borderRadius: '18px',
+          borderRadius: radius.card,
           borderColor: 'var(--joy-palette-divider)',
         },
       },
     },
-    JoyInput: { styleOverrides: { root: { borderRadius: '10px' } } },
-    JoyTextarea: { styleOverrides: { root: { borderRadius: '10px' } } },
-    JoySelect: { styleOverrides: { root: { borderRadius: '10px' } } },
+    JoyInput: {
+      styleOverrides: { root: { borderRadius: radius.control } },
+    },
+    JoyTextarea: {
+      styleOverrides: { root: { borderRadius: radius.control } },
+    },
+    JoySelect: {
+      styleOverrides: { root: { borderRadius: radius.control } },
+    },
+    JoyChip: {
+      styleOverrides: {
+        root: ({ ownerState }) => ({
+          ...(ownerState.variant === 'soft' &&
+            ownerState.color === 'primary' && {
+              bgcolor: 'var(--taskier-brand-soft)',
+              color: 'var(--taskier-primary)',
+              fontWeight: 500,
+              fontSize: '0.75rem',
+            }),
+        }),
+      },
+    },
+    JoyListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: radius.nav,
+        },
+      },
+    },
     JoyLink: {
       styleOverrides: {
         root: {
-          color: 'var(--taskier-signal)',
+          color: 'var(--taskier-primary)',
           textUnderlineOffset: '0.18em',
           '&:hover': { textDecoration: 'underline' },
         },
@@ -256,16 +340,16 @@ export const taskierGlobalStyles = {
   '[data-joy-color-scheme="dark"]': taskierCssVariables('dark'),
   '@media (prefers-contrast: more)': {
     ':root': {
-      '--taskier-text-muted': '#0B1220',
-      '--taskier-boundary': '#5F6B81',
-      '--joy-palette-text-secondary': '#0B1220',
-      '--joy-palette-divider': '#5F6B81',
+      '--taskier-text-muted': '#1A1F26',
+      '--taskier-boundary': '#4A5260',
+      '--joy-palette-text-secondary': '#1A1F26',
+      '--joy-palette-divider': '#4A5260',
     },
     '[data-joy-color-scheme="dark"]': {
       '--taskier-text-muted': '#F8FAFC',
-      '--taskier-boundary': '#94A3B8',
+      '--taskier-boundary': '#ADB2C4',
       '--joy-palette-text-secondary': '#F8FAFC',
-      '--joy-palette-divider': '#94A3B8',
+      '--joy-palette-divider': '#ADB2C4',
     },
   },
 }

@@ -26,7 +26,9 @@ import Z_INDEX from '../../constants/zIndex'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import NavBarSections from '../../navigation/NavBarSections'
 import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
+import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import {
+  navBrandSx,
   navDrawerContentSx,
   navDrawerFooterSx,
   navDrawerScrollSx,
@@ -224,6 +226,9 @@ const NavBar = () => {
         }}
       >
         <Box sx={navDrawerScrollSx}>
+          <Typography component='p' sx={navBrandSx}>
+            {APP_DISPLAY_NAME}
+          </Typography>
           <NavBarSections
             sections={navSections}
             onItemActivate={closeDrawer}

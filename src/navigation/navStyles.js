@@ -1,17 +1,29 @@
 /** Minimum touch target per mobile accessibility guidance. */
 export const NAV_ITEM_MIN_HEIGHT = 44
 
+export const NAV_DRAWER_WIDTH = 248
+
+export const navBrandSx = {
+  px: 1.25,
+  pt: 0.5,
+  pb: 1,
+  fontSize: '1.5625rem',
+  fontWeight: 600,
+  lineHeight: 1.45,
+  color: 'primary.500',
+  letterSpacing: '-0.01em',
+}
+
 export const navSectionLabelSx = {
   px: 1.25,
   pt: 0.25,
   pb: 0.5,
-  fontSize: '0.6875rem',
-  fontWeight: 500,
+  fontSize: '0.625rem',
+  fontWeight: 600,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: 'text.tertiary',
-  opacity: 0.72,
-  lineHeight: 1.3,
+  color: 'text.secondary',
+  lineHeight: 1.45,
 }
 
 export const navSectionSpacingSx = index => ({
@@ -19,38 +31,36 @@ export const navSectionSpacingSx = index => ({
 })
 
 export const navItemButtonSx = isActive => ({
-  borderRadius: 'var(--joy-radius-md)',
+  borderRadius: 'var(--taskier-radius-nav)',
   minHeight: NAV_ITEM_MIN_HEIGHT,
-  py: 0.75,
+  py: 1,
   px: 1.25,
   gap: 1.25,
+  fontSize: '0.8125rem',
+  fontWeight: isActive ? 500 : 400,
   transition:
     'background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
   ...(isActive
     ? {
-        bgcolor: 'var(--joy-palette-primary-softBg)',
-        color: 'var(--joy-palette-primary-softColor)',
-        fontWeight: 600,
-        boxShadow: 'inset 0 0 0 1px var(--joy-palette-primary-outlinedBorder)',
+        bgcolor: 'var(--taskier-brand-soft)',
+        color: 'primary.500',
         '& .MuiListItemDecorator-root': {
-          color: 'var(--joy-palette-primary-500)',
+          color: 'primary.500',
         },
       }
     : {
         color: 'text.primary',
         '&:hover': {
-          bgcolor: 'var(--joy-palette-neutral-softHoverBg)',
+          bgcolor: 'var(--joy-palette-neutral-50, var(--taskier-page))',
         },
       }),
   '&:focus-visible': {
-    outline: '2px solid var(--joy-palette-primary-500)',
+    outline: '2px solid var(--taskier-focus-outer)',
     outlineOffset: 2,
   },
   '& .MuiListItemDecorator-root': {
     minWidth: 28,
-    color: isActive
-      ? 'var(--joy-palette-primary-500)'
-      : 'var(--joy-palette-neutral-500)',
+    color: isActive ? 'primary.500' : 'text.secondary',
   },
 })
 
@@ -59,8 +69,10 @@ export const navDrawerContentSx = {
   flexDirection: 'column',
   height: '100%',
   maxHeight: '100dvh',
-  width: { xs: 'min(100vw - 24px, 320px)', sm: 288 },
-  bgcolor: 'background.body',
+  width: { xs: 'min(100vw - 24px, 320px)', sm: NAV_DRAWER_WIDTH },
+  bgcolor: 'background.surface',
+  borderRight: '1px solid',
+  borderColor: 'divider',
 }
 
 export const navDrawerScrollSx = {
@@ -69,10 +81,10 @@ export const navDrawerScrollSx = {
   overflowX: 'hidden',
   WebkitOverflowScrolling: 'touch',
   px: 1.25,
-  py: 1,
+  py: 1.25,
   pt: {
-    xs: 'calc(0.5rem + var(--safe-area-inset-top, 0px))',
-    sm: 1,
+    xs: 'calc(0.75rem + var(--safe-area-inset-top, 0px))',
+    sm: 1.25,
   },
 }
 
@@ -83,5 +95,5 @@ export const navDrawerFooterSx = {
   px: 1.25,
   py: 1,
   pb: 'calc(0.75rem + var(--safe-area-inset-bottom, 0px))',
-  bgcolor: 'background.body',
+  bgcolor: 'background.surface',
 }
