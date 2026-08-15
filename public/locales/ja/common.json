@@ -21,14 +21,33 @@
   "version": "バージョン",
   "navigation": {
     "allTasks": "すべてのタスク",
-    "archived": "アーカイブ済み",
-    "things": "Things",
+    "archived": "アーカイブ",
+    "things": "モノ",
     "labels": "ラベル",
     "projects": "プロジェクト",
     "filters": "フィルター",
     "activities": "アクティビティ",
     "points": "ポイント",
-    "settings": "設定"
+    "settings": "設定",
+    "notifications": "通知",
+    "search": "検索",
+    "familyProgress": "家族の進捗",
+    "home": "ホーム",
+    "calendar": "カレンダー",
+    "maintenance": "メンテナンス",
+    "routines": "ルーティン",
+    "categories": "カテゴリ",
+    "rewards": "リワード",
+    "profile": "プロフィール",
+    "sendFeedback": "フィードバックを送る",
+    "reportBug": "バグを報告",
+    "sections": {
+      "daily": "今日",
+      "organize": "整理と追跡",
+      "family": "家族",
+      "account": "アカウント",
+      "support": "サポート"
+    }
   },
   "feedback": {
     "later": "Maybe later",

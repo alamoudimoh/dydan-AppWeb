@@ -22,12 +22,31 @@
   "navigation": {
     "allTasks": "所有任务",
     "archived": "已归档",
-    "things": "事项",
+    "things": "物品",
     "labels": "标签",
     "projects": "项目",
     "filters": "筛选",
     "activities": "活动",
     "points": "积分",
-    "settings": "设置"
+    "settings": "设置",
+    "notifications": "通知",
+    "search": "搜索",
+    "familyProgress": "家庭进度",
+    "home": "首页",
+    "calendar": "日历",
+    "maintenance": "维护",
+    "routines": "例行",
+    "categories": "分类",
+    "rewards": "奖励",
+    "profile": "个人资料",
+    "sendFeedback": "发送反馈",
+    "reportBug": "报告错误",
+    "sections": {
+      "daily": "今天",
+      "organize": "整理与跟踪",
+      "family": "家庭",
+      "account": "账户",
+      "support": "支持"
+    }
   }
 }

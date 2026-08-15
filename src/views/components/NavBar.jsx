@@ -27,6 +27,12 @@ import { useLocalization } from '../../contexts/LocalizationContext'
 import NavBarSections from '../../navigation/NavBarSections'
 import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
 import {
+  navDrawerContentSx,
+  navDrawerFooterSx,
+  navDrawerScrollSx,
+  navItemButtonSx,
+} from '../../navigation/navStyles'
+import {
   buildNavSectionPlan,
   hasActiveFamilyCircle,
 } from '../../navigation/navModel'
@@ -74,10 +80,7 @@ const NavBar = () => {
     }))
   }, [t, openSearch, userProfile])
 
-  const [openDrawer, closeDrawer] = [
-    () => setDrawerOpen(true),
-    () => setDrawerOpen(false),
-  ]
+  const closeDrawer = () => setDrawerOpen(false)
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const getMenuIcon = () => {
@@ -207,72 +210,54 @@ const NavBar = () => {
         open={drawerOpen}
         onClose={closeDrawer}
         anchor={isRTL ? 'right' : 'left'}
-        size='sm'
-        onClick={closeDrawer}
-        sx={{
-          '& .MuiDrawer-content': {
-            position: 'fixed',
-            ...(isRTL ? { right: 0 } : { left: 0 }),
-            overflow: 'auto',
-            zIndex: Z_INDEX.DRAWER,
+        slotProps={{
+          content: {
+            className: 'safe-area-x',
+            sx: {
+              ...navDrawerContentSx,
+              position: 'fixed',
+              ...(isRTL ? { right: 0 } : { left: 0 }),
+              zIndex: Z_INDEX.DRAWER,
+              overflow: 'hidden',
+            },
           },
         }}
       >
-        <div className='drawer-content safe-area-x safe-area-bottom'>
-          <Box
-            sx={{
-              width: '100%',
-              padding: 1,
-              paddingTop:
-                Capacitor.getPlatform() === 'android'
-                  ? `calc(var(--safe-area-inset-top, 0px))`
-                  : '',
-            }}
-          >
-            <NavBarSections sections={navSections} />
-          </Box>
-        </div>
-        <div>
-          <List
-            sx={{
-              p: 2,
-              height: 'min-content',
-              position: 'absolute',
-              bottom: 0,
-              borderRadius: 4,
-              width: '100%',
-              padding: 2,
-            }}
-            size='md'
-            onClick={openDrawer}
-          >
+        <Box sx={navDrawerScrollSx}>
+          <NavBarSections
+            sections={navSections}
+            onItemActivate={closeDrawer}
+          />
+        </Box>
+        <Box sx={navDrawerFooterSx}>
+          <List size='md' sx={{ p: 0, gap: 0 }}>
             <ListItemButton
-              onClick={() => {
-                apiClient.handleLogout()
-              }}
-              sx={{
-                py: 1.2,
-              }}
+              onClick={() => apiClient.handleLogout()}
+              variant='plain'
+              color='neutral'
+              sx={navItemButtonSx(false)}
             >
               <ListItemDecorator>
                 <Logout />
               </ListItemDecorator>
-              <ListItemContent>{t('logout')}</ListItemContent>
+              <ListItemContent sx={{ fontSize: 'sm' }}>
+                {t('logout')}
+              </ListItemContent>
             </ListItemButton>
-            <Typography
-              onClick={() => window.location.reload(true)}
-              level='body-xs'
-              sx={{
-                p: 1,
-                color: 'text.tertiary',
-                textAlign: 'center',
-                mb: 'calc(var(--safe-area-inset-bottom, 0px) )',
-              }}
-            >
-              V{version} (API: {resource?.api_version || 'unavailable'})
-            </Typography>
           </List>
-        </div>
+          <Typography
+            onClick={() => window.location.reload(true)}
+            level='body-xs'
+            sx={{
+              py: 0.75,
+              color: 'text.tertiary',
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            V{version} (API: {resource?.api_version || 'unavailable'})
+          </Typography>
+        </Box>
       </Drawer>
       <FeedbackModal
         open={feedbackOpen}

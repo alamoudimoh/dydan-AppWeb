@@ -4,24 +4,39 @@ import {
   ListItemContent,
   ListItemDecorator,
 } from '@mui/joy'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
-const NavBarLink = ({ link }) => {
+import { isNavLinkActive } from '../../navigation/navLinkState'
+import { navItemButtonSx } from '../../navigation/navStyles'
+
+const NavBarLink = ({ link, onActivate }) => {
+  const location = useLocation()
   const { icon, id, label, onClick, to } = link
+  const isActive = isNavLinkActive(location.pathname, id)
+
+  const handleActivate = event => {
+    onClick?.(event)
+    onActivate?.()
+  }
+
   return (
-    <ListItem>
+    <ListItem sx={{ p: 0, mb: 0.25 }}>
       <ListItemButton
-        key={id || to || label}
-        {...(onClick ? { onClick } : { component: Link, to })}
+        {...(onClick
+          ? { onClick: handleActivate }
+          : {
+              component: Link,
+              to,
+              onClick: () => onActivate?.(),
+            })}
         variant='plain'
         color='neutral'
-        sx={{
-          borderRadius: 4,
-          py: 1.2,
-        }}
+        selected={isActive}
+        aria-current={isActive ? 'page' : undefined}
+        sx={navItemButtonSx(isActive)}
       >
         <ListItemDecorator>{icon}</ListItemDecorator>
-        <ListItemContent>{label}</ListItemContent>
+        <ListItemContent sx={{ fontSize: 'sm' }}>{label}</ListItemContent>
       </ListItemButton>
     </ListItem>
   )

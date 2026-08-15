@@ -20,7 +20,7 @@
   "logout": "Uitloggen",
   "version": "Versie",
   "navigation": {
-    "allTasks": "Alle Taken",
+    "allTasks": "Alle taken",
     "archived": "Gearchiveerd",
     "things": "Dingen",
     "labels": "Labels",
@@ -28,7 +28,26 @@
     "filters": "Filters",
     "activities": "Activiteiten",
     "points": "Punten",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "notifications": "Meldingen",
+    "search": "Zoeken",
+    "familyProgress": "Gezinsvoortgang",
+    "home": "Home",
+    "calendar": "Agenda",
+    "maintenance": "Onderhoud",
+    "routines": "Routines",
+    "categories": "Categorieën",
+    "rewards": "Beloningen",
+    "profile": "Profiel",
+    "sendFeedback": "Feedback sturen",
+    "reportBug": "Bug melden",
+    "sections": {
+      "daily": "Vandaag",
+      "organize": "Organiseren & volgen",
+      "family": "Gezin",
+      "account": "Account",
+      "support": "Ondersteuning"
+    }
   },
   "feedback": {
     "later": "Maybe later",

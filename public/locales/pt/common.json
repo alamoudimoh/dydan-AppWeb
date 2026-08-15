@@ -22,13 +22,32 @@
   "navigation": {
     "allTasks": "Todas as tarefas",
     "archived": "Arquivadas",
-    "things": "Itens",
+    "things": "Coisas",
     "labels": "Etiquetas",
     "projects": "Projetos",
     "filters": "Filtros",
     "activities": "Atividades",
     "points": "Pontos",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "notifications": "Notificações",
+    "search": "Pesquisar",
+    "familyProgress": "Progresso da família",
+    "home": "Início",
+    "calendar": "Calendário",
+    "maintenance": "Manutenção",
+    "routines": "Rotinas",
+    "categories": "Categorias",
+    "rewards": "Recompensas",
+    "profile": "Perfil",
+    "sendFeedback": "Enviar feedback",
+    "reportBug": "Reportar um bug",
+    "sections": {
+      "daily": "Hoje",
+      "organize": "Organizar e acompanhar",
+      "family": "Família",
+      "account": "Conta",
+      "support": "Suporte"
+    }
   },
   "feedback": {
     "later": "Maybe later",

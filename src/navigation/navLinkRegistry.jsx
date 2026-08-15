@@ -53,9 +53,7 @@ export const createNavLinkRegistry = ({
   },
   [NAV_LINK_IDS.FAMILY_PROGRESS]: {
     to: '/family',
-    label: t('navigation.familyProgress', {
-      defaultValue: 'Family Progress',
-    }),
+    label: t('navigation.familyProgress'),
     icon: <Groups />,
   },
   [NAV_LINK_IDS.ARCHIVED]: {
@@ -74,32 +72,32 @@ export const createNavLinkRegistry = ({
     icon: <PlaylistAddCheck />,
   },
   [NAV_LINK_IDS.CATEGORIES]: {
-    to: 'labels',
+    to: '/labels',
     label: t('navigation.categories'),
     icon: <ListAlt />,
   },
   [NAV_LINK_IDS.PROJECTS]: {
-    to: 'projects',
+    to: '/projects',
     label: t('navigation.projects'),
     icon: <FolderOpen />,
   },
   [NAV_LINK_IDS.FILTERS]: {
-    to: 'filters',
+    to: '/filters',
     label: t('navigation.filters'),
     icon: <FilterAlt />,
   },
   [NAV_LINK_IDS.ACTIVITIES]: {
-    to: 'activities',
+    to: '/activities',
     label: t('navigation.activities'),
     icon: <History />,
   },
   [NAV_LINK_IDS.POINTS]: {
-    to: 'points',
+    to: '/points',
     label: t('navigation.points'),
     icon: <Toll />,
   },
   [NAV_LINK_IDS.REWARDS]: {
-    to: 'rewards',
+    to: '/rewards',
     label: t('navigation.rewards'),
     icon: <CardGiftcard />,
   },

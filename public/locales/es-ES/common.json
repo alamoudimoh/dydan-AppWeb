@@ -20,7 +20,7 @@
   "logout": "Cerrar Sesión",
   "version": "Versión",
   "navigation": {
-    "allTasks": "Todas las Tareas",
+    "allTasks": "Todas las tareas",
     "archived": "Archivadas",
     "things": "Cosas",
     "labels": "Etiquetas",
@@ -28,6 +28,25 @@
     "filters": "Filtros",
     "activities": "Actividades",
     "points": "Puntos",
-    "settings": "Configuración"
+    "settings": "Ajustes",
+    "notifications": "Notificaciones",
+    "search": "Buscar",
+    "familyProgress": "Progreso familiar",
+    "home": "Inicio",
+    "calendar": "Calendario",
+    "maintenance": "Mantenimiento",
+    "routines": "Rutinas",
+    "categories": "Categorías",
+    "rewards": "Recompensas",
+    "profile": "Perfil",
+    "sendFeedback": "Enviar comentarios",
+    "reportBug": "Reportar un error",
+    "sections": {
+      "daily": "Hoy",
+      "organize": "Organizar y seguir",
+      "family": "Familia",
+      "account": "Cuenta",
+      "support": "Soporte"
+    }
   }
 }

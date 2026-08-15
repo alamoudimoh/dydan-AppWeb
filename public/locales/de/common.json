@@ -23,11 +23,30 @@
     "allTasks": "Alle Aufgaben",
     "archived": "Archiviert",
     "things": "Dinge",
-    "labels": "Beschriftungen",
+    "labels": "Labels",
     "projects": "Projekte",
     "filters": "Filter",
     "activities": "Aktivitäten",
     "points": "Punkte",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "notifications": "Benachrichtigungen",
+    "search": "Suchen",
+    "familyProgress": "Familienfortschritt",
+    "home": "Start",
+    "calendar": "Kalender",
+    "maintenance": "Wartung",
+    "routines": "Routinen",
+    "categories": "Kategorien",
+    "rewards": "Prämien",
+    "profile": "Profil",
+    "sendFeedback": "Feedback senden",
+    "reportBug": "Fehler melden",
+    "sections": {
+      "daily": "Heute",
+      "organize": "Organisieren & verfolgen",
+      "family": "Familie",
+      "account": "Konto",
+      "support": "Support"
+    }
   }
 }

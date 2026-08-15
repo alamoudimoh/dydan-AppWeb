@@ -36,7 +36,24 @@
     "activities": "الأنشطة",
     "points": "النقاط",
     "settings": "الإعدادات",
-    "familyProgress": "تقدم العائلة"
+    "familyProgress": "تقدم العائلة",
+    "search": "بحث",
+    "home": "الرئيسية",
+    "calendar": "التقويم",
+    "maintenance": "الصيانة",
+    "routines": "الروتينات",
+    "categories": "الفئات",
+    "rewards": "المكافآت",
+    "profile": "الملف الشخصي",
+    "sendFeedback": "إرسال ملاحظات",
+    "reportBug": "الإبلاغ عن خطأ",
+    "sections": {
+      "daily": "اليوم",
+      "organize": "تنظيم وتتبع",
+      "family": "العائلة",
+      "account": "الحساب",
+      "support": "الدعم"
+    }
   },
   "familyProgress": {
     "title": "تقدم العائلة",
