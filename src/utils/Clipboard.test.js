@@ -64,7 +64,9 @@ test('copyToClipboard falls back when Clipboard API is unavailable', async () =>
         tag,
         value: '',
         style: {},
+        focus: () => {},
         select: () => {},
+        setSelectionRange: () => {},
         setAttribute: () => {},
       }
       return element
@@ -79,4 +81,46 @@ test('copyToClipboard falls back when Clipboard API is unavailable', async () =>
   if (originalExecCommand) {
     global.document.execCommand = originalExecCommand
   }
+})
+
+test('copyToClipboard falls back when Clipboard API permission is denied', async () => {
+  global.navigator.clipboard = {
+    writeText: async () => {
+      const error = new Error('denied')
+      error.name = 'NotAllowedError'
+      throw error
+    },
+  }
+  Object.defineProperty(global, 'window', {
+    configurable: true,
+    value: { isSecureContext: true },
+  })
+
+  const createdElements = []
+  global.document = {
+    body: {
+      appendChild: node => createdElements.push(node),
+      removeChild: node => {
+        const index = createdElements.indexOf(node)
+        if (index >= 0) createdElements.splice(index, 1)
+      },
+    },
+    createElement: tag => {
+      const element = {
+        tag,
+        value: '',
+        style: {},
+        focus: () => {},
+        select: () => {},
+        setSelectionRange: () => {},
+        setAttribute: () => {},
+      }
+      return element
+    },
+    execCommand: command => command === 'copy',
+  }
+
+  const result = await copyToClipboard('denied-then-fallback')
+  assert.equal(result.ok, true)
+  assert.equal(result.method, 'execCommand')
 })

@@ -7,6 +7,7 @@ import {
   partitionShoppingLists,
   SHOPPING_LIST_SCOPES,
 } from './shoppingListModel.js'
+import { resolveEffectiveRole } from '../../utils/PermissionModel.js'
 
 test('partitionShoppingLists splits personal and family lists', () => {
   const lists = [
@@ -28,6 +29,22 @@ test('canManageShoppingList respects personal ownership and circle admin', () =>
   assert.equal(canManageShoppingList(family, 9, 'adult'), true)
   assert.equal(canManageShoppingList(family, 4, 'owner'), true)
   assert.equal(canManageShoppingList(family, 4, 'adult'), false)
+})
+
+test('shopping list permissions accept useCircleMembers query payload', () => {
+  const familyList = { id: 2, createdBy: 9, circleId: 3 }
+  const membersQuery = {
+    res: [{ userId: 7, role: 'admin', isActive: true }],
+  }
+
+  assert.equal(
+    canManageShoppingList(
+      familyList,
+      7,
+      resolveEffectiveRole({ id: 7, userType: 0 }, membersQuery),
+    ),
+    true,
+  )
 })
 
 test('shopping list scopes are stable', () => {

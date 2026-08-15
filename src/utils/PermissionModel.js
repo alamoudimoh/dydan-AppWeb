@@ -11,12 +11,20 @@ export const PERMISSIONS = Object.freeze({
   MANAGE_SUBACCOUNTS: 'manage_subaccounts',
 })
 
+/** Circle member queries return `{ res: [...] }`; normalize before role checks. */
+export const normalizeCircleMembers = circleMembers => {
+  if (Array.isArray(circleMembers)) return circleMembers
+  if (Array.isArray(circleMembers?.res)) return circleMembers.res
+  return []
+}
+
 export const resolveEffectiveRole = (profile, circleMembers = []) => {
   if (!profile) return EFFECTIVE_ROLES.NONE
   if (profile.userType === 1 || profile.parentUserId != null) {
     return EFFECTIVE_ROLES.CHILD
   }
-  const membership = circleMembers.find(
+  const members = normalizeCircleMembers(circleMembers)
+  const membership = members.find(
     member => Number(member.userId) === Number(profile.id),
   )
   if (!membership || membership.isActive === false) return EFFECTIVE_ROLES.NONE

@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   EFFECTIVE_ROLES,
   hasPermission,
+  normalizeCircleMembers,
   PERMISSIONS,
   resolveEffectiveRole,
   SETTINGS_PERMISSIONS,
@@ -27,6 +28,25 @@ test('effective role uses managed-account status before Circle membership', () =
   assert.equal(
     resolveEffectiveRole({ id: 2, userType: 0 }, members),
     EFFECTIVE_ROLES.ADULT,
+  )
+})
+
+test('resolveEffectiveRole accepts useCircleMembers query payload shape', () => {
+  const queryPayload = {
+    res: [
+      { userId: 7, role: 'admin', isActive: true },
+      { userId: 8, role: 'member', isActive: true },
+    ],
+  }
+
+  assert.deepEqual(normalizeCircleMembers(queryPayload), queryPayload.res)
+  assert.equal(
+    resolveEffectiveRole({ id: 7, userType: 0 }, queryPayload),
+    EFFECTIVE_ROLES.OWNER,
+  )
+  assert.equal(
+    resolveEffectiveRole({ id: 7, userType: 0 }, null),
+    EFFECTIVE_ROLES.NONE,
   )
 })
 
