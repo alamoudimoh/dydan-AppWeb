@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core'
-import { Button, Card, Chip, LinearProgress, Typography } from '@mui/joy'
+import { Box, Button, Card, Chip, LinearProgress, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'

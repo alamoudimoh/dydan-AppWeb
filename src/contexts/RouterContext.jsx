@@ -76,7 +76,7 @@ const restrictedSetting = (permission, element) => (
 
 const familyRoute = element => <FamilyCircleGuard>{element}</FamilyCircleGuard>
 
-const Router = createBrowserRouter([
+export const appRouteConfig = [
   {
     path: '/',
     element: <App />,
@@ -353,7 +353,9 @@ const Router = createBrowserRouter([
       },
     ],
   },
-])
+]
+
+const Router = createBrowserRouter(appRouteConfig)
 
 const RouterContext = ({ children }) => {
   return <RouterProvider router={Router} />
