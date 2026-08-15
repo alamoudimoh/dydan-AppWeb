@@ -33,6 +33,11 @@ import { useUserProfile } from '../../queries/UserQueries'
 import { MarkChoreComplete } from '../../utils/Fetcher'
 import SectionCard from '../../components/common/SectionCard'
 import { pageStackSpacing, settingsPageSx } from '../../theme/appLayout'
+import {
+  dashboardBuckets,
+  groupUpcoming,
+  maintenanceLabel,
+} from './dashboardModel'
 
 const preferenceKey = 'taskier.dashboard.upcomingRange'
 const readRange = () => {
