@@ -26,6 +26,7 @@ import {
 } from '@mui/joy'
 import { useTheme } from '@mui/joy/styles'
 import moment from 'moment'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import {
@@ -41,6 +42,7 @@ import { useThingHistory } from '../../queries/ThingQueries'
 import LoadingComponent from '../components/Loading'
 
 const ThingsHistory = () => {
+  const { t } = useTranslation('common')
   const { id } = useParams()
   const theme = useTheme()
   const { fmt } = useLocalization()
@@ -462,10 +464,10 @@ const ThingsHistory = () => {
           disabled={!hasNextPage || isFetchingNextPage}
         >
           {isFetchingNextPage
-            ? 'Loading...'
+            ? t('loading')
             : !hasNextPage
-              ? 'No more history'
-              : 'Load more'}
+              ? t('noMoreHistory')
+              : t('loadMore')}
         </Button>
       </Box>
     </Container>

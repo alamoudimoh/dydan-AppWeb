@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import LabelModal from '../Modals/Inputs/LabelModal'
 
 import {
@@ -151,6 +152,7 @@ const LabelCardContent = ({ label, currentUserId, onToggleActions }) => {
 }
 
 const LabelView = () => {
+  const { t } = useTranslation('common')
   const { data: labels, isLoading: isLabelsLoading, isError, refetch } =
     useLabels()
   const { data: userProfile } = useUserProfile()
@@ -226,9 +228,9 @@ const LabelView = () => {
       <EmptyState
         variant='error'
         size='sm'
-        title='Failed to load labels'
-        description='Please try again.'
-        primaryAction={{ label: 'Retry', onClick: () => refetch() }}
+        title={t('errors.labelsLoadFailed')}
+        description={t('errors.pleaseTryAgain')}
+        primaryAction={{ label: t('retry'), onClick: () => refetch() }}
       />
     )
   }

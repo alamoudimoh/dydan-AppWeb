@@ -18,6 +18,11 @@
   "back": "Back",
   "backToCalendar": "Back to Calendar",
   "logout": "Logout",
+  "retry": "Retry",
+  "tryAgain": "Try again",
+  "login": "Log in",
+  "loadMore": "Load more",
+  "noMoreHistory": "No more history",
   "version": "Version",
   "dates": {
     "today": "Today",
@@ -121,6 +126,33 @@
     "emptyTitle": "You're all caught up.",
     "emptyMessage": "New updates and things needing attention will appear here.",
     "loadMore": "Load more"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This link does not lead anywhere. It may have moved, or the address has a typo in it.",
+    "goToTasks": "Go to my tasks",
+    "logIn": "Log in"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "defaultMessage": "An unexpected error occurred. Try reloading — it usually fixes it.",
+    "reportProblem": "Report this problem",
+    "pleaseTryAgain": "Please try again.",
+    "tasksLoadFailed": "Your tasks could not be loaded.",
+    "calendarLoadFailed": "Calendar could not be loaded.",
+    "projectsLoadFailed": "Failed to load projects",
+    "labelsLoadFailed": "Failed to load labels",
+    "reportHint": "If this keeps happening, please send us a report so we can investigate.",
+    "showDetails": "Show error details",
+    "hideDetails": "Hide error details",
+    "collectingDetails": "Collecting error details…",
+    "detailsCopied": "Error details copied to clipboard",
+    "copyFailed": "Copy failed — select the details above and copy manually.",
+    "rewardsUnavailable": "Rewards are temporarily unavailable. Your tasks are unaffected."
+  },
+  "search": {
+    "noDirectMatchesTitle": "No direct matches",
+    "noDirectMatchesDescription": "You can still filter the task list with this search."
   },
   "feedback": {
     "later": "Maybe later",

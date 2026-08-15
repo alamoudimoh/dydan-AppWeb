@@ -53,7 +53,8 @@
       "family": "العائلة",
       "account": "الحساب",
       "support": "الدعم"
-    }
+    },
+    "openMenu": "فتح القائمة"
   },
   "familyProgress": {
     "title": "تقدم العائلة",
@@ -164,5 +165,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "إعادة المحاولة",
+  "tryAgain": "حاول مرة أخرى",
+  "login": "تسجيل الدخول",
+  "loadMore": "تحميل المزيد",
+  "noMoreHistory": "لا مزيد من السجل",
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "description": "هذا الرابط لا يؤدي إلى أي مكان. ربما تم نقله، أو أن العنوان يحتوي على خطأ.",
+    "goToTasks": "الانتقال إلى مهامي",
+    "logIn": "تسجيل الدخول"
+  },
+  "errors": {
+    "title": "حدث خطأ ما",
+    "defaultMessage": "حدث خطأ غير متوقع. جرّب إعادة التحميل — فهذا يحل المشكلة عادةً.",
+    "reportProblem": "الإبلاغ عن هذه المشكلة",
+    "pleaseTryAgain": "يرجى المحاولة مرة أخرى.",
+    "tasksLoadFailed": "تعذر تحميل مهامك.",
+    "calendarLoadFailed": "تعذر تحميل التقويم.",
+    "projectsLoadFailed": "تعذر تحميل المشاريع",
+    "labelsLoadFailed": "تعذر تحميل التصنيفات",
+    "reportHint": "إذا استمر ذلك، يرجى إرسال تقرير لنتمكن من التحقيق.",
+    "showDetails": "إظهار تفاصيل الخطأ",
+    "hideDetails": "إخفاء تفاصيل الخطأ",
+    "collectingDetails": "جارٍ جمع تفاصيل الخطأ…",
+    "detailsCopied": "تم نسخ تفاصيل الخطأ إلى الحافظة",
+    "copyFailed": "فشل النسخ — حدد التفاصيل أعلاه وانسخها يدويًا.",
+    "rewardsUnavailable": "المكافآت غير متاحة مؤقتًا. مهامك غير متأثرة."
+  },
+  "search": {
+    "noDirectMatchesTitle": "لا توجد مطابقات مباشرة",
+    "noDirectMatchesDescription": "لا يزال بإمكانك تصفية قائمة المهام بهذا البحث."
   }
 }

@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material'
 import { Box, Button, IconButton, Snackbar, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useRouteError } from 'react-router-dom'
 
 import {
@@ -56,6 +57,7 @@ const safeMessage = error => {
 }
 
 const Error = () => {
+  const { t } = useTranslation('common')
   const error = useRouteError()
   const [showDetails, setShowDetails] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -199,7 +201,7 @@ const Error = () => {
         textAlign='center'
         sx={{ mb: 1.5 }}
       >
-        Something went wrong
+        {t('errors.title')}
       </Typography>
 
       {/* Error message */}
@@ -214,8 +216,7 @@ const Error = () => {
           wordBreak: 'break-word',
         }}
       >
-        {message ??
-          'An unexpected error occurred. Try reloading — it usually fixes it.'}
+        {message ?? t('errors.defaultMessage')}
       </Typography>
 
       {/* Primary CTA */}
@@ -227,7 +228,7 @@ const Error = () => {
         onClick={() => window.location.reload()}
         sx={{ width: '100%', mb: 1.5 }}
       >
-        Try again
+        {t('tryAgain')}
       </Button>
 
       {/* Reporting is one tap from the failure, where the context is still
@@ -240,7 +241,7 @@ const Error = () => {
         onClick={() => setReportOpen(true)}
         sx={{ width: '100%', mb: 2 }}
       >
-        Report this problem
+        {t('errors.reportProblem')}
       </Button>
 
       {/* Secondary actions */}
@@ -253,7 +254,7 @@ const Error = () => {
           size='lg'
           startDecorator={<HomeRounded />}
         >
-          Home
+          {t('navigation.home')}
         </Button>
         <Button
           component={Link}
@@ -262,7 +263,7 @@ const Error = () => {
           color='neutral'
           size='lg'
         >
-          Login
+          {t('login')}
         </Button>
       </Box>
 
@@ -280,8 +281,7 @@ const Error = () => {
           textAlign='center'
           sx={{ color: 'text.tertiary', mb: 1.5 }}
         >
-          If this keeps happening, send us a report please consider sending us
-          report so we can take a look.
+          {t('errors.reportHint')}
         </Typography>
 
         {(error?.stack || message) && (
@@ -301,7 +301,7 @@ const Error = () => {
               }
               sx={{ mb: 1 }}
             >
-              {showDetails ? 'Hide' : 'Show'} error details
+              {showDetails ? t('errors.hideDetails') : t('errors.showDetails')}
             </Button>
 
             {showDetails && (
@@ -320,7 +320,7 @@ const Error = () => {
                   color='neutral'
                   onClick={handleCopy}
                   sx={{ position: 'absolute', top: 8, right: 8 }}
-                  title='Copy to clipboard'
+                  title={t('copy')}
                 >
                   <ContentCopyRounded fontSize='small' />
                 </IconButton>
@@ -334,7 +334,7 @@ const Error = () => {
                     color: 'text.secondary',
                   }}
                 >
-                  {reportText || 'Collecting error details…'}
+                  {reportText || t('errors.collectingDetails')}
                 </Typography>
               </Box>
             )}
@@ -355,7 +355,7 @@ const Error = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         size='sm'
       >
-        Error details copied to clipboard
+        {t('errors.detailsCopied')}
       </Snackbar>
       <Snackbar
         open={copyFailed}
@@ -365,7 +365,7 @@ const Error = () => {
         size='sm'
         color='danger'
       >
-        Copy failed — select the details above and copy manually.
+        {t('errors.copyFailed')}
       </Snackbar>
     </Box>
   )

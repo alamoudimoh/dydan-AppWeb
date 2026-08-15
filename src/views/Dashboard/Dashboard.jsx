@@ -156,7 +156,7 @@ TaskRow.propTypes = {
 TaskRow.defaultProps = { overdue: false, pending: false }
 
 export default function Dashboard() {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const client = useQueryClient()
   const profile = useUserProfile()
@@ -280,11 +280,11 @@ export default function Dashboard() {
             startDecorator={<ErrorOutlineRounded />}
             endDecorator={
               <Button size='sm' onClick={() => chores.refetch()}>
-                Retry
+                {t('retry')}
               </Button>
             }
           >
-            Your tasks could not be loaded.
+            {t('errors.tasksLoadFailed')}
           </Alert>
         )}
         {completionError && <Alert color='danger'>{completionError}</Alert>}
@@ -444,11 +444,11 @@ export default function Dashboard() {
                     requests.refetch()
                   }}
                 >
-                  Retry
+                  {t('retry')}
                 </Button>
               }
             >
-              Rewards are temporarily unavailable. Your tasks are unaffected.
+              {t('errors.rewardsUnavailable')}
             </Alert>
           )}
           {!rewards.isLoading &&

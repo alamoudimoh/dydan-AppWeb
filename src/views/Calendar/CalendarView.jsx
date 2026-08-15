@@ -146,7 +146,7 @@ TaskRow.propTypes = {
 }
 
 export default function CalendarView() {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('common')
   const { firstDayOfWeek, isRTL } = useLocalization()
   const profile = useUserProfile()
   const navigate = useNavigate()
@@ -366,11 +366,11 @@ export default function CalendarView() {
             sx={inlineErrorAlertSx}
             endDecorator={
               <Button size='sm' onClick={() => calendar.refetch()}>
-                Retry
+                {t('retry')}
               </Button>
             }
           >
-            Calendar could not be loaded.
+            {t('errors.calendarLoadFailed')}
           </Alert>
         )}
         {actionError && (

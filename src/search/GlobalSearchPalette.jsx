@@ -24,6 +24,7 @@ import {
 import Fuse from 'fuse.js'
 import PropTypes from 'prop-types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
@@ -191,6 +192,7 @@ const GlobalSearchPalette = ({
   onClose,
   presentation = 'modal',
 }) => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const focusInputRef = useCallback(node => {
     if (node) requestAnimationFrame(() => node.focus())
@@ -356,8 +358,8 @@ const GlobalSearchPalette = ({
             variant='no-results'
             size='sm'
             icon={<InboxOutlined />}
-            title='No direct matches'
-            description='You can still filter the task list with this search.'
+            title={t('search.noDirectMatchesTitle')}
+            description={t('search.noDirectMatchesDescription')}
           />
         )}
 

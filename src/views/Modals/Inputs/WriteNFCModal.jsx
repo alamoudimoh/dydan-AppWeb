@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material'
 import { Box, IconButton, Input, Switch, Typography } from '@mui/joy'
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
 import { startNativeNFCWrite } from '../../../service/NFCWriter'
@@ -105,6 +106,7 @@ function NFCIcon({ status }) {
 }
 
 function WriteNFCModal({ config }) {
+  const { t } = useTranslation('common')
   const { ResponsiveModal } = useResponsiveModal()
   const [nfcStatus, setNfcStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -189,7 +191,7 @@ function WriteNFCModal({ config }) {
   const title = isSuccess
     ? 'Tag written!'
     : isError
-      ? 'Something went wrong'
+      ? t('errors.title')
       : isWaiting
         ? 'Hold near NFC tag'
         : 'Write to NFC'

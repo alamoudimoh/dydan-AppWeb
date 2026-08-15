@@ -18,6 +18,11 @@
   "back": "Zurück",
   "backToCalendar": "Zurück zum Kalender",
   "logout": "Abmelden",
+  "retry": "Wiederholen",
+  "tryAgain": "Erneut versuchen",
+  "login": "Anmelden",
+  "loadMore": "Mehr laden",
+  "noMoreHistory": "Kein weiterer Verlauf",
   "version": "Version",
   "navigation": {
     "allTasks": "Alle Aufgaben",
@@ -33,6 +38,7 @@
     "search": "Suchen",
     "familyProgress": "Familienfortschritt",
     "home": "Start",
+    "openMenu": "Menü öffnen",
     "calendar": "Kalender",
     "maintenance": "Wartung",
     "routines": "Routinen",
@@ -48,5 +54,32 @@
       "account": "Konto",
       "support": "Support"
     }
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Dieser Link führt nirgendwohin. Er wurde vielleicht verschoben, oder die Adresse enthält einen Tippfehler.",
+    "goToTasks": "Zu meinen Aufgaben",
+    "logIn": "Anmelden"
+  },
+  "errors": {
+    "title": "Etwas ist schiefgelaufen",
+    "defaultMessage": "Ein unerwarteter Fehler ist aufgetreten. Laden Sie die Seite neu — das behebt es meist.",
+    "reportProblem": "Problem melden",
+    "pleaseTryAgain": "Bitte versuchen Sie es erneut.",
+    "tasksLoadFailed": "Ihre Aufgaben konnten nicht geladen werden.",
+    "calendarLoadFailed": "Der Kalender konnte nicht geladen werden.",
+    "projectsLoadFailed": "Projekte konnten nicht geladen werden",
+    "labelsLoadFailed": "Labels konnten nicht geladen werden",
+    "reportHint": "Wenn das weiterhin passiert, senden Sie uns bitte einen Bericht, damit wir uns das ansehen können.",
+    "showDetails": "Fehlerdetails anzeigen",
+    "hideDetails": "Fehlerdetails ausblenden",
+    "collectingDetails": "Fehlerdetails werden gesammelt…",
+    "detailsCopied": "Fehlerdetails in die Zwischenablage kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen — wählen Sie die Details oben aus und kopieren Sie sie manuell.",
+    "rewardsUnavailable": "Belohnungen sind vorübergehend nicht verfügbar. Ihre Aufgaben sind nicht betroffen."
+  },
+  "search": {
+    "noDirectMatchesTitle": "Keine direkten Treffer",
+    "noDirectMatchesDescription": "Sie können die Aufgabenliste trotzdem mit dieser Suche filtern."
   }
 }

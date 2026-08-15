@@ -1,11 +1,13 @@
 import { Box, Button, CircularProgress, Container } from '@mui/joy'
 import { Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Logo from '../../Logo'
 import { networkManager } from '../../hooks/NetworkManager'
 
 const LoadingComponent = () => {
-  const [message, setMessage] = useState('Loading...')
+  const { t } = useTranslation('common')
+  const [message, setMessage] = useState(() => t('loading'))
   const [subMessage, setSubMessage] = useState('')
   const [isOnline, setIsOnline] = useState(networkManager.isOnline)
 

@@ -1,5 +1,6 @@
 import { Box, CircularProgress, Typography } from '@mui/joy'
 import { styled } from '@mui/joy/styles'
+import { useTranslation } from 'react-i18next'
 
 // Styled components with keyframe animations
 const LoadingContainer = styled(Box)({
@@ -64,10 +65,13 @@ const LogoContainer = styled(Box)({
 })
 
 const LoadingScreen = ({
-  message = 'Loading...',
+  message,
   showLogo = true,
   size = 'lg',
 }) => {
+  const { t } = useTranslation('common')
+  const loadingMessage = message ?? t('loading')
+
   return (
     <LoadingContainer>
       <LoadingContent>
@@ -99,7 +103,7 @@ const LoadingScreen = ({
           }}
         />
 
-        <PulsingText level='body-md'>{message}</PulsingText>
+        <PulsingText level='body-md'>{loadingMessage}</PulsingText>
       </LoadingContent>
     </LoadingContainer>
   )

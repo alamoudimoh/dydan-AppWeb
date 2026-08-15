@@ -47,7 +47,8 @@
       "family": "家庭",
       "account": "账户",
       "support": "支持"
-    }
+    },
+    "openMenu": "打开菜单"
   },
   "feedback": {
     "later": "Maybe later",
@@ -94,5 +95,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "重试",
+  "tryAgain": "再试一次",
+  "login": "登录",
+  "loadMore": "加载更多",
+  "noMoreHistory": "没有更多历史记录",
+  "notFound": {
+    "title": "页面未找到",
+    "description": "此链接无效。它可能已移动，或地址有误。",
+    "goToTasks": "前往我的任务",
+    "logIn": "登录"
+  },
+  "errors": {
+    "title": "出现问题",
+    "defaultMessage": "发生了意外错误。请尝试重新加载——通常可以解决问题。",
+    "reportProblem": "报告此问题",
+    "pleaseTryAgain": "请重试。",
+    "tasksLoadFailed": "无法加载你的任务。",
+    "calendarLoadFailed": "无法加载日历。",
+    "projectsLoadFailed": "无法加载项目",
+    "labelsLoadFailed": "无法加载标签",
+    "reportHint": "如果问题持续出现，请向我们发送报告以便调查。",
+    "showDetails": "显示错误详情",
+    "hideDetails": "隐藏错误详情",
+    "collectingDetails": "正在收集错误详情…",
+    "detailsCopied": "错误详情已复制到剪贴板",
+    "copyFailed": "复制失败 — 请选中上方的详细信息并手动复制。",
+    "rewardsUnavailable": "奖励暂时不可用。您的任务不受影响。"
+  },
+  "search": {
+    "noDirectMatchesTitle": "没有直接匹配",
+    "noDirectMatchesDescription": "你仍可用此搜索筛选任务列表。"
   }
 }

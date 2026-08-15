@@ -47,7 +47,8 @@
       "family": "家族",
       "account": "アカウント",
       "support": "サポート"
-    }
+    },
+    "openMenu": "メニューを開く"
   },
   "feedback": {
     "later": "Maybe later",
@@ -94,5 +95,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "再試行",
+  "tryAgain": "もう一度試す",
+  "login": "ログイン",
+  "loadMore": "さらに読み込む",
+  "noMoreHistory": "これ以上の履歴はありません",
+  "notFound": {
+    "title": "ページが見つかりません",
+    "description": "このリンクはどこにもつながりません。移動したか、住所に誤りがある可能性があります。",
+    "goToTasks": "自分のタスクへ",
+    "logIn": "ログイン"
+  },
+  "errors": {
+    "title": "問題が発生しました",
+    "defaultMessage": "予期しないエラーが発生しました。再読み込みすると通常は解決します。",
+    "reportProblem": "この問題を報告",
+    "pleaseTryAgain": "もう一度お試しください。",
+    "tasksLoadFailed": "タスクを読み込めませんでした。",
+    "calendarLoadFailed": "カレンダーを読み込めませんでした。",
+    "projectsLoadFailed": "プロジェクトを読み込めませんでした",
+    "labelsLoadFailed": "ラベルを読み込めませんでした",
+    "reportHint": "これが続く場合は、調査のためレポートをお送りください。",
+    "showDetails": "エラー詳細を表示",
+    "hideDetails": "エラー詳細を非表示",
+    "collectingDetails": "エラー詳細を収集中…",
+    "detailsCopied": "エラー詳細をクリップボードにコピーしました",
+    "copyFailed": "コピーに失敗しました。上の詳細を選択して手動でコピーしてください。",
+    "rewardsUnavailable": "リワードは一時的に利用できません。タスクには影響しません。"
+  },
+  "search": {
+    "noDirectMatchesTitle": "直接の一致はありません",
+    "noDirectMatchesDescription": "この検索でタスク一覧をフィルターできます。"
   }
 }

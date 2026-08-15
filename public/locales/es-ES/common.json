@@ -47,6 +47,39 @@
       "family": "Familia",
       "account": "Cuenta",
       "support": "Soporte"
-    }
+    },
+    "openMenu": "Abrir menú"
+  },
+  "retry": "Reintentar",
+  "tryAgain": "Volver a intentarlo",
+  "login": "Iniciar sesión",
+  "loadMore": "Cargar más",
+  "noMoreHistory": "No hay más historial",
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Este enlace no lleva a ninguna parte. Puede que se haya movido o que la dirección tenga un error.",
+    "goToTasks": "Ir a mis tareas",
+    "logIn": "Iniciar sesión"
+  },
+  "errors": {
+    "title": "Algo salió mal",
+    "defaultMessage": "Ocurrió un error inesperado. Prueba a recargar — suele solucionarlo.",
+    "reportProblem": "Informar de este problema",
+    "pleaseTryAgain": "Inténtalo de nuevo.",
+    "tasksLoadFailed": "No se pudieron cargar tus tareas.",
+    "calendarLoadFailed": "No se pudo cargar el calendario.",
+    "projectsLoadFailed": "No se pudieron cargar los proyectos",
+    "labelsLoadFailed": "No se pudieron cargar las etiquetas",
+    "reportHint": "Si esto sigue ocurriendo, envíanos un informe para que podamos investigarlo.",
+    "showDetails": "Mostrar detalles del error",
+    "hideDetails": "Ocultar detalles del error",
+    "collectingDetails": "Recopilando detalles del error…",
+    "detailsCopied": "Detalles del error copiados al portapapeles",
+    "copyFailed": "Error al copiar — selecciona los detalles de arriba y cópialos manualmente.",
+    "rewardsUnavailable": "Las recompensas no están disponibles temporalmente. Tus tareas no se ven afectadas."
+  },
+  "search": {
+    "noDirectMatchesTitle": "Sin coincidencias directas",
+    "noDirectMatchesDescription": "Aún puedes filtrar la lista de tareas con esta búsqueda."
   }
 }

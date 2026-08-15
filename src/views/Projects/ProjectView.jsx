@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import ProjectModal from '../Modals/Inputs/ProjectModal'
 
@@ -221,6 +222,7 @@ const ProjectCardContent = ({
 }
 
 const ProjectView = () => {
+  const { t } = useTranslation('common')
   const { data: projectsData = [], isLoading: projectsLoading, isError, refetch } =
     useProjects()
   const { data: userProfile } = useUserProfile()
@@ -343,9 +345,9 @@ const ProjectView = () => {
       <EmptyState
         variant='error'
         size='sm'
-        title='Failed to load projects'
-        description='Please try again.'
-        primaryAction={{ label: 'Retry', onClick: () => refetch() }}
+        title={t('errors.projectsLoadFailed')}
+        description={t('errors.pleaseTryAgain')}
+        primaryAction={{ label: t('retry'), onClick: () => refetch() }}
       />
     )
   }

@@ -47,7 +47,8 @@
       "family": "Família",
       "account": "Conta",
       "support": "Suporte"
-    }
+    },
+    "openMenu": "Abrir menu"
   },
   "feedback": {
     "later": "Maybe later",
@@ -94,5 +95,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "Tentar novamente",
+  "tryAgain": "Tentar novamente",
+  "login": "Entrar",
+  "loadMore": "Carregar mais",
+  "noMoreHistory": "Sem mais histórico",
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "Este link não leva a lugar nenhum. Pode ter sido movido ou o endereço contém um erro.",
+    "goToTasks": "Ir para minhas tarefas",
+    "logIn": "Entrar"
+  },
+  "errors": {
+    "title": "Algo deu errado",
+    "defaultMessage": "Ocorreu um erro inesperado. Tente recarregar — geralmente isso resolve.",
+    "reportProblem": "Reportar este problema",
+    "pleaseTryAgain": "Tente novamente.",
+    "tasksLoadFailed": "Suas tarefas não puderam ser carregadas.",
+    "calendarLoadFailed": "O calendário não pôde ser carregado.",
+    "projectsLoadFailed": "Falha ao carregar projetos",
+    "labelsLoadFailed": "Falha ao carregar etiquetas",
+    "reportHint": "Se isso continuar acontecendo, envie-nos um relatório para investigarmos.",
+    "showDetails": "Mostrar detalhes do erro",
+    "hideDetails": "Ocultar detalhes do erro",
+    "collectingDetails": "Coletando detalhes do erro…",
+    "detailsCopied": "Detalhes do erro copiados para a área de transferência",
+    "copyFailed": "Falha ao copiar — selecione os detalhes acima e copie manualmente.",
+    "rewardsUnavailable": "As recompensas estão temporariamente indisponíveis. Suas tarefas não são afetadas."
+  },
+  "search": {
+    "noDirectMatchesTitle": "Nenhuma correspondência direta",
+    "noDirectMatchesDescription": "Você ainda pode filtrar a lista de tarefas com esta pesquisa."
   }
 }

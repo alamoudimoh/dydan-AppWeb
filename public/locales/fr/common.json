@@ -47,7 +47,8 @@
       "family": "Famille",
       "account": "Compte",
       "support": "Assistance"
-    }
+    },
+    "openMenu": "Ouvrir le menu"
   },
   "feedback": {
     "later": "Maybe later",
@@ -94,5 +95,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "Réessayer",
+  "tryAgain": "Réessayer",
+  "login": "Se connecter",
+  "loadMore": "Charger plus",
+  "noMoreHistory": "Plus d'historique",
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "Ce lien ne mène nulle part. Il a peut-être été déplacé, ou l'adresse contient une erreur.",
+    "goToTasks": "Aller à mes tâches",
+    "logIn": "Se connecter"
+  },
+  "errors": {
+    "title": "Une erreur s'est produite",
+    "defaultMessage": "Une erreur inattendue s'est produite. Essayez de recharger — cela règle généralement le problème.",
+    "reportProblem": "Signaler ce problème",
+    "pleaseTryAgain": "Veuillez réessayer.",
+    "tasksLoadFailed": "Vos tâches n'ont pas pu être chargées.",
+    "calendarLoadFailed": "Le calendrier n'a pas pu être chargé.",
+    "projectsLoadFailed": "Échec du chargement des projets",
+    "labelsLoadFailed": "Échec du chargement des libellés",
+    "reportHint": "Si cela continue, envoyez-nous un rapport afin que nous puissions enquêter.",
+    "showDetails": "Afficher les détails de l'erreur",
+    "hideDetails": "Masquer les détails de l'erreur",
+    "collectingDetails": "Collecte des détails de l'erreur…",
+    "detailsCopied": "Détails de l'erreur copiés dans le presse-papiers",
+    "copyFailed": "Échec de la copie — sélectionnez les détails ci-dessus et copiez-les manuellement.",
+    "rewardsUnavailable": "Les récompenses sont temporairement indisponibles. Vos tâches ne sont pas affectées."
+  },
+  "search": {
+    "noDirectMatchesTitle": "Aucune correspondance directe",
+    "noDirectMatchesDescription": "Vous pouvez toujours filtrer la liste des tâches avec cette recherche."
   }
 }

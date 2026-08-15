@@ -47,7 +47,8 @@
       "family": "Gezin",
       "account": "Account",
       "support": "Ondersteuning"
-    }
+    },
+    "openMenu": "Menu openen"
   },
   "feedback": {
     "later": "Maybe later",
@@ -94,5 +95,37 @@
       "subtitle": "We've filled in an issue with your notes and version details. Nothing has been sent yet — review it and post when you're ready.",
       "open": "Open the issue"
     }
+  },
+  "retry": "Opnieuw",
+  "tryAgain": "Probeer opnieuw",
+  "login": "Inloggen",
+  "loadMore": "Meer laden",
+  "noMoreHistory": "Geen geschiedenis meer",
+  "notFound": {
+    "title": "Pagina niet gevonden",
+    "description": "Deze link leidt nergens naartoe. Hij is misschien verplaatst, of het adres bevat een typefout.",
+    "goToTasks": "Naar mijn taken",
+    "logIn": "Inloggen"
+  },
+  "errors": {
+    "title": "Er ging iets mis",
+    "defaultMessage": "Er is een onverwachte fout opgetreden. Probeer de pagina te vernieuwen — dat lost het meestal op.",
+    "reportProblem": "Probleem melden",
+    "pleaseTryAgain": "Probeer het opnieuw.",
+    "tasksLoadFailed": "Je taken konden niet worden geladen.",
+    "calendarLoadFailed": "De agenda kon niet worden geladen.",
+    "projectsLoadFailed": "Projecten konden niet worden geladen",
+    "labelsLoadFailed": "Labels konden niet worden geladen",
+    "reportHint": "Als dit blijft gebeuren, stuur ons dan een rapport zodat we het kunnen onderzoeken.",
+    "showDetails": "Foutdetails tonen",
+    "hideDetails": "Foutdetails verbergen",
+    "collectingDetails": "Foutdetails verzamelen…",
+    "detailsCopied": "Foutdetails gekopieerd naar klembord",
+    "copyFailed": "Kopiëren mislukt — selecteer de details hierboven en kopieer handmatig.",
+    "rewardsUnavailable": "Beloningen zijn tijdelijk niet beschikbaar. Je taken zijn niet beïnvloed."
+  },
+  "search": {
+    "noDirectMatchesTitle": "Geen directe resultaten",
+    "noDirectMatchesDescription": "Je kunt de takenlijst nog steeds met deze zoekopdracht filteren."
   }
 }
