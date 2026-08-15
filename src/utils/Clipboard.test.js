@@ -4,6 +4,39 @@ import test, { afterEach, beforeEach } from 'node:test'
 import { copyToClipboard, COPY_ERRORS } from './Clipboard.js'
 
 const originalClipboard = global.navigator?.clipboard
+const originalDocument = global.document
+const originalWindow = global.window
+
+const installCopyEventDocument = () => {
+  let copyHandler = null
+  let copiedText = ''
+
+  global.document = {
+    addEventListener: (event, handler) => {
+      if (event === 'copy') copyHandler = handler
+    },
+    removeEventListener: (event, handler) => {
+      if (event === 'copy' && copyHandler === handler) copyHandler = null
+    },
+    execCommand: command => {
+      if (command !== 'copy' || !copyHandler) return false
+      copyHandler({
+        clipboardData: {
+          setData: (type, value) => {
+            if (type === 'text/plain') copiedText = value
+          },
+        },
+        preventDefault: () => {},
+      })
+      return true
+    },
+    getCopiedText: () => copiedText,
+  }
+
+  return () => {
+    copiedText = ''
+  }
+}
 
 beforeEach(() => {
   if (!global.navigator) {
@@ -17,6 +50,8 @@ afterEach(() => {
   } else {
     delete global.navigator.clipboard
   }
+  global.document = originalDocument
+  global.window = originalWindow
 })
 
 test('copyToClipboard rejects empty text', async () => {
@@ -49,38 +84,12 @@ test('copyToClipboard falls back when Clipboard API is unavailable', async () =>
     value: { isSecureContext: false },
   })
 
-  const originalExecCommand = global.document?.execCommand
-  const createdElements = []
-  global.document = {
-    body: {
-      appendChild: node => createdElements.push(node),
-      removeChild: node => {
-        const index = createdElements.indexOf(node)
-        if (index >= 0) createdElements.splice(index, 1)
-      },
-    },
-    createElement: tag => {
-      const element = {
-        tag,
-        value: '',
-        style: {},
-        focus: () => {},
-        select: () => {},
-        setSelectionRange: () => {},
-        setAttribute: () => {},
-      }
-      return element
-    },
-    querySelector: () => createdElements.find(node => node.tag === 'textarea'),
-    execCommand: command => command === 'copy',
-  }
+  const resetCopiedText = installCopyEventDocument()
 
   const result = await copyToClipboard('fallback-copy')
   assert.equal(result.ok, true)
-
-  if (originalExecCommand) {
-    global.document.execCommand = originalExecCommand
-  }
+  assert.equal(global.document.getCopiedText(), 'fallback-copy')
+  resetCopiedText()
 })
 
 test('copyToClipboard falls back when Clipboard API permission is denied', async () => {
@@ -96,31 +105,31 @@ test('copyToClipboard falls back when Clipboard API permission is denied', async
     value: { isSecureContext: true },
   })
 
-  const createdElements = []
-  global.document = {
-    body: {
-      appendChild: node => createdElements.push(node),
-      removeChild: node => {
-        const index = createdElements.indexOf(node)
-        if (index >= 0) createdElements.splice(index, 1)
-      },
-    },
-    createElement: tag => {
-      const element = {
-        tag,
-        value: '',
-        style: {},
-        focus: () => {},
-        select: () => {},
-        setSelectionRange: () => {},
-        setAttribute: () => {},
-      }
-      return element
-    },
-    execCommand: command => command === 'copy',
-  }
+  installCopyEventDocument()
 
   const result = await copyToClipboard('denied-then-fallback')
   assert.equal(result.ok, true)
   assert.equal(result.method, 'execCommand')
+  assert.equal(global.document.getCopiedText(), 'denied-then-fallback')
+})
+
+test('copyToClipboard skips Clipboard API on insecure HTTP contexts', async () => {
+  let clipboardCalled = false
+  global.navigator.clipboard = {
+    writeText: async () => {
+      clipboardCalled = true
+    },
+  }
+  Object.defineProperty(global, 'window', {
+    configurable: true,
+    value: { isSecureContext: false },
+  })
+
+  installCopyEventDocument()
+
+  const result = await copyToClipboard('http-copy')
+  assert.equal(result.ok, true)
+  assert.equal(result.method, 'execCommand')
+  assert.equal(clipboardCalled, false)
+  assert.equal(global.document.getCopiedText(), 'http-copy')
 })

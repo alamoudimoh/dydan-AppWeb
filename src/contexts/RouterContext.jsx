@@ -31,6 +31,7 @@ import JoinCircleView from '../views/Circles/JoinCircle'
 import NotFound from '../views/components/NotFound'
 import Dashboard from '../views/Dashboard/Dashboard'
 import FamilyProgress from '../views/FamilyProgress/FamilyProgress'
+import FamilyCircleGuard from '../components/FamilyCircleGuard'
 import FilterView from '../views/Filters/FilterView'
 import ChoreHistory from '../views/History/ChoreHistory'
 import Landing from '../views/Landing/Landing'
@@ -72,6 +73,8 @@ const restrictedSetting = (permission, element) => (
     {element}
   </SettingsPermissionGuard>
 )
+
+const familyRoute = element => <FamilyCircleGuard>{element}</FamilyCircleGuard>
 
 const Router = createBrowserRouter([
   {
@@ -177,7 +180,7 @@ const Router = createBrowserRouter([
       },
       {
         path: '/family',
-        element: <FamilyProgress />,
+        element: familyRoute(<FamilyProgress />),
       },
       {
         path: '/search',
@@ -213,15 +216,15 @@ const Router = createBrowserRouter([
       },
       {
         path: '/activities',
-        element: <UserActivities />,
+        element: familyRoute(<UserActivities />),
       },
       {
         path: '/points',
-        element: <UserPoints />,
+        element: familyRoute(<UserPoints />),
       },
       {
         path: '/rewards',
-        element: <RewardsView />,
+        element: familyRoute(<RewardsView />),
       },
       {
         path: '/notifications',

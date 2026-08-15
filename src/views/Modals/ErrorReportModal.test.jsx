@@ -118,9 +118,29 @@ describe('ErrorReportModal copy diagnostics', () => {
       )
     })
 
-    const copyResult = await copySpy.mock.results[0].value
+    const copyResult = await copySpy.mock.results.at(-1).value
     expect(copyResult.ok).toBe(true)
     expect(execCommand).toHaveBeenCalledWith('copy')
     expect(screen.queryByText(/copy failed/i)).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId('CheckRoundedIcon')).toBeInTheDocument()
+    })
+  })
+
+  it('shows copy failure when diagnostics are not ready', async () => {
+    const user = userEvent.setup()
+    const { collectErrorReport } = await import('../../service/ErrorReportService')
+    collectErrorReport.mockImplementationOnce(() => new Promise(() => {}))
+
+    renderModal()
+
+    await waitFor(() => {
+      expect(screen.getByText('Report this problem')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /show what gets sent/i }))
+
+    const copyButton = screen.getByLabelText('Copy diagnostics')
+    expect(copyButton).toBeDisabled()
   })
 })

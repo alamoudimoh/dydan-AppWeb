@@ -5,28 +5,24 @@ const COPY_ERRORS = {
   FAILED: 'failed',
 }
 
+const canUseAsyncClipboard = () =>
+  typeof navigator !== 'undefined' &&
+  navigator.clipboard?.writeText &&
+  (typeof window === 'undefined' || window.isSecureContext)
+
 const execCommandCopy = text => {
   if (typeof document === 'undefined') {
     return { ok: false, error: COPY_ERRORS.UNAVAILABLE }
   }
 
   try {
-    const textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.setAttribute('readonly', '')
-    textarea.style.position = 'fixed'
-    textarea.style.top = '0'
-    textarea.style.left = '0'
-    textarea.style.width = '2px'
-    textarea.style.height = '2px'
-    textarea.style.opacity = '0'
-    textarea.style.pointerEvents = 'none'
-    document.body.appendChild(textarea)
-    textarea.focus()
-    textarea.select()
-    textarea.setSelectionRange(0, text.length)
+    const onCopy = event => {
+      event.clipboardData.setData('text/plain', text)
+      event.preventDefault()
+    }
+    document.addEventListener('copy', onCopy)
     const copied = document.execCommand('copy')
-    document.body.removeChild(textarea)
+    document.removeEventListener('copy', onCopy)
     return copied
       ? { ok: true, method: 'execCommand' }
       : { ok: false, error: COPY_ERRORS.FAILED }
@@ -46,10 +42,7 @@ export const copyToClipboard = async text => {
 
   let clipboardError = null
 
-  if (
-    typeof navigator !== 'undefined' &&
-    navigator.clipboard?.writeText
-  ) {
+  if (canUseAsyncClipboard()) {
     try {
       await navigator.clipboard.writeText(text)
       return { ok: true, method: 'clipboard' }

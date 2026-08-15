@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   buildNavSectionPlan,
+  FAMILY_CIRCLE_ROUTE_PATHS,
   hasActiveFamilyCircle,
   NAV_LINK_IDS,
   NAV_SECTION_IDS,
@@ -49,6 +50,16 @@ test('buildNavSectionPlan omits family when there is no active circle', () => {
       NAV_SECTION_IDS.SUPPORT,
     ],
   )
+})
+
+test('family circle routes stay out of navigation without an active circle', () => {
+  const sections = buildNavSectionPlan(false)
+  const routes = sections.flatMap(section =>
+    section.linkIds.map(id => ROUTE_REGISTRY[id]?.to).filter(Boolean),
+  )
+  for (const path of FAMILY_CIRCLE_ROUTE_PATHS) {
+    assert.equal(routes.includes(path), false, `${path} should be hidden`)
+  }
 })
 
 test('buildNavSectionPlan includes family links when circle is active', () => {

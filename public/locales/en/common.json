@@ -117,7 +117,10 @@
     "updateGoal": "Update goal",
     "archive": "Archive",
     "goalsLoadError": "Family goals could not be loaded.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "noCircleDescription": "Family Progress is available after you join or create a family circle.",
+    "goToCircleSettings": "Go to circle settings",
+    "backToTasks": "Back to my tasks"
   },
   "notificationsCenter": {
     "title": "Notifications",

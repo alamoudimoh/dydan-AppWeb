@@ -57,6 +57,13 @@ const ACCOUNT_LINKS = [NAV_LINK_IDS.PROFILE, NAV_LINK_IDS.SETTINGS]
 
 const SUPPORT_LINKS = [NAV_LINK_IDS.FEEDBACK, NAV_LINK_IDS.BUG_REPORT]
 
+export const FAMILY_CIRCLE_ROUTE_PATHS = Object.freeze([
+  '/family',
+  '/points',
+  '/rewards',
+  '/activities',
+])
+
 /**
  * Active Circle is defined by the server-scoped profile circle id (RH-17).
  */

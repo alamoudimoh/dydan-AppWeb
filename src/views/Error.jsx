@@ -18,7 +18,7 @@ import {
   collectErrorReport,
   formatErrorReport,
 } from '../service/ErrorReportService'
-import { copyToClipboard } from '../utils/Clipboard.js'
+import { useClipboardCopy } from '../hooks/useClipboardCopy.js'
 import ErrorReportModal from './Modals/ErrorReportModal'
 
 const getErrorKind = error => {
@@ -60,10 +60,13 @@ const Error = () => {
   const { t } = useTranslation('common')
   const error = useRouteError()
   const [showDetails, setShowDetails] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [copyFailed, setCopyFailed] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [reportText, setReportText] = useState('')
+  const {
+    copy: handleCopy,
+    copied,
+    copyFailed,
+  } = useClipboardCopy(() => reportText, 2500)
 
   const { Icon, color } = getErrorKind(error)
   const message = safeMessage(error)
@@ -79,17 +82,6 @@ const Error = () => {
       active = false
     }
   }, [error])
-
-  const handleCopy = async () => {
-    const result = await copyToClipboard(reportText)
-    if (result.ok) {
-      setCopied(true)
-      setCopyFailed(false)
-      return
-    }
-    setCopied(false)
-    setCopyFailed(true)
-  }
 
   return (
     <Box
