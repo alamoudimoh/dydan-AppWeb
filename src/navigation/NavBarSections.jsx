@@ -14,7 +14,7 @@ const NavBarSections = ({ onItemActivate, sections }) => {
           <Typography level='body-xs' sx={navSectionLabelSx}>
             {t(`navigation.sections.${section.id}`)}
           </Typography>
-          <List size='md' sx={{ p: 0, gap: 0 }}>
+          <List size='md' sx={{ p: 0, gap: 0.375 }}>
             {section.links.map(link => (
               <NavBarLink
                 key={link.id}

@@ -68,7 +68,14 @@ export const sectionCardSx = {
   display: 'flex',
   flexDirection: 'column',
   borderRadius: 'var(--taskier-radius-card)',
+  boxShadow: 'none',
+  bgcolor: 'background.surface',
+  border: '1px solid',
+  borderColor: 'divider',
 }
+
+/** 14px grid gap for stat/settings card rows (Figma). */
+export const contentGridGap = 1.75
 
 export const sectionCardHeaderSx = {
   display: 'flex',

@@ -20,7 +20,7 @@ const NavBarLink = ({ link, onActivate }) => {
   }
 
   return (
-    <ListItem sx={{ p: 0, mb: 0.25 }}>
+    <ListItem sx={{ p: 0 }}>
       <ListItemButton
         {...(onClick
           ? { onClick: handleActivate }
@@ -36,7 +36,7 @@ const NavBarLink = ({ link, onActivate }) => {
         sx={navItemButtonSx(isActive)}
       >
         <ListItemDecorator>{icon}</ListItemDecorator>
-        <ListItemContent sx={{ fontSize: 'sm' }}>{label}</ListItemContent>
+        <ListItemContent>{label}</ListItemContent>
       </ListItemButton>
     </ListItem>
   )

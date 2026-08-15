@@ -174,17 +174,19 @@ const NavBar = () => {
 
   return (
     <nav
-      className='flex gap-2 p-3'
+      className='flex gap-2'
       style={{
+        padding: '12px 16px',
         paddingTop:
           Capacitor.getPlatform() === 'android'
-            ? `calc(var(--safe-area-inset-top, 0px))`
-            : '',
+            ? `calc(12px + var(--safe-area-inset-top, 0px))`
+            : '12px',
         position: 'sticky',
         zIndex: Z_INDEX.NAVBAR,
         top: 0,
         minHeight: '35px',
         backgroundColor: 'var(--joy-palette-background-body)',
+        borderBottom: '1px solid var(--taskier-boundary)',
       }}
     >
       {getMenuIcon()}

@@ -19,7 +19,7 @@ const PageHeader = ({
     spacing={1.5}
     alignItems='flex-start'
     justifyContent='space-between'
-    sx={{ gap: 2, mb: 2, ...sx }}
+    sx={{ gap: 2, mb: 3, ...sx }}
   >
     <Stack direction='row' spacing={1.5} alignItems='flex-start' sx={{ minWidth: 0 }}>
       {icon && (

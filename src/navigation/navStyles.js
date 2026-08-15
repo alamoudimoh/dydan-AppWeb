@@ -4,9 +4,7 @@ export const NAV_ITEM_MIN_HEIGHT = 44
 export const NAV_DRAWER_WIDTH = 248
 
 export const navBrandSx = {
-  px: 1.25,
-  pt: 0.5,
-  pb: 1,
+  mb: 2,
   fontSize: '1.5625rem',
   fontWeight: 600,
   lineHeight: 1.45,
@@ -27,23 +25,26 @@ export const navSectionLabelSx = {
 }
 
 export const navSectionSpacingSx = index => ({
-  mt: index === 0 ? 0 : 1.75,
+  mt: index === 0 ? 0 : 2,
 })
 
 export const navItemButtonSx = isActive => ({
   borderRadius: 'var(--taskier-radius-nav)',
-  minHeight: NAV_ITEM_MIN_HEIGHT,
+  minHeight: { xs: NAV_ITEM_MIN_HEIGHT, sm: 36 },
   py: 1,
   px: 1.25,
   gap: 1.25,
   fontSize: '0.8125rem',
+  lineHeight: 1.45,
   fontWeight: isActive ? 500 : 400,
   transition:
     'background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
   ...(isActive
     ? {
-        bgcolor: 'var(--taskier-brand-soft)',
-        color: 'primary.500',
+        '&, &.Mui-selected, &.Mui-selected:hover': {
+          bgcolor: 'var(--taskier-brand-soft)',
+          color: 'primary.500',
+        },
         '& .MuiListItemDecorator-root': {
           color: 'primary.500',
         },
@@ -80,11 +81,11 @@ export const navDrawerScrollSx = {
   overflowY: 'auto',
   overflowX: 'hidden',
   WebkitOverflowScrolling: 'touch',
-  px: 1.25,
-  py: 1.25,
+  px: 2.5,
+  py: 2.5,
   pt: {
-    xs: 'calc(0.75rem + var(--safe-area-inset-top, 0px))',
-    sm: 1.25,
+    xs: 'calc(1.25rem + var(--safe-area-inset-top, 0px))',
+    sm: 2.5,
   },
 }
 
@@ -92,8 +93,8 @@ export const navDrawerFooterSx = {
   flexShrink: 0,
   borderTop: '1px solid',
   borderColor: 'divider',
-  px: 1.25,
-  py: 1,
+  px: 2.5,
+  py: 1.25,
   pb: 'calc(0.75rem + var(--safe-area-inset-bottom, 0px))',
   bgcolor: 'background.surface',
 }

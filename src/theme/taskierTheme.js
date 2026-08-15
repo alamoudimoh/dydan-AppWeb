@@ -241,7 +241,7 @@ export const taskierTheme = extendTheme({
         text: {
           primary: dark.text,
           secondary: dark.textMuted,
-          tertiary: '#6B7382',
+          tertiary: '#ADB2C4',
           icon: dark.textMuted,
         },
         divider: dark.boundary,
@@ -257,10 +257,17 @@ export const taskierTheme = extendTheme({
               ? '44px'
               : ownerState.size === 'sm'
                 ? '36px'
-                : '40px',
+                : '42px',
           borderRadius: radius.control,
           fontWeight: 500,
           fontSize: '0.875rem',
+          lineHeight: 1.45,
+          ...(ownerState.variant === 'solid' &&
+            ownerState.size !== 'sm' &&
+            ownerState.size !== 'lg' && {
+              px: 2,
+              py: 1.375,
+            }),
           transition:
             'background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease',
           '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -279,11 +286,15 @@ export const taskierTheme = extendTheme({
     },
     JoyCard: {
       styleOverrides: {
-        root: {
+        root: ({ ownerState }) => ({
           borderRadius: radius.card,
           borderColor: 'var(--joy-palette-divider)',
           '--Card-radius': radius.card,
-        },
+          ...(ownerState.variant === 'outlined' && {
+            boxShadow: 'none',
+            bgcolor: 'background.surface',
+          }),
+        }),
       },
     },
     JoyModalDialog: {
@@ -295,13 +306,28 @@ export const taskierTheme = extendTheme({
       },
     },
     JoyInput: {
-      styleOverrides: { root: { borderRadius: radius.control } },
+      styleOverrides: {
+        root: {
+          borderRadius: radius.control,
+          '--Input-focusedThickness': '2px',
+        },
+      },
     },
     JoyTextarea: {
-      styleOverrides: { root: { borderRadius: radius.control } },
+      styleOverrides: {
+        root: {
+          borderRadius: radius.control,
+          '--Textarea-focusedThickness': '2px',
+        },
+      },
     },
     JoySelect: {
-      styleOverrides: { root: { borderRadius: radius.control } },
+      styleOverrides: {
+        root: {
+          borderRadius: radius.control,
+          '--Select-focusedThickness': '2px',
+        },
+      },
     },
     JoyChip: {
       styleOverrides: {
@@ -312,6 +338,9 @@ export const taskierTheme = extendTheme({
               color: 'var(--taskier-primary)',
               fontWeight: 500,
               fontSize: '0.75rem',
+              borderRadius: '999px',
+              px: 1.25,
+              py: 0.75,
             }),
         }),
       },
