@@ -15,13 +15,18 @@ const PageHeader = ({
   sx,
 }) => (
   <Stack
-    direction='row'
+    direction={{ xs: 'column', sm: 'row' }}
     spacing={1.5}
-    alignItems='flex-start'
+    alignItems={{ xs: 'stretch', sm: 'flex-start' }}
     justifyContent='space-between'
     sx={{ gap: 2, mb: 3, ...sx }}
   >
-    <Stack direction='row' spacing={1.5} alignItems='flex-start' sx={{ minWidth: 0 }}>
+    <Stack
+      direction='row'
+      spacing={1.5}
+      alignItems='flex-start'
+      sx={{ minWidth: 0, flex: 1 }}
+    >
       {icon && (
         <Box sx={{ color: 'text.secondary', display: 'flex', mt: 0.25 }}>
           {icon}
@@ -38,7 +43,17 @@ const PageHeader = ({
         )}
       </Box>
     </Stack>
-    {action}
+    {action && (
+      <Box
+        sx={{
+          flexShrink: 0,
+          alignSelf: { xs: 'stretch', sm: 'flex-start' },
+          '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
+        }}
+      >
+        {action}
+      </Box>
+    )}
   </Stack>
 )
 

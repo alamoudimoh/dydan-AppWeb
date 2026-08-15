@@ -1,40 +1,24 @@
 import { Box, Button, Container, Typography } from '@mui/joy'
-import { useEffect } from 'react'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import {
+  APP_DISPLAY_NAME,
+  APP_DISPLAY_TAGLINE,
+} from '../config/AppBranding'
 import Logo from '../Logo'
-const Home = () => {
-  const Navigate = useNavigate()
-  const getCurrentUser = () => {
-    return JSON.parse(localStorage.getItem('user'))
-  }
-  const [users, setUsers] = useState([])
-  const [currentUser, setCurrentUser] = useState(getCurrentUser())
 
-  useEffect(() => {}, [])
+const Home = () => {
+  const navigate = useNavigate()
 
   return (
     <Container className='flex h-full items-center justify-center'>
-      <Box className='flex flex-col items-center justify-center'>
+      <Box className='flex flex-col items-center justify-center' sx={{ gap: 2 }}>
         <Logo />
-        <Typography level='h1'>
-          Task
-          <Box component='span' sx={{ color: 'var(--taskier-signal)' }}>
-            i
-          </Box>
-          er
+        <Typography level='h1'>{APP_DISPLAY_NAME}</Typography>
+        <Typography level='body-md' sx={{ color: 'text.secondary' }}>
+          {APP_DISPLAY_TAGLINE}
         </Typography>
-      </Box>
-      <Box className='flex flex-col items-center justify-center' mt={10}>
-        <Button
-          sx={{ mt: 1 }}
-          onClick={() => {
-            Navigate('/chores')
-          }}
-        >
-          Get Started!
-        </Button>
+        <Button onClick={() => navigate('/chores')}>Get Started</Button>
       </Box>
     </Container>
   )

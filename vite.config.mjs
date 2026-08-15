@@ -4,6 +4,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 import pkg from './package.json'
 import { parseAllowedHosts } from './vite.allowed-hosts.mjs'
+import {
+  APP_BACKGROUND_COLOR,
+  APP_DISPLAY_NAME,
+  APP_MANIFEST_TITLE,
+  APP_THEME_COLOR,
+} from './src/config/AppBranding.js'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
@@ -30,7 +36,7 @@ export default defineConfig(({ command }) => ({
         globPatterns: ['**/*.{js,css,html,png,svg}'],
       },
       manifest: {
-        background_color: '#ffffff',
+        background_color: APP_BACKGROUND_COLOR,
         display: 'standalone',
         icons: [
           {
@@ -65,9 +71,9 @@ export default defineConfig(({ command }) => ({
             type: 'image/png',
           },
         ],
-        name: 'DayDan: Simplify tasks & chores, together.',
-        short_name: 'DayDan',
-        theme_color: '#ffffff',
+        name: APP_MANIFEST_TITLE,
+        short_name: APP_DISPLAY_NAME,
+        theme_color: APP_THEME_COLOR,
       },
       registerType: 'prompt',
       workbox: {

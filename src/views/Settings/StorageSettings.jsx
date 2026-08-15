@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core'
 import { Button, Card, Chip, LinearProgress, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
@@ -12,6 +13,7 @@ import SettingsLayout from './SettingsLayout'
 import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 
 const StorageSettings = () => {
+  const { t } = useTranslation('common')
   const Navigate = useNavigate()
   const { data: userProfile } = useUserProfile()
   const [usage, setUsage] = useState({ used: 0, total: 0 })
@@ -115,7 +117,7 @@ const StorageSettings = () => {
           ) : loading ? (
             <>
               <LinearProgress sx={{ mb: 1 }} />
-              <Typography level='body-xs'>Loading...</Typography>
+              <Typography level='body-xs'>{t('loading')}</Typography>
             </>
           ) : loadError ? (
             <SettingsQueryStateView onRetry={loadUsage} />

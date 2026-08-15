@@ -87,7 +87,13 @@ const NavBar = () => {
   const [searchParams] = useSearchParams()
   const getMenuIcon = () => {
     const menuRounded = (
-      <IconButton size='md' variant='plain' onClick={() => setDrawerOpen(true)}>
+      <IconButton
+        size='md'
+        variant='plain'
+        onClick={() => setDrawerOpen(true)}
+        aria-label={t('navigation.openMenu')}
+        title={t('navigation.openMenu')}
+      >
         <MenuRounded />
       </IconButton>
     )
