@@ -17,6 +17,7 @@ import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
 import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
@@ -165,7 +166,7 @@ const ProfileSettingsForm = ({
 
   return (
     <SettingsLayout title={t('profile.title')}>
-      <div className='grid gap-4 py-4' id='profile'>
+      <Box sx={formStackSx} id='profile'>
         <Typography level='body-md'>{t('profile.description')}</Typography>
         <AccountIdentityCard
           profile={userProfile}
@@ -173,10 +174,9 @@ const ProfileSettingsForm = ({
         />
         <Card
           sx={{
-            display: 'flex',
+            ...sectionCardSx,
+            flexDirection: 'row',
             alignItems: 'center',
-            gap: 2,
-            p: 2,
             maxWidth: 400,
           }}
         >
@@ -308,7 +308,7 @@ const ProfileSettingsForm = ({
             {t('profile.save')}
           </Button>
         </Box>
-      </div>
+      </Box>
     </SettingsLayout>
   )
 }

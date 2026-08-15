@@ -1,6 +1,7 @@
 import { Card, Typography } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
 
+import { sectionCardSx } from '../../theme/appLayout'
 import { buildAccountIdentity } from '../../utils/AccountIdentity'
 
 const IdentityRow = ({ label, notSetLabel, value }) => (
@@ -18,7 +19,7 @@ const AccountIdentityCard = ({ circleMembers, profile }) => {
   const notSet = t('profile.accountIdentity.notSet')
 
   return (
-    <Card sx={{ maxWidth: 400, p: 2 }}>
+    <Card sx={{ ...sectionCardSx, maxWidth: 400 }}>
       <Typography level='title-sm' sx={{ mb: 0.5 }}>
         {t('profile.accountIdentity.title')}
       </Typography>

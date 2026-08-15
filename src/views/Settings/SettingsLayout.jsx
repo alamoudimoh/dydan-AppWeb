@@ -1,21 +1,13 @@
-import { Box, Container, Typography } from '@mui/joy'
-import { useNavigate } from 'react-router-dom'
+import { Container, Stack } from '@mui/joy'
 
-const SettingsLayout = ({ title, children }) => {
-  const navigate = useNavigate()
+import PageHeader from '../../components/common/PageHeader'
+import { pageStackSpacing, settingsPageSx } from '../../theme/appLayout'
 
-  return (
-    <Container>
-      <Box sx={{ py: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <Typography level='h2' sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
-        </Box>
-        {children}
-      </Box>
-    </Container>
-  )
-}
+const SettingsLayout = ({ title, children }) => (
+  <Container maxWidth='lg' sx={settingsPageSx}>
+    <PageHeader title={title} titleLevel='h2' sx={{ mb: 3 }} />
+    <Stack spacing={pageStackSpacing}>{children}</Stack>
+  </Container>
+)
 
 export default SettingsLayout

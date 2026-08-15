@@ -2,6 +2,7 @@ import {
   Build,
   CardGiftcard,
   CheckCircle,
+  CloudOffRounded,
   NotificationsNone,
   Schedule,
   Speed,
@@ -11,7 +12,6 @@ import {
   Box,
   Button,
   Card,
-  CircularProgress,
   Sheet,
   Stack,
   Typography,
@@ -19,11 +19,17 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import EmptyState from '../../components/common/EmptyState'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import {
   useNotificationActions,
   useNotifications,
 } from '../../queries/NotificationQueries'
+import {
+  narrowPageShellSx,
+} from '../../theme/appLayout'
 import {
   formatNotificationTime,
   notificationColor,
@@ -56,6 +62,7 @@ export default function NotificationsView() {
     isError,
     isFetchingNextPage,
     isLoading,
+    refetch,
   } = useNotifications()
   const { read, readAll } = useNotificationActions()
   const items = data?.pages?.flatMap(page => page.res || []) || []
@@ -69,48 +76,48 @@ export default function NotificationsView() {
     <Sheet
       sx={{
         minHeight: 'calc(100vh - 64px)',
-        p: { xs: 2, sm: 3 },
         bgcolor: 'background.body',
       }}
     >
-      <Box sx={{ maxWidth: 760, mx: 'auto' }}>
-        <Stack
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-          sx={{ mb: 2, gap: 2 }}
-        >
-          <Typography level='h2'>{t('notificationsCenter.title')}</Typography>
-          <Button
-            variant='plain'
-            disabled={!unreadCount || readAll.isPending}
-            onClick={() => readAll.mutate()}
-          >
-            {t('notificationsCenter.markAllRead')}
-          </Button>
-        </Stack>
+      <Box sx={narrowPageShellSx}>
+        <PageHeader
+          title={t('notificationsCenter.title')}
+          action={
+            <Button
+              variant='plain'
+              size='sm'
+              disabled={!unreadCount || readAll.isPending}
+              onClick={() => readAll.mutate()}
+            >
+              {t('notificationsCenter.markAllRead')}
+            </Button>
+          }
+        />
         {isLoading && (
-          <Box sx={{ display: 'grid', placeItems: 'center', py: 8 }}>
-            <CircularProgress aria-label={t('notificationsCenter.loading')} />
-          </Box>
+          <QueryLoadingView label={t('notificationsCenter.loading')} />
         )}
-        {isError && (
-          <Typography color='danger'>
-            {t('notificationsCenter.loadError')}
-          </Typography>
+        {isError && !isLoading && (
+          <EmptyState
+            variant='error'
+            size='sm'
+            icon={<CloudOffRounded />}
+            title={t('notificationsCenter.loadError')}
+            primaryAction={{
+              label: t('refresh'),
+              onClick: () => refetch(),
+            }}
+          />
         )}
         {!isLoading && !isError && !items.length && (
-          <Card variant='soft' sx={{ alignItems: 'center', py: 7 }}>
-            <NotificationsNone sx={{ fontSize: 40 }} />
-            <Typography level='title-lg'>
-              {t('notificationsCenter.emptyTitle')}
-            </Typography>
-            <Typography level='body-sm'>
-              {t('notificationsCenter.emptyMessage')}
-            </Typography>
-          </Card>
+          <EmptyState
+            variant='empty'
+            size='sm'
+            icon={<NotificationsNone />}
+            title={t('notificationsCenter.emptyTitle')}
+            description={t('notificationsCenter.emptyMessage')}
+          />
         )}
-        <Stack spacing={1}>
+        <Stack spacing={1} sx={{ mt: items.length ? 0 : 0 }}>
           {items.map(n => (
             <Card
               key={n.id}
@@ -163,6 +170,7 @@ export default function NotificationsView() {
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button
               variant='outlined'
+              size='sm'
               loading={isFetchingNextPage}
               onClick={() => fetchNextPage()}
             >

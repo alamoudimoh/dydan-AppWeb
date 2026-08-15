@@ -47,6 +47,8 @@ import {
 } from '../../utils/PermissionModel'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
+import PageHeader from '../../components/common/PageHeader'
+import { settingsPageSx } from '../../theme/appLayout'
 
 const SettingsOverview = () => {
   const { t } = useTranslation('settings')
@@ -172,20 +174,11 @@ const SettingsOverview = () => {
   }
 
   return (
-    <Container maxWidth='lg' sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Stack sx={{ flex: 1 }}>
-          <Typography
-            level='h3'
-            sx={{ fontWeight: 'lg', color: 'text.primary' }}
-          >
-            {t('overview.title')}
-          </Typography>
-          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            {t('overview.subtitle')}
-          </Typography>
-        </Stack>
-      </Box>
+    <Container maxWidth='lg' sx={settingsPageSx}>
+      <PageHeader
+        title={t('overview.title')}
+        subtitle={t('overview.subtitle')}
+      />
 
       {/* Upgrade Card - Only show if user is not a Plus member */}
       {userProfile &&

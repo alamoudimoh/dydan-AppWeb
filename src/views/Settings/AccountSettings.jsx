@@ -16,6 +16,7 @@ import {
   resolveSettingsQueryState,
   SETTINGS_QUERY_STATE,
 } from '../../utils/SettingsQueryState'
+import { formStackSx } from '../../theme/appLayout'
 import LoadingComponent from '../components/Loading'
 import NativeCancelSubscriptionModal from '../Modals/Inputs/NativeCancelSubscriptionModal'
 import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
@@ -99,7 +100,7 @@ const AccountSettings = () => {
 
   return (
     <SettingsLayout title='Account Settings'>
-      <div className='grid gap-4'>
+      <Box sx={formStackSx}>
         <Typography level='body-md'>
           Change your account settings, type or update your password
         </Typography>
@@ -286,7 +287,7 @@ const AccountSettings = () => {
             Delete Account
           </Button>
         </Box>
-      </div>
+      </Box>
 
       <SubscriptionModal
         open={subscriptionModal}

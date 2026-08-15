@@ -31,11 +31,8 @@ import { useChoresHistory, usePersonalChores } from '../../queries/ChoreQueries'
 import { useMyRewardRequests, useRewards } from '../../queries/RewardQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { MarkChoreComplete } from '../../utils/Fetcher'
-import {
-  dashboardBuckets,
-  groupUpcoming,
-  maintenanceLabel,
-} from './dashboardModel'
+import SectionCard from '../../components/common/SectionCard'
+import { pageStackSpacing, settingsPageSx } from '../../theme/appLayout'
 
 const preferenceKey = 'taskier.dashboard.upcomingRange'
 const readRange = () => {
@@ -44,13 +41,9 @@ const readRange = () => {
 }
 
 const Section = ({ action, children, title }) => (
-  <Card variant='outlined' sx={{ p: { xs: 1.5, sm: 2.5 } }}>
-    <Stack direction='row' justifyContent='space-between' alignItems='center'>
-      <Typography level='h2'>{title}</Typography>
-      {action}
-    </Stack>
+  <SectionCard title={title} titleLevel='h2' action={action}>
     {children}
-  </Card>
+  </SectionCard>
 )
 Section.propTypes = {
   action: PropTypes.node,
@@ -250,8 +243,8 @@ export default function Dashboard() {
   )
 
   return (
-    <Container maxWidth='lg' sx={{ py: { xs: 2, md: 4 }, pb: 10 }}>
-      <Stack spacing={2.5}>
+    <Container maxWidth='lg' sx={{ ...settingsPageSx, pb: 10 }}>
+      <Stack spacing={pageStackSpacing}>
         <Box>
           <Typography level='h1'>
             {profile.data?.displayName

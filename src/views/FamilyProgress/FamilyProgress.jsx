@@ -14,7 +14,6 @@ import {
   Button,
   Card,
   Chip,
-  CircularProgress,
   FormControl,
   FormLabel,
   Input,
@@ -40,6 +39,15 @@ import {
   useStreak,
   useWorkload,
 } from '../../queries/ProgressQueries'
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
+import {
+  inlineErrorAlertSx,
+  pageShellSx,
+  pageStackSpacing,
+  sectionCardSx,
+} from '../../theme/appLayout'
 
 const Metric = ({ label, value }) => (
   <Box sx={{ minWidth: 72 }}>
@@ -51,21 +59,10 @@ const Metric = ({ label, value }) => (
     </Typography>
   </Box>
 )
-const Section = ({ children, title }) => (
-  <Card variant='outlined'>
-    <Typography level='title-lg'>{title}</Typography>
-    {children}
-  </Card>
-)
 
 Metric.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-}
-
-Section.propTypes = {
-  children: PropTypes.node.isRequired,
-  title: PropTypes.string.isRequired,
 }
 
 const Workload = () => {
@@ -73,8 +70,13 @@ const Workload = () => {
   const [range, setRange] = useState('week')
   const [category, setCategory] = useState('')
   const { data, error, isLoading } = useWorkload(range, '', category)
-  if (isLoading) return <CircularProgress />
-  if (error) return <Alert color='danger'>{error.message}</Alert>
+  if (isLoading) return <QueryLoadingView />
+  if (error)
+    return (
+      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+        {error.message}
+      </Alert>
+    )
   return (
     <Stack spacing={2}>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
@@ -148,7 +150,7 @@ const Workload = () => {
           </Card>
         )}
       </Box>
-      <Section title={t('familyProgress.workByCategory')}>
+      <SectionCard title={t('familyProgress.workByCategory')}>
         <Stack spacing={1}>
           {data.categories.map(row => (
             <Box
@@ -160,7 +162,7 @@ const Workload = () => {
             </Box>
           ))}
         </Stack>
-      </Section>
+      </SectionCard>
     </Stack>
   )
 }
@@ -169,8 +171,13 @@ const Reports = () => {
   const { t } = useTranslation()
   const [range, setRange] = useState('30d')
   const { data, error, isLoading } = useReport(range)
-  if (isLoading) return <CircularProgress />
-  if (error) return <Alert color='danger'>{error.message}</Alert>
+  if (isLoading) return <QueryLoadingView />
+  if (error)
+    return (
+      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
+        {error.message}
+      </Alert>
+    )
   return (
     <Stack spacing={2}>
       <Select
@@ -191,7 +198,7 @@ const Reports = () => {
           gap: 1.5,
         }}
       >
-        <Section title={t('familyProgress.completion')}>
+        <SectionCard title={t('familyProgress.completion')}>
           <Stack direction='row' spacing={2} flexWrap='wrap'>
             <Metric
               label={t('familyProgress.completedTasks')}
@@ -202,8 +209,8 @@ const Reports = () => {
               value={data.overdue}
             />
           </Stack>
-        </Section>
-        <Section title={t('familyProgress.points')}>
+        </SectionCard>
+        <SectionCard title={t('familyProgress.points')}>
           <Stack direction='row' spacing={2}>
             <Metric
               label={t('familyProgress.earned')}
@@ -218,8 +225,8 @@ const Reports = () => {
               value={data.points.available}
             />
           </Stack>
-        </Section>
-        <Section title={t('familyProgress.maintenance')}>
+        </SectionCard>
+        <SectionCard title={t('familyProgress.maintenance')}>
           <Stack direction='row' spacing={2}>
             <Metric
               label={t('familyProgress.completed')}
@@ -234,14 +241,14 @@ const Reports = () => {
               value={data.maintenance.approaching}
             />
           </Stack>
-        </Section>
+        </SectionCard>
       </Box>
-      <Section title={t('familyProgress.deterministicInsights')}>
+      <SectionCard title={t('familyProgress.deterministicInsights')}>
         {data.insights.map(text => (
           <Typography key={text}>{text}</Typography>
         ))}
-      </Section>
-      <Section title={t('familyProgress.completedByCategory')}>
+      </SectionCard>
+      <SectionCard title={t('familyProgress.completedByCategory')}>
         {data.categories.map(row => (
           <Box
             key={row.id || 'none'}
@@ -251,9 +258,9 @@ const Reports = () => {
             <Chip>{row.count}</Chip>
           </Box>
         ))}
-      </Section>
+      </SectionCard>
       {data.canViewFamily && (
-        <Section title={t('familyProgress.completedByMember')}>
+        <SectionCard title={t('familyProgress.completedByMember')}>
           {data.members.map(row => (
             <Box
               key={row.id}
@@ -263,9 +270,9 @@ const Reports = () => {
               <Chip>{row.count}</Chip>
             </Box>
           ))}
-        </Section>
+        </SectionCard>
       )}
-      <Section title={t('familyProgress.rewardActivity')}>
+      <SectionCard title={t('familyProgress.rewardActivity')}>
         {data.rewards.length ? (
           data.rewards.map(row => (
             <Box
@@ -283,7 +290,7 @@ const Reports = () => {
             {t('familyProgress.noRewardActivity')}
           </Typography>
         )}
-      </Section>
+      </SectionCard>
     </Stack>
   )
 }
@@ -301,12 +308,13 @@ const Goals = () => {
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date().toISOString().slice(0, 10),
   })
-  if (isLoading) return <CircularProgress />
+  if (isLoading) return <QueryLoadingView />
   if (isError) {
     return (
       <Alert
         color='danger'
         variant='soft'
+        sx={inlineErrorAlertSx}
         endDecorator={
           <Button size='sm' variant='soft' onClick={() => refetch()}>
             {t('familyProgress.retry')}
@@ -319,7 +327,7 @@ const Goals = () => {
   }
   if (!data) {
     return (
-      <Alert color='danger' variant='soft'>
+      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
         {t('familyProgress.goalsLoadError')}
       </Alert>
     )
@@ -477,7 +485,7 @@ const Goals = () => {
         <Alert variant='soft'>{t('familyProgress.noGoals')}</Alert>
       )}
       {data.goals.map(goal => (
-        <Card key={goal.id}>
+        <Card key={goal.id} variant='outlined' sx={sectionCardSx}>
           <Stack direction='row' justifyContent='space-between'>
             <Typography level='title-md'>{goal.name}</Typography>
             <Chip
@@ -546,18 +554,14 @@ export default function FamilyProgress() {
   const { t } = useTranslation()
   const { data: streak } = useStreak()
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', p: { xs: 1.5, sm: 3 } }}>
-      <Stack spacing={2}>
-        <Stack direction='row' spacing={1} alignItems='center'>
-          <Groups />
-          <Box>
-            <Typography level='h2'>{t('familyProgress.title')}</Typography>
-            <Typography textColor='text.tertiary'>
-              {t('familyProgress.subtitle')}
-            </Typography>
-          </Box>
-        </Stack>
-        <Card variant='soft' color='primary'>
+    <Box sx={pageShellSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          icon={<Groups />}
+          title={t('familyProgress.title')}
+          subtitle={t('familyProgress.subtitle')}
+        />
+        <Card variant='soft' color='primary' sx={sectionCardSx}>
           <Stack direction='row' spacing={3}>
             <Metric
               label={t('familyProgress.currentStreak')}
