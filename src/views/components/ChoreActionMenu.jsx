@@ -43,7 +43,7 @@ import AppModal from '../../components/common/AppModal'
 import LABEL_COLORS, {
   getTextColorFromBackgroundColor,
 } from '../../utils/Colors'
-import { isOfficialDonetickInstanceSync } from '../../utils/FeatureToggle'
+import { isOfficialDayDanInstanceSync } from '../../utils/FeatureToggle'
 import { getIconComponent } from '../../utils/ProjectIcons'
 import { useProjects } from '../Projects/ProjectQueries'
 
@@ -74,7 +74,7 @@ const ChoreActionMenu = ({
 
   useEffect(() => {
     try {
-      setIsOfficialInstance(isOfficialDonetickInstanceSync())
+      setIsOfficialInstance(isOfficialDayDanInstanceSync())
     } catch (error) {
       console.warn('Error checking instance type:', error)
       setIsOfficialInstance(false)

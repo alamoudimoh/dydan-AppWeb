@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react'
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
-import { isOfficialDonetickInstanceSync } from '../../../utils/FeatureToggle'
+import { isOfficialDayDanInstanceSync } from '../../../utils/FeatureToggle'
 
 function NudgeModal({ config }) {
   const { ResponsiveModal } = useResponsiveModal()
@@ -43,7 +43,7 @@ function NudgeModal({ config }) {
 
       // Check if this is the official donetick.com instance
       try {
-        setIsOfficialInstance(isOfficialDonetickInstanceSync())
+        setIsOfficialInstance(isOfficialDayDanInstanceSync())
       } catch (error) {
         console.warn('Error checking instance type:', error)
         setIsOfficialInstance(false)

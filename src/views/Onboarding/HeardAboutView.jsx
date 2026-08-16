@@ -2,7 +2,7 @@ import { CheckRounded } from '@mui/icons-material'
 import { Box, Button, Input, Link, Switch, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { isOfficialDonetickInstance } from '../../utils/FeatureToggle'
+import { isOfficialDayDanInstance } from '../../utils/FeatureToggle'
 import {
   haptic,
   recordAcquisitionSource,
@@ -315,7 +315,7 @@ const HeardAboutView = () => {
 
   useEffect(() => {
     let cancelled = false
-    isOfficialDonetickInstance().then(result => {
+    isOfficialDayDanInstance().then(result => {
       if (!cancelled) setIsOfficial(result)
     })
     return () => {

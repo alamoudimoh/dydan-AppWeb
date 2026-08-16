@@ -8,7 +8,7 @@ import {
   FEEDBACK_ISSUES_NEW_URL,
   DAYDAN_APP_REPO,
 } from '../config/ReportDestinations.js'
-import { isOfficialDonetickInstance } from '../utils/FeatureToggle'
+import { isOfficialDayDanInstance } from '../utils/FeatureToggle'
 
 const STATE_KEY = 'feedbackState'
 
@@ -149,7 +149,7 @@ export const collectFeedbackContext = async ({ feature, userProfile } = {}) => {
     getAppVersion(),
     getDeviceContext(),
     readState(),
-    isOfficialDonetickInstance().catch(() => false),
+    isOfficialDayDanInstance().catch(() => false),
   ])
 
   const signupDate = userProfile?.created_at
@@ -338,7 +338,7 @@ export const isRawChatWebhookConfigured = () => isRawChatWebhook(WEBHOOK_URL)
  * never leaves infrastructure they control.
  */
 export const isCloudInstance = () =>
-  isOfficialDonetickInstance().catch(() => false)
+  isOfficialDayDanInstance().catch(() => false)
 
 export const SUBMIT_RESULT = {
   SENT: 'sent',

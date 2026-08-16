@@ -25,7 +25,7 @@ import { registerPushNotifications } from '../../CapacitorListener'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useDeviceTokens, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
-import { isOfficialDonetickInstanceSync } from '../../utils/FeatureToggle'
+import { isOfficialDayDanInstanceSync } from '../../utils/FeatureToggle'
 import {
   UnregisterDeviceToken,
   UpdateNotificationTarget,
@@ -101,7 +101,7 @@ const NotificationSetting = () => {
 
     // Check if this is the official donetick.com instance
     try {
-      setIsOfficialInstance(isOfficialDonetickInstanceSync())
+      setIsOfficialInstance(isOfficialDayDanInstanceSync())
     } catch (error) {
       console.warn('Error checking instance type:', error)
       setIsOfficialInstance(false)
