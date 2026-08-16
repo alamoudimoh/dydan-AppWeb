@@ -8,6 +8,7 @@ import { PushNotifications } from '@capacitor/push-notifications'
 import { focusManager } from '@tanstack/react-query'
 
 import { RegisterDeviceToken } from './utils/Fetcher'
+import { ensureAndroidPushNotificationChannels } from './utils/notificationChannels'
 import { beginOAuthExchange } from './utils/OAuthExchangeState'
 import { hasSeenOnboarding } from './utils/Onboarding'
 import { setPendingInvite } from './utils/PendingInvite'
@@ -235,6 +236,7 @@ const pushNotificationListenerRegistration = async () => {
     }
   }
 
+  await ensureAndroidPushNotificationChannels()
   await PushNotifications.register()
 
   PushNotifications.addListener('registration', async token => {
