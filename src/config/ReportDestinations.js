@@ -7,14 +7,14 @@
  */
 
 const viteEnv =
-  typeof import.meta !== 'undefined' && import.meta.env
-    ? import.meta.env
-    : {}
+  typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {}
 
-export const DAYDAN_APP_REPO =
-  viteEnv.VITE_DAYDAN_APP_REPO_URL ||
-  viteEnv.VITE_TASKIER_APP_REPO_URL ||
+export const resolveAppRepoUrl = (env = viteEnv) =>
+  env.VITE_DAYDAN_APP_REPO_URL ||
+  env.VITE_TASKIER_APP_REPO_URL ||
   'https://github.com/alamoudimoh/Taskier-App'
+
+export const DAYDAN_APP_REPO = resolveAppRepoUrl()
 
 export const FEEDBACK_ISSUES_NEW_URL =
   viteEnv.VITE_FEEDBACK_ISSUES_URL || `${DAYDAN_APP_REPO}/issues/new`
