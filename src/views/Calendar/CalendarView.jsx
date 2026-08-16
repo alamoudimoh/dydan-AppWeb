@@ -47,8 +47,13 @@ import {
   monthGrid,
   zonedMidnight,
 } from './calendarModel'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import {
+  readMigratedLocalStorageItem,
+  writeLocalStorageItem,
+} from '../../utils/storageMigration'
 
-const preferenceKey = 'taskier.calendar.view'
+const preferenceKey = STORAGE_KEYS.calendarView
 const supportedViews = ['agenda', 'month']
 const labelDate = (key, locale, options = {}) =>
   new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...options }).format(
@@ -160,7 +165,7 @@ export default function CalendarView() {
     'UTC'
   const today = dateKey(new Date(), timeZone)
   const requestedView = params.get('view')
-  const savedView = localStorage.getItem(preferenceKey)
+  const savedView = readMigratedLocalStorageItem(preferenceKey)
   const view = supportedViews.includes(requestedView)
     ? requestedView
     : supportedViews.includes(savedView)
@@ -201,7 +206,7 @@ export default function CalendarView() {
     setParams(next)
   }
   const switchView = next => {
-    localStorage.setItem(preferenceKey, next)
+    writeLocalStorageItem(preferenceKey, next)
     setState({ view: next, date: selected })
   }
   const moveMonth = amount => {

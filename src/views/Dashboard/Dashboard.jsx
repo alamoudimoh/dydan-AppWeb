@@ -38,10 +38,15 @@ import {
   groupUpcoming,
   maintenanceLabel,
 } from './dashboardModel'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import {
+  readMigratedLocalStorageItem,
+  writeLocalStorageItem,
+} from '../../utils/storageMigration'
 
-const preferenceKey = 'taskier.dashboard.upcomingRange'
+const preferenceKey = STORAGE_KEYS.dashboardUpcomingRange
 const readRange = () => {
-  const value = Number(localStorage.getItem(preferenceKey))
+  const value = Number(readMigratedLocalStorageItem(preferenceKey))
   return [7, 14, 30].includes(value) ? value : 7
 }
 
@@ -372,7 +377,7 @@ export default function Dashboard() {
                 aria-label='Upcoming range'
                 onChange={(_, value) => {
                   setRange(value)
-                  localStorage.setItem(preferenceKey, String(value))
+                  writeLocalStorageItem(preferenceKey, String(value))
                 }}
               >
                 {[7, 14, 30].map(days => (

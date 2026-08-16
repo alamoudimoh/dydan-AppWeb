@@ -31,8 +31,13 @@ import AppModal from '../components/common/AppModal'
 import { formatSearchPlaceholder } from '../config/AppBranding'
 import EmptyState from '../components/common/EmptyState'
 import QueryLoadingView from '../components/common/QueryLoadingView'
+import { STORAGE_KEYS } from '../utils/storageKeys'
+import {
+  readMigratedLocalStorageJSON,
+  writeLocalStorageJSON,
+} from '../utils/storageMigration'
 
-const RECENTS_KEY = 'donetick.globalSearch.recents'
+const RECENTS_KEY = STORAGE_KEYS.globalSearchRecents
 const GROUPS = [
   'tasks',
   'history',
@@ -93,13 +98,8 @@ const QUICK_ACTIONS = [
   },
 ]
 
-const readRecents = () => {
-  try {
-    return JSON.parse(localStorage.getItem(RECENTS_KEY)) || []
-  } catch {
-    return []
-  }
-}
+const readRecents = () =>
+  readMigratedLocalStorageJSON(RECENTS_KEY, [])
 
 const saveRecent = result => {
   if (result.provider === 'actions') return
@@ -110,13 +110,11 @@ const saveRecent = result => {
     title: result.title,
     subtitle: result.subtitle,
   }
-  localStorage.setItem(
+  writeLocalStorageJSON(
     RECENTS_KEY,
-    JSON.stringify(
-      [recent, ...readRecents().filter(item => item.id !== result.id)].slice(
-        0,
-        6,
-      ),
+    [recent, ...readRecents().filter(item => item.id !== result.id)].slice(
+      0,
+      6,
     ),
   )
 }
