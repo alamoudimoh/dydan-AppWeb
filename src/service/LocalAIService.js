@@ -1,12 +1,14 @@
 import { Capacitor } from '@capacitor/core'
 import { getCached, hashContent, setCached } from './AIPromptCache'
 
+export const LOCAL_AI_SESSION_ID = 'daydan-summary'
+
 // Native-only local AI service using @capacitor/local-llm.
 // On web, all methods return 'unavailable' / null — no WebLLM.
 class LocalAIService {
   constructor() {
     this._availability = null
-    this._sessionId = 'donetick-summary'
+    this._sessionId = LOCAL_AI_SESSION_ID
     this._warmedUp = false
   }
 

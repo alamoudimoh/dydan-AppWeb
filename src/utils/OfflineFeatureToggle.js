@@ -1,5 +1,6 @@
-const OFFLINE_FEATURE_KEY = 'offline_feature_enabled'
-const OFFLINE_FEATURE_EVENT = 'donetick:offline-feature-changed'
+export const OFFLINE_FEATURE_KEY = 'offline_feature_enabled'
+export const OFFLINE_FEATURE_EVENT = 'daydan:offline-feature-changed'
+export const LEGACY_OFFLINE_FEATURE_EVENT = 'donetick:offline-feature-changed'
 
 const parseBoolean = value => {
   if (value === null || typeof value === 'undefined') return true
@@ -18,10 +19,12 @@ export const isOfflineFeatureEnabled = () => {
 export const setOfflineFeatureEnabled = enabled => {
   if (typeof window === 'undefined' || !window.localStorage) return
   window.localStorage.setItem(OFFLINE_FEATURE_KEY, JSON.stringify(!!enabled))
+  const detail = { enabled: !!enabled }
   window.dispatchEvent(
-    new CustomEvent(OFFLINE_FEATURE_EVENT, {
-      detail: { enabled: !!enabled },
-    }),
+    new CustomEvent(OFFLINE_FEATURE_EVENT, { detail }),
+  )
+  window.dispatchEvent(
+    new CustomEvent(LEGACY_OFFLINE_FEATURE_EVENT, { detail }),
   )
 }
 
@@ -39,10 +42,12 @@ export const subscribeToOfflineFeature = callback => {
   }
 
   window.addEventListener(OFFLINE_FEATURE_EVENT, handleToggle)
+  window.addEventListener(LEGACY_OFFLINE_FEATURE_EVENT, handleToggle)
   window.addEventListener('storage', handleToggle)
 
   return () => {
     window.removeEventListener(OFFLINE_FEATURE_EVENT, handleToggle)
+    window.removeEventListener(LEGACY_OFFLINE_FEATURE_EVENT, handleToggle)
     window.removeEventListener('storage', handleToggle)
   }
 }

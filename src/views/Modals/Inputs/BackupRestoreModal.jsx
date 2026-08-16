@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
+import { buildDefaultBackupFilename } from '../../../utils/backupFilenames'
 import { CreateBackup, RestoreBackup } from '../../../utils/Fetcher'
 
 function BackupRestoreModal({ isOpen, onClose, showNotification }) {
@@ -88,7 +89,7 @@ function BackupRestoreModal({ isOpen, onClose, showNotification }) {
           .replace(/:/g, '-')
         const filename = backupName
           ? `${backupName}-${timestamp}.backup`
-          : `donetick-backup-${timestamp}.backup`
+          : buildDefaultBackupFilename(timestamp)
 
         // Download the backup file
         downloadFile(data.backup_data, filename)
