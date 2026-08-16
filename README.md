@@ -1,16 +1,16 @@
 ![Logo](assets/image.png)
 
-## Donetick Frontend
+## DayDan Frontend
 
-The Donetick Frontend is Frontend piece for Donetick written in javascript with React
+The DayDan frontend is the React/Vite client for DayDan written in javascript with React
 
-## What is Donetick?
+## What is DayDan?
 
 An open-source, user-friendly app for managing tasks and chores, featuring customizable options to help you and others stay organized.
 
-## Why I made Donetick?
+## About DayDan
 
-As an avid for open-source, I was eager to create a solution that could benefit the wider community. Donetick started as a personal project to address my own chore management needs, but it has evolved into bigger tool and decide to open source it for anyone seeking a customizable and privacy-focused task management tool
+As an avid for open-source, I was eager to create a solution that could benefit the wider community. DayDan started as a personal project to address my own chore management needs, but it has evolved into bigger tool and decide to open source it for anyone seeking a customizable and privacy-focused task management tool
 
 ## Features
 
@@ -26,7 +26,7 @@ Follow the full instructions here: https://github.com/donetick/donetick?tab=read
 
 ## Contributing
 
-Contributions are welcome! If you would like to contribute to Donetick, please follow these steps:
+Contributions are welcome! If you would like to contribute to DayDan, please follow these steps:
 
 1. Fork the repository
 2. Create a new branch: `git checkout -b feature/your-feature-name`
@@ -36,13 +36,13 @@ Contributions are welcome! If you would like to contribute to Donetick, please f
 
 ## Need Help:
 
-Donetick is a work in progress and has been a fantastic learning experience for me as I've honed my React skills,I'm looking for collaborators to help improve and refine the Donetick. Feel free to open PR or suggest changes.
+DayDan is a work in progress and has been a fantastic learning experience for me as I've honed my React skills,I'm looking for collaborators to help improve and refine DayDan. Feel free to open PR or suggest changes.
 
 ## Plans:
 
-My goal is to expand Donetick by offering a hosted infrastructure option. This will make it even easier for users to access and utilize Donetick's features without the need for self-hosting.
+My goal is to expand DayDan by offering a hosted infrastructure option. This will make it even easier for users to access and utilize DayDan's features without the need for self-hosting.
 
-While maintaining Donetick's commitment to open source, this hosted option will provide a seamless, out-of-the-box experience for those who prefer a managed solution.
+While maintaining DayDan's commitment to open source, this hosted option will provide a seamless, out-of-the-box experience for those who prefer a managed solution.
 
 ## License
 

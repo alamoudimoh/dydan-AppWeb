@@ -11,7 +11,7 @@ import {
 } from '@mui/joy'
 import { version } from '../../../package.json'
 import { APP_SUPPORT_URL } from '@/config/AppBranding'
-import { TASKIER_APP_REPO } from '@/config/ReportDestinations'
+import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -25,34 +25,34 @@ const Footer = () => {
     resources: [
       {
         label: 'Documentation',
-        href: `${TASKIER_APP_REPO}#readme`,
+        href: `${DAYDAN_APP_REPO}#readme`,
       },
       {
         label: 'Report an issue',
-        href: `${TASKIER_APP_REPO}/issues`,
+        href: `${DAYDAN_APP_REPO}/issues`,
       },
       {
         label: 'Discussions',
-        href: `${TASKIER_APP_REPO}/discussions`,
+        href: `${DAYDAN_APP_REPO}/discussions`,
       },
     ],
     downloads: [
       {
         label: 'GitHub Releases',
-        href: `${TASKIER_APP_REPO}/releases`,
+        href: `${DAYDAN_APP_REPO}/releases`,
       },
-      { label: 'Source Code', href: TASKIER_APP_REPO },
+      { label: 'Source Code', href: DAYDAN_APP_REPO },
     ],
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
       {
         label: 'License',
-        href: `${TASKIER_APP_REPO}/blob/develop/LICENSE`,
+        href: `${DAYDAN_APP_REPO}/blob/develop/LICENSE`,
       },
       {
         label: 'Changelog',
-        href: `${TASKIER_APP_REPO}/releases`,
+        href: `${DAYDAN_APP_REPO}/releases`,
       },
     ],
   }
@@ -60,7 +60,7 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: <GitHub />,
-      href: TASKIER_APP_REPO,
+      href: DAYDAN_APP_REPO,
       label: 'GitHub',
     },
     {

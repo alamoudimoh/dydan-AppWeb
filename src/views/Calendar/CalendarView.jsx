@@ -102,7 +102,7 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
             {item.name}
           </Typography>
           <Stack direction='row' gap={0.75} flexWrap='wrap' alignItems='center'>
-            <Typography level='body-xs' className='taskier-metric'>
+            <Typography level='body-xs' className='daydan-metric'>
               {time}
             </Typography>
             {item.projected && (
@@ -130,7 +130,7 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
         </Box>
       </Button>
       {Number(item.points) > 0 && (
-        <Typography level='body-xs' className='taskier-metric'>
+        <Typography level='body-xs' className='daydan-metric'>
           +{item.points}
         </Typography>
       )}
@@ -462,7 +462,7 @@ export default function CalendarView() {
                       }}
                     >
                       <Stack sx={{ width: '100%', minWidth: 0 }}>
-                        <Typography className='taskier-metric'>
+                        <Typography className='daydan-metric'>
                           {Number(key.slice(-2))}
                         </Typography>
                         {items.length > 0 && (

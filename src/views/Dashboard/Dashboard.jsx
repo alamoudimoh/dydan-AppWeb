@@ -135,7 +135,7 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
         </Stack>
       </Box>
       {Number(chore.points) > 0 && (
-        <Typography level='body-sm' className='taskier-metric'>
+        <Typography level='body-sm' className='daydan-metric'>
           +{chore.points} pts
         </Typography>
       )}
@@ -400,7 +400,7 @@ export default function Dashboard() {
           </Section>
           <Section title='Progress'>
             <Stack spacing={1.5} sx={{ py: 2 }}>
-              <Typography level='h2' className='taskier-metric'>
+              <Typography level='h2' className='daydan-metric'>
                 {completedToday} of {totalToday}
               </Typography>
               <Typography color='neutral'>tasks completed today</Typography>
@@ -464,14 +464,14 @@ export default function Dashboard() {
                 <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                   <Box>
                     <Typography level='body-sm'>Spendable</Typography>
-                    <Typography level='h2' className='taskier-metric'>
+                    <Typography level='h2' className='daydan-metric'>
                       {balance?.spendableBalance || 0} pts
                     </Typography>
                   </Box>
                   {(balance?.pendingReserved || 0) > 0 && (
                     <Box>
                       <Typography level='body-sm'>Pending reserved</Typography>
-                      <Typography level='title-lg' className='taskier-metric'>
+                      <Typography level='title-lg' className='daydan-metric'>
                         {balance.pendingReserved} pts
                       </Typography>
                     </Box>

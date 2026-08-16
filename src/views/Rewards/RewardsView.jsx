@@ -155,7 +155,7 @@ export default function RewardsView() {
               <Card variant='soft'>
                 <CardContent>
                   <Typography level='body-sm'>{label}</Typography>
-                  <Typography level='h2' className='taskier-metric'>
+                  <Typography level='h2' className='daydan-metric'>
                     {value} points
                   </Typography>
                 </CardContent>
@@ -197,7 +197,7 @@ export default function RewardsView() {
                       )}
                       <Typography
                         level='h3'
-                        className='taskier-metric'
+                        className='daydan-metric'
                         sx={{ mt: 'auto' }}
                       >
                         {reward.costPoints} points

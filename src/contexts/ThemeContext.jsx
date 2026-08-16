@@ -2,12 +2,12 @@ import { CssBaseline, GlobalStyles } from '@mui/joy'
 import { CssVarsProvider } from '@mui/joy/styles'
 import PropType from 'prop-types'
 
-import taskierTheme, { taskierGlobalStyles } from '@/theme/taskierTheme'
+import daydanTheme, { daydanGlobalStyles } from '@/theme/daydanTheme'
 
 const ThemeContext = ({ children }) => (
-  <CssVarsProvider theme={taskierTheme} defaultMode='system'>
+  <CssVarsProvider theme={daydanTheme} defaultMode='system'>
     <CssBaseline />
-    <GlobalStyles styles={taskierGlobalStyles} />
+    <GlobalStyles styles={daydanGlobalStyles} />
     {children}
   </CssVarsProvider>
 )

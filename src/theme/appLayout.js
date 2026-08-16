@@ -67,7 +67,7 @@ export const sectionCardSx = {
   gap: 1.5,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: 'var(--taskier-radius-card)',
+  borderRadius: 'var(--daydan-radius-card)',
   boxShadow: 'none',
   bgcolor: 'background.surface',
   border: '1px solid',
@@ -88,7 +88,7 @@ export const sectionCardHeaderSx = {
 
 export const nestedRowSx = {
   p: 1.75,
-  borderRadius: 'var(--taskier-radius-row)',
+  borderRadius: 'var(--daydan-radius-row)',
   border: '1px solid',
   borderColor: 'divider',
   bgcolor: 'background.surface',

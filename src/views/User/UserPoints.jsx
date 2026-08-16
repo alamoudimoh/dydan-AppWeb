@@ -607,7 +607,7 @@ const UserPoints = () => {
                         sx={{
                           fontWeight: 'bold',
                           color: 'success.600',
-                          fontFamily: 'var(--taskier-font-data)',
+                          fontFamily: 'var(--daydan-font-data)',
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       >
@@ -1019,7 +1019,7 @@ const UserPoints = () => {
               <XAxis dataKey='label' axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} />
               <Bar
-                fill='var(--taskier-signal)'
+                fill='var(--daydan-signal)'
                 dataKey='points'
                 barSize={30}
                 radius={[5, 5, 0, 0]}

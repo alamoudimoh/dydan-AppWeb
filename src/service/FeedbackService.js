@@ -6,7 +6,7 @@ import { InAppReview } from '@capacitor-community/in-app-review'
 import {
   APP_REPORT_SOURCE,
   FEEDBACK_ISSUES_NEW_URL,
-  TASKIER_APP_REPO,
+  DAYDAN_APP_REPO,
 } from '../config/ReportDestinations.js'
 import { isOfficialDonetickInstance } from '../utils/FeatureToggle'
 
@@ -23,7 +23,7 @@ const APP_STORE_URL =
   'https://apps.apple.com/app/apple-store/id6742807441?pt=127258663&ct=website&mt=8'
 const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.donetick.app'
-const GITHUB_URL = TASKIER_APP_REPO
+const GITHUB_URL = DAYDAN_APP_REPO
 
 const DAY_MS = 24 * 60 * 60 * 1000
 

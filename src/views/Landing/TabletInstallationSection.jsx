@@ -53,7 +53,7 @@ const TabletInstallationSection = () => {
       >
         <img
           src={ipad_screenshot}
-          alt='DoneTick dashboard with calendar view showing task management interface'
+          alt='DayDan dashboard with calendar view showing task management interface'
           style={{
             maxWidth: '90%',
             height: 'auto',

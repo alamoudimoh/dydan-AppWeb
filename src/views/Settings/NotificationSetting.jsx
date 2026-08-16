@@ -708,7 +708,7 @@ const NotificationSetting = () => {
                   <a
                     style={{
                       textDecoration: 'underline',
-                      color: 'var(--taskier-signal)',
+                      color: 'var(--daydan-signal)',
                     }}
                     href='https://t.me/DonetickBot'
                   >
@@ -733,7 +733,7 @@ const NotificationSetting = () => {
                   <a
                     style={{
                       textDecoration: 'underline',
-                      color: 'var(--taskier-signal)',
+                      color: 'var(--daydan-signal)',
                     }}
                     href='https://t.me/userinfobot'
                   >

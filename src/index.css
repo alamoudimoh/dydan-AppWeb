@@ -25,9 +25,9 @@ html {
 
 /* Global focus styles for better accessibility */
 *:focus-visible {
-  outline: 2px solid var(--taskier-focus-outer);
+  outline: 2px solid var(--daydan-focus-outer);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--taskier-focus-inner);
+  box-shadow: 0 0 0 1px var(--daydan-focus-inner);
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus (triggered when font-size < 16px) */
@@ -57,13 +57,13 @@ html {
 [dir='rtl'] {
   direction: rtl;
   text-align: right;
-  font-family: var(--taskier-font-arabic);
+  font-family: var(--daydan-font-arabic);
 }
 
-.taskier-metric,
-[data-taskier-metric='true'] {
+.daydan-metric,
+[data-daydan-metric='true'] {
   direction: ltr;
-  font-family: var(--taskier-font-data);
+  font-family: var(--daydan-font-data);
   font-variant-numeric: tabular-nums;
   unicode-bidi: isolate;
 }

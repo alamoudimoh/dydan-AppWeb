@@ -190,7 +190,7 @@ const SettingsOverview = () => {
               sx={{
                 cursor: 'pointer',
                 transition: 'all 0.2s ease-in-out',
-                backgroundColor: 'var(--taskier-ink)',
+                backgroundColor: 'var(--daydan-ink)',
                 border: 'none',
                 color: 'white',
                 '&:hover': {

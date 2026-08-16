@@ -9,7 +9,7 @@ import {
   Storage,
 } from '@mui/icons-material'
 import { Box, Button, Card, Container, Grid, Typography } from '@mui/joy'
-import { TASKIER_APP_REPO } from '@/config/ReportDestinations'
+import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
 
 function StartOptionCard({ icon: Icon, title, description, button, index }) {
   return (
@@ -162,7 +162,7 @@ const GettingStarted = () => {
           fullWidth
           startDecorator={<GitHub />}
           onClick={() => {
-            window.open(`${TASKIER_APP_REPO}/releases`, '_blank')
+            window.open(`${DAYDAN_APP_REPO}/releases`, '_blank')
           }}
         >
           Github Releases
@@ -180,7 +180,7 @@ const GettingStarted = () => {
           fullWidth
           startDecorator={<InstallMobile />}
           onClick={() => {
-            window.open(TASKIER_APP_REPO, '_blank')
+            window.open(DAYDAN_APP_REPO, '_blank')
           }}
         >
           Add Addon

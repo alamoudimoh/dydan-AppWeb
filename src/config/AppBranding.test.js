@@ -33,7 +33,7 @@ test('PWA shell colors match the DayDan page background', () => {
   assert.equal(APP_BACKGROUND_COLOR, '#F6F7F9')
 })
 
-test('default support URL points to the Taskier-App issue tracker', () => {
+test('default support URL points to the DayDan app issue tracker', () => {
   assert.equal(
     APP_SUPPORT_URL,
     'https://github.com/alamoudimoh/Taskier-App/issues',

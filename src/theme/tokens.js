@@ -1,7 +1,7 @@
 // DayDan visual source of truth (approved Figma). Primary is brand/action,
 // signal is the information/system accent, status roles describe product state,
 // and data typography is reserved for compact numeric/system values.
-export const taskierTokens = {
+export const daydanTokens = {
   brand: {
     primary: '#4D40DB',
     signal: '#0369A1',
@@ -63,28 +63,28 @@ export const taskierTokens = {
   },
 }
 
-export const taskierCssVariables = scheme => {
-  const colors = taskierTokens[scheme]
+export const daydanCssVariables = scheme => {
+  const colors = daydanTokens[scheme]
   return {
-    '--taskier-primary': colors.primary,
-    '--taskier-signal': colors.signal,
-    '--taskier-ink': taskierTokens.brand.ink,
-    '--taskier-page': colors.page,
-    '--taskier-surface': colors.surface,
-    '--taskier-surface-subtle': colors.surfaceSubtle || colors.surfaceRaised,
-    '--taskier-brand-soft': colors.brandSoft,
-    '--taskier-text': colors.text,
-    '--taskier-text-muted': colors.textMuted,
-    '--taskier-boundary': colors.boundary,
-    '--taskier-focus-inner': colors.focusInner,
-    '--taskier-focus-outer': colors.focusOuter,
-    '--taskier-font-ui': taskierTokens.font.ui,
-    '--taskier-font-arabic': taskierTokens.font.arabic,
-    '--taskier-font-data': taskierTokens.font.data,
-    '--taskier-radius-nav': taskierTokens.radius.nav,
-    '--taskier-radius-control': taskierTokens.radius.control,
-    '--taskier-radius-row': taskierTokens.radius.row,
-    '--taskier-radius-card': taskierTokens.radius.card,
-    '--taskier-radius-shell': taskierTokens.radius.shell,
+    '--daydan-primary': colors.primary,
+    '--daydan-signal': colors.signal,
+    '--daydan-ink': daydanTokens.brand.ink,
+    '--daydan-page': colors.page,
+    '--daydan-surface': colors.surface,
+    '--daydan-surface-subtle': colors.surfaceSubtle || colors.surfaceRaised,
+    '--daydan-brand-soft': colors.brandSoft,
+    '--daydan-text': colors.text,
+    '--daydan-text-muted': colors.textMuted,
+    '--daydan-boundary': colors.boundary,
+    '--daydan-focus-inner': colors.focusInner,
+    '--daydan-focus-outer': colors.focusOuter,
+    '--daydan-font-ui': daydanTokens.font.ui,
+    '--daydan-font-arabic': daydanTokens.font.arabic,
+    '--daydan-font-data': daydanTokens.font.data,
+    '--daydan-radius-nav': daydanTokens.radius.nav,
+    '--daydan-radius-control': daydanTokens.radius.control,
+    '--daydan-radius-row': daydanTokens.radius.row,
+    '--daydan-radius-card': daydanTokens.radius.card,
+    '--daydan-radius-shell': daydanTokens.radius.shell,
   }
 }

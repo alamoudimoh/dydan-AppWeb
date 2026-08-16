@@ -195,7 +195,7 @@ const NavBar = () => {
         top: 0,
         minHeight: '35px',
         backgroundColor: 'var(--joy-palette-background-body)',
-        borderBottom: '1px solid var(--taskier-boundary)',
+        borderBottom: '1px solid var(--daydan-boundary)',
       }}
     >
       {getMenuIcon()}

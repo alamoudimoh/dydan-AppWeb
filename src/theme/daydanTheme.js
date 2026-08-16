@@ -1,6 +1,6 @@
 import { extendTheme } from '@mui/joy/styles'
 
-import { taskierCssVariables, taskierTokens } from './tokens'
+import { daydanCssVariables, daydanTokens } from './tokens'
 
 const violetLight = {
   50: '#F5F4FF',
@@ -81,15 +81,15 @@ const statusPalette = (base, lightBg, darkText) => ({
   900: darkText,
 })
 
-const light = taskierTokens.light
-const dark = taskierTokens.dark
-const { radius } = taskierTokens
+const light = daydanTokens.light
+const dark = daydanTokens.dark
+const { radius } = daydanTokens
 
-export const taskierTheme = extendTheme({
+export const daydanTheme = extendTheme({
   fontFamily: {
-    body: taskierTokens.font.ui,
-    display: taskierTokens.font.ui,
-    code: taskierTokens.font.data,
+    body: daydanTokens.font.ui,
+    display: daydanTokens.font.ui,
+    code: daydanTokens.font.data,
     fallback: 'system-ui, sans-serif',
   },
   radius: {
@@ -162,17 +162,17 @@ export const taskierTheme = extendTheme({
           solidHoverBg: light.signalHover,
         },
         success: statusPalette(
-          taskierTokens.status.success,
+          daydanTokens.status.success,
           '#F0FDF4',
           '#166534',
         ),
         warning: statusPalette(
-          taskierTokens.status.warning,
+          daydanTokens.status.warning,
           '#FFFBEB',
           '#854D0E',
         ),
         danger: statusPalette(
-          taskierTokens.status.danger,
+          daydanTokens.status.danger,
           '#FEF2F2',
           '#991B1B',
         ),
@@ -214,17 +214,17 @@ export const taskierTheme = extendTheme({
           solidHoverBg: dark.signalHover,
         },
         success: statusPalette(
-          taskierTokens.status.success,
+          daydanTokens.status.success,
           '#052E16',
           '#86EFAC',
         ),
         warning: statusPalette(
-          taskierTokens.status.warning,
+          daydanTokens.status.warning,
           '#422006',
           '#FCD34D',
         ),
         danger: statusPalette(
-          taskierTokens.status.danger,
+          daydanTokens.status.danger,
           '#450A0A',
           '#FCA5A5',
         ),
@@ -334,8 +334,8 @@ export const taskierTheme = extendTheme({
         root: ({ ownerState }) => ({
           ...(ownerState.variant === 'soft' &&
             ownerState.color === 'primary' && {
-              bgcolor: 'var(--taskier-brand-soft)',
-              color: 'var(--taskier-primary)',
+              bgcolor: 'var(--daydan-brand-soft)',
+              color: 'var(--daydan-primary)',
               fontWeight: 500,
               fontSize: '0.75rem',
               borderRadius: '999px',
@@ -355,7 +355,7 @@ export const taskierTheme = extendTheme({
     JoyLink: {
       styleOverrides: {
         root: {
-          color: 'var(--taskier-primary)',
+          color: 'var(--daydan-primary)',
           textUnderlineOffset: '0.18em',
           '&:hover': { textDecoration: 'underline' },
         },
@@ -364,23 +364,23 @@ export const taskierTheme = extendTheme({
   },
 })
 
-export const taskierGlobalStyles = {
-  ':root': taskierCssVariables('light'),
-  '[data-joy-color-scheme="dark"]': taskierCssVariables('dark'),
+export const daydanGlobalStyles = {
+  ':root': daydanCssVariables('light'),
+  '[data-joy-color-scheme="dark"]': daydanCssVariables('dark'),
   '@media (prefers-contrast: more)': {
     ':root': {
-      '--taskier-text-muted': '#1A1F26',
-      '--taskier-boundary': '#4A5260',
+      '--daydan-text-muted': '#1A1F26',
+      '--daydan-boundary': '#4A5260',
       '--joy-palette-text-secondary': '#1A1F26',
       '--joy-palette-divider': '#4A5260',
     },
     '[data-joy-color-scheme="dark"]': {
-      '--taskier-text-muted': '#F8FAFC',
-      '--taskier-boundary': '#ADB2C4',
+      '--daydan-text-muted': '#F8FAFC',
+      '--daydan-boundary': '#ADB2C4',
       '--joy-palette-text-secondary': '#F8FAFC',
       '--joy-palette-divider': '#ADB2C4',
     },
   },
 }
 
-export default taskierTheme
+export default daydanTheme

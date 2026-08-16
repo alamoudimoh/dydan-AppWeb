@@ -636,7 +636,7 @@ struct TodayWidgetView: View {
             StateMessage(
                 systemImage: "person.crop.circle.badge.exclamationmark",
                 title: "Sign in",
-                detail: "Open Donetick to see your tasks"
+                detail: "Open DayDan to see your tasks"
             )
         } else if family == .systemSmall {
             smallView
@@ -752,7 +752,7 @@ struct WeekWidgetView: View {
             StateMessage(
                 systemImage: "person.crop.circle.badge.exclamationmark",
                 title: "Sign in",
-                detail: "Open Donetick to see your tasks"
+                detail: "Open DayDan to see your tasks"
             )
         } else if tasks.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
@@ -903,7 +903,7 @@ struct PeopleWidgetView: View {
             StateMessage(
                 systemImage: "person.crop.circle.badge.exclamationmark",
                 title: "Sign in",
-                detail: "Open Donetick to see your circle"
+                detail: "Open DayDan to see your circle"
             )
         } else if entry.members.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
@@ -911,7 +911,7 @@ struct PeopleWidgetView: View {
                 StateMessage(
                     systemImage: "person.2",
                     title: "No members yet",
-                    detail: "Invite your circle in Donetick"
+                    detail: "Invite your circle in DayDan"
                 )
             }
         } else if family == .systemMedium {

@@ -1,4 +1,4 @@
-# Taskier App Verification Policy
+# DayDan App Verification Policy
 
 - Run `./scripts/verify.sh` before completing substantial frontend changes.
 - Never bypass failing required CI; fix regressions before declaring work complete.

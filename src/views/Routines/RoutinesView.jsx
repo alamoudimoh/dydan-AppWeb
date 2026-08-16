@@ -94,7 +94,7 @@ const TaskSummary = ({ item, members }) => (
     <Typography level='title-sm'>{item.name}</Typography>
     <Typography level='body-xs'>
       {recurrence(item)} ·{' '}
-      <Box component='span' className='taskier-metric'>
+      <Box component='span' className='daydan-metric'>
         {item.points || 0} pts
       </Box>
       {item.requireApproval ? ' · Approval required' : ''}

@@ -87,7 +87,7 @@ const LoadingScreen = ({
               }}
             >
               Task
-              <Box component='span' sx={{ color: 'var(--taskier-signal)' }}>
+              <Box component='span' sx={{ color: 'var(--daydan-signal)' }}>
                 i
               </Box>
               er

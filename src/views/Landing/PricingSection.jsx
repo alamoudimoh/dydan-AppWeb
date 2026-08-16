@@ -12,7 +12,7 @@ const PricingSection = () => {
   ]
   const FEATURES_PREMIUM = [
     ['All Basic Features', <CheckRounded color='primary' />],
-    ['Hosted on DoneTick servers', <CheckRounded color='primary' />],
+    ['Hosted on DayDan servers', <CheckRounded color='primary' />],
     ['Up to 8 Circle Members', <CheckRounded color='primary' />],
     [
       'Notification through Telegram (Discord coming soon)',
