@@ -1,4 +1,4 @@
-name: Taskier App CI
+name: DayDan App CI
 
 on:
   push:

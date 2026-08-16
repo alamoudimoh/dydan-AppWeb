@@ -99,7 +99,7 @@ fi
 
 echo "✓ Release build complete"
 [ -f android/app/build/outputs/bundle/release/app-release.aab ] && echo "  Android: android/app/build/outputs/bundle/release/app-release.aab"
-[ -f build/ios/Donetick.ipa ] && echo "  iOS:     build/ios/Donetick.ipa"
+[ -f build/ios/DayDan.ipa ] && echo "  iOS:     build/ios/DayDan.ipa"
 
 echo ""
 echo "Next steps:"

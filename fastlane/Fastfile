@@ -21,7 +21,7 @@ platform :ios do
       scheme: "App",
       export_method: "app-store",
       output_directory: IOS_OUTPUT_DIR,
-      output_name: "Donetick.ipa",
+      output_name: "DayDan.ipa",
       export_options: {
         signingStyle: "manual",
         provisioningProfiles: {
@@ -31,7 +31,7 @@ platform :ios do
       },
     )
 
-    UI.success("Signed .ipa at #{IOS_OUTPUT_DIR}/Donetick.ipa")
+    UI.success("Signed .ipa at #{IOS_OUTPUT_DIR}/DayDan.ipa")
   end
 
   desc "Upload the built .ipa to TestFlight"
@@ -39,7 +39,7 @@ platform :ios do
     UI.user_error!("Missing #{IOS_KEY_PATH} — run scripts/pull-secrets.sh first") unless File.exist?(IOS_KEY_PATH)
     UI.user_error!("ASC_ISSUER_ID is not set (App Store Connect API key issuer id)") if ENV["ASC_ISSUER_ID"].to_s.empty?
 
-    ipa_path = File.join(IOS_OUTPUT_DIR, "Donetick.ipa")
+    ipa_path = File.join(IOS_OUTPUT_DIR, "DayDan.ipa")
     UI.user_error!("Missing #{ipa_path} — run `fastlane ios release` first") unless File.exist?(ipa_path)
 
     api_key = app_store_connect_api_key(

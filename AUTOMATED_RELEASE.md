@@ -22,7 +22,7 @@ Common flags on `release.sh`:
 
 Outputs:
 - Android: `android/app/build/outputs/bundle/release/app-release.aab`
-- iOS: `build/ios/Donetick.ipa`
+- iOS: `build/ios/DayDan.ipa`
 
 ## One-time machine setup
 
@@ -71,7 +71,7 @@ Standard keystore signing via `android/keystore.properties`, read by `android/ap
 
 - The service account (`fastline-471@donetick-5f910.iam.gserviceaccount.com`) needs the **Google Play Android Developer API enabled** in its GCP project (`donetick-5f910`), **and** explicit per-app release permission granted in Play Console → Users and permissions (not just account-level access) — **and you have to actually click Save**, the UI will silently not persist it otherwise.
 - Google Play Console permission changes can take time to propagate on Google's backend even after saving (historically documented as up to ~24h, though in practice it was near-instant once actually saved).
-- The Play Developer API requires the app to have had **at least one manual release** uploaded through the Play Console website before API uploads work at all — not an issue for Donetick (already satisfied) but relevant if this is ever set up for a brand-new app.
+- The Play Developer API requires the app to have had **at least one manual release** uploaded through the Play Console website before API uploads work at all — not an issue for DayDan (already satisfied) but relevant if this is ever set up for a brand-new app.
 
 ## Fastlane lanes reference
 
