@@ -5,8 +5,8 @@ import { parseAllowedHosts } from './vite.allowed-hosts.mjs'
 
 test('parses exact additional Vite hosts from installation configuration', () => {
   assert.deepEqual(
-    parseAllowedHosts(' tasks.alamoudi.one, taskier.example.com,,'),
-    ['tasks.alamoudi.one', 'taskier.example.com'],
+    parseAllowedHosts(' daydan.example.com, taskier.example.com,,'),
+    ['daydan.example.com', 'taskier.example.com'],
   )
 })
 
