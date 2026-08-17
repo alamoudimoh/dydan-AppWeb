@@ -20,17 +20,73 @@ const smokeMembers = {
   res: [
     {
       userId: 1,
+      id: 1,
       isActive: true,
       role: 'admin',
       name: 'Smoke User',
+      displayName: 'Smoke User',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
     },
     {
       userId: 2,
+      id: 2,
       isActive: true,
       role: 'member',
       name: 'Family Member',
+      displayName: 'Family Member',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
     },
   ],
+}
+
+const smokeChore = {
+  id: 42,
+  name: 'Smoke Chore',
+  description: 'Probe chore fixture',
+  assignedTo: 2,
+  lastCompletedBy: 1,
+  priority: 2,
+  nextDueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  lastCompletedDate: null,
+  totalCompletedCount: 0,
+  deadlineOffset: 0,
+  isArchived: false,
+  labels: [],
+  projectID: null,
+  categoryID: null,
+  notes: null,
+  parentChoreId: null,
+  scheduleType: 'oneTime',
+  createdAt: new Date().toISOString(),
+}
+
+const smokeShoppingList = {
+  id: 7,
+  name: 'Smoke Shopping List',
+  description: '',
+  createdBy: 1,
+  isArchived: false,
+  items: [],
+}
+
+const smokeAsset = {
+  id: 9,
+  name: 'Smoke Asset',
+  category: 'Home',
+  description: 'Probe fixture asset',
+  status: 'upcoming',
+  nextDueDate: null,
+  meters: [],
+  maintenance: [],
+  history: [],
+  lastService: null,
+  dueReason: null,
+}
+
+const emptyMaintenance = {
+  res: { due: [], approaching: [], upcoming: [], assets: [] },
 }
 
 const progressPayload = {
@@ -66,6 +122,9 @@ const progressPayload = {
   best: 0,
 }
 
+// Playwright resolves route handlers with the last registration winning, so
+// generic collection patterns are registered before the specific detail
+// endpoints they must not shadow (e.g. `/users/**` before `/users/profile`).
 const handlers = [
   {
     pattern: '**/api/v1/resource**',
@@ -83,28 +142,15 @@ const handlers = [
       ),
   },
   {
-    pattern: '**/api/v1/users/profile**',
-    handler: route => route.fulfill(json({ res: smokeProfile })),
-  },
-  {
-    pattern: '**/api/v1/circles/members**',
-    handler: route => route.fulfill(json(smokeMembers)),
-  },
-  {
-    pattern: '**/api/v1/circles**',
-    handler: route =>
-      route.fulfill(json({ res: [{ id: 3, name: 'Smoke Circle' }] })),
-  },
-  {
     pattern: '**/api/v1/users/**',
     handler: route => route.fulfill(json(emptyList)),
   },
   {
-    pattern: '**/api/v1/chores**',
+    pattern: '**/api/v1/chores/**',
     handler: route => route.fulfill(json(emptyList)),
   },
   {
-    pattern: '**/api/v1/shopping-lists**',
+    pattern: '**/api/v1/shopping-lists/**',
     handler: route => route.fulfill(json(emptyList)),
   },
   {
@@ -140,6 +186,10 @@ const handlers = [
     handler: route => route.fulfill(json(emptyList)),
   },
   {
+    pattern: '**/api/v1/maintenance',
+    handler: route => route.fulfill(json(emptyMaintenance)),
+  },
+  {
     pattern: '**/api/v1/notifications**',
     handler: route =>
       route.fulfill(json({ res: [], unreadCount: 0, count: 0 })),
@@ -164,6 +214,43 @@ const handlers = [
         },
         body: 'event: connected\ndata: {}\n\n',
       }),
+  },
+  {
+    pattern: '**/api/v1/circles**',
+    handler: route =>
+      route.fulfill(json({ res: [{ id: 3, name: 'Smoke Circle' }] })),
+  },
+  {
+    pattern: '**/api/v1/circles/members**',
+    handler: route => route.fulfill(json(smokeMembers)),
+  },
+  {
+    pattern: '**/api/v1/users/profile',
+    handler: route => route.fulfill(json({ res: smokeProfile })),
+  },
+  {
+    pattern: '**/api/v1/chores/42/details',
+    handler: route => route.fulfill(json({ res: smokeChore })),
+  },
+  {
+    pattern: '**/api/v1/chores/42/history',
+    handler: route => route.fulfill(json(emptyList)),
+  },
+  {
+    pattern: '**/api/v1/chores/42/timer**',
+    handler: route => route.fulfill(json({ res: null })),
+  },
+  {
+    pattern: '**/api/v1/chores/42',
+    handler: route => route.fulfill(json({ res: smokeChore })),
+  },
+  {
+    pattern: '**/api/v1/shopping-lists/7',
+    handler: route => route.fulfill(json({ res: smokeShoppingList })),
+  },
+  {
+    pattern: '**/api/v1/maintenance/assets/9',
+    handler: route => route.fulfill(json({ res: smokeAsset })),
   },
 ]
 

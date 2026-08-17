@@ -9,9 +9,11 @@ import {
   Storage,
 } from '@mui/icons-material'
 import { Box, Button, Card, Container, Grid, Typography } from '@mui/joy'
+import { useNavigate } from 'react-router-dom'
+
 import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
 
-function StartOptionCard({ icon: Icon, title, description, button, index }) {
+function StartOptionCard({ button, description, icon: Icon, index, title }) {
   return (
     <Card
       data-aos='fade-up'
@@ -273,8 +275,8 @@ const GettingStarted = () => {
               mx: 'auto',
             }}
           >
-            Get the full DayDan experience with notifications, realtime
-            updates, and seamless task management on the go
+            Get the full DayDan experience with notifications, realtime updates,
+            and seamless task management on the go
           </Typography>
 
           <Box
