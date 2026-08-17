@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { APP_SUPPORT_URL } from '@/config/AppBranding'
+
 const TermsView = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', lineHeight: '1.6' }}>
@@ -233,7 +235,7 @@ const TermsView = () => {
       </p>
       <ul>
         <li><strong>Email:</strong> legal@donetick.com</li>
-        <li><strong>Support:</strong> <a href="https://github.com/alamoudimoh/Taskier-App/issues">DayDan support on GitHub</a></li>
+        <li><strong>Support:</strong> <a href="https://github.com/alamoudimoh/daydan-app/issues">DayDan support on GitHub</a></li>
         <li><strong>Address:</strong> Favoro LLC, [Address to be provided]</li>
       </ul>
 

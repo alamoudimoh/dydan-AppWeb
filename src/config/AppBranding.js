@@ -22,7 +22,7 @@ export const APP_BACKGROUND_COLOR = daydanTokens.light.page
 
 export const APP_SUPPORT_URL =
   viteEnv.VITE_APP_SUPPORT_URL ||
-  'https://github.com/alamoudimoh/Taskier-App/issues'
+  'https://github.com/alamoudimoh/daydan-app/issues'
 
 export const formatPageTitle = detail =>
   detail ? `${APP_DISPLAY_NAME}: ${detail}` : APP_DISPLAY_NAME

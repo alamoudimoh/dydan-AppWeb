@@ -12,7 +12,7 @@ const viteEnv =
 export const resolveAppRepoUrl = (env = viteEnv) =>
   env.VITE_DAYDAN_APP_REPO_URL ||
   env.VITE_TASKIER_APP_REPO_URL ||
-  'https://github.com/alamoudimoh/Taskier-App'
+  'https://github.com/alamoudimoh/daydan-app'
 
 export const DAYDAN_APP_REPO = resolveAppRepoUrl()
 

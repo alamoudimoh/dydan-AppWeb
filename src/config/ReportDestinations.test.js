@@ -10,10 +10,10 @@ import {
 } from '../config/ReportDestinations.js'
 
 test('report destinations default to DayDan-owned GitHub endpoints', () => {
-  assert.equal(DAYDAN_APP_REPO, 'https://github.com/alamoudimoh/Taskier-App')
+  assert.equal(DAYDAN_APP_REPO, 'https://github.com/alamoudimoh/daydan-app')
   assert.equal(
     FEEDBACK_ISSUES_NEW_URL,
-    'https://github.com/alamoudimoh/Taskier-App/issues/new',
+    'https://github.com/alamoudimoh/daydan-app/issues/new',
   )
   assert.equal(APP_REPORT_SOURCE, 'daydan-app')
   assert.equal(REPORT_ID_PREFIX, 'TD')
