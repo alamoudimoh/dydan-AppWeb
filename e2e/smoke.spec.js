@@ -5,7 +5,7 @@ import { clearSmokeSession, installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 import { BROWSER_SMOKE_PAGES } from './smoke.manifest.js'
 
-const assertPageShell = async (page, { auth, heading, text, nav }) => {
+const assertPageShell = async (page, { auth, heading, nav, text }) => {
   await expect(page.locator('#root')).toBeVisible()
   await expect(page.locator('#root')).not.toBeEmpty()
 
@@ -22,11 +22,11 @@ const assertPageShell = async (page, { auth, heading, text, nav }) => {
   }
 
   if (nav) {
-    await expect(
-      page.getByRole('button', { name: /open menu/i }),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: /open menu/i })).toBeVisible()
   } else if (auth) {
-    throw new Error('Authenticated smoke routes must assert the navigation shell')
+    throw new Error(
+      'Authenticated smoke routes must assert the navigation shell',
+    )
   }
 }
 

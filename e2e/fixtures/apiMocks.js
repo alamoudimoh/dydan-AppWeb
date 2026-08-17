@@ -170,7 +170,7 @@ const handlers = [
 export const installApiMocks = async page => {
   await page.route('**/api/v1/**', route => route.fulfill(json(emptyList)))
 
-  for (const { pattern, handler } of handlers) {
+  for (const { handler, pattern } of handlers) {
     await page.route(pattern, handler)
   }
 }

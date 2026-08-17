@@ -163,6 +163,14 @@ export default [
     },
   },
   {
+    files: ['e2e/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: globals.browser,
+      sourceType: 'module',
+    },
+  },
+  {
     // Reduce existing errors to warnings
     plugins: {
       '@tanstack/query': queryPlugin,
