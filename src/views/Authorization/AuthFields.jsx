@@ -11,11 +11,14 @@ import {
   Link,
   Typography,
 } from '@mui/joy'
+import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
+
+import { authButtonSx, authInputSx } from './authStyles'
 
 const labelSx = { fontSize: '0.875rem', fontWeight: 600, mb: 0.75 }
 
-export const AuthField = ({ label, error, helper, children, ...formProps }) => (
+export const AuthField = ({ children, error, helper, label, ...formProps }) => (
   <FormControl error={Boolean(error)} {...formProps}>
     <FormLabel sx={labelSx}>{label}</FormLabel>
     {children}
@@ -32,16 +35,16 @@ export const AuthField = ({ label, error, helper, children, ...formProps }) => (
   </FormControl>
 )
 
-export const AuthTextField = ({ label, error, helper, sx, ...inputProps }) => (
+export const AuthTextField = ({ error, helper, label, sx, ...inputProps }) => (
   <AuthField label={label} error={error} helper={helper}>
     <Input size='lg' sx={{ ...authInputSx, ...sx }} {...inputProps} />
   </AuthField>
 )
 
 export const AuthPasswordField = ({
-  label = 'Password',
   error,
   helper,
+  label = 'Password',
   sx,
   ...inputProps
 }) => {
@@ -89,7 +92,7 @@ export const AuthSubmitButton = ({ children, sx, ...props }) => (
   </Button>
 )
 
-export const SocialButton = ({ icon, children, sx, ...props }) => (
+export const SocialButton = ({ children, icon, sx, ...props }) => (
   <Button
     type='button'
     size='lg'
@@ -145,12 +148,7 @@ export const LegalLinks = () => (
       Privacy Policy
     </Link>
     {' · '}
-    <Link
-      component={RouterLink}
-      to='/terms'
-      color='neutral'
-      underline='hover'
-    >
+    <Link component={RouterLink} to='/terms' color='neutral' underline='hover'>
       Terms of Use
     </Link>
   </Typography>
