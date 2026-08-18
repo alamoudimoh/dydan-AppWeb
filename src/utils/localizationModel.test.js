@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   getLanguageDisplayName,
+  resolveDirection,
   resolveIntlLocale,
 } from './localizationModel.js'
 
@@ -11,6 +12,16 @@ test('resolveIntlLocale maps app language codes to Intl locales', () => {
   assert.equal(resolveIntlLocale('ar-SA'), 'ar-SA')
   assert.equal(resolveIntlLocale('zh-CN'), 'zh-CN')
   assert.equal(resolveIntlLocale('pt'), 'pt-BR')
+})
+
+test('resolveDirection returns rtl for Arabic variants and ltr otherwise', () => {
+  assert.equal(resolveDirection('ar'), 'rtl')
+  assert.equal(resolveDirection('ar-SA'), 'rtl')
+  assert.equal(resolveDirection('en'), 'ltr')
+  assert.equal(resolveDirection('en-US'), 'ltr')
+  assert.equal(resolveDirection('de'), 'ltr')
+  assert.equal(resolveDirection('zh-CN'), 'ltr')
+  assert.equal(resolveDirection(''), 'ltr')
 })
 
 test('getLanguageDisplayName prefers translated labels', () => {

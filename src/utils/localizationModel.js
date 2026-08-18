@@ -48,6 +48,14 @@ export const getLanguageDisplayName = (code, t, catalog = []) => {
   return meta?.nativeName || code
 }
 
+export const RTL_BASE_LANGUAGES = Object.freeze(['ar', 'he', 'fa', 'ur'])
+
+/**
+ * Resolves the document direction ('rtl' | 'ltr') for a language code.
+ */
+export const resolveDirection = language =>
+  RTL_BASE_LANGUAGES.includes(String(language).split('-')[0]) ? 'rtl' : 'ltr'
+
 export const CALENDAR_LABEL_KEYS = Object.freeze({
   sameDay: 'common:dates.today',
   nextDay: 'common:dates.tomorrow',

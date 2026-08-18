@@ -7,32 +7,45 @@
   "confirm": "تأكيد",
   "loading": "جارٍ التحميل...",
   "error": "خطأ",
-  "success": "نجح",
+  "success": "تم بنجاح",
   "warning": "تحذير",
   "refresh": "تحديث",
   "copy": "نسخ",
-  "copied": "تم النسخ!",
+  "copied": "تم النسخ",
   "settings": "الإعدادات",
   "yes": "نعم",
   "no": "لا",
   "back": "رجوع",
   "backToCalendar": "العودة إلى التقويم",
   "logout": "تسجيل الخروج",
-  "version": "النسخة",
+  "retry": "إعادة المحاولة",
+  "tryAgain": "حاول مرة أخرى",
+  "login": "تسجيل الدخول",
+  "loadMore": "تحميل المزيد",
+  "noMoreHistory": "لا مزيد من السجل",
+  "version": "الإصدار",
+  "dates": {
+    "today": "اليوم",
+    "tomorrow": "غدًا",
+    "yesterday": "أمس",
+    "last": "الماضي"
+  },
   "navigation": {
     "notifications": "الإشعارات",
+    "search": "بحث",
     "allTasks": "جميع المهام",
-    "archived": "المؤرشفة",
+    "archived": "الأرشيف",
     "things": "الأشياء",
     "labels": "التسميات",
     "projects": "المشاريع",
+    "shoppingLists": "قوائم التسوق",
     "filters": "الفلاتر",
     "activities": "الأنشطة",
     "points": "النقاط",
     "settings": "الإعدادات",
     "familyProgress": "تقدم العائلة",
-    "search": "بحث",
     "home": "الرئيسية",
+    "openMenu": "فتح القائمة",
     "calendar": "التقويم",
     "maintenance": "الصيانة",
     "routines": "الروتينات",
@@ -47,9 +60,7 @@
       "family": "العائلة",
       "account": "الحساب",
       "support": "الدعم"
-    },
-    "openMenu": "فتح القائمة",
-    "shoppingLists": "قوائم التسوق"
+    }
   },
   "familyProgress": {
     "title": "تقدم العائلة",
@@ -60,12 +71,12 @@
     "today": "اليوم",
     "thisWeek": "هذا الأسبوع",
     "next30Days": "الثلاثون يومًا القادمة",
-    "allCategories": "كل التصنيفات",
+    "allCategories": "كل الفئات",
     "overdue": "متأخرة",
     "upcoming": "قادمة",
-    "unassigned": "غير مسندة",
+    "unassigned": "غير مُسنَدة",
     "activeTasks": "مهام نشطة",
-    "workByCategory": "العمل حسب التصنيف",
+    "workByCategory": "العمل حسب الفئة",
     "sevenDays": "7 أيام",
     "thirtyDays": "30 يومًا",
     "ninetyDays": "90 يومًا",
@@ -80,31 +91,36 @@
     "maintenance": "الصيانة",
     "completed": "منجزة",
     "approaching": "تقترب",
-    "deterministicInsights": "رؤى واقعية",
-    "completedByCategory": "المنجز حسب التصنيف",
+    "deterministicInsights": "رؤى واضحة",
+    "completedByCategory": "المنجز حسب الفئة",
     "completedByMember": "المنجز حسب العضو",
     "rewardActivity": "نشاط المكافآت",
     "noRewardActivity": "لا يوجد نشاط مكافآت في هذه الفترة.",
     "currentStreak": "السلسلة الحالية",
     "bestStreak": "أفضل سلسلة",
-    "days": "{{count}} أيام",
+    "days": "أيام {{count}}",
     "createGoal": "إنشاء هدف عائلي",
     "noGoals": "لا توجد أهداف عائلية بعد.",
     "name": "الاسم",
     "metric": "المقياس",
     "taskCompletions": "إنجاز المهام",
-    "categoryCompletions": "الإنجاز حسب التصنيف",
+    "categoryCompletions": "الإنجاز حسب الفئة",
     "pointsEarned": "النقاط المكتسبة",
     "active": "نشط",
     "completedStatus": "مكتمل",
     "archived": "مؤرشف",
-    "category": "التصنيف",
+    "category": "الفئة",
     "target": "الهدف",
     "start": "البداية",
     "end": "النهاية",
     "saveGoal": "حفظ الهدف",
     "updateGoal": "تحديث الهدف",
-    "archive": "أرشفة"
+    "archive": "أرشفة",
+    "goalsLoadError": "تعذر تحميل الأهداف العائلية.",
+    "retry": "إعادة المحاولة",
+    "noCircleDescription": "تتوفر ميزة تقدم العائلة بعد الانضمام إلى دائرة عائلية أو إنشائها.",
+    "goToCircleSettings": "الانتقال إلى إعدادات الدائرة",
+    "backToTasks": "العودة إلى مهامي"
   },
   "notificationsCenter": {
     "title": "الإشعارات",
@@ -112,17 +128,12 @@
     "loading": "جارٍ تحميل الإشعارات",
     "loadError": "تعذر تحميل الإشعارات.",
     "emptyTitle": "أنت على اطلاع بكل شيء.",
-    "emptyMessage": "ستظهر هنا التحديثات الجديدة والأمور التي تحتاج إلى انتباهك.",
+    "emptyMessage": "ستظهر هنا التحديثات الجديدة والأمور التي تتطلب انتباهك.",
     "loadMore": "تحميل المزيد"
   },
-  "retry": "إعادة المحاولة",
-  "tryAgain": "حاول مرة أخرى",
-  "login": "تسجيل الدخول",
-  "loadMore": "تحميل المزيد",
-  "noMoreHistory": "لا مزيد من السجل",
   "notFound": {
     "title": "الصفحة غير موجودة",
-    "description": "هذا الرابط لا يؤدي إلى أي مكان. ربما تم نقله، أو أن العنوان يحتوي على خطأ.",
+    "description": "هذا الرابط لا يؤدي إلى أي صفحة. ربما تغيّر الرابط أو أن العنوان يحتوي على خطأ.",
     "goToTasks": "الانتقال إلى مهامي",
     "logIn": "تسجيل الدخول"
   },
@@ -133,18 +144,80 @@
     "pleaseTryAgain": "يرجى المحاولة مرة أخرى.",
     "tasksLoadFailed": "تعذر تحميل مهامك.",
     "calendarLoadFailed": "تعذر تحميل التقويم.",
-    "projectsLoadFailed": "تعذر تحميل المشاريع",
-    "labelsLoadFailed": "تعذر تحميل التصنيفات",
-    "reportHint": "إذا استمر ذلك، يرجى إرسال تقرير لنتمكن من التحقيق.",
+    "projectsLoadFailed": "تعذر تحميل المشاريع.",
+    "labelsLoadFailed": "تعذر تحميل التسميات.",
+    "reportHint": "إذا استمرت المشكلة، يرجى إرسال تقرير ليتسنى لنا التحقيق.",
     "showDetails": "إظهار تفاصيل الخطأ",
     "hideDetails": "إخفاء تفاصيل الخطأ",
     "collectingDetails": "جارٍ جمع تفاصيل الخطأ…",
-    "detailsCopied": "تم نسخ تفاصيل الخطأ إلى الحافظة",
+    "detailsCopied": "نُسخت تفاصيل الخطأ إلى الحافظة",
     "copyFailed": "فشل النسخ — حدد التفاصيل أعلاه وانسخها يدويًا.",
     "rewardsUnavailable": "المكافآت غير متاحة مؤقتًا. مهامك غير متأثرة."
   },
   "search": {
-    "noDirectMatchesTitle": "لا توجد مطابقات مباشرة",
-    "noDirectMatchesDescription": "لا يزال بإمكانك تصفية قائمة المهام بهذا البحث."
+    "noDirectMatchesTitle": "لا توجد نتائج مطابقة",
+    "noDirectMatchesDescription": "لا يزال بإمكانك تصفية قائمة المهام باستخدام هذا البحث."
+  },
+  "feedback": {
+    "later": "ربما لاحقًا",
+    "sentiment": {
+      "title": "كيف تجد DayDan؟",
+      "subtitle": "تساعدنا إجابتك في تحديد ما نبنيه بعد ذلك.",
+      "options": {
+        "love": "يعجبني",
+        "okay": "مقبول",
+        "issues": "أواجه مشكلات"
+      }
+    },
+    "categories": {
+      "bugs": "أخطاء برمجية",
+      "missingFeature": "ميزة مفقودة",
+      "tooComplicated": "معقد جدًا",
+      "slow": "بطيء",
+      "notifications": "الإشعارات",
+      "ai": "الذكاء الاصطناعي",
+      "other": "أخرى"
+    },
+    "details": {
+      "title": "ما الذي يمكننا تحسينه؟",
+      "messageLabel": "أخبرنا بالمزيد",
+      "messagePlaceholder": "ماذا حدث، أو ما الذي سيجعل التجربة أفضل؟",
+      "contextNote": "سنضمّن إصدار التطبيق والجهاز والنظام حتى نتمكن من إعادة إنتاج المشكلات.",
+      "submit": "إرسال الملاحظات",
+      "contextNoteSelfHosted": "أنت تستخدم نسخة ذاتية الاستضافة، لذا لا يُرسَل أي شيء من خادمك — سنفتح لك إشكال GitHub معبأ مسبقًا يمكنك مراجعته وتعديله أولًا.",
+      "submitSelfHosted": "المتابعة إلى GitHub"
+    },
+    "review": {
+      "title": "سعداء باستمتاعك بالتطبيق!",
+      "subtitle": "يساعد التقييم أو النجمة الآخرين على اكتشاف DayDan.",
+      "github": "نجّمة على GitHub",
+      "appStore": "قيّم على App Store",
+      "playStore": "قيّم على Google Play"
+    },
+    "thanks": {
+      "title": "شكرًا على ملاحظاتك",
+      "subtitle": "نقرأ كل رد، وهو يشكّل ما نعمل عليه بعد ذلك."
+    },
+    "github": {
+      "title": "الإبلاغ عبر GitHub",
+      "subtitle": "عبّأنا إشكالًا بملاحظاتك وتفاصيل الإصدار. لم يُرسَل أي شيء بعد — راجعه وانشره عندما تكون جاهزًا.",
+      "open": "فتح الإشكال"
+    },
+    "deliveryFailed": {
+      "openIssue": "فتح الإشكال المعبأ مسبقًا",
+      "retry": "تعديل والمحاولة مجددًا",
+      "failed": {
+        "title": "لم يتم إرسال الملاحظات",
+        "subtitle": "لم يُرسَل أي شيء. ملاحظاتك ما زالت هنا — حاول مجددًا أو أكمل عبر GitHub."
+      },
+      "unconfigured": {
+        "title": "إرسال الملاحظات غير مُهيّأ",
+        "subtitle": "لا توجد نقطة إرسال مخصصة لهذا الإصدار. افتح إشكال DayDan معبأ مسبقًا أو انسخ ملاحظاتك يدويًا."
+      },
+      "misconfigured": {
+        "title": "إرسال الملاحظات غير مهيأ بشكل صحيح",
+        "subtitle": "لا يمكن لنقطة الإرسال المهيأة استقبال ملاحظات التطبيق. افتح إشكال DayDan معبأ مسبقًا بدلًا من ذلك."
+      }
+    }
   }
 }

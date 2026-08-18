@@ -7,6 +7,7 @@ import useStickyState from '@/hooks/useStickyState'
 import i18n from '../i18n/config'
 import {
   CALENDAR_LABEL_KEYS,
+  resolveDirection,
   resolveIntlLocale,
 } from '../utils/localizationModel'
 
@@ -76,8 +77,7 @@ export const LocalizationProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    const isRTL = RTL_LANGUAGES.includes(language.split('-')[0])
-    document.documentElement.dir = isRTL ? 'rtl' : 'ltr'
+    document.documentElement.dir = resolveDirection(language)
     document.documentElement.lang = language
   }, [language])
 
@@ -120,7 +120,7 @@ export const LocalizationProvider = ({ children }) => {
     })
   }
 
-  const isRTL = RTL_LANGUAGES.includes(language.split('-')[0])
+  const isRTL = resolveDirection(language) === 'rtl'
 
   const fmt = {
     date: formatDate,
