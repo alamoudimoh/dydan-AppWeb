@@ -53,6 +53,9 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
+        // Force grayscale text antialiasing so snapshots render identically on
+        // CI (where subpixel/LCD text is enabled) and local environments.
+        launchOptions: { args: ['--disable-lcd-text'] },
       },
       testMatch: ['**/visual.spec.js'],
     },
