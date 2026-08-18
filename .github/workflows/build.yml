@@ -65,6 +65,39 @@ jobs:
             playwright-report/
             test-results/
 
+  cross-browser-smoke:
+    name: Playwright cross-browser critical smoke
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium, Firefox, and WebKit
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Run cross-browser critical smoke
+        run: npm run test:smoke:cross-browser
+      - name: Upload cross-browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-cross-browser-failures
+          if-no-files-found: ignore
+          retention-days: 3
+          path: |
+            playwright-report/
+            test-results/
+
   coverage:
     name: Unit/component coverage
     needs: verify

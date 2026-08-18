@@ -20,9 +20,30 @@ export default defineConfig({
     video: 'off',
   },
   projects: [
+    // Full route smoke (60 covered routes) stays Chromium-only. The
+    // cross-browser critical spec is excluded here and runs via
+    // `npm run test:smoke:cross-browser`.
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: ['**/smoke.cross-browser.spec.js'],
+    },
+    // Lightweight cross-browser coverage: the original 10 critical routes on
+    // Chromium, Firefox, and WebKit via a single shared spec + manifest.
+    {
+      name: 'chromium-critical',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: ['**/smoke.cross-browser.spec.js'],
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testMatch: ['**/smoke.cross-browser.spec.js'],
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testMatch: ['**/smoke.cross-browser.spec.js'],
     },
   ],
   webServer: {
