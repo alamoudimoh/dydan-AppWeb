@@ -1,0 +1,31 @@
+# Codecov configuration for the DayDan App repository.
+# Coverage is collected from the Vitest unit/component suite only in this phase;
+# Playwright browser smoke does not contribute coverage yet.
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+
+comment:
+  layout: header, diff, flags
+  behavior: default
+
+ignore:
+  - dist
+  - coverage
+  - e2e
+  - playwright-report
+  - test-results
+  - scripts
+  - src/navigation/navModel.js
+  - src/navigation/navLinkState.js
+  - src/navigation/routeSmokeManifest.js
+  - src/navigation/routeSmokeAccounting.js
+  - vite.allowed-hosts.mjs

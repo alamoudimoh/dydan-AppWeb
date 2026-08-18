@@ -64,3 +64,27 @@ jobs:
           path: |
             playwright-report/
             test-results/
+
+  coverage:
+    name: Unit/component coverage
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Collect coverage
+        run: npm run test:coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/lcov.info
+          flags: unit
+          name: daydan-app-unit
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
