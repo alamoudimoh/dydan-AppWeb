@@ -26,7 +26,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/smoke.cross-browser.spec.js'],
+      testIgnore: ['**/smoke.cross-browser.spec.js', '**/visual.spec.js'],
     },
     // Lightweight cross-browser coverage: the original 10 critical routes on
     // Chromium, Firefox, and WebKit via a single shared spec + manifest.
@@ -44,6 +44,17 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
       testMatch: ['**/smoke.cross-browser.spec.js'],
+    },
+    // Deterministic visual regression for the most important surfaces, on the
+    // fixed desktop viewport matching the primary development layout. Chromium
+    // only; baselines are committed and Linux CI is authoritative.
+    {
+      name: 'visual',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+      testMatch: ['**/visual.spec.js'],
     },
   ],
   webServer: {

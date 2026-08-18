@@ -23,6 +23,8 @@
     "test:smoke": "playwright test --project=chromium",
     "test:smoke:ui": "playwright test --ui",
     "test:smoke:cross-browser": "playwright test --project=chromium-critical --project=firefox --project=webkit",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
     "build:smoke": "vite build --mode smoke",
     "build-cf": "rm -rf  package-lock.json && npm install && npm install --force @rollup/rollup-linux-x64-gnu@4.34.9 @swc/core-linux-x64-gnu && vite build",
     "build-selfhosted": "rm -rf  package-lock.json && npm install && npm install --force @rollup/rollup-linux-x64-gnu@4.34.9 @swc/core-linux-x64-gnu && vite build --mode selfhosted",
