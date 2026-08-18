@@ -1,15 +1,45 @@
+/* global process */
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react-swc'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import pkg from './package.json'
-import { parseAllowedHosts, resolveAllowedHostsEnv } from './vite.allowed-hosts.mjs'
 import {
   APP_BACKGROUND_COLOR,
   APP_DISPLAY_NAME,
   APP_MANIFEST_TITLE,
   APP_THEME_COLOR,
 } from './src/config/AppBranding.js'
+import {
+  parseAllowedHosts,
+  resolveAllowedHostsEnv,
+} from './vite.allowed-hosts.mjs'
+
+// Source-map upload to Sentry activates only when the required build-time
+// credentials are present. Without them ordinary builds never enable source
+// maps, so they are not publicly exposed just for Sentry.
+const hasSentryBuildCredentials = Boolean(
+  process.env.SENTRY_AUTH_TOKEN &&
+  process.env.SENTRY_ORG &&
+  process.env.SENTRY_PROJECT,
+)
+
+const sentryPlugins = []
+if (hasSentryBuildCredentials) {
+  sentryPlugins.push(
+    sentryVitePlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      telemetry: false,
+      sourcemaps: {
+        assets: ['dist/**/*.js'],
+        filesToDeleteAfterUpload: ['dist/**/*.js.map'],
+      },
+    }),
+  )
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
@@ -88,7 +118,14 @@ export default defineConfig(({ command }) => ({
         skipWaiting: true, // Force the waiting service worker to become the active service worker
       },
     }),
+    // Uploaded source maps are deleted from dist after upload so production
+    // artifacts do not expose them publicly.
+    ...sentryPlugins,
   ],
+  build: {
+    // Only the production build with Sentry credentials emits source maps.
+    sourcemap: hasSentryBuildCredentials,
+  },
 
   resolve: {
     alias: [

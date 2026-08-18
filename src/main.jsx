@@ -10,6 +10,11 @@ import '@fontsource/jetbrains-mono/600.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
+import { initSentry, SentryBoundary } from './observability/sentry.jsx'
+
+// No-op unless VITE_SENTRY_DSN is configured; the SDK stays dormant otherwise.
+initSentry()
+
 const marketingHosts = new Set(['donetick.com', 'www.donetick.com'])
 const isMarketingSite =
   marketingHosts.has(window.location.hostname) ||
@@ -23,7 +28,9 @@ export const Site = React.lazy(() =>
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <React.Suspense fallback={null}>
-      <Site />
+      <SentryBoundary>
+        <Site />
+      </SentryBoundary>
     </React.Suspense>
   </React.StrictMode>,
 )
