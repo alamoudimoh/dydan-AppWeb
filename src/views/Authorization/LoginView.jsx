@@ -9,6 +9,7 @@ import GoogleIcon from '@mui/icons-material/Google'
 import { Avatar, Box, Button, IconButton, Link, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { LoginSocialGoogle } from 'reactjs-social-login'
 
@@ -89,6 +90,7 @@ const SegmentedControl = ({ onChange, options, value }) => (
 
 const LoginView = () => {
   // Use React Query client directly to invalidate the user profile query
+  const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const { data: userProfile } = useUserProfile()
   const [username, setUsername] = useState('')
@@ -164,23 +166,23 @@ const LoginView = () => {
     if (loginType === 'sub') {
       if (!parentUsername.trim()) {
         showError({
-          title: 'Validation Error',
-          message: 'Primary username is required for sub account login',
+          title: t('auth.validationError'),
+          message: t('auth.primaryUsernameRequired'),
         })
         return
       }
       if (!childName.trim()) {
         showError({
-          title: 'Validation Error',
-          message: 'Sub account name is required for sub account login',
+          title: t('auth.validationError'),
+          message: t('auth.subAccountNameRequired'),
         })
         return
       }
     } else {
       if (!username.trim()) {
         showError({
-          title: 'Validation Error',
-          message: 'Username is required',
+          title: t('auth.validationError'),
+          message: t('auth.usernameRequired'),
         })
         return
       }
@@ -188,8 +190,8 @@ const LoginView = () => {
 
     if (!password) {
       showError({
-        title: 'Validation Error',
-        message: 'Password is required',
+        title: t('auth.validationError'),
+        message: t('auth.passwordRequired'),
       })
       return
     }
@@ -206,8 +208,8 @@ const LoginView = () => {
       result = await authLogin({ username: actualUsername, password })
     } catch (error) {
       showError({
-        title: 'Login Failed',
-        message: error?.message || 'An error occurred, please try again',
+        title: t('auth.loginFailed'),
+        message: error?.message || t('auth.loginErrorDefault'),
       })
       return
     } finally {
@@ -227,8 +229,8 @@ const LoginView = () => {
       goAfterAuth()
     } else {
       showError({
-        title: 'Login Failed',
-        message: result.error || 'An error occurred, please try again',
+        title: t('auth.loginFailed'),
+        message: result.error || t('auth.loginErrorDefault'),
       })
     }
   }
@@ -292,15 +294,17 @@ const LoginView = () => {
       } else {
         const providerName = provider === 'apple' ? 'Apple' : 'Google'
         showError({
-          title: `${providerName} Login Failed`,
-          message: `Couldn't log in with ${providerName}, please try again`,
+          title: t('auth.providerLoginFailed', { provider: providerName }),
+          message: t('auth.providerLoginFailedMessage', {
+            provider: providerName,
+          }),
         })
       }
     } catch (error) {
       const providerName = provider === 'apple' ? 'Apple' : 'Google'
       showError({
-        title: `${providerName} Login Error`,
-        message: 'Network error occurred, please try again',
+        title: t('auth.providerLoginError', { provider: providerName }),
+        message: t('auth.networkError'),
       })
     }
   }
@@ -331,7 +335,7 @@ const LoginView = () => {
 
   const handleMFAError = errorMessage => {
     showError({
-      title: 'Two-Factor Authentication Failed',
+      title: t('auth.mfaFailed'),
       message: errorMessage,
     })
   }
@@ -379,8 +383,8 @@ const LoginView = () => {
       } catch (error) {
         console.error('Failed to open OAuth browser:', error)
         showError({
-          title: 'OAuth Error',
-          message: 'Failed to open authentication browser',
+          title: t('auth.oauthError'),
+          message: t('auth.oauthBrowserFailed'),
         })
       }
     } else {
@@ -405,15 +409,15 @@ const LoginView = () => {
 
   return (
     <AuthShell
-      title={userProfile ? 'Welcome back' : 'Sign in'}
+      title={userProfile ? t('auth.welcomeBack') : t('auth.signIn')}
       subtitle={
         sessionExpired
-          ? 'Your session expired. Sign in again and we’ll return you to where you were.'
+          ? t('auth.sessionExpiredSubtitle')
           : getPendingInvite()
-            ? 'Sign in and we’ll send your circle join request right after.'
+            ? t('auth.pendingInviteSubtitle')
             : userProfile
-              ? 'Pick up right where you left off.'
-              : 'Sign in to your account to continue.'
+              ? t('auth.returningUserSubtitle')
+              : t('auth.signInSubtitle')
       }
       logoSize={0}
       footer={<LegalLinks />}
@@ -422,7 +426,7 @@ const LoginView = () => {
           <IconButton
             variant='plain'
             color='neutral'
-            aria-label='Server settings'
+            aria-label={t('auth.serverSettings')}
             onClick={() => Navigate('/login/settings')}
           >
             <SettingsOutlined />
@@ -448,7 +452,7 @@ const LoginView = () => {
             <Typography level='title-md'>{displayName}</Typography>
             {getUserDisplayInfo(userProfile).userType === 'child' && (
               <Typography level='body-xs' sx={{ color: 'text.secondary' }}>
-                Sub Account
+                {t('auth.subAccount')}
               </Typography>
             )}
           </Box>
@@ -459,7 +463,7 @@ const LoginView = () => {
             sx={{ ...authButtonSx, mt: 1 }}
             onClick={getUserProfileAndNavigateToHome}
           >
-            Continue as {displayName}
+            {t('auth.continueAs', { name: displayName })}
           </Button>
           <Button
             fullWidth
@@ -469,7 +473,7 @@ const LoginView = () => {
             sx={authButtonSx}
             onClick={() => apiClient.handleLogout()}
           >
-            Use a different account
+            {t('auth.useDifferentAccount')}
           </Button>
         </Box>
       ) : (
@@ -482,19 +486,19 @@ const LoginView = () => {
             value={loginType}
             onChange={handleLoginModeChange}
             options={[
-              { value: 'primary', label: 'Primary Account' },
-              { value: 'sub', label: 'Sub Account' },
+              { value: 'primary', label: t('auth.primaryAccount') },
+              { value: 'sub', label: t('auth.subAccount') },
             ]}
           />
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {loginType === 'primary' ? (
               <AuthTextField
-                label='Username'
+                label={t('auth.username')}
                 id='username'
                 name='username'
                 autoComplete='username'
-                placeholder='Your username'
+                placeholder={t('auth.usernamePlaceholder')}
                 autoFocus
                 value={username}
                 onChange={e => setUsername(e.target.value)}
@@ -502,20 +506,20 @@ const LoginView = () => {
             ) : (
               <>
                 <AuthTextField
-                  label='Primary account username'
+                  label={t('auth.primaryUsername')}
                   id='parentUsername'
                   name='parentUsername'
                   autoComplete='username'
-                  placeholder='Enter primary account username'
+                  placeholder={t('auth.primaryUsernamePlaceholder')}
                   autoFocus
                   value={parentUsername}
                   onChange={e => setParentUsername(e.target.value)}
                 />
                 <AuthTextField
-                  label='Sub account name'
+                  label={t('auth.subAccountName')}
                   id='childName'
                   name='childName'
-                  placeholder='Enter sub account name'
+                  placeholder={t('auth.subAccountNamePlaceholder')}
                   value={childName}
                   onChange={e => setChildName(e.target.value)}
                 />
@@ -527,7 +531,7 @@ const LoginView = () => {
                 id='password'
                 name='password'
                 autoComplete='current-password'
-                placeholder='Enter your password'
+                placeholder={t('auth.passwordPlaceholder')}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
               />
@@ -539,42 +543,50 @@ const LoginView = () => {
                   underline='hover'
                   onClick={handleForgotPassword}
                 >
-                  Forgot password?
+                  {t('auth.forgotPassword')}
                 </Link>
               </Box>
             </Box>
           </Box>
 
           <AuthSubmitButton loading={isSubmitting} sx={{ mt: 3 }}>
-            {loginType === 'sub' ? 'Sign in as sub account' : 'Sign in'}
+            {loginType === 'sub'
+              ? t('auth.signInAsSubAccount')
+              : t('auth.signIn')}
           </AuthSubmitButton>
         </Box>
       )}
 
-      {hasSocialOptions && <AuthDivider>or continue with</AuthDivider>}
+      {hasSocialOptions && (
+        <AuthDivider>{t('auth.orContinueWith')}</AuthDivider>
+      )}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {showSocialLogin && !Capacitor.isNativePlatform() && (
-          <LoginSocialGoogle
-            client_id={GOOGLE_CLIENT_ID}
-            redirect_uri={REDIRECT_URL}
-            scope='openid profile email'
-            discoveryDocs='claims_supported'
-            access_type='online'
-            isOnlyGetToken={true}
-            onResolve={({ data, provider }) => {
-              loggedWithProvider(provider, data)
-            }}
-            onReject={() => {
-              showError({
-                title: 'Google Login Failed',
-                message: "Couldn't log in with Google, please try again",
-              })
-            }}
-          >
-            <SocialButton icon={<GoogleIcon />}>Google</SocialButton>
-          </LoginSocialGoogle>
-        )}
+        {showSocialLogin &&
+          !Capacitor.isNativePlatform() &&
+          GOOGLE_CLIENT_ID && (
+            <LoginSocialGoogle
+              client_id={GOOGLE_CLIENT_ID}
+              redirect_uri={REDIRECT_URL}
+              scope='openid profile email'
+              discoveryDocs='claims_supported'
+              access_type='online'
+              isOnlyGetToken={true}
+              onResolve={({ data, provider }) => {
+                loggedWithProvider(provider, data)
+              }}
+              onReject={() => {
+                showError({
+                  title: t('auth.providerLoginFailed', { provider: 'Google' }),
+                  message: t('auth.providerLoginFailedMessage', {
+                    provider: 'Google',
+                  }),
+                })
+              }}
+            >
+              <SocialButton icon={<GoogleIcon />}>Google</SocialButton>
+            </LoginSocialGoogle>
+          )}
 
         {showSocialLogin && Capacitor.isNativePlatform() && (
           <>
@@ -591,10 +603,13 @@ const LoginView = () => {
                 } catch (error) {
                   console.error('Google login error:', error)
                   showError({
-                    title: 'Google Login Failed',
-                    message: `Couldn't log in with Google, please try again${
-                      error?.message ? `: ${error.message}` : ''
-                    }`,
+                    title: t('auth.providerLoginFailed', {
+                      provider: 'Google',
+                    }),
+                    message: t('auth.providerLoginFailedMessageDetail', {
+                      provider: 'Google',
+                      detail: error?.message ? `: ${error.message}` : '',
+                    }),
                   })
                 }
               }}
@@ -620,8 +635,12 @@ const LoginView = () => {
                     .catch(error => {
                       console.error('Apple login error:', error)
                       showError({
-                        title: 'Apple Login Failed',
-                        message: "Couldn't log in with Apple, please try again",
+                        title: t('auth.providerLoginFailed', {
+                          provider: 'Apple',
+                        }),
+                        message: t('auth.providerLoginFailedMessage', {
+                          provider: 'Apple',
+                        }),
                       })
                     })
                 }}
@@ -644,7 +663,7 @@ const LoginView = () => {
           level='body-sm'
           sx={{ mt: 3, textAlign: 'center', color: 'text.secondary' }}
         >
-          Don&apos;t have an account?{' '}
+          {t('auth.noAccount')}{' '}
           <Link
             component='button'
             type='button'
@@ -653,7 +672,7 @@ const LoginView = () => {
             underline='hover'
             onClick={() => Navigate('/signup')}
           >
-            Create one
+            {t('auth.createOne')}
           </Link>
         </Typography>
       )}

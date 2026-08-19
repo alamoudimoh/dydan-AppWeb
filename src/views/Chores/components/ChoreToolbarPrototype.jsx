@@ -45,27 +45,29 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import AppModal from '../../../components/common/AppModal'
 import ActiveFilterChips from '../../../components/common/filter/ActiveFilterChips'
-import { Z_INDEX } from '../../../constants/zIndex'
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
+import { Z_INDEX } from '../../../constants/zIndex'
 import { FILTER_COLORS } from '../../../utils/Colors'
 import Priorities from '../../../utils/Priorities'
+import ProjectSelector from '../../components/ProjectSelector'
+import CustomFilterChips from './CustomFilterChips'
 import FilterBuilderContent, {
   CHORE_STATUSES,
-  DUE_DATE_OPTIONS,
-  POINTS_OPERATORS,
   conditionsToSelections,
   defaultSelections,
+  DUE_DATE_OPTIONS,
+  POINTS_OPERATORS,
   selectionsToConditions,
 } from './FilterBuilderContent'
 import SearchBar from './SearchBar'
-import ProjectSelector from '../../components/ProjectSelector'
-import CustomFilterChips from './CustomFilterChips'
 
 // ─── sub-components for the Display sheet ────────────────────────────────────
 
-const SectionHeader = ({ icon, label, badge }) => (
+const SectionHeader = ({ badge, icon, label }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
     {icon && (
       <Box
@@ -95,7 +97,7 @@ const SectionHeader = ({ icon, label, badge }) => (
   </Box>
 )
 
-const OptionChips = ({ options, selected, multi, onToggle }) => (
+const OptionChips = ({ multi, onToggle, options, selected }) => (
   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
     {options.map(opt => {
       const isSelected = multi
@@ -181,49 +183,50 @@ const OptionChips = ({ options, selected, multi, onToggle }) => (
  */
 const ChoreToolbar = ({
   // advanced filter
-  members = [],
-  labels = [],
-  projects = [],
-  tempFilter,
-  tempFilterMeta,
+  activeFilterId,
   applyTempFilter,
   clearTempFilter,
-  saveFilter,
-  updateFilter,
-  onFilterSaved,
-  // result counts
-  resultCount,
-  totalCount,
-  // clear all
-  onClearAllFilters,
-  // project (for Display sheet)
-  selectedProject,
-  onProjectSelect,
-  // assignee (for Display sheet)
-  selectedAssigneeFilter = 'anyone',
-  onAssigneeFilterChange,
-  // saved / custom
-  savedFilters = [],
-  activeFilterId,
-  onSavedFilterClick,
-  onSavedFilterEdit,
-  onSavedFilterDelete,
-  onSavedFilterPin,
-  // grouping
-  selectedGroupBy = 'default',
-  onGroupBySelect,
-  // view + multiselect
-  viewMode = 'default',
-  onToggleViewMode,
   isMultiSelectMode,
-  onToggleMultiSelect,
-  // search
-  searchTerm,
+  labels = [],
+  members = [],
+  onAssigneeFilterChange,
+  onClearAllFilters,
+  onFilterSaved,
+  onGroupBySelect,
+  // result counts
+  onProjectSelect,
+  onSavedFilterClick,
+  // clear all
+  onSavedFilterDelete,
+  // project (for Display sheet)
+  onSavedFilterEdit,
+  onSavedFilterPin,
+  // assignee (for Display sheet)
   onSearchChange,
   onSearchClose,
+  // saved / custom
+  onToggleMultiSelect,
+  onToggleViewMode,
+  projects = [],
+  resultCount,
+  saveFilter,
+  savedFilters = [],
+  // grouping
   searchInputRef,
+  searchTerm,
+  // view + multiselect
+  selectedAssigneeFilter = 'anyone',
+  selectedGroupBy = 'default',
+  selectedProject,
   showKeyboardShortcuts,
+  // search
+  tempFilter,
+  tempFilterMeta,
+  totalCount,
+  updateFilter,
+  viewMode = 'default',
 }) => {
+  const { t } = useTranslation('chores')
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const [displaySheetOpen, setDisplaySheetOpen] = useState(false)
   const [localSelections, setLocalSelections] = useState(defaultSelections())
@@ -246,27 +249,35 @@ const ChoreToolbar = ({
   const inlineChips = []
 
   const getConditionChipLabel = condition => {
-    if (!condition?.type) return 'Filter'
+    if (!condition?.type) return t('toolbar.filter')
 
     const typeLabels = {
-      assignee: 'Assignee',
-      createdBy: 'Created By',
-      status: 'Status',
-      priority: 'Priority',
-      label: 'Labels',
-      project: 'Project',
-      dueDate: 'Due Date',
-      points: 'Points',
+      assignee: t('toolbar.assignee'),
+      createdBy: t('toolbar.createdBy'),
+      status: t('toolbar.status'),
+      priority: t('toolbar.priority'),
+      label: t('filters.labels'),
+      project: t('toolbar.project'),
+      dueDate: t('toolbar.dueDate'),
+      points: t('toolbar.points'),
     }
 
-    const typeLabel = typeLabels[condition.type] || 'Filter'
-    const prefix = condition.operator === 'isNot' ? 'Not ' : ''
+    const typeLabel = typeLabels[condition.type] || t('toolbar.filter')
+    const typeChip =
+      condition.operator === 'isNot'
+        ? t('toolbar.chipNot', { type: typeLabel })
+        : typeLabel
 
     if (condition.type === 'dueDate') {
-      const dueDateLabel =
-        DUE_DATE_OPTIONS.find(o => o.value === condition.operator)?.label ||
-        'Custom'
-      return `${typeLabel}: ${dueDateLabel}`
+      const dueDateOption = DUE_DATE_OPTIONS.find(
+        o => o.value === condition.operator,
+      )
+      const dueDateLabel = dueDateOption
+        ? dueDateOption.labelKey
+          ? t(`filters.${dueDateOption.labelKey}`)
+          : dueDateOption.label
+        : t('toolbar.custom')
+      return t('toolbar.chipValue', { type: typeChip, value: dueDateLabel })
     }
 
     if (condition.type === 'points') {
@@ -274,7 +285,11 @@ const ChoreToolbar = ({
         POINTS_OPERATORS.find(o => o.value === condition.operator)?.label ||
         condition.operator ||
         ''
-      return `${typeLabel} ${pointsOp} ${condition.value ?? 0}`
+      return t('toolbar.chipPoints', {
+        type: typeChip,
+        op: pointsOp,
+        value: condition.value ?? 0,
+      })
     }
 
     const rawValues = Array.isArray(condition.value)
@@ -289,9 +304,12 @@ const ChoreToolbar = ({
         return member?.displayName || member?.username || String(value)
       }
       if (condition.type === 'status') {
-        return (
-          CHORE_STATUSES.find(s => s.value === value)?.label || String(value)
-        )
+        const status = CHORE_STATUSES.find(s => s.value === value)
+        return status
+          ? status.labelKey
+            ? t(`filters.${status.labelKey}`)
+            : status.label
+          : String(value)
       }
       if (condition.type === 'priority') {
         return Priorities.find(p => p.value === value)?.name || String(value)
@@ -300,21 +318,27 @@ const ChoreToolbar = ({
         return labels.find(l => l.id === value)?.name || String(value)
       }
       if (condition.type === 'project') {
-        if (value === 'default') return 'Default Project'
+        if (value === 'default') return t('toolbar.defaultProject')
         return projects.find(p => p.id === value)?.name || String(value)
       }
       return String(value)
     }
 
     if (rawValues.length === 0) {
-      return `${prefix}${typeLabel}`
+      return typeChip
     }
 
     if (rawValues.length === 1) {
-      return `${prefix}${typeLabel}: ${resolveLabel(rawValues[0])}`
+      return t('toolbar.chipValue', {
+        type: typeChip,
+        value: resolveLabel(rawValues[0]),
+      })
     }
 
-    return `${prefix}${typeLabel} (${rawValues.length})`
+    return t('toolbar.chipCount', {
+      type: typeChip,
+      count: rawValues.length,
+    })
   }
 
   const activeSavedFilter = savedFilterActive
@@ -513,33 +537,33 @@ const ChoreToolbar = ({
   const filterActive = activeFilterId != null || tempConditionCount > 0
 
   const groupByOptions = [
-    { value: 'default', label: 'Smart' },
-    { value: 'due_date', label: 'Due Date' },
-    { value: 'priority', label: 'Priority' },
-    { value: 'labels', label: 'Labels' },
+    { value: 'default', label: t('toolbar.smart') },
+    { value: 'due_date', label: t('toolbar.dueDate') },
+    { value: 'priority', label: t('toolbar.priority') },
+    { value: 'labels', label: t('filters.labels') },
   ]
 
   const assigneeOptions = [
-    { value: 'anyone', label: 'Everyone' },
-    { value: 'assigned_to_me', label: 'Mine' },
-    { value: 'available_for_me', label: 'Available to me' },
-    { value: 'assigned_to_others', label: 'Others' },
+    { value: 'anyone', label: t('toolbar.everyone') },
+    { value: 'assigned_to_me', label: t('toolbar.mine') },
+    { value: 'available_for_me', label: t('toolbar.availableToMe') },
+    { value: 'assigned_to_others', label: t('toolbar.others') },
   ]
 
   const viewOptions = [
     {
       value: 'default',
-      label: 'Cards',
+      label: t('toolbar.cards'),
       icon: <ViewAgenda sx={{ fontSize: 16 }} />,
     },
     {
       value: 'compact',
-      label: 'Compact',
+      label: t('toolbar.compact'),
       icon: <ViewComfy sx={{ fontSize: 16 }} />,
     },
     {
       value: 'calendar',
-      label: 'Calendar',
+      label: t('toolbar.calendar'),
       icon: <CalendarMonth sx={{ fontSize: 16 }} />,
     },
   ]
@@ -577,8 +601,8 @@ const ChoreToolbar = ({
             size='sm'
             sx={{ height: 32, width: 32, borderRadius: '50%' }}
             onClick={openFilterSheet}
-            aria-label='Filters'
-            title='Filters'
+            aria-label={t('toolbar.filters')}
+            title={t('toolbar.filters')}
           >
             <FilterList />
           </IconButton>
@@ -588,7 +612,9 @@ const ChoreToolbar = ({
         {!filterActive &&
           projects.filter(p => p.id !== 'default').length > 0 && (
             <ProjectSelector
-              selectedProject={selectedProject?.name || 'Default Project'}
+              selectedProject={
+                selectedProject?.name || t('toolbar.defaultProject')
+              }
               onProjectSelect={onProjectSelect}
               showKeyboardShortcuts={showKeyboardShortcuts}
             />
@@ -601,8 +627,8 @@ const ChoreToolbar = ({
           size='sm'
           sx={{ height: 32, width: 32, borderRadius: '50%' }}
           onClick={() => setDisplaySheetOpen(true)}
-          aria-label='View and group options'
-          title='View & Group'
+          aria-label={t('toolbar.viewAndGroupOptions')}
+          title={t('toolbar.viewAndGroup')}
         >
           {viewMode === 'calendar' ? (
             <CalendarMonth />
@@ -622,12 +648,14 @@ const ChoreToolbar = ({
             sx={{ height: 32, width: 32, borderRadius: '50%' }}
             onClick={onToggleMultiSelect}
             aria-label={
-              isMultiSelectMode ? 'Exit multi-select' : 'Enter multi-select'
+              isMultiSelectMode
+                ? t('toolbar.exitMultiSelect')
+                : t('toolbar.enterMultiSelect')
             }
             title={
               isMultiSelectMode
-                ? 'Exit multi-select (Ctrl+S)'
-                : 'Multi-select (Ctrl+S)'
+                ? t('toolbar.exitMultiSelectShortcut')
+                : t('toolbar.multiSelectShortcut')
             }
           >
             {isMultiSelectMode ? <CheckBox /> : <CheckBoxOutlineBlank />}
@@ -688,7 +716,7 @@ const ChoreToolbar = ({
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tune sx={{ fontSize: 20 }} />
-            Filters
+            {t('toolbar.filters')}
             {hasAnyActive && (
               <Chip size='sm' variant='solid' color='primary' sx={{ ml: 0.5 }}>
                 {totalActiveCount}
@@ -708,7 +736,7 @@ const ChoreToolbar = ({
             >
               <Input
                 size='sm'
-                placeholder='Filter name…'
+                placeholder={t('toolbar.filterNamePlaceholder')}
                 value={saveFilterName}
                 onChange={e => setSaveFilterName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveFilter()}
@@ -720,7 +748,7 @@ const ChoreToolbar = ({
                 onClick={handleSaveFilter}
                 disabled={!saveFilterName.trim()}
               >
-                Save
+                {t('toolbar.save')}
               </Button>
               <Button
                 size='sm'
@@ -728,7 +756,7 @@ const ChoreToolbar = ({
                 color='neutral'
                 onClick={() => setSavingFilter(false)}
               >
-                Cancel
+                {t('toolbar.cancel')}
               </Button>
             </Box>
           ) : (
@@ -752,7 +780,7 @@ const ChoreToolbar = ({
                   setFilterSheetOpen(false)
                 }}
               >
-                Clear all
+                {t('toolbar.clearAll')}
               </Button>
 
               {activeConditions.length > 0 ? (
@@ -765,11 +793,13 @@ const ChoreToolbar = ({
                       }}
                       sx={{ minWidth: 140 }}
                     >
-                      {resultCount != null ? `Show ${resultCount}` : 'Done'}
+                      {resultCount != null
+                        ? t('toolbar.showResults', { count: resultCount })
+                        : t('toolbar.done')}
                     </Button>
                     <IconButton
                       ref={saveMenuRef}
-                      aria-label='More save options'
+                      aria-label={t('toolbar.moreSaveOptions')}
                       onClick={e => setSaveMenuAnchorEl(e.currentTarget)}
                     >
                       <ArrowDropDown />
@@ -788,21 +818,23 @@ const ChoreToolbar = ({
                       disabled={!editingSavedFilter}
                     >
                       <Save sx={{ fontSize: 16, mr: 1 }} />
-                      Save Filter
+                      {t('toolbar.saveFilter')}
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
                         setSaveMenuAnchorEl(null)
                         setSaveFilterName(
                           editingSavedFilter
-                            ? `${editingSavedFilter.name} Copy`
+                            ? t('toolbar.filterCopy', {
+                                name: editingSavedFilter.name,
+                              })
                             : '',
                         )
                         setSavingFilter(true)
                       }}
                     >
                       <Save sx={{ fontSize: 16, mr: 1 }} />
-                      Save as New Filter
+                      {t('toolbar.saveAsNewFilter')}
                     </MenuItem>
                   </Menu>
                 </>
@@ -816,7 +848,7 @@ const ChoreToolbar = ({
                   }}
                   sx={{ minWidth: 140 }}
                 >
-                  Done
+                  {t('toolbar.done')}
                 </Button>
               )}
             </Box>
@@ -838,7 +870,7 @@ const ChoreToolbar = ({
             <>
               <Divider sx={{ my: 2.5 }} />
               <Typography level='title-sm' fontWeight={600} sx={{ mb: 1.5 }}>
-                Saved Filters
+                {t('toolbar.savedFilters')}
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {savedFilters.map(filter => {
@@ -889,7 +921,7 @@ const ChoreToolbar = ({
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ViewAgenda sx={{ fontSize: 20 }} />
-            Display
+            {t('toolbar.display')}
           </Box>
         }
         footer={
@@ -897,13 +929,13 @@ const ChoreToolbar = ({
             onClick={() => setDisplaySheetOpen(false)}
             sx={{ minWidth: 140 }}
           >
-            Done
+            {t('toolbar.done')}
           </Button>
         }
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {/* View section */}
-          <SectionHeader label='View' />
+          <SectionHeader label={t('toolbar.view')} />
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {viewOptions.map(opt => (
               <Chip
@@ -936,7 +968,7 @@ const ChoreToolbar = ({
           {/* Group by section */}
           <SectionHeader
             icon={<Sort />}
-            label='Group by'
+            label={t('toolbar.groupBy')}
             badge={
               selectedGroupBy !== 'default'
                 ? groupByOptions.find(o => o.value === selectedGroupBy)?.label
@@ -967,7 +999,7 @@ const ChoreToolbar = ({
           <Divider sx={{ my: 2.5 }} />
           <SectionHeader
             icon={<FilterList />}
-            label='Show tasks for'
+            label={t('toolbar.showTasksFor')}
             badge={
               selectedAssigneeFilter !== 'anyone'
                 ? assigneeOptions.find(o => o.value === selectedAssigneeFilter)

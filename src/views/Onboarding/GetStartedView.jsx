@@ -1,6 +1,8 @@
 import { DnsOutlined } from '@mui/icons-material'
 import { Box, Button, Link, Typography } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import Logo from '../../Logo'
 import { useResource } from '../../queries/ResourceQueries'
 import { haptic, isNativeApp, markOnboardingSeen } from '../../utils/Onboarding'
@@ -25,6 +27,7 @@ const enter = (delay = 0) => ({
  */
 const GetStartedView = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const { data: resource } = useResource()
   const signupDisabled = Boolean(resource?.is_user_creation_disabled)
 
@@ -113,8 +116,8 @@ const GetStartedView = () => {
             }}
           >
             {signupDisabled
-              ? 'Sign in to your account to pick up where you left off.'
-              : 'Create an account to sync everywhere, or sign in and pick up where you left off.'}
+              ? t('auth.getStartedSignInSubtitle')
+              : t('auth.getStartedSubtitle')}
           </Typography>
         </Box>
 
@@ -133,7 +136,7 @@ const GetStartedView = () => {
               onClick={() => go('/signup')}
               sx={authButtonSx}
             >
-              Create an account
+              {t('auth.createAccount')}
             </Button>
           )}
           <Button
@@ -144,7 +147,7 @@ const GetStartedView = () => {
             onClick={() => go('/login')}
             sx={authButtonSx}
           >
-            {signupDisabled ? 'Sign in' : 'I already have an account'}
+            {signupDisabled ? t('auth.signIn') : t('auth.alreadyHaveAccount')}
           </Button>
         </Box>
 
@@ -159,7 +162,7 @@ const GetStartedView = () => {
               startDecorator={<DnsOutlined fontSize='small' />}
               onClick={() => navigate('/login/settings')}
             >
-              Connect to a self-hosted server
+              {t('auth.connectSelfHosted')}
             </Link>
           </Box>
         )}

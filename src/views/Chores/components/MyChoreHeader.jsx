@@ -1,14 +1,17 @@
 import { FilterAlt } from '@mui/icons-material'
 import { Box, Stack, Typography } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
+
 import { getIconComponent } from '../../../utils/ProjectIcons.jsx'
 
 const MyChoreHeader = ({
-  activeFilterId,
   activeFilter,
+  activeFilterId,
   selectedProject,
   tempFilter,
   tempFilterMeta,
 }) => {
+  const { t } = useTranslation('chores')
   const isVisible =
     !!activeFilterId ||
     !!tempFilter ||
@@ -43,7 +46,7 @@ const MyChoreHeader = ({
   }
 
   const name = tempFilter
-    ? tempFilterMeta?.name || 'Smart Filter'
+    ? tempFilterMeta?.name || t('toolbar.smart')
     : activeFilter?.name || selectedProject?.name
 
   const description = tempFilter

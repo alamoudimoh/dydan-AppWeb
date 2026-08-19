@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const useKeyboardShortcuts = ({
   addTaskModalOpen,
@@ -12,6 +13,7 @@ export const useKeyboardShortcuts = ({
   selectedChores,
 }) => {
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
+  const { t } = useTranslation('chores')
 
   useEffect(() => {
     const handleKeyDown = event => {
@@ -64,14 +66,18 @@ export const useKeyboardShortcuts = ({
 
             if (allVisibleSelected) {
               handlers.onShowMessage({
-                title: '✅ All Tasks Selected',
-                message: `All ${visibleChores.length} filtered task${visibleChores.length !== 1 ? 's are' : ' is'} already selected.`,
+                title: t('shortcuts.allSelectedTitle'),
+                message: t('shortcuts.filteredAllSelected', {
+                  count: visibleChores.length,
+                }),
               })
             } else {
               handlers.onSelectAll()
               handlers.onShowMessage({
-                title: '🎯 Tasks Selected',
-                message: `Selected ${visibleChores.length} filtered task${visibleChores.length !== 1 ? 's' : ''}.`,
+                title: t('shortcuts.tasksSelectedTitle'),
+                message: t('shortcuts.filteredSelected', {
+                  count: visibleChores.length,
+                }),
               })
             }
           } else {
@@ -92,21 +98,28 @@ export const useKeyboardShortcuts = ({
 
             if (allChoresSelected) {
               handlers.onShowMessage({
-                title: '✅ All Tasks Selected',
-                message: `All ${allChores.length} task${allChores.length !== 1 ? 's are' : ' is'} already selected (including collapsed sections).`,
+                title: t('shortcuts.allSelectedTitle'),
+                message: t('shortcuts.allIncludingCollapsed', {
+                  count: allChores.length,
+                }),
               })
             } else if (allExpandedSelected) {
               handlers.onSelectAll()
               const collapsedCount = allChores.length - expandedChores.length
               handlers.onShowMessage({
-                title: '🎯 All Tasks Selected',
-                message: `Selected all ${allChores.length} tasks (including ${collapsedCount} from collapsed sections).`,
+                title: t('shortcuts.allTasksSelectedTitle'),
+                message: t('shortcuts.allTasksIncludingCollapsed', {
+                  count: allChores.length,
+                  collapsed: collapsedCount,
+                }),
               })
             } else {
               handlers.onSelectAll()
               handlers.onShowMessage({
-                title: '🎯 Tasks Selected',
-                message: `Selected ${expandedChores.length} task${expandedChores.length !== 1 ? 's' : ''} from expanded sections.`,
+                title: t('shortcuts.tasksSelectedTitle'),
+                message: t('shortcuts.expandedSelected', {
+                  count: expandedChores.length,
+                }),
               })
             }
           }
@@ -185,7 +198,7 @@ export const useKeyboardShortcuts = ({
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('keyup', handleKeyUp)
     }
-  }, [isMultiSelectMode, selectedChores.size, addTaskModalOpen])
+  }, [isMultiSelectMode, selectedChores.size, addTaskModalOpen, t])
 
   return { showKeyboardShortcuts }
 }

@@ -16,6 +16,12 @@ const ALLOWED_IDENTICAL = new Set([
   'localization.formats.ymd', // ISO date format token
   'profile.accountIdentity.providers.google', // brand name
   'profile.accountIdentity.providers.apple', // brand name
+  // Filter chip label templates: the surrounding format symbols (":", parens)
+  // are universal; the {{type}}/{{value}}/{{op}}/{{count}} tokens they wrap are
+  // themselves localized values.
+  'toolbar.chipValue',
+  'toolbar.chipCount',
+  'toolbar.chipPoints',
 ])
 
 const flatten = (obj, prefix = '') =>

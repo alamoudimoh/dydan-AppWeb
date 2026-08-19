@@ -29,14 +29,19 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
-import { inlineErrorAlertSx, listPageContainerSx, pageStackSpacing } from '../../theme/appLayout'
 import { useRoutineMutation, useRoutines } from '../../queries/RoutineQueries'
 import { useNotification } from '../../service/NotificationProvider'
+import {
+  inlineErrorAlertSx,
+  listPageContainerSx,
+  pageStackSpacing,
+} from '../../theme/appLayout'
 import { GetAllCircleMembers, GetAssets, GetMeters } from '../../utils/Fetcher'
 
 const DAYS = [
@@ -68,47 +73,58 @@ const emptyTask = {
   monthDay: '1',
 }
 
-const recurrence = item => {
+const recurrence = (item, t) => {
   const labels = {
-    once: 'One-time',
-    daily: 'Daily',
-    weekly: 'Weekly',
-    monthly: 'Monthly',
-    yearly: 'Yearly',
-    interval: `Every ${item.frequency || 1} ${item.frequencyMetadata?.unit || 'days'}`,
+    once: t('routines.once'),
+    daily: t('routines.daily'),
+    weekly: t('routines.weekly'),
+    monthly: t('routines.monthly'),
+    yearly: t('routines.yearly'),
+    interval: t('routines.recurrenceInterval', {
+      count: item.frequency || 1,
+      unit: t(`routines.units.${item.frequencyMetadata?.unit || 'days'}`),
+    }),
     days_of_the_week: (item.frequencyMetadata?.days || [])
-      .map(day => day.slice(0, 3))
+      .map(day => t(`routines.days.${day}`))
       .join(', '),
-    day_of_the_month: `Monthly on day ${item.frequencyMetadata?.days?.[0] || 1}`,
+    day_of_the_month: t('routines.recurrenceMonthlyOnDay', {
+      day: item.frequencyMetadata?.days?.[0] || 1,
+    }),
   }
   return labels[item.frequencyType] || item.frequencyType
 }
 
-const memberName = (members, id) =>
+const memberName = (members, id, t) =>
   members.find(member => member.userId === id)?.displayName ||
   members.find(member => member.userId === id)?.username ||
-  `Member ${id}`
+  t('routines.member', { id })
 
-const TaskSummary = ({ item, members }) => (
-  <Stack spacing={0.35} sx={{ minWidth: 0 }}>
-    <Typography level='title-sm'>{item.name}</Typography>
-    <Typography level='body-xs'>
-      {recurrence(item)} ·{' '}
-      <Box component='span' className='daydan-metric'>
-        {item.points || 0} pts
-      </Box>
-      {item.requireApproval ? ' · Approval required' : ''}
-    </Typography>
-    <Typography level='body-xs'>
-      {(item.assigneeIds || []).length
-        ? item.assigneeIds.map(id => memberName(members, id)).join(', ')
-        : 'Any active Circle member'}
-      {item.requireAsset ? ' · Choose Asset when used' : ''}
-    </Typography>
-  </Stack>
-)
+const TaskSummary = ({ item, members }) => {
+  const { t } = useTranslation('chores')
+  return (
+    <Stack spacing={0.35} sx={{ minWidth: 0 }}>
+      <Typography level='title-sm'>{item.name}</Typography>
+      <Typography level='body-xs'>
+        {recurrence(item, t)} ·{' '}
+        <Box component='span' className='daydan-metric'>
+          {t('dashboard.ptsValue', { count: item.points || 0 })}
+        </Box>
+        {item.requireApproval ? ` · ${t('routines.approvalRequired')}` : ''}
+      </Typography>
+      <Typography level='body-xs'>
+        {(item.assigneeIds || []).length
+          ? item.assigneeIds.map(id => memberName(members, id, t)).join(', ')
+          : t('routines.anyActiveMember')}
+        {item.requireAsset
+          ? ` · ${t('routines.chooseAssetWhenUsedShort')}`
+          : ''}
+      </Typography>
+    </Stack>
+  )
+}
 
 const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
+  const { t } = useTranslation('chores')
   const [form, setForm] = useState({ name: '', description: '' })
   useEffect(() => {
     if (open)
@@ -119,10 +135,10 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
       <ModalDialog sx={{ width: 'min(520px, calc(100vw - 32px))' }}>
         <ModalClose />
         <Typography level='h3'>
-          {pack ? 'Edit Routine' : 'New Routine Pack'}
+          {pack ? t('routines.editRoutine') : t('routines.newPack')}
         </Typography>
         <FormControl required>
-          <FormLabel>Name</FormLabel>
+          <FormLabel>{t('routines.name')}</FormLabel>
           <Input
             autoFocus
             value={form.name}
@@ -130,7 +146,7 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
           />
         </FormControl>
         <FormControl>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>{t('routines.description')}</FormLabel>
           <Textarea
             minRows={3}
             value={form.description}
@@ -144,7 +160,7 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
           disabled={!form.name.trim()}
           onClick={() => onSave(form)}
         >
-          Save Routine
+          {t('routines.saveRoutine')}
         </Button>
       </ModalDialog>
     </Modal>
@@ -161,6 +177,7 @@ const TaskDialog = ({
   open,
 }) => {
   const [form, setForm] = useState(emptyTask)
+  const { t } = useTranslation('chores')
   useEffect(() => {
     if (!open) return
     setForm({
@@ -218,16 +235,18 @@ const TaskDialog = ({
         sx={{ width: 'min(720px, 100vw)', overflowY: 'auto' }}
       >
         <ModalClose />
-        <Typography level='h3'>{item ? 'Edit Task' : 'Add Task'}</Typography>
+        <Typography level='h3'>
+          {item ? t('routines.editTask') : t('routines.addTask')}
+        </Typography>
         <FormControl required>
-          <FormLabel>Task name</FormLabel>
+          <FormLabel>{t('routines.taskName')}</FormLabel>
           <Input
             value={form.name}
             onChange={event => setForm({ ...form, name: event.target.value })}
           />
         </FormControl>
         <FormControl>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>{t('routines.description')}</FormLabel>
           <Textarea
             minRows={2}
             value={form.description}
@@ -238,27 +257,31 @@ const TaskDialog = ({
         </FormControl>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
           <FormControl sx={{ flex: 1 }}>
-            <FormLabel>Repeat</FormLabel>
+            <FormLabel>{t('routines.repeat')}</FormLabel>
             <Select
               value={form.frequencyType}
               onChange={(_, value) =>
                 setForm({ ...form, frequencyType: value })
               }
             >
-              <Option value='once'>One-time</Option>
-              <Option value='daily'>Daily</Option>
-              <Option value='weekly'>Weekly</Option>
-              <Option value='monthly'>Monthly</Option>
-              <Option value='yearly'>Yearly</Option>
-              <Option value='interval'>Custom interval</Option>
-              <Option value='days_of_the_week'>Selected weekdays</Option>
-              <Option value='day_of_the_month'>Day of month</Option>
+              <Option value='once'>{t('routines.once')}</Option>
+              <Option value='daily'>{t('routines.daily')}</Option>
+              <Option value='weekly'>{t('routines.weekly')}</Option>
+              <Option value='monthly'>{t('routines.monthly')}</Option>
+              <Option value='yearly'>{t('routines.yearly')}</Option>
+              <Option value='interval'>{t('routines.customInterval')}</Option>
+              <Option value='days_of_the_week'>
+                {t('routines.selectedWeekdays')}
+              </Option>
+              <Option value='day_of_the_month'>
+                {t('routines.dayOfMonth')}
+              </Option>
             </Select>
           </FormControl>
           {form.frequencyType === 'interval' && (
             <>
               <FormControl sx={{ width: { sm: 120 } }}>
-                <FormLabel>Every</FormLabel>
+                <FormLabel>{t('routines.every')}</FormLabel>
                 <Input
                   type='number'
                   slotProps={{ input: { min: 1 } }}
@@ -269,7 +292,7 @@ const TaskDialog = ({
                 />
               </FormControl>
               <FormControl sx={{ width: { sm: 150 } }}>
-                <FormLabel>Unit</FormLabel>
+                <FormLabel>{t('routines.unit')}</FormLabel>
                 <Select
                   value={form.intervalUnit}
                   onChange={(_, value) =>
@@ -278,7 +301,7 @@ const TaskDialog = ({
                 >
                   {['hours', 'days', 'weeks', 'months', 'years'].map(unit => (
                     <Option key={unit} value={unit}>
-                      {unit}
+                      {t(`routines.units.${unit}`)}
                     </Option>
                   ))}
                 </Select>
@@ -288,12 +311,12 @@ const TaskDialog = ({
         </Stack>
         {form.frequencyType === 'days_of_the_week' && (
           <FormControl>
-            <FormLabel>Weekdays</FormLabel>
+            <FormLabel>{t('routines.weekdays')}</FormLabel>
             <Stack direction='row' flexWrap='wrap' gap={1}>
               {DAYS.map(day => (
                 <Checkbox
                   key={day}
-                  label={day.slice(0, 3)}
+                  label={t(`routines.days.${day}`)}
                   checked={form.weekdays.includes(day)}
                   onChange={event =>
                     setForm({
@@ -310,7 +333,7 @@ const TaskDialog = ({
         )}
         {form.frequencyType === 'day_of_the_month' && (
           <FormControl>
-            <FormLabel>Day of month</FormLabel>
+            <FormLabel>{t('routines.dayOfMonth')}</FormLabel>
             <Input
               type='number'
               slotProps={{ input: { min: 1, max: 31 } }}
@@ -322,21 +345,27 @@ const TaskDialog = ({
           </FormControl>
         )}
         <FormControl>
-          <FormLabel>Assignment behavior</FormLabel>
+          <FormLabel>{t('routines.assignmentBehavior')}</FormLabel>
           <Select
             value={form.assignStrategy}
             onChange={(_, value) => setForm({ ...form, assignStrategy: value })}
           >
-            <Option value='no_assignee'>Anyone</Option>
-            <Option value='random'>Random</Option>
-            <Option value='round_robin'>Rotating</Option>
-            <Option value='least_assigned'>Least assigned</Option>
-            <Option value='least_completed'>Least completed</Option>
-            <Option value='keep_last_assigned'>Keep last assigned</Option>
+            <Option value='no_assignee'>{t('routines.anyone')}</Option>
+            <Option value='random'>{t('routines.random')}</Option>
+            <Option value='round_robin'>{t('routines.rotating')}</Option>
+            <Option value='least_assigned'>
+              {t('routines.leastAssigned')}
+            </Option>
+            <Option value='least_completed'>
+              {t('routines.leastCompleted')}
+            </Option>
+            <Option value='keep_last_assigned'>
+              {t('routines.keepLastAssigned')}
+            </Option>
           </Select>
         </FormControl>
         <FormControl>
-          <FormLabel>Eligible Circle members</FormLabel>
+          <FormLabel>{t('routines.eligibleMembers')}</FormLabel>
           <Stack direction='row' flexWrap='wrap' gap={1}>
             {members.map(member => (
               <Checkbox
@@ -355,13 +384,12 @@ const TaskDialog = ({
             ))}
           </Stack>
           <Typography level='body-xs'>
-            Leave empty to include all active Circle members when the Routine is
-            used.
+            {t('routines.leaveEmptyHint')}
           </Typography>
         </FormControl>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
           <FormControl sx={{ flex: 1 }}>
-            <FormLabel>Points</FormLabel>
+            <FormLabel>{t('routines.points')}</FormLabel>
             <Input
               type='number'
               slotProps={{ input: { min: 0 } }}
@@ -373,7 +401,7 @@ const TaskDialog = ({
           </FormControl>
           <FormControl sx={{ justifyContent: 'end' }}>
             <Checkbox
-              label='Require approval'
+              label={t('routines.requireApproval')}
               checked={form.requireApproval}
               onChange={event =>
                 setForm({ ...form, requireApproval: event.target.checked })
@@ -383,7 +411,7 @@ const TaskDialog = ({
         </Stack>
         <Divider />
         <FormControl>
-          <FormLabel>Asset binding</FormLabel>
+          <FormLabel>{t('routines.assetBinding')}</FormLabel>
           <Select
             value={form.assetMode}
             onChange={(_, value) =>
@@ -395,14 +423,16 @@ const TaskDialog = ({
               })
             }
           >
-            <Option value='none'>No Asset</Option>
-            <Option value='fixed'>Use an existing Asset</Option>
-            <Option value='required'>Choose an Asset when used</Option>
+            <Option value='none'>{t('routines.noAsset')}</Option>
+            <Option value='fixed'>{t('routines.useExistingAsset')}</Option>
+            <Option value='required'>
+              {t('routines.chooseAssetWhenUsed')}
+            </Option>
           </Select>
         </FormControl>
         {form.assetMode === 'fixed' && (
           <FormControl required>
-            <FormLabel>Asset</FormLabel>
+            <FormLabel>{t('routines.asset')}</FormLabel>
             <Select
               value={form.assetId}
               onChange={(_, value) =>
@@ -420,12 +450,12 @@ const TaskDialog = ({
         {form.assetMode === 'fixed' && matchingMeters.length > 0 && (
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
             <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Meter schedule (optional)</FormLabel>
+              <FormLabel>{t('routines.meterSchedule')}</FormLabel>
               <Select
                 value={form.meterId}
                 onChange={(_, value) => setForm({ ...form, meterId: value })}
               >
-                <Option value={null}>None</Option>
+                <Option value={null}>{t('routines.none')}</Option>
                 {matchingMeters.map(meter => (
                   <Option key={meter.id} value={meter.id}>
                     {meter.name}
@@ -435,7 +465,7 @@ const TaskDialog = ({
             </FormControl>
             {form.meterId && (
               <FormControl sx={{ width: { sm: 180 } }} required>
-                <FormLabel>Every meter units</FormLabel>
+                <FormLabel>{t('routines.everyMeterUnits')}</FormLabel>
                 <Input
                   type='number'
                   slotProps={{ input: { min: 1 } }}
@@ -458,7 +488,7 @@ const TaskDialog = ({
           }
           onClick={() => onSave(payload())}
         >
-          Save Task
+          {t('routines.saveTask')}
         </Button>
       </ModalDialog>
     </Modal>
@@ -474,6 +504,7 @@ const ApplyDialog = ({
   open,
   pack,
 }) => {
+  const { t } = useTranslation('chores')
   const today = useMemo(() => new Date().toLocaleDateString('en-CA'), [open])
   const [startDate, setStartDate] = useState(today)
   const [selections, setSelections] = useState({})
@@ -491,13 +522,14 @@ const ApplyDialog = ({
         sx={{ width: 'min(620px, calc(100vw - 24px))', maxHeight: '90vh' }}
       >
         <ModalClose />
-        <Typography level='h3'>Use “{pack?.name}”?</Typography>
+        <Typography level='h3'>
+          {t('routines.usePackTitle', { name: pack?.name })}
+        </Typography>
         <Typography level='body-sm'>
-          {pack?.items?.length || 0} independent Tasks will be created. Editing
-          this Routine later will not change them.
+          {t('routines.applyInfo', { count: pack?.items?.length || 0 })}
         </Typography>
         <FormControl required>
-          <FormLabel>Start / Apply Date</FormLabel>
+          <FormLabel>{t('routines.startApplyDate')}</FormLabel>
           <Input
             type='date'
             value={startDate}
@@ -513,7 +545,9 @@ const ApplyDialog = ({
                   <TaskSummary item={item} members={members} />
                   {item.requireAsset && (
                     <FormControl required sx={{ mt: 1 }}>
-                      <FormLabel>Asset for {item.name}</FormLabel>
+                      <FormLabel>
+                        {t('routines.assetFor', { name: item.name })}
+                      </FormLabel>
                       <Select
                         value={selections[item.id] || null}
                         onChange={(_, value) =>
@@ -535,14 +569,14 @@ const ApplyDialog = ({
         </Stack>
         <Stack direction='row' justifyContent='flex-end' spacing={1}>
           <Button variant='plain' color='neutral' onClick={onClose}>
-            Cancel
+            {t('routines.cancel')}
           </Button>
           <Button
             loading={busy}
             disabled={!ready || !pack?.items?.length}
             onClick={() => onApply(startDate, selections)}
           >
-            Create {pack?.items?.length || 0} Tasks
+            {t('routines.createTasks', { count: pack?.items?.length || 0 })}
           </Button>
         </Stack>
       </ModalDialog>
@@ -551,6 +585,7 @@ const ApplyDialog = ({
 }
 
 const RoutinesView = () => {
+  const { t } = useTranslation('chores')
   const [includeArchived, setIncludeArchived] = useState(false)
   const { data, error, isLoading } = useRoutines(includeArchived)
   const mutation = useRoutineMutation()
@@ -597,7 +632,7 @@ const RoutinesView = () => {
     if (result) {
       setPackEditor(null)
       setSelected(result.res)
-      showSuccess('Routine saved')
+      showSuccess(t('routines.routineSaved'))
     }
   }
   const saveTask = async form => {
@@ -615,7 +650,7 @@ const RoutinesView = () => {
         : [...(selected.items || []), result.res]
       setSelected({ ...selected, items })
       setTaskEditor(null)
-      showSuccess('Routine task saved')
+      showSuccess(t('routines.routineTaskSaved'))
     }
   }
   const removeTask = async item => {
@@ -650,7 +685,11 @@ const RoutinesView = () => {
     })
     if (result) {
       setSelected(result.res)
-      showSuccess(pack.isActive ? 'Routine archived' : 'Routine reactivated')
+      showSuccess(
+        pack.isActive
+          ? t('routines.routineArchived')
+          : t('routines.routineReactivated'),
+      )
     }
   }
   const apply = async (startDate, assetSelections) => {
@@ -665,7 +704,11 @@ const RoutinesView = () => {
     })
     if (result) {
       setApplying(false)
-      showSuccess(`${result.res.choreIds.length} Tasks created`)
+      showSuccess(
+        t('routines.tasksCreated', {
+          count: result.res.choreIds.length,
+        }),
+      )
     }
   }
 
@@ -673,16 +716,16 @@ const RoutinesView = () => {
     <Container maxWidth='lg' sx={listPageContainerSx}>
       <Stack spacing={pageStackSpacing}>
         <PageHeader
-          title='Routines'
-          subtitle='Save repeatable sets of Tasks and use them whenever you need them.'
+          title={t('routines.title')}
+          subtitle={t('routines.subtitle')}
           action={
             <Button startDecorator={<Add />} onClick={() => setPackEditor({})}>
-              New Routine
+              {t('routines.newRoutine')}
             </Button>
           }
         />
         <Checkbox
-          label='Show archived Routines'
+          label={t('routines.showArchived')}
           checked={includeArchived}
           onChange={event => setIncludeArchived(event.target.checked)}
         />
@@ -694,8 +737,8 @@ const RoutinesView = () => {
         )}
         {!isLoading && packs.length === 0 && (
           <EmptyState
-            title='No Routines yet'
-            description='Create a Routine Pack for chores you repeat together.'
+            title={t('routines.noRoutinesTitle')}
+            description={t('routines.noRoutinesDescription')}
           />
         )}
         <Stack spacing={1.5}>
@@ -709,18 +752,22 @@ const RoutinesView = () => {
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Stack direction='row' spacing={1} alignItems='center'>
                     <Typography level='title-lg'>{pack.name}</Typography>
-                    {!pack.isActive && <Chip color='neutral'>Archived</Chip>}
+                    {!pack.isActive && (
+                      <Chip color='neutral'>{t('routines.archived')}</Chip>
+                    )}
                   </Stack>
                   {pack.description && (
                     <Typography level='body-sm'>{pack.description}</Typography>
                   )}
                   <Typography level='body-xs'>
-                    {pack.items?.length || 0} Tasks
+                    {t('routines.countTasks', {
+                      count: pack.items?.length || 0,
+                    })}
                   </Typography>
                 </Box>
                 <Stack direction='row' spacing={1} flexWrap='wrap'>
                   <Button variant='soft' onClick={() => setSelected(pack)}>
-                    Open
+                    {t('routines.open')}
                   </Button>
                   {pack.isActive && (
                     <Button
@@ -730,7 +777,7 @@ const RoutinesView = () => {
                         setApplying(true)
                       }}
                     >
-                      Use Routine
+                      {t('routines.useRoutine')}
                     </Button>
                   )}
                 </Stack>
@@ -753,7 +800,7 @@ const RoutinesView = () => {
             <Box>
               <Stack direction='row' spacing={1} alignItems='center'>
                 <Typography level='h2'>{selected?.name}</Typography>
-                {!selected?.isActive && <Chip>Archived</Chip>}
+                {!selected?.isActive && <Chip>{t('routines.archived')}</Chip>}
               </Stack>
               <Typography level='body-sm'>{selected?.description}</Typography>
             </Box>
@@ -763,7 +810,7 @@ const RoutinesView = () => {
                 variant='soft'
                 onClick={() => setPackEditor(selected)}
               >
-                Edit Routine
+                {t('routines.editRoutine')}
               </Button>
               <Button
                 startDecorator={selected?.isActive ? <Archive /> : <Restore />}
@@ -771,7 +818,9 @@ const RoutinesView = () => {
                 color='neutral'
                 onClick={() => setActive(selected)}
               >
-                {selected?.isActive ? 'Archive' : 'Reactivate'}
+                {selected?.isActive
+                  ? t('routines.archive')
+                  : t('routines.reactivate')}
               </Button>
               {selected?.isActive && (
                 <Button
@@ -779,19 +828,19 @@ const RoutinesView = () => {
                   onClick={() => setApplying(true)}
                   disabled={!selected?.items?.length}
                 >
-                  Use Routine
+                  {t('routines.useRoutine')}
                 </Button>
               )}
             </Stack>
             <Divider />
             <Stack direction='row' justifyContent='space-between'>
-              <Typography level='title-lg'>Tasks</Typography>
+              <Typography level='title-lg'>{t('routines.tasks')}</Typography>
               <Button
                 size='sm'
                 startDecorator={<Add />}
                 onClick={() => setTaskEditor({})}
               >
-                Add Task
+                {t('routines.addTask')}
               </Button>
             </Stack>
             {selected?.items?.map((item, index) => (
@@ -825,7 +874,7 @@ const RoutinesView = () => {
                       variant='plain'
                       onClick={() => removeTask(item)}
                     >
-                      Remove
+                      {t('routines.remove')}
                     </Button>
                   </Stack>
                 </Stack>

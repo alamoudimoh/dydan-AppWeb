@@ -1,11 +1,12 @@
+import '@meauxt/react-swipeable-list/dist/styles.css'
+
 import {
-  Type as ListType,
   SwipeableList,
   SwipeableListItem,
   SwipeAction,
   TrailingActions,
+  Type as ListType,
 } from '@meauxt/react-swipeable-list'
-import '@meauxt/react-swipeable-list/dist/styles.css'
 import {
   Check,
   Delete,
@@ -17,7 +18,9 @@ import {
   ThumbDown,
 } from '@mui/icons-material'
 import { Box, Typography } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import { useLongPress } from '../../hooks/useLongPress'
 import ChoreCard from './ChoreCard'
 import CompactChoreCard from './CompactChoreCard'
@@ -27,16 +30,16 @@ import CompactChoreCard from './CompactChoreCard'
  * can't live in the render loop because it needs a hook.
  */
 const ChoreSwipeableItem = ({
-  trailingActions,
+  children,
+  longPressEnabled,
   onClick,
   onLongPress,
-  longPressEnabled,
-  children,
+  trailingActions,
   // SwipeableList clones its children to inject list-level config
   // (listType, fullSwipe, thresholds…), so it has to be passed through.
   ...listProps
 }) => {
-  const { handlers: longPressHandlers, cancel: cancelLongPress } = useLongPress(
+  const { cancel: cancelLongPress, handlers: longPressHandlers } = useLongPress(
     onLongPress,
     { enabled: longPressEnabled },
   )
@@ -74,21 +77,22 @@ const ChoreSwipeableItem = ({
 
 const ChoreListView = ({
   chores,
-  viewMode,
-  membersData,
-  userLabels,
-  handleLabelFiltering,
   handleChoreAction,
+  handleLabelFiltering,
   isMultiSelectMode,
-  selectedChores,
-  toggleChoreSelection,
-  userProfile,
   isOfficialInstance,
-  toggleMultiSelectMode,
+  membersData,
   onLongPressChore,
+  selectedChores,
   showActions = true,
+  toggleChoreSelection,
+  toggleMultiSelectMode,
+  userLabels,
+  userProfile,
+  viewMode,
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation('chores')
   const renderChoreCard = (chore, key) => {
     const CardComponent = viewMode === 'compact' ? CompactChoreCard : ChoreCard
     return (
@@ -148,7 +152,7 @@ const ChoreListView = ({
                 >
                   <ThumbDown sx={{ fontSize: 20 }} />
                   <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                    Reject
+                    {t('swipe.reject')}
                   </Typography>
                 </Box>
               </SwipeAction>
@@ -169,7 +173,7 @@ const ChoreListView = ({
                 >
                   <HourglassEmpty sx={{ fontSize: 20 }} />
                   <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                    Pending
+                    {t('swipe.pending')}
                   </Typography>
                 </Box>
               </SwipeAction>
@@ -202,7 +206,7 @@ const ChoreListView = ({
                   <Check sx={{ fontSize: 20 }} />
                 )}
                 <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                  {chore.status !== 1 ? 'Start' : 'Complete'}
+                  {chore.status !== 1 ? t('swipe.start') : t('swipe.complete')}
                 </Typography>
               </Box>
             </SwipeAction>
@@ -225,7 +229,7 @@ const ChoreListView = ({
             >
               <Schedule sx={{ fontSize: 20 }} />
               <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                Schedule
+                {t('swipe.schedule')}
               </Typography>
             </Box>
           </SwipeAction>
@@ -245,7 +249,7 @@ const ChoreListView = ({
             >
               <Edit sx={{ fontSize: 20 }} />
               <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                Edit
+                {t('swipe.edit')}
               </Typography>
             </Box>
           </SwipeAction>
@@ -266,7 +270,7 @@ const ChoreListView = ({
               >
                 <Notifications sx={{ fontSize: 20 }} />
                 <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                  Nudge
+                  {t('swipe.nudge')}
                 </Typography>
               </Box>
             </SwipeAction>
@@ -287,7 +291,7 @@ const ChoreListView = ({
             >
               <Delete sx={{ fontSize: 20 }} />
               <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                Delete
+                {t('swipe.delete')}
               </Typography>
             </Box>
           </SwipeAction>

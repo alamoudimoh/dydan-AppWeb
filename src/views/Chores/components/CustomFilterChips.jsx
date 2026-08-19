@@ -17,18 +17,21 @@ import {
   Typography,
 } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import { getTextColorFromBackgroundColor } from '../../../utils/Colors'
 
 const CustomFilterChips = ({
-  filters = [],
   activeFilterId,
+  filters = [],
   onFilterClick,
   onFilterDelete,
-  onFilterPin,
   onFilterEdit,
+  onFilterPin,
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation('chores')
   const [menuAnchor, setMenuAnchor] = useState(null)
   const [selectedFilter, setSelectedFilter] = useState(null)
 
@@ -96,22 +99,25 @@ const CustomFilterChips = ({
           const badgeTextColor = filter.color
             ? getTextColorFromBackgroundColor(filter.color)
             : '#ffffff'
-          const displayCount =
-            filter.count > 99 ? '99+' : (filter.count ?? 0)
+          const displayCount = filter.count > 99 ? '99+' : (filter.count ?? 0)
 
           return (
             <Tooltip
               key={filter.id}
               title={
                 hasWarning
-                  ? `Filter has issues: ${filter.validationIssues?.join(', ')}`
-                  : `${filter.description ? filter.description + ' - ' : ''}${filter.count} tasks${filter.overdueCount > 0 ? ` (${filter.overdueCount} overdue)` : ''}`
+                  ? t('filters.filterHasIssues', {
+                      issues: filter.validationIssues?.join(', '),
+                    })
+                  : `${filter.description ? filter.description + ' - ' : ''}${t('filters.filterTasksCount', { count: filter.count ?? 0 })}${filter.overdueCount > 0 ? ` (${t('filters.filterOverdueCount', { count: filter.overdueCount })})` : ''}`
               }
               placement='bottom'
             >
               <Chip
                 variant={isActive ? 'solid' : 'outlined'}
-                color={hasWarning ? 'warning' : isActive ? 'primary' : 'neutral'}
+                color={
+                  hasWarning ? 'warning' : isActive ? 'primary' : 'neutral'
+                }
                 size='md'
                 onClick={() => !hasWarning && onFilterClick(filter.id)}
                 sx={{
@@ -122,7 +128,9 @@ const CustomFilterChips = ({
                   flexShrink: 0,
                   fontWeight: isActive ? 600 : 500,
                   '&:hover': {
-                    backgroundColor: isActive ? undefined : 'neutral.softHoverBg',
+                    backgroundColor: isActive
+                      ? undefined
+                      : 'neutral.softHoverBg',
                   },
                 }}
                 startDecorator={
@@ -237,24 +245,24 @@ const CustomFilterChips = ({
               {selectedFilter.isPinned ? (
                 <>
                   <StarBorder sx={{ mr: 1 }} />
-                  Unpin filter
+                  {t('filters.unpinFilter')}
                 </>
               ) : (
                 <>
                   <Star sx={{ mr: 1 }} />
-                  Pin filter
+                  {t('filters.pinFilter')}
                 </>
               )}
             </MenuItem>
             {onFilterEdit && (
               <MenuItem onClick={handleEdit}>
                 <Edit sx={{ mr: 1 }} />
-                Edit filter
+                {t('filters.editFilter')}
               </MenuItem>
             )}
             <MenuItem onClick={handleDelete} color='danger'>
               <Delete sx={{ mr: 1 }} />
-              Delete filter
+              {t('filters.deleteFilter')}
             </MenuItem>
           </>
         )}

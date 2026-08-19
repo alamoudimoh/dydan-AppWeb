@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 
 import { authButtonSx, authInputSx } from './authStyles'
@@ -134,22 +135,30 @@ export const AuthDivider = ({ children = 'or' }) => (
   </Box>
 )
 
-export const LegalLinks = () => (
-  <Typography
-    level='body-xs'
-    sx={{ textAlign: 'center', color: 'text.secondary' }}
-  >
-    <Link
-      component={RouterLink}
-      to='/privacy'
-      color='neutral'
-      underline='hover'
+export const LegalLinks = () => {
+  const { t } = useTranslation('common')
+  return (
+    <Typography
+      level='body-xs'
+      sx={{ textAlign: 'center', color: 'text.secondary' }}
     >
-      Privacy Policy
-    </Link>
-    {' · '}
-    <Link component={RouterLink} to='/terms' color='neutral' underline='hover'>
-      Terms of Use
-    </Link>
-  </Typography>
-)
+      <Link
+        component={RouterLink}
+        to='/privacy'
+        color='neutral'
+        underline='hover'
+      >
+        {t('auth.privacyPolicy')}
+      </Link>
+      {' · '}
+      <Link
+        component={RouterLink}
+        to='/terms'
+        color='neutral'
+        underline='hover'
+      >
+        {t('auth.termsOfUse')}
+      </Link>
+    </Typography>
+  )
+}

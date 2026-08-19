@@ -1,9 +1,11 @@
 import { Capacitor } from '@capacitor/core'
-import DateModal from '../../Modals/Inputs/DateModal'
+import { useTranslation } from 'react-i18next'
+
 import DueDatePickerModal, {
   combineDueDate,
   splitDueDate,
 } from '../../components/DueDatePickerModal'
+import DateModal from '../../Modals/Inputs/DateModal'
 import NudgeModal from '../../Modals/Inputs/NudgeModal'
 import SelectModal from '../../Modals/Inputs/SelectModal'
 import TextModal from '../../Modals/Inputs/TextModal'
@@ -16,22 +18,23 @@ const getNFCUrl = choreId =>
 
 const ChoreModals = ({
   activeModal,
-  modalChore,
   membersData,
-  onChangeDueDate,
-  onCompleteWithPastDate,
+  modalChore,
   onAssigneeChange,
-  onCompleteWithNote,
-  onNudge,
+  onChangeDueDate,
   onClose,
+  onCompleteWithNote,
+  onCompleteWithPastDate,
+  onNudge,
 }) => {
+  const { t } = useTranslation('chores')
   return (
     <>
       {activeModal === 'changeDueDate' && modalChore && (
         <DueDatePickerModal
           open={true}
           key={'changeDueDate' + modalChore.id}
-          title='Change due date'
+          title={t('modals.changeDueDate')}
           {...splitDueDate(modalChore.nextDueDate)}
           onClose={onClose}
           onApply={parts =>
@@ -46,7 +49,7 @@ const ChoreModals = ({
           isOpen={true}
           key={'completedInPast' + modalChore.id}
           current={modalChore.nextDueDate}
-          title='Save Chore that you completed in the past'
+          title={t('modals.completeInPast')}
           onClose={onClose}
           onSave={onCompleteWithPastDate}
         />
@@ -57,8 +60,8 @@ const ChoreModals = ({
           isOpen={true}
           options={membersData?.res || []}
           displayKey='displayName'
-          title='Delegate to someone else'
-          placeholder='Select a performer'
+          title={t('modals.delegateToSomeone')}
+          placeholder={t('modals.selectPerformer')}
           onClose={onClose}
           onSave={selected => onAssigneeChange(selected.id)}
         />
@@ -67,9 +70,9 @@ const ChoreModals = ({
       {activeModal === 'completeWithNote' && modalChore && (
         <TextModal
           isOpen={true}
-          title='Add note to attach to this completion:'
+          title={t('modals.completeWithNote')}
           onClose={onClose}
-          okText='Complete'
+          okText={t('modals.complete')}
           onSave={onCompleteWithNote}
         />
       )}

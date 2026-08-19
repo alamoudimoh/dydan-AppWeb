@@ -23,6 +23,7 @@ import {
 import { useMediaQuery } from '@mui/material'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import EmptyState from '../../components/common/EmptyState'
@@ -78,6 +79,28 @@ const MyChores = () => {
     useUserProfile()
   const isLargeScreen = useMediaQuery(theme => theme.breakpoints.up('md'))
   const { showError, showSuccess, showUndo, showWarning } = useNotification()
+  const { t } = useTranslation('chores')
+
+  const sectionName = name => {
+    const map = {
+      Started: t('list.groupStarted'),
+      'Pending Approval': t('list.groupPendingApproval'),
+      Overdue: t('list.groupOverdue'),
+      Today: t('list.groupToday'),
+      Tomorrow: t('list.groupTomorrow'),
+      'Next 7 Days': t('list.groupNext7Days'),
+      'Later This Month': t('list.groupLaterThisMonth'),
+      Future: t('list.groupFuture'),
+      Anytime: t('list.groupAnytime'),
+      'No Priority': t('list.groupNoPriority'),
+    }
+    if (map[name]) return map[name]
+    const priorityMatch = String(name).match(/^Priority (\d)$/)
+    if (priorityMatch) {
+      return t('list.groupPriority', { value: priorityMatch[1] })
+    }
+    return name
+  }
   const queryClient = useQueryClient()
   const { impersonatedUser } = useImpersonateUser()
   const Navigate = useNavigate()
@@ -191,16 +214,16 @@ const MyChores = () => {
     () => [
       {
         id: 'status',
-        label: 'Due Date',
+        label: t('list.dueDate'),
         type: 'single-select',
         icon: <CalendarMonth />,
         options: [
-          { value: 'Overdue', label: 'Overdue', color: 'danger' },
-          { value: 'Due today', label: 'Due Today', color: 'warning' },
-          { value: 'Due in week', label: 'Due This Week' },
-          { value: 'Due Later', label: 'Due Later' },
-          { value: 'No Due Date', label: 'No Due Date' },
-          { value: 'Pending Approval', label: 'Pending Approval' },
+          { value: 'Overdue', label: t('list.overdue'), color: 'danger' },
+          { value: 'Due today', label: t('list.dueToday'), color: 'warning' },
+          { value: 'Due in week', label: t('list.dueThisWeek') },
+          { value: 'Due Later', label: t('list.dueLater') },
+          { value: 'No Due Date', label: t('list.noDueDate') },
+          { value: 'Pending Approval', label: t('list.pendingApproval') },
         ],
         filterFn: (item, value) => {
           const now = new Date()
@@ -231,7 +254,7 @@ const MyChores = () => {
       },
       {
         id: 'priority',
-        label: 'Priority',
+        label: t('priority'),
         type: 'multi-select',
         icon: <PriorityHigh />,
         options: Priorities.map(p => ({
@@ -246,7 +269,7 @@ const MyChores = () => {
         ? [
             {
               id: 'label',
-              label: 'Labels',
+              label: t('list.labels'),
               type: 'multi-select',
               icon: <Style />,
               options: userLabels.map(l => ({
@@ -916,13 +939,12 @@ const MyChores = () => {
           variant='error'
           fullHeight
           icon={<CloudOff />}
-          title={"Can't reach DayDan"}
+          title={t('list.cantReachDayDan')}
           description={
-            choresErrorDetails?.message ||
-            'Your tasks are safe. We just could not load them right now, check your connection and try again.'
+            choresErrorDetails?.message || t('list.loadErrorDescription')
           }
           primaryAction={{
-            label: 'Try again',
+            label: t('list.tryAgain'),
             onClick: () => {
               refetchChores()
               queryClient.invalidateQueries(['circleMembers'])
@@ -975,8 +997,8 @@ const MyChores = () => {
           updateFilter={updateFilter}
           onFilterSaved={name =>
             showSuccess({
-              title: 'Filter Saved',
-              message: `"${name}" has been saved`,
+              title: t('list.filterSaved'),
+              message: t('list.filterSavedMessage', { name }),
             })
           }
           onClearAllFilters={() => {
@@ -1096,15 +1118,15 @@ const MyChores = () => {
               variant='empty'
               fullHeight
               icon={<EditCalendar />}
-              title='No tasks yet'
-              description='Create your first task and DayDan keeps track of when it is due, whose turn it is, and what comes next.'
+              title={t('list.noTasksYet')}
+              description={t('list.noTasksYetDescription')}
               primaryAction={{
-                label: 'Create a task',
+                label: t('list.createTask'),
                 startDecorator: <Add />,
                 onClick: () => setAddTaskModalOpen(true),
               }}
               secondaryAction={{
-                label: 'More options',
+                label: t('list.moreOptions'),
                 onClick: () => Navigate('/chores/create'),
               }}
             />
@@ -1113,15 +1135,17 @@ const MyChores = () => {
               variant='no-results'
               fullHeight
               icon={<SearchOff />}
-              title='No tasks match this view'
+              title={t('list.noTasksMatchView')}
               description={
                 searchTerm?.length > 0
-                  ? `Nothing matches "${searchTerm}". Try a different search, or clear what is narrowing the list.`
-                  : 'You have tasks, but none of them fit the filters that are currently on.'
+                  ? t('list.nothingMatchesTerm', { term: searchTerm })
+                  : t('list.noTasksFitFilters')
               }
               primaryAction={{
                 label:
-                  searchTerm?.length > 0 ? 'Clear search' : 'Clear filters',
+                  searchTerm?.length > 0
+                    ? t('list.clearSearch')
+                    : t('list.clearFilters'),
                 onClick: clearNarrowing,
               }}
             />
@@ -1130,15 +1154,17 @@ const MyChores = () => {
               variant='empty'
               fullHeight
               icon={<EditCalendar />}
-              title={`Nothing in ${selectedProject.name} yet`}
-              description='Tasks you add to this project show up here. Your other tasks are still where you left them.'
+              title={t('list.nothingInProject', {
+                name: selectedProject.name,
+              })}
+              description={t('list.projectEmptyDescription')}
               primaryAction={{
-                label: 'Add a task here',
+                label: t('list.addTaskHere'),
                 startDecorator: <Add />,
                 onClick: () => setAddTaskModalOpen(true),
               }}
               secondaryAction={{
-                label: 'See tasks outside projects',
+                label: t('list.seeTasksOutsideProjects'),
                 onClick: () => setSelectedProjectWithCache(null),
               }}
             />
@@ -1147,10 +1173,10 @@ const MyChores = () => {
               variant='empty'
               fullHeight
               icon={<EditCalendar />}
-              title='No tasks here yet'
-              description='Tasks that do not belong to a project live here. Add one, or switch projects to see what is in them.'
+              title={t('list.noTasksHere')}
+              description={t('list.noProjectDescription')}
               primaryAction={{
-                label: 'Create a task',
+                label: t('list.createTask'),
                 startDecorator: <Add />,
                 onClick: () => setAddTaskModalOpen(true),
               }}
@@ -1312,7 +1338,9 @@ const MyChores = () => {
             {selectedCalendarDate && (
               <Box sx={{ mt: 2 }}>
                 <Typography level='title-md' gutterBottom>
-                  Tasks for {selectedCalendarDate.toLocaleDateString()}
+                  {t('list.tasksForDate', {
+                    date: selectedCalendarDate.toLocaleDateString(),
+                  })}
                 </Typography>
                 <Box
                   sx={{
@@ -1327,10 +1355,10 @@ const MyChores = () => {
                     <EmptyState
                       size='sm'
                       icon={<EditCalendar />}
-                      title='Nothing scheduled'
-                      description='This day is free. Add a task if you want something to land here.'
+                      title={t('list.nothingScheduled')}
+                      description={t('list.dayFreeDescription')}
                       primaryAction={{
-                        label: 'Add task',
+                        label: t('list.addTask'),
                         startDecorator: <Add />,
                         onClick: () => setAddTaskModalOpen(true),
                       }}
@@ -1404,7 +1432,7 @@ const MyChores = () => {
                         </>
                       }
                     >
-                      {section.name}
+                      {sectionName(section.name)}
                     </Chip>
                   </Divider>
                   <AccordionDetails
@@ -1469,7 +1497,7 @@ const MyChores = () => {
             onClick={() => {
               Navigate(`/chores/create`)
             }}
-            title='Create new chore (Cmd+C)'
+            title={t('list.createNewChore')}
           >
             <Add />
             <KeyboardShortcutHint
@@ -1578,15 +1606,19 @@ const MyChores = () => {
               operator: filter.operator,
             })
             showSuccess({
-              title: 'Filter Updated',
-              message: `"${filter.name}" has been updated successfully`,
+              title: t('list.filterUpdated'),
+              message: t('list.filterUpdatedMessage', {
+                name: filter.name,
+              }),
             })
           } else {
             // Create new filter
             saveFilter(filter)
             showSuccess({
-              title: 'Advanced Filter Created',
-              message: `"${filter.name}" has been created successfully`,
+              title: t('list.filterCreated'),
+              message: t('list.filterCreatedMessage', {
+                name: filter.name,
+              }),
             })
           }
           setShowAdvancedFilterBuilder(false)

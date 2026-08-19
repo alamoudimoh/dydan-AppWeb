@@ -9,16 +9,18 @@ import {
   TaskAlt,
 } from '@mui/icons-material'
 import { Avatar, Box, Chip, Divider, Input, Typography } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
+
 import Priorities from '../../../utils/Priorities'
 
 export const DUE_DATE_OPTIONS = [
-  { value: 'isOverdue', label: 'Overdue', color: 'danger' },
-  { value: 'isDueToday', label: 'Today', color: 'warning' },
-  { value: 'isDueTomorrow', label: 'Tomorrow', color: 'primary' },
-  { value: 'isDueThisWeek', label: 'This Week', color: 'primary' },
-  { value: 'isDueThisMonth', label: 'This Month', color: 'neutral' },
-  { value: 'hasNoDueDate', label: 'No Due Date', color: 'neutral' },
-  { value: 'hasDueDate', label: 'Has Due Date', color: 'neutral' },
+  { value: 'isOverdue', labelKey: 'overdue', color: 'danger' },
+  { value: 'isDueToday', labelKey: 'today', color: 'warning' },
+  { value: 'isDueTomorrow', labelKey: 'tomorrow', color: 'primary' },
+  { value: 'isDueThisWeek', labelKey: 'thisWeek', color: 'primary' },
+  { value: 'isDueThisMonth', labelKey: 'thisMonth', color: 'neutral' },
+  { value: 'hasNoDueDate', labelKey: 'noDueDate', color: 'neutral' },
+  { value: 'hasDueDate', labelKey: 'hasDueDate', color: 'neutral' },
 ]
 
 export const POINTS_OPERATORS = [
@@ -30,10 +32,10 @@ export const POINTS_OPERATORS = [
 ]
 
 export const CHORE_STATUSES = [
-  { value: 0, label: 'Active' },
-  { value: 1, label: 'Started' },
-  { value: 2, label: 'In Progress' },
-  { value: 3, label: 'Pending Approval' },
+  { value: 0, labelKey: 'active' },
+  { value: 1, labelKey: 'started' },
+  { value: 2, labelKey: 'inProgress' },
+  { value: 3, labelKey: 'pendingApproval' },
 ]
 
 export const defaultSelections = () => ({
@@ -99,7 +101,7 @@ export const selectionsToConditions = selections => {
   return conditions
 }
 
-const SectionHeader = ({ icon, label, children }) => (
+const SectionHeader = ({ children, icon, label }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
     <Box
       sx={{
@@ -118,31 +120,39 @@ const SectionHeader = ({ icon, label, children }) => (
   </Box>
 )
 
-const IncludeExcludeToggle = ({
-  value,
-  onChange,
-  labels = ['Include', 'Exclude'],
-}) => (
-  <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
-    {[
-      { op: 'is', label: labels[0] },
-      { op: 'isNot', label: labels[1] },
-    ].map(o => (
-      <Chip
-        key={o.op}
-        size='sm'
-        variant={value === o.op ? 'solid' : 'soft'}
-        color={
-          value === o.op ? (o.op === 'isNot' ? 'danger' : 'primary') : 'neutral'
-        }
-        onClick={() => onChange(o.op)}
-        sx={{ cursor: 'pointer', userSelect: 'none', transition: 'all 0.15s ease' }}
-      >
-        {o.label}
-      </Chip>
-    ))}
-  </Box>
-)
+const IncludeExcludeToggle = ({ labels, onChange, value }) => {
+  const { t } = useTranslation('chores')
+  const resolvedLabels = labels || [t('filters.include'), t('filters.exclude')]
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
+      {[
+        { op: 'is', label: resolvedLabels[0] },
+        { op: 'isNot', label: resolvedLabels[1] },
+      ].map(o => (
+        <Chip
+          key={o.op}
+          size='sm'
+          variant={value === o.op ? 'solid' : 'soft'}
+          color={
+            value === o.op
+              ? o.op === 'isNot'
+                ? 'danger'
+                : 'primary'
+              : 'neutral'
+          }
+          onClick={() => onChange(o.op)}
+          sx={{
+            cursor: 'pointer',
+            userSelect: 'none',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          {o.label}
+        </Chip>
+      ))}
+    </Box>
+  )
+}
 
 /**
  * Reusable filter conditions UI used by both the filter sheet in ChoreToolbar
@@ -152,12 +162,15 @@ const IncludeExcludeToggle = ({
  * functional updater `prev => next` (same contract as React's setState setter).
  */
 const FilterBuilderContent = ({
-  selections,
-  onSelectionsChange,
-  members = [],
   labels = [],
+  members = [],
+  onSelectionsChange,
   projects = [],
+  selections,
 }) => {
+  const { t } = useTranslation('chores')
+  const resolveLabel = opt =>
+    opt.labelKey ? t(`filters.${opt.labelKey}`) : opt.label
   const toggleValue = (type, value) =>
     onSelectionsChange(prev => {
       const cur = prev[type].values || []
@@ -204,9 +217,11 @@ const FilterBuilderContent = ({
               variant={isSelected ? 'solid' : 'soft'}
               color={isSelected ? (extra.color ?? 'primary') : 'neutral'}
               startDecorator={
-                isSelected
-                  ? <Check sx={{ fontSize: 14 }} />
-                  : (extra.startDecorator ?? null)
+                isSelected ? (
+                  <Check sx={{ fontSize: 14 }} />
+                ) : (
+                  (extra.startDecorator ?? null)
+                )
               }
               onClick={() => toggleValue(type, opt.value)}
               sx={{
@@ -215,7 +230,7 @@ const FilterBuilderContent = ({
                 transition: 'all 0.15s ease',
               }}
             >
-              {opt.label}
+              {resolveLabel(opt)}
             </Chip>
           )
         })}
@@ -312,7 +327,7 @@ const FilterBuilderContent = ({
         Priorities.map(p => ({ value: p.value, label: p.name })),
         (opt, isSelected) => ({
           color: isSelected
-            ? (Priorities.find(p => p.value === opt.value)?.color || 'primary')
+            ? Priorities.find(p => p.value === opt.value)?.color || 'primary'
             : 'neutral',
           startDecorator: !isSelected
             ? Priorities.find(p => p.value === opt.value)?.icon
@@ -331,7 +346,9 @@ const FilterBuilderContent = ({
               key={opt.value}
               variant={isSelected ? 'solid' : 'soft'}
               color={isSelected ? (opt.color ?? 'primary') : 'neutral'}
-              startDecorator={isSelected ? <Check sx={{ fontSize: 14 }} /> : null}
+              startDecorator={
+                isSelected ? <Check sx={{ fontSize: 14 }} /> : null
+              }
               onClick={() => toggleDueDate(opt.value)}
               sx={{
                 cursor: 'pointer',
@@ -375,7 +392,9 @@ const FilterBuilderContent = ({
                       }}
                     />
                   }
-                  endDecorator={isSelected ? <Check sx={{ fontSize: 12 }} /> : null}
+                  endDecorator={
+                    isSelected ? <Check sx={{ fontSize: 12 }} /> : null
+                  }
                   onClick={() => toggleValue('label', lbl.id)}
                   sx={{
                     cursor: 'pointer',
@@ -425,12 +444,14 @@ const FilterBuilderContent = ({
             key={op.value}
             size='sm'
             variant={
-              selections.points.operator === op.value && selections.points.active
+              selections.points.operator === op.value &&
+              selections.points.active
                 ? 'solid'
                 : 'soft'
             }
             color={
-              selections.points.operator === op.value && selections.points.active
+              selections.points.operator === op.value &&
+              selections.points.active
                 ? 'primary'
                 : 'neutral'
             }
@@ -466,7 +487,7 @@ const FilterBuilderContent = ({
             }
             sx={{ cursor: 'pointer' }}
           >
-            Clear
+            {t('filters.clear')}
           </Chip>
         )}
       </Box>

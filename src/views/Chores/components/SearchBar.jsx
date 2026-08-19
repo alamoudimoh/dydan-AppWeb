@@ -1,5 +1,6 @@
 import { CancelRounded, SearchRounded } from '@mui/icons-material'
 import { Box, Input } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
 
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
 import { formatSearchPlaceholder } from '../../../config/AppBranding'
@@ -14,6 +15,7 @@ const SearchBar = ({
   value,
 }) => {
   const { openSearch } = useGlobalSearch()
+  const { t } = useTranslation('chores')
   const handleOpen = () => {
     onFocus?.()
     openSearch(value)
@@ -53,7 +55,7 @@ const SearchBar = ({
             <>
               <KeyboardShortcutHint shortcut='X' show={showKeyboardShortcuts} />
               <CancelRounded
-                aria-label='Clear task search'
+                aria-label={t('list.clearTaskSearch')}
                 onMouseDown={event => event.stopPropagation()}
                 onClick={event => {
                   event.stopPropagation()

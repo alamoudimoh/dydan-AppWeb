@@ -27,22 +27,22 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
+import SectionCard from '../../components/common/SectionCard'
 import { useChoresHistory, usePersonalChores } from '../../queries/ChoreQueries'
 import { useMyRewardRequests, useRewards } from '../../queries/RewardQueries'
 import { useUserProfile } from '../../queries/UserQueries'
-import { MarkChoreComplete } from '../../utils/Fetcher'
-import SectionCard from '../../components/common/SectionCard'
 import { pageStackSpacing, settingsPageSx } from '../../theme/appLayout'
-import {
-  dashboardBuckets,
-  groupUpcoming,
-  maintenanceLabel,
-} from './dashboardModel'
+import { MarkChoreComplete } from '../../utils/Fetcher'
 import { STORAGE_KEYS } from '../../utils/storageKeys'
 import {
   readMigratedLocalStorageItem,
   writeLocalStorageItem,
 } from '../../utils/storageMigration'
+import {
+  dashboardBuckets,
+  groupUpcoming,
+  maintenanceLabel,
+} from './dashboardModel'
 
 const preferenceKey = STORAGE_KEYS.dashboardUpcomingRange
 const readRange = () => {
@@ -63,6 +63,7 @@ Section.propTypes = {
 
 const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const specialized = Boolean(chore.meterUpdateReminder)
   const scheduleState = maintenanceLabel(chore.meterSchedule)
   const due = chore.nextDueDate
@@ -87,7 +88,9 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
           specialized ? navigate(`/chores/${chore.id}`) : onComplete(chore)
         }
         aria-label={
-          specialized ? `Open ${chore.name}` : `Complete ${chore.name}`
+          specialized
+            ? t('dashboard.openTask', { name: chore.name })
+            : t('dashboard.completeTask', { name: chore.name })
         }
         sx={{ minWidth: 44, minHeight: 44 }}
       >
@@ -112,7 +115,7 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
           )}
           {overdue && (
             <Typography level='body-sm' color='danger'>
-              Overdue
+              {t('dashboard.overdue')}
             </Typography>
           )}
           {due && (
@@ -131,17 +134,19 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
               {scheduleState}
             </Typography>
           )}
-          {chore.requireApproval && <Chip size='sm'>Approval required</Chip>}
+          {chore.requireApproval && (
+            <Chip size='sm'>{t('dashboard.approvalRequired')}</Chip>
+          )}
           {specialized && (
             <Chip size='sm' color='info'>
-              Meter reading required
+              {t('dashboard.meterReadingRequired')}
             </Chip>
           )}
         </Stack>
       </Box>
       {Number(chore.points) > 0 && (
         <Typography level='body-sm' className='daydan-metric'>
-          +{chore.points} pts
+          {t('dashboard.ptsPlus', { count: chore.points })}
         </Typography>
       )}
     </Stack>
@@ -227,7 +232,7 @@ export default function Dashboard() {
     setCompletionError('')
     try {
       const response = await MarkChoreComplete(chore.id, {})
-      if (!response.ok) throw new Error('The task could not be completed')
+      if (!response.ok) throw new Error(t('dashboard.taskCouldNotBeCompleted'))
       await Promise.all([
         client.invalidateQueries({ queryKey: ['chores'] }),
         client.invalidateQueries({ queryKey: ['choresHistory'] }),
@@ -258,8 +263,8 @@ export default function Dashboard() {
         <Box>
           <Typography level='h1'>
             {profile.data?.displayName
-              ? `Hello, ${profile.data.displayName}`
-              : 'Home'}
+              ? t('dashboard.hello', { name: profile.data.displayName })
+              : t('dashboard.home')}
           </Typography>
           <Typography color='neutral'>
             {new Intl.DateTimeFormat(locale, {
@@ -271,15 +276,20 @@ export default function Dashboard() {
           </Typography>
           {!chores.isLoading && !chores.isError && (
             <Typography level='title-md' sx={{ mt: 1 }}>
-              {buckets.today.length} task{buckets.today.length === 1 ? '' : 's'}{' '}
-              today
-              {attention.length ? ` · ${attention.length} need attention` : ''}
+              {t('dashboard.tasksToday', {
+                count: buckets.today.length,
+              })}
+              {attention.length
+                ? ` · ${t('dashboard.needAttention', {
+                    count: attention.length,
+                  })}`
+                : ''}
             </Typography>
           )}
         </Box>
 
         {chores.isLoading && (
-          <Stack aria-label='Loading Home'>
+          <Stack aria-label={t('dashboard.loadingHome')}>
             <Skeleton variant='rectangular' height={150} />
             <Skeleton variant='rectangular' height={220} />
           </Stack>
@@ -300,7 +310,7 @@ export default function Dashboard() {
         {completionError && <Alert color='danger'>{completionError}</Alert>}
 
         {!chores.isLoading && !chores.isError && attention.length > 0 && (
-          <Section title='Needs attention'>
+          <Section title={t('dashboard.needsAttention')}>
             <Stack
               divider={
                 <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }} />
@@ -316,10 +326,10 @@ export default function Dashboard() {
 
         {!chores.isLoading && !chores.isError && (
           <Section
-            title='Today'
+            title={t('dates.today')}
             action={
               <Typography level='body-sm'>
-                {buckets.today.length} remaining
+                {t('dashboard.remaining', { count: buckets.today.length })}
               </Typography>
             }
           >
@@ -344,12 +354,12 @@ export default function Dashboard() {
                 <Box>
                   <Typography level='title-md'>
                     {completedToday
-                      ? 'All done for today'
-                      : "You're clear for today"}
+                      ? t('dashboard.allDoneForToday')
+                      : t('dashboard.youreClearForToday')}
                   </Typography>
                   {completedToday > 0 && (
                     <Typography color='neutral'>
-                      {completedToday} completed
+                      {t('dashboard.completed', { count: completedToday })}
                     </Typography>
                   )}
                 </Box>
@@ -369,12 +379,12 @@ export default function Dashboard() {
           }}
         >
           <Section
-            title='Upcoming'
+            title={t('dashboard.upcoming')}
             action={
               <Select
                 size='sm'
                 value={range}
-                aria-label='Upcoming range'
+                aria-label={t('dashboard.upcomingRange')}
                 onChange={(_, value) => {
                   setRange(value)
                   writeLocalStorageItem(preferenceKey, String(value))
@@ -382,7 +392,7 @@ export default function Dashboard() {
               >
                 {[7, 14, 30].map(days => (
                   <Option value={days} key={days}>
-                    Next {days} days
+                    {t('dashboard.nextDays', { count: days })}
                   </Option>
                 ))}
               </Select>
@@ -399,28 +409,36 @@ export default function Dashboard() {
               ))
             ) : (
               <Typography color='neutral' sx={{ py: 2 }}>
-                Nothing scheduled in this range.
+                {t('dashboard.nothingScheduled')}
               </Typography>
             )}
           </Section>
-          <Section title='Progress'>
+          <Section title={t('dashboard.progress')}>
             <Stack spacing={1.5} sx={{ py: 2 }}>
               <Typography level='h2' className='daydan-metric'>
-                {completedToday} of {totalToday}
+                {t('dashboard.progressOf', {
+                  completed: completedToday,
+                  total: totalToday,
+                })}
               </Typography>
-              <Typography color='neutral'>tasks completed today</Typography>
+              <Typography color='neutral'>
+                {t('dashboard.tasksCompletedToday')}
+              </Typography>
               <LinearProgress
                 determinate
                 value={totalToday ? (completedToday / totalToday) * 100 : 100}
-                aria-label={`${completedToday} of ${totalToday} tasks completed today`}
+                aria-label={t('dashboard.tasksCompletedTodayAria', {
+                  completed: completedToday,
+                  total: totalToday,
+                })}
               />
               {!history.isLoading && (
                 <Typography level='body-sm'>
-                  {
-                    (history.data || []).filter(item => item.status === 1)
-                      .length
-                  }{' '}
-                  completed this week
+                  {t('dashboard.completedThisWeek', {
+                    count: (history.data || []).filter(
+                      item => item.status === 1,
+                    ).length,
+                  })}
                 </Typography>
               )}
             </Stack>
@@ -428,7 +446,7 @@ export default function Dashboard() {
         </Box>
 
         <Section
-          title='Rewards'
+          title={t('navigation.rewards')}
           action={
             <Button
               component={Link}
@@ -436,7 +454,7 @@ export default function Dashboard() {
               variant='plain'
               endDecorator={<ArrowForwardRounded />}
             >
-              View rewards
+              {t('dashboard.viewRewards')}
             </Button>
           }
         >
@@ -468,16 +486,24 @@ export default function Dashboard() {
               <Stack spacing={2} sx={{ mt: 2 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} gap={2}>
                   <Box>
-                    <Typography level='body-sm'>Spendable</Typography>
+                    <Typography level='body-sm'>
+                      {t('dashboard.spendable')}
+                    </Typography>
                     <Typography level='h2' className='daydan-metric'>
-                      {balance?.spendableBalance || 0} pts
+                      {t('dashboard.ptsValue', {
+                        count: balance?.spendableBalance || 0,
+                      })}
                     </Typography>
                   </Box>
                   {(balance?.pendingReserved || 0) > 0 && (
                     <Box>
-                      <Typography level='body-sm'>Pending reserved</Typography>
+                      <Typography level='body-sm'>
+                        {t('dashboard.pendingReserved')}
+                      </Typography>
                       <Typography level='title-lg' className='daydan-metric'>
-                        {balance.pendingReserved} pts
+                        {t('dashboard.ptsValue', {
+                          count: balance.pendingReserved,
+                        })}
                       </Typography>
                     </Box>
                   )}
@@ -488,19 +514,24 @@ export default function Dashboard() {
                     color='warning'
                     startDecorator={<CardGiftcardRounded />}
                   >
-                    <strong>{request.rewardName}</strong> · Pending approval ·{' '}
-                    {request.costPoints} pts reserved
+                    {t('dashboard.pendingRequest', {
+                      name: request.rewardName,
+                      count: request.costPoints,
+                    })}
                   </Alert>
                 ))}
                 {affordable.length > 0 && (
                   <Box>
                     <Typography level='title-md' sx={{ mb: 1 }}>
-                      You can redeem
+                      {t('dashboard.youCanRedeem')}
                     </Typography>
                     <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
                       {affordable.map(reward => (
                         <Chip key={reward.id} color='success' variant='soft'>
-                          {reward.name} · {reward.costPoints} pts
+                          {t('dashboard.rewardChip', {
+                            name: reward.name,
+                            count: reward.costPoints,
+                          })}
                         </Chip>
                       ))}
                     </Stack>

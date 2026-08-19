@@ -10,9 +10,11 @@ import {
   Typography,
 } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import AppModal from './AppModal'
-import ModalActions from './ModalActions'
 import ActiveFilterChips from './filter/ActiveFilterChips'
+import ModalActions from './ModalActions'
 
 /**
  * Reusable filter bar component.
@@ -39,7 +41,7 @@ const d = (date, h = 0, m = 0, s = 0, ms = 0) =>
 const DATE_RANGE_PRESETS = [
   {
     value: 'today',
-    label: 'Today',
+    labelKey: 'today',
     getRange: () => {
       const t = d(new Date())
       return {
@@ -50,7 +52,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'yesterday',
-    label: 'Yesterday',
+    labelKey: 'yesterday',
     getRange: () => {
       const t = d(new Date())
       const y = new Date(t)
@@ -63,7 +65,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'this-week',
-    label: 'This Week',
+    labelKey: 'thisWeek',
     getRange: () => {
       const t = d(new Date())
       const start = new Date(t)
@@ -78,7 +80,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'last-7-days',
-    label: 'Last 7 Days',
+    labelKey: 'last7Days',
     getRange: () => {
       const t = d(new Date())
       const start = new Date(t)
@@ -91,7 +93,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'this-month',
-    label: 'This Month',
+    labelKey: 'thisMonth',
     getRange: () => {
       const n = new Date()
       const start = new Date(n.getFullYear(), n.getMonth(), 1)
@@ -104,7 +106,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'last-30-days',
-    label: 'Last 30 Days',
+    labelKey: 'last30Days',
     getRange: () => {
       const t = d(new Date())
       const start = new Date(t)
@@ -117,7 +119,7 @@ const DATE_RANGE_PRESETS = [
   },
   {
     value: 'last-3-months',
-    label: 'Last 3 Months',
+    labelKey: 'last3Months',
     getRange: () => {
       const t = d(new Date())
       const start = new Date(t)
@@ -141,14 +143,20 @@ const fmtDisplayDate = iso => {
 // ── Component ────────────────────────────────────────────────────────────────
 
 const FilterBar = ({
-  filterDefs,
   activeFilters,
-  onSetFilter,
+  filterDefs,
   onClearAll,
+  onSetFilter,
   resultCount,
   totalCount,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useTranslation('chores')
+
+  const presetLabel = preset =>
+    preset.labelKey
+      ? t(`filters.dateRangePresets.${preset.labelKey}`)
+      : preset.label
 
   // ── Active count ───────────────────────────────────────────────────────────
 
@@ -233,16 +241,14 @@ const FilterBar = ({
     if (def.type === 'date-range') {
       if (!value?.from && !value?.to) return null
       if (value.preset) {
-        return (
-          DATE_RANGE_PRESETS.find(p => p.value === value.preset)?.label ??
-          'Date Range'
-        )
+        const preset = DATE_RANGE_PRESETS.find(p => p.value === value.preset)
+        return preset ? presetLabel(preset) : t('filters.dateRange')
       }
       const from = fmtDisplayDate(value.from)
       const to = fmtDisplayDate(value.to)
       if (from && to) return `${from} – ${to}`
-      if (from) return `From ${from}`
-      if (to) return `Until ${to}`
+      if (from) return t('filters.from', { date: from })
+      if (to) return t('filters.until', { date: to })
       return null
     }
 
@@ -331,7 +337,7 @@ const FilterBar = ({
               },
             }}
           >
-            Filters
+            {t('filters.filters')}
           </Button>
         </Badge>
 
@@ -361,7 +367,7 @@ const FilterBar = ({
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tune sx={{ fontSize: 20 }} />
-            Filters
+            {t('filters.filters')}
             {hasActive && (
               <Chip
                 size='sm'
@@ -377,7 +383,7 @@ const FilterBar = ({
         footer={
           <ModalActions
             tertiary={{
-              label: 'Clear all',
+              label: t('filters.clearAll'),
               color: 'danger',
               disabled: !hasActive,
               onClick: onClearAll,
@@ -385,8 +391,8 @@ const FilterBar = ({
             primary={{
               label:
                 resultCount !== undefined
-                  ? `Show ${resultCount} result${resultCount !== 1 ? 's' : ''}`
-                  : 'Done',
+                  ? t('filters.showResults', { count: resultCount })
+                  : t('filters.done'),
               onClick: () => setIsOpen(false),
             }}
           />
@@ -426,7 +432,9 @@ const FilterBar = ({
                       color='primary'
                       sx={sectionBadgeChipSx}
                     >
-                      {activeFilters[def.id].length} selected
+                      {t('filters.selected', {
+                        count: activeFilters[def.id].length,
+                      })}
                     </Chip>
                   )}
                 {def.type === 'single-select' &&
@@ -578,7 +586,7 @@ const FilterBar = ({
                               }
                               sx={selectableChipSx}
                             >
-                              {preset.label}
+                              {presetLabel(preset)}
                             </Chip>
                           )
                         })}

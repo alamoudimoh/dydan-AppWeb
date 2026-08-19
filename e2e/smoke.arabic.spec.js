@@ -9,16 +9,15 @@ import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 // verifies RTL direction, rendered Arabic copy where i18n drives the UI, and a
 // clean runtime.
 //
-// Note: some views (login, dashboard, chores, routines) contain pre-existing
-// hardcoded English copy that is not wired to i18n; those routes are checked
-// for RTL direction and runtime cleanliness rather than Arabic content.
+// Login, dashboard, chores and routines now render Arabic copy for their
+// previously hardcoded English surfaces, so all routes assert Arabic content.
 const AR_ROUTES = [
-  { path: '/login', auth: false },
-  { path: '/', auth: true },
+  { path: '/login', auth: false, arabic: /نسيت كلمة المرور؟/ },
+  { path: '/', auth: true, arabic: /لا مهام لك اليوم/ },
   { path: '/family', auth: true, arabic: /تقدم العائلة/ },
   { path: '/shopping', auth: true, arabic: /قوائم التسوق/ },
-  { path: '/chores', auth: true },
-  { path: '/routines', auth: true },
+  { path: '/chores', auth: true, arabic: /لا توجد مهام بعد/ },
+  { path: '/routines', auth: true, arabic: /الروتينات/ },
   { path: '/settings', auth: true, arabic: /الإعدادات/ },
   { path: '/settings/profile', auth: true, arabic: /الملف الشخصي/ },
   {

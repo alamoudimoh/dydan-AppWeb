@@ -1,5 +1,6 @@
 import { Alert, Box, Input, Link, Stack, Typography } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../components/common/ModalActions'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
@@ -7,21 +8,22 @@ import { VerifyMFA } from '../../utils/Fetcher'
 import { authInputSx } from './authStyles'
 
 const MFAVerificationModal = ({
-  open,
   onClose,
-  sessionToken,
-  onSuccess,
   onError,
+  onSuccess,
+  open,
+  sessionToken,
 }) => {
   const [verificationCode, setVerificationCode] = useState('')
   const [isBackupCode, setIsBackupCode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { t } = useTranslation('common')
   const { ResponsiveModal } = useResponsiveModal()
 
   const handleVerify = async () => {
     if (!verificationCode.trim()) {
-      setError('Please enter a verification code')
+      setError(t('auth.mfaCodeRequired'))
       return
     }
 
@@ -36,15 +38,14 @@ const MFAVerificationModal = ({
         onSuccess(data)
       } else {
         const errorData = await response.json()
-        const message =
-          errorData.message || 'Invalid verification code. Please try again.'
+        const message = errorData.message || t('auth.mfaInvalidCode')
         setError(message)
         onError?.(message)
       }
     } catch (error) {
       // A wrong code is shown inline; a failed request is escalated to the
       // caller so it can surface a toast instead of looking like a bad code.
-      const message = 'Failed to verify code. Please try again.'
+      const message = t('auth.mfaVerifyFailed')
       setError(message)
       onError?.(message)
       console.error('MFA verification error:', error)
@@ -73,23 +74,23 @@ const MFAVerificationModal = ({
       open={open}
       onClose={handleClose}
       size='md'
-      title='Two-factor authentication'
+      title={t('auth.mfaTitle')}
       description={
         isBackupCode
-          ? 'Enter one of the backup codes you saved when setting up two-factor authentication.'
-          : 'Enter the 6-digit code from your authenticator app.'
+          ? t('auth.mfaBackupCodeDescription')
+          : t('auth.mfaCodeDescription')
       }
       closeOnBackdrop={!loading}
       closeOnEscape={!loading}
       footer={
         <ModalActions
           secondary={{
-            label: 'Cancel',
+            label: t('cancel'),
             onClick: handleClose,
             disabled: loading,
           }}
           primary={{
-            label: 'Verify & Sign In',
+            label: t('auth.mfaVerifySignIn'),
             onClick: handleVerify,
             loading,
             disabled: !verificationCode.trim(),
@@ -105,12 +106,16 @@ const MFAVerificationModal = ({
             level='body-sm'
             sx={{ display: 'block', fontWeight: 600, mb: 0.75 }}
           >
-            {isBackupCode ? 'Backup code' : 'Verification code'}
+            {isBackupCode
+              ? t('auth.mfaBackupCodeLabel')
+              : t('auth.mfaVerificationCodeLabel')}
           </Typography>
           <Input
             id='mfa-code'
             size='lg'
-            placeholder={isBackupCode ? 'Enter backup code' : '000000'}
+            placeholder={
+              isBackupCode ? t('auth.mfaBackupCodePlaceholder') : '000000'
+            }
             value={verificationCode}
             onChange={e => setVerificationCode(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -157,8 +162,8 @@ const MFAVerificationModal = ({
             }}
           >
             {isBackupCode
-              ? 'Use authenticator app instead'
-              : 'Use a backup code instead'}
+              ? t('auth.mfaUseAuthApp')
+              : t('auth.mfaUseBackupCode')}
           </Link>
         </Box>
 
@@ -167,7 +172,7 @@ const MFAVerificationModal = ({
             level='body-xs'
             sx={{ textAlign: 'center', color: 'text.secondary' }}
           >
-            Each backup code can only be used once.
+            {t('auth.mfaBackupOneTime')}
           </Typography>
         )}
       </Stack>
