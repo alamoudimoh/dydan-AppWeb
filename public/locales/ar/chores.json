@@ -369,10 +369,10 @@
     "filteredAllSelected_other": "جميع المهام المصفاة البالغ عددها {{count}} محددة بالفعل.",
     "filteredSelected_one": "تم تحديد مهمة واحدة من أصل {{count}} من المهام المصفاة.",
     "filteredSelected_other": "تم تحديد {{count}} من المهام المصفاة.",
-    "allIncludingCollapsed_one": "تم تحديد جميع {{count}} مهمة بالفعل (بما في ذلك الأقسام المطوية).",
-    "allIncludingCollapsed_other": "تم تحديد جميع {{count}} مهام بالفعل (بما في ذلك الأقسام المطوية).",
+    "allIncludingCollapsed_one": "جميع {{count}} مهمة محددة بالفعل (بما في ذلك الأقسام المطوية).",
+    "allIncludingCollapsed_other": "جميع {{count}} مهام محددة بالفعل (بما في ذلك الأقسام المطوية).",
     "allTasksIncludingCollapsed_one": "تم تحديد جميع {{count}} مهمة (بما في ذلك {{collapsed}} من الأقسام المطوية).",
-    "allTasksIncludingCollapsed_other": "تم تحديد جميع {{count}} مهمة (بما في ذلك {{collapsed}} من الأقسام المطوية).",
+    "allTasksIncludingCollapsed_other": "تم تحديد جميع {{count}} مهام (بما في ذلك {{collapsed}} من الأقسام المطوية).",
     "expandedSelected_one": "تم تحديد مهمة واحدة من أصل {{count}} من الأقسام الموسعة.",
     "expandedSelected_other": "تم تحديد {{count}} من الأقسام الموسعة."
   },
