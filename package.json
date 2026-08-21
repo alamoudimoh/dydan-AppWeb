@@ -17,6 +17,7 @@
     "start": "vite --host",
     "dev": "vite",
     "build": "vite build",
+    "typecheck": "tsc --noEmit",
     "test": "node --test && npm run test:ui",
     "test:ui": "vitest run --pool=forks --poolOptions.forks.singleFork=true src/views/components/CategoryPickerField.test.jsx src/views/FamilyProgress/FamilyProgress.test.jsx src/views/Modals/ErrorReportModal.test.jsx src/views/Settings/ProfileSettings.test.jsx src/views/Settings/LocalizationSettings.test.jsx src/views/Settings/StorageSettings.test.jsx src/components/FamilyCircleGuard.test.jsx src/observability/sentry.test.jsx src/service/ErrorReportService.test.jsx",
     "test:coverage": "vitest run --coverage --pool=forks --poolOptions.forks.singleFork=true src/views/components/CategoryPickerField.test.jsx src/views/FamilyProgress/FamilyProgress.test.jsx src/views/Modals/ErrorReportModal.test.jsx src/views/Settings/ProfileSettings.test.jsx src/views/Settings/LocalizationSettings.test.jsx src/views/Settings/StorageSettings.test.jsx src/components/FamilyCircleGuard.test.jsx src/observability/sentry.test.jsx src/service/ErrorReportService.test.jsx",

@@ -24,7 +24,7 @@
     // Modules
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "rootDir": "src",
+    "rootDir": ".",
 
     // Emit
     "outDir": "dist",
