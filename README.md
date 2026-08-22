@@ -24,6 +24,16 @@ As an avid for open-source, I was eager to create a solution that could benefit 
 
 Follow the full instructions here: https://github.com/donetick/donetick?tab=readme-ov-file#development-environment
 
+## Builds
+
+`npm run build` produces the canonical production bundle. By default the API
+base URL is empty, which makes the app use same-origin relative `/api` URLs —
+safe for self-hosted deployments behind any IP, hostname, or reverse proxy,
+with no rebuild needed when the server address changes.
+
+Only set `VITE_APP_API_URL` (e.g. in `.env.production.local` or your CI
+environment) if you host the API on a different origin than the frontend.
+
 ## Contributing
 
 Contributions are welcome! If you would like to contribute to DayDan, please follow these steps:
