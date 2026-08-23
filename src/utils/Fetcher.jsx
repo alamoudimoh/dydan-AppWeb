@@ -50,13 +50,18 @@ const signUp = async (username, password, displayName, email) => {
   })
 }
 
-const UpdatePassword = async newPassword => {
+const UpdatePassword = async (currentPassword, newPassword) => {
   await apiClient.init(true)
   const baseURL = apiManager.getApiURL()
+  // The server verifies current_password before accepting a change and
+  // revokes every other session afterwards.
   return fetch(`${baseURL}/users/change_password`, {
     method: 'PUT',
     headers: HEADERS(),
-    body: JSON.stringify({ password: newPassword }),
+    body: JSON.stringify({
+      password: newPassword,
+      current_password: currentPassword,
+    }),
   })
 }
 
@@ -1194,10 +1199,12 @@ export {
   ApproveChore,
   ArchiveAsset,
   ArchiveChore,
+  ArchiveShoppingList,
   CancelSubscription,
   ChangePassword,
   CheckUserDeletion,
   ClearChoreTimer,
+  ClearCompletedShoppingItems,
   CompleteMeterReminder,
   CompleteSubTask,
   ConfirmMFA,
@@ -1212,8 +1219,6 @@ export {
   CreateLongLiveToken,
   CreateMeter,
   CreateProject,
-  ArchiveShoppingList,
-  ClearCompletedShoppingItems,
   CreateShoppingList,
   CreateShoppingListItem,
   CreateThing,

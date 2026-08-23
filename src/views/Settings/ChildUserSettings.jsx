@@ -306,6 +306,7 @@ const ChildUserSettings = () => {
 
       <PasswordChangeModal
         isOpen={passwordModalOpen}
+        requireCurrentPassword={false}
         onClose={newPassword => {
           if (newPassword) {
             handleUpdatePassword(newPassword)

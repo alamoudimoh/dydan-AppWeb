@@ -3,6 +3,8 @@ import { Refresh, Star, Token } from '@mui/icons-material'
 import { Box, Button, Card, Chip, Divider, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import { networkManager } from '../../hooks/NetworkManager'
 import useConfirmationModal from '../../hooks/useConfirmationModal'
 import { useSSEContext } from '../../hooks/useSSEContext'
@@ -16,6 +18,7 @@ import {
   setDevForcedPrompt,
 } from '../../service/FeedbackService'
 import { useNotification } from '../../service/NotificationProvider'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 import { apiClient } from '../../utils/ApiClient'
 import { commandQueue } from '../../utils/CommandQueue'
 import { RefreshToken } from '../../utils/Fetcher'
@@ -25,9 +28,6 @@ import { getRefreshTokenExpiry, isNative } from '../../utils/TokenStorage'
 import FeedbackModal from '../Modals/FeedbackModal'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
-import { formStackSx, sectionCardSx } from '../../theme/appLayout'
-
-import { useTranslation } from 'react-i18next'
 
 const DeveloperSettings = () => {
   const { t } = useTranslation('settings')
@@ -35,12 +35,12 @@ const DeveloperSettings = () => {
   const { confirmModalConfig, showConfirmation } = useConfirmationModal()
   const { data: userProfile } = useUserProfile()
   const {
-    isConnected,
-    isConnecting,
-    lastEvent,
     error: sseError,
     getConnectionStatus,
     getDebugInfo,
+    isConnected,
+    isConnecting,
+    lastEvent,
   } = useSSEContext()
 
   const [accessTokenExpiry, setAccessTokenExpiry] = useState(null)
@@ -104,7 +104,7 @@ const DeveloperSettings = () => {
     setIsNativePlatform(isNative())
 
     const loadTokenData = async () => {
-      const accessExpiry = localStorage.getItem('token_expiry')
+      const accessExpiry = getAccessTokenExpiry()
       setAccessTokenExpiry(accessExpiry)
 
       if (isNative()) {
@@ -245,7 +245,7 @@ const DeveloperSettings = () => {
         })
 
         // Reload token expiry data
-        const accessExpiry = localStorage.getItem('token_expiry')
+        const accessExpiry = getAccessTokenExpiry()
         setAccessTokenExpiry(accessExpiry)
 
         if (isNativePlatform) {
@@ -281,7 +281,7 @@ const DeveloperSettings = () => {
         })
 
         // Reload token expiry data
-        const accessExpiry = localStorage.getItem('token_expiry')
+        const accessExpiry = getAccessTokenExpiry()
         setAccessTokenExpiry(accessExpiry)
 
         if (isNativePlatform) {
@@ -441,424 +441,131 @@ const DeveloperSettings = () => {
     <SettingsLayout title={t('overview.sections.developer.title')}>
       <Box sx={formStackSx} id='developer'>
         <Typography level='body-md'>
-          View technical information about your authentication tokens and session
-          state. This information is useful for debugging and development
-          purposes.
+          View technical information about your authentication tokens and
+          session state. This information is useful for debugging and
+          development purposes.
         </Typography>
 
-      <Card variant='outlined' sx={sectionCardSx}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            <Typography level='title-lg'>Authentication Tokens</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Button
-                size='sm'
-                variant='soft'
-                startDecorator={<Refresh />}
-                onClick={handleRefreshToken}
-                loading={isRefreshing}
-                disabled={isRefreshing || isRefreshingDirect}
-              >
-                Refresh Token
-              </Button>
-              <Button
-                size='sm'
-                variant='outlined'
-                color='neutral'
-                startDecorator={<Token />}
-                onClick={handleDirectRefreshToken}
-                loading={isRefreshingDirect}
-                disabled={isRefreshing || isRefreshingDirect}
-              >
-                Call Refresh Endpoint
-              </Button>
-            </Box>
-          </Box>
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Access Token
-            </Typography>
+        <Card variant='outlined' sx={sectionCardSx}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box
               sx={{
                 display: 'flex',
-                gap: 1,
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                gap: 1,
               }}
             >
-              <Typography level='body-sm'>Time Left:</Typography>
-              <Chip color={getExpiryStatus(timeLeft.access)} variant='soft'>
-                {formatTimeLeft(timeLeft.access)}
-              </Chip>
-            </Box>
-            {accessTokenExpiry && (
-              <Typography level='body-xs' sx={{ mt: 0.5 }} color='neutral'>
-                Expires: {new Date(accessTokenExpiry).toLocaleString()}
-              </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Refresh Token
-            </Typography>
-            {isNativePlatform ? (
-              <>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    gap: 1,
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                  }}
+              <Typography level='title-lg'>Authentication Tokens</Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  size='sm'
+                  variant='soft'
+                  startDecorator={<Refresh />}
+                  onClick={handleRefreshToken}
+                  loading={isRefreshing}
+                  disabled={isRefreshing || isRefreshingDirect}
                 >
-                  <Typography level='body-sm'>Time Left:</Typography>
-                  <Chip
-                    color={getExpiryStatus(timeLeft.refresh)}
-                    variant='soft'
-                  >
-                    {formatTimeLeft(timeLeft.refresh)}
-                  </Chip>
-                </Box>
-                {refreshTokenExpiry && (
-                  <Typography level='body-xs' sx={{ mt: 0.5 }} color='neutral'>
-                    Expires: {new Date(refreshTokenExpiry).toLocaleString()}
-                  </Typography>
-                )}
-              </>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                Refresh tokens are managed via HTTP-only cookies on web platform
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      </Card>
-
-      <Card variant='outlined'>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography level='title-lg'>Platform Information</Typography>
-
-          <Box>
-            <Typography level='body-sm'>
-              Platform:{' '}
-              <Chip variant='soft' size='sm'>
-                {isNativePlatform ? 'Native' : 'Web'}
-              </Chip>
-            </Typography>
-          </Box>
-        </Box>
-      </Card>
-
-      <Card variant='outlined'>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            <Typography level='title-lg'>Sync & Network Diagnostics</Typography>
-            <Button
-              size='sm'
-              variant='soft'
-              startDecorator={<Refresh />}
-              onClick={refreshSyncDiagnostics}
-            >
-              Refresh
-            </Button>
-          </Box>
-
-          <Divider />
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>Network Status</Typography>
-            <Typography level='body-sm'>
-              Connection:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={syncDiagnostics.isOnline ? 'success' : 'danger'}
-              >
-                {syncDiagnostics.isOnline ? 'Online' : 'Offline'}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Device Network:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={
-                  syncDiagnostics.isNetworkOn === false
-                    ? 'danger'
-                    : syncDiagnostics.isNetworkOn === true
-                      ? 'success'
-                      : 'neutral'
-                }
-              >
-                {syncDiagnostics.isNetworkOn === false
-                  ? 'Disconnected'
-                  : syncDiagnostics.isNetworkOn === true
-                    ? 'Connected'
-                    : 'Unknown'}
-              </Chip>
-            </Typography>
-            <Typography level='body-xs' color='neutral'>
-              Offline Since: {formatDateTime(syncDiagnostics.offlineSince)}
-            </Typography>
-            <Typography level='body-xs' color='neutral'>
-              Last Network Check: {formatDateTime(syncDiagnostics.lastChecked)}
-            </Typography>
-          </Box>
-
-          <Divider />
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>Sync Offset Information</Typography>
-            <Typography level='body-sm'>
-              Sync Cursor:{' '}
-              <Chip size='sm' variant='soft'>
-                {syncDiagnostics.cursor ?? 'N/A'}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Last Sync:{' '}
-              <Chip size='sm' variant='soft' color='primary'>
-                {formatDateTime(syncDiagnostics.lastSync)}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Sync State:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={syncDiagnostics.syncing ? 'warning' : 'success'}
-              >
-                {syncDiagnostics.syncing ? 'Syncing' : 'Idle'}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Pending Commands:{' '}
-              <Chip size='sm' variant='soft' color='warning'>
-                {syncDiagnostics.pendingCount}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Failed Commands:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={syncDiagnostics.failedCount > 0 ? 'danger' : 'success'}
-              >
-                {syncDiagnostics.failedCount}
-              </Chip>
-            </Typography>
-            {syncDiagnostics.syncError && (
-              <Typography level='body-sm' color='danger'>
-                Sync Error: {syncDiagnostics.syncError}
-              </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>Recovery Actions</Typography>
-            <Typography level='body-xs' color='warning'>
-              Clears local offline cache, sync cursor, and queued commands, then
-              re-syncs from the beginning.
-            </Typography>
-            <Box>
-              <Button
-                size='sm'
-                color='danger'
-                variant='soft'
-                onClick={handleResetDatabaseAndResync}
-                loading={isResettingSync}
-                disabled={isResettingSync || syncDiagnostics.syncing}
-              >
-                Clear DB & Full Re-Sync
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Card>
-
-      <Card variant='outlined'>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 1,
-            }}
-          >
-            <Typography level='title-lg'>Feedback & Review Prompt</Typography>
-            <Button
-              size='sm'
-              variant='soft'
-              startDecorator={<Refresh />}
-              onClick={refreshFeedbackEligibility}
-            >
-              Refresh
-            </Button>
-          </Box>
-
-          <Divider />
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>Prompt Eligibility</Typography>
-            <Typography level='body-sm'>
-              Would auto-show:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={feedbackEligibility?.eligible ? 'success' : 'neutral'}
-              >
-                {feedbackEligibility?.eligible ? 'Yes' : 'No'}
-              </Chip>
-              {feedbackEligibility?.forced && (
-                <Chip size='sm' variant='soft' color='warning' sx={{ ml: 1 }}>
-                  Forced
-                </Chip>
-              )}
-            </Typography>
-            {feedbackEligibility?.blockers?.length > 0 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                {feedbackEligibility.blockers.map(blocker => (
-                  <Typography key={blocker} level='body-xs' color='neutral'>
-                    • {blocker}
-                  </Typography>
-                ))}
+                  Refresh Token
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outlined'
+                  color='neutral'
+                  startDecorator={<Token />}
+                  onClick={handleDirectRefreshToken}
+                  loading={isRefreshingDirect}
+                  disabled={isRefreshing || isRefreshingDirect}
+                >
+                  Call Refresh Endpoint
+                </Button>
               </Box>
-            )}
-          </Box>
+            </Box>
 
-          <Divider />
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>State</Typography>
-            <Typography level='body-sm'>
-              Completions counted:{' '}
-              <Chip size='sm' variant='soft'>
-                {feedbackEligibility?.state?.completions ?? 'N/A'}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Last sentiment:{' '}
-              <Chip size='sm' variant='soft'>
-                {feedbackEligibility?.state?.lastSentiment ?? 'None'}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Dismissals:{' '}
-              <Chip size='sm' variant='soft'>
-                {feedbackEligibility?.state?.dismissCount ?? 0}
-              </Chip>
-            </Typography>
-            <Typography level='body-sm'>
-              Opted out:{' '}
-              <Chip
-                size='sm'
-                variant='soft'
-                color={
-                  feedbackEligibility?.state?.optedOut ? 'danger' : 'success'
-                }
-              >
-                {feedbackEligibility?.state?.optedOut ? 'Yes' : 'No'}
-              </Chip>
-            </Typography>
-            <Typography level='body-xs' color='neutral'>
-              Last prompted:{' '}
-              {formatDateTime(feedbackEligibility?.state?.lastPromptedAt)}
-              {feedbackEligibility?.state?.lastPromptedVersion
-                ? ` on ${feedbackEligibility.state.lastPromptedVersion}`
-                : ''}
-            </Typography>
-            <Typography level='body-xs' color='neutral'>
-              Review requested:{' '}
-              {formatDateTime(feedbackEligibility?.state?.reviewRequestedAt)}
-            </Typography>
-            <Typography level='body-xs' color='neutral'>
-              Current version: {feedbackEligibility?.version ?? 'N/A'} · Webhook{' '}
-              {isFeedbackSubmissionConfigured()
-                ? 'configured'
-                : 'NOT configured (submissions log to console)'}
-            </Typography>
-            {isRawChatWebhookConfigured() && (
-              <Typography level='body-xs' color='danger'>
-                VITE_FEEDBACK_WEBHOOK_URL points straight at a Discord/Slack
-                webhook. Discord rejects that with 50006, and the URL ships
-                inside the public bundle — deploy workers/feedback and point the
-                variable at the Worker.
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Access Token
               </Typography>
-            )}
-          </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Typography level='body-sm'>Time Left:</Typography>
+                <Chip color={getExpiryStatus(timeLeft.access)} variant='soft'>
+                  {formatTimeLeft(timeLeft.access)}
+                </Chip>
+              </Box>
+              {accessTokenExpiry && (
+                <Typography level='body-xs' sx={{ mt: 0.5 }} color='neutral'>
+                  Expires: {new Date(accessTokenExpiry).toLocaleString()}
+                </Typography>
+              )}
+            </Box>
 
-          <Divider />
+            <Divider />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography level='title-sm'>Actions</Typography>
-            <Typography level='body-xs' color='neutral'>
-              &quot;Force next prompt&quot; bypasses every gate, then open My
-              Chores to see the automatic trigger.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Button
-                size='sm'
-                variant='soft'
-                onClick={() => setFeedbackModalOpen(true)}
-              >
-                Open Flow
-              </Button>
-              <Button
-                size='sm'
-                variant='outlined'
-                color='neutral'
-                onClick={handleForceFeedbackPrompt}
-              >
-                Force Next Prompt
-              </Button>
-              <Button
-                size='sm'
-                variant='outlined'
-                color='neutral'
-                startDecorator={<Star />}
-                onClick={handleRequestStoreReview}
-                disabled={!isNativePlatform}
-              >
-                Request Store Review
-              </Button>
-              <Button
-                size='sm'
-                variant='soft'
-                color='danger'
-                onClick={handleResetFeedbackState}
-              >
-                Reset State
-              </Button>
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Refresh Token
+              </Typography>
+              {isNativePlatform ? (
+                <>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <Typography level='body-sm'>Time Left:</Typography>
+                    <Chip
+                      color={getExpiryStatus(timeLeft.refresh)}
+                      variant='soft'
+                    >
+                      {formatTimeLeft(timeLeft.refresh)}
+                    </Chip>
+                  </Box>
+                  {refreshTokenExpiry && (
+                    <Typography
+                      level='body-xs'
+                      sx={{ mt: 0.5 }}
+                      color='neutral'
+                    >
+                      Expires: {new Date(refreshTokenExpiry).toLocaleString()}
+                    </Typography>
+                  )}
+                </>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  Refresh tokens are managed via HTTP-only cookies on web
+                  platform
+                </Typography>
+              )}
             </Box>
           </Box>
-        </Box>
-      </Card>
+        </Card>
 
-      {isNativePlatform && (
+        <Card variant='outlined'>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography level='title-lg'>Platform Information</Typography>
+
+            <Box>
+              <Typography level='body-sm'>
+                Platform:{' '}
+                <Chip variant='soft' size='sm'>
+                  {isNativePlatform ? 'Native' : 'Web'}
+                </Chip>
+              </Typography>
+            </Box>
+          </Box>
+        </Card>
+
         <Card variant='outlined'>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box
@@ -871,15 +578,13 @@ const DeveloperSettings = () => {
               }}
             >
               <Typography level='title-lg'>
-                Scheduled Local Notifications
+                Sync & Network Diagnostics
               </Typography>
               <Button
                 size='sm'
                 variant='soft'
                 startDecorator={<Refresh />}
-                onClick={handleRefreshNotifications}
-                loading={isLoadingNotifications}
-                disabled={isLoadingNotifications}
+                onClick={refreshSyncDiagnostics}
               >
                 Refresh
               </Button>
@@ -887,334 +592,652 @@ const DeveloperSettings = () => {
 
             <Divider />
 
-            {scheduledNotifications.length === 0 ? (
-              <Typography level='body-sm' color='neutral'>
-                No scheduled notifications
-              </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography level='body-sm'>
-                  Total scheduled:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {scheduledNotifications.length}
-                  </Chip>
-                </Typography>
-
-                <Divider />
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1.5,
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                  }}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>Network Status</Typography>
+              <Typography level='body-sm'>
+                Connection:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={syncDiagnostics.isOnline ? 'success' : 'danger'}
                 >
-                  {scheduledNotifications.map((notification, index) => {
-                    const scheduleTime = notification.schedule?.at
-                    const scheduledDate = scheduleTime
-                      ? new Date(scheduleTime)
-                      : null
-                    const now = new Date()
-                    const timeUntil = scheduledDate ? scheduledDate - now : null
+                  {syncDiagnostics.isOnline ? 'Online' : 'Offline'}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Device Network:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={
+                    syncDiagnostics.isNetworkOn === false
+                      ? 'danger'
+                      : syncDiagnostics.isNetworkOn === true
+                        ? 'success'
+                        : 'neutral'
+                  }
+                >
+                  {syncDiagnostics.isNetworkOn === false
+                    ? 'Disconnected'
+                    : syncDiagnostics.isNetworkOn === true
+                      ? 'Connected'
+                      : 'Unknown'}
+                </Chip>
+              </Typography>
+              <Typography level='body-xs' color='neutral'>
+                Offline Since: {formatDateTime(syncDiagnostics.offlineSince)}
+              </Typography>
+              <Typography level='body-xs' color='neutral'>
+                Last Network Check:{' '}
+                {formatDateTime(syncDiagnostics.lastChecked)}
+              </Typography>
+            </Box>
 
-                    return (
-                      <Card
-                        key={notification.id || index}
-                        variant='soft'
-                        size='sm'
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Typography level='title-sm'>
-                            {notification.title || 'No title'}
-                          </Typography>
-                          <Typography level='body-xs' color='neutral'>
-                            {notification.body || 'No body'}
-                          </Typography>
+            <Divider />
 
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              gap: 1,
-                              alignItems: 'center',
-                              flexWrap: 'wrap',
-                              mt: 0.5,
-                            }}
-                          >
-                            {scheduledDate && (
-                              <>
-                                <Chip
-                                  size='sm'
-                                  variant='soft'
-                                  color={getNotificationStatusColor(
-                                    scheduleTime,
-                                  )}
-                                >
-                                  {timeUntil && timeUntil > 0
-                                    ? formatTimeLeft(timeUntil)
-                                    : 'Past due'}
-                                </Chip>
-                                <Typography level='body-xs' color='neutral'>
-                                  {scheduledDate.toLocaleString()}
-                                </Typography>
-                              </>
-                            )}
-                            {notification.extra?.choreId && (
-                              <Chip size='sm' variant='outlined'>
-                                Chore ID: {notification.extra.choreId}
-                              </Chip>
-                            )}
-                          </Box>
-                        </Box>
-                      </Card>
-                    )
-                  })}
-                </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>Sync Offset Information</Typography>
+              <Typography level='body-sm'>
+                Sync Cursor:{' '}
+                <Chip size='sm' variant='soft'>
+                  {syncDiagnostics.cursor ?? 'N/A'}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Last Sync:{' '}
+                <Chip size='sm' variant='soft' color='primary'>
+                  {formatDateTime(syncDiagnostics.lastSync)}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Sync State:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={syncDiagnostics.syncing ? 'warning' : 'success'}
+                >
+                  {syncDiagnostics.syncing ? 'Syncing' : 'Idle'}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Pending Commands:{' '}
+                <Chip size='sm' variant='soft' color='warning'>
+                  {syncDiagnostics.pendingCount}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Failed Commands:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={syncDiagnostics.failedCount > 0 ? 'danger' : 'success'}
+                >
+                  {syncDiagnostics.failedCount}
+                </Chip>
+              </Typography>
+              {syncDiagnostics.syncError && (
+                <Typography level='body-sm' color='danger'>
+                  Sync Error: {syncDiagnostics.syncError}
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>Recovery Actions</Typography>
+              <Typography level='body-xs' color='warning'>
+                Clears local offline cache, sync cursor, and queued commands,
+                then re-syncs from the beginning.
+              </Typography>
+              <Box>
+                <Button
+                  size='sm'
+                  color='danger'
+                  variant='soft'
+                  onClick={handleResetDatabaseAndResync}
+                  loading={isResettingSync}
+                  disabled={isResettingSync || syncDiagnostics.syncing}
+                >
+                  Clear DB & Full Re-Sync
+                </Button>
               </Box>
-            )}
+            </Box>
           </Box>
         </Card>
-      )}
 
-      <Card variant='outlined'>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography level='title-lg'>Server-Sent Events (SSE)</Typography>
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Connection Status
-            </Typography>
+        <Card variant='outlined'>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box
               sx={{
                 display: 'flex',
-                gap: 1,
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                gap: 1,
               }}
             >
-              <Chip
-                color={
-                  isConnected ? 'success' : isConnecting ? 'warning' : 'neutral'
-                }
+              <Typography level='title-lg'>Feedback & Review Prompt</Typography>
+              <Button
+                size='sm'
                 variant='soft'
+                startDecorator={<Refresh />}
+                onClick={refreshFeedbackEligibility}
               >
-                {getConnectionStatus
-                  ? getConnectionStatus().toUpperCase()
-                  : 'Unknown'}
-              </Chip>
+                Refresh
+              </Button>
             </Box>
-            {sseError && (
-              <Typography level='body-sm' color='danger' sx={{ mt: 0.5 }}>
-                Error: {sseError}
-              </Typography>
-            )}
-          </Box>
 
-          <Divider />
+            <Divider />
 
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Last Event Received
-            </Typography>
-            {lastEvent ? (
-              <>
-                <Typography level='body-sm'>
-                  Type:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {lastEvent.type}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>Prompt Eligibility</Typography>
+              <Typography level='body-sm'>
+                Would auto-show:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={feedbackEligibility?.eligible ? 'success' : 'neutral'}
+                >
+                  {feedbackEligibility?.eligible ? 'Yes' : 'No'}
+                </Chip>
+                {feedbackEligibility?.forced && (
+                  <Chip size='sm' variant='soft' color='warning' sx={{ ml: 1 }}>
+                    Forced
                   </Chip>
-                </Typography>
-                <Typography level='body-xs' color='neutral' sx={{ mt: 0.5 }}>
-                  Received:{' '}
-                  {lastEvent.timestamp
-                    ? new Date(lastEvent.timestamp).toLocaleString()
-                    : 'N/A'}
-                </Typography>
-              </>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                No events received yet
-              </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Heartbeat Status
-            </Typography>
-            {sseDebugInfo?.lastHeartbeat ? (
-              <>
-                <Typography level='body-sm'>
-                  Last Heartbeat:{' '}
-                  {new Date(sseDebugInfo.lastHeartbeat).toLocaleString()}
-                </Typography>
-                <Typography level='body-sm' sx={{ mt: 0.5 }}>
-                  Time Since Last Heartbeat:{' '}
-                  <Chip
-                    variant='soft'
-                    size='sm'
-                    color={
-                      timeSinceLastHeartbeat > 120000 ? 'warning' : 'success'
-                    }
-                  >
-                    {formatTimeLeft(timeSinceLastHeartbeat)}
-                  </Chip>
-                </Typography>
-              </>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                No heartbeat received yet
-              </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Reconnection Schedule
-            </Typography>
-            {sseDebugInfo ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                {sseDebugInfo.nextReconnectTime ? (
-                  <>
-                    <Typography level='body-sm'>
-                      Next Reconnect:{' '}
-                      {new Date(
-                        sseDebugInfo.nextReconnectTime,
-                      ).toLocaleString()}
-                    </Typography>
-                    <Typography level='body-sm'>
-                      Time Until Reconnect:{' '}
-                      <Chip variant='soft' size='sm' color='warning'>
-                        {formatTimeLeft(sseDebugInfo.timeUntilReconnect)}
-                      </Chip>
-                    </Typography>
-                    <Typography level='body-sm'>
-                      Current Delay:{' '}
-                      <Chip variant='soft' size='sm'>
-                        {formatTimeLeft(sseDebugInfo.currentReconnectDelay)}
-                      </Chip>
-                    </Typography>
-                  </>
-                ) : (
-                  <Typography level='body-sm' color='neutral'>
-                    No reconnection scheduled
-                  </Typography>
                 )}
-              </Box>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                No reconnection information available
               </Typography>
-            )}
-          </Box>
+              {feedbackEligibility?.blockers?.length > 0 && (
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                >
+                  {feedbackEligibility.blockers.map(blocker => (
+                    <Typography key={blocker} level='body-xs' color='neutral'>
+                      • {blocker}
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+            </Box>
 
-          <Divider />
+            <Divider />
 
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Timeout Configuration
-            </Typography>
-            {sseDebugInfo ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography level='body-sm'>
-                  Heartbeat Timeout:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {formatTimeLeft(sseDebugInfo.heartbeatTimeout)}
-                  </Chip>
-                </Typography>
-                <Typography level='body-sm'>
-                  Monitor Interval:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {formatTimeLeft(sseDebugInfo.heartbeatMonitorInterval)}
-                  </Chip>
-                </Typography>
-                <Typography level='body-sm'>
-                  Monitor Timeout:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {formatTimeLeft(sseDebugInfo.heartbeatMonitorTimeout)}
-                  </Chip>
-                </Typography>
-                <Typography level='body-sm'>
-                  Circuit Breaker Reset:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {formatTimeLeft(sseDebugInfo.circuitBreakerResetTime)}
-                  </Chip>
-                </Typography>
-              </Box>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                No timeout information available
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>State</Typography>
+              <Typography level='body-sm'>
+                Completions counted:{' '}
+                <Chip size='sm' variant='soft'>
+                  {feedbackEligibility?.state?.completions ?? 'N/A'}
+                </Chip>
               </Typography>
-            )}
-          </Box>
-
-          <Divider />
-
-          <Box>
-            <Typography level='title-sm' mb={1}>
-              Debug Information
-            </Typography>
-            {sseDebugInfo ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography level='body-sm'>
-                  Reconnect Attempts:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {sseDebugInfo.reconnectAttempts} /{' '}
-                    {sseDebugInfo.maxReconnectAttempts}
-                  </Chip>
+              <Typography level='body-sm'>
+                Last sentiment:{' '}
+                <Chip size='sm' variant='soft'>
+                  {feedbackEligibility?.state?.lastSentiment ?? 'None'}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Dismissals:{' '}
+                <Chip size='sm' variant='soft'>
+                  {feedbackEligibility?.state?.dismissCount ?? 0}
+                </Chip>
+              </Typography>
+              <Typography level='body-sm'>
+                Opted out:{' '}
+                <Chip
+                  size='sm'
+                  variant='soft'
+                  color={
+                    feedbackEligibility?.state?.optedOut ? 'danger' : 'success'
+                  }
+                >
+                  {feedbackEligibility?.state?.optedOut ? 'Yes' : 'No'}
+                </Chip>
+              </Typography>
+              <Typography level='body-xs' color='neutral'>
+                Last prompted:{' '}
+                {formatDateTime(feedbackEligibility?.state?.lastPromptedAt)}
+                {feedbackEligibility?.state?.lastPromptedVersion
+                  ? ` on ${feedbackEligibility.state.lastPromptedVersion}`
+                  : ''}
+              </Typography>
+              <Typography level='body-xs' color='neutral'>
+                Review requested:{' '}
+                {formatDateTime(feedbackEligibility?.state?.reviewRequestedAt)}
+              </Typography>
+              <Typography level='body-xs' color='neutral'>
+                Current version: {feedbackEligibility?.version ?? 'N/A'} ·
+                Webhook{' '}
+                {isFeedbackSubmissionConfigured()
+                  ? 'configured'
+                  : 'NOT configured (submissions log to console)'}
+              </Typography>
+              {isRawChatWebhookConfigured() && (
+                <Typography level='body-xs' color='danger'>
+                  VITE_FEEDBACK_WEBHOOK_URL points straight at a Discord/Slack
+                  webhook. Discord rejects that with 50006, and the URL ships
+                  inside the public bundle — deploy workers/feedback and point
+                  the variable at the Worker.
                 </Typography>
-                <Typography level='body-sm'>
-                  Circuit Breaker:{' '}
-                  <Chip
-                    variant='soft'
-                    size='sm'
-                    color={
-                      sseDebugInfo.isCircuitBreakerOpen ? 'danger' : 'success'
-                    }
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography level='title-sm'>Actions</Typography>
+              <Typography level='body-xs' color='neutral'>
+                &quot;Force next prompt&quot; bypasses every gate, then open My
+                Chores to see the automatic trigger.
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  size='sm'
+                  variant='soft'
+                  onClick={() => setFeedbackModalOpen(true)}
+                >
+                  Open Flow
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outlined'
+                  color='neutral'
+                  onClick={handleForceFeedbackPrompt}
+                >
+                  Force Next Prompt
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outlined'
+                  color='neutral'
+                  startDecorator={<Star />}
+                  onClick={handleRequestStoreReview}
+                  disabled={!isNativePlatform}
+                >
+                  Request Store Review
+                </Button>
+                <Button
+                  size='sm'
+                  variant='soft'
+                  color='danger'
+                  onClick={handleResetFeedbackState}
+                >
+                  Reset State
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </Card>
+
+        {isNativePlatform && (
+          <Card variant='outlined'>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
+                <Typography level='title-lg'>
+                  Scheduled Local Notifications
+                </Typography>
+                <Button
+                  size='sm'
+                  variant='soft'
+                  startDecorator={<Refresh />}
+                  onClick={handleRefreshNotifications}
+                  loading={isLoadingNotifications}
+                  disabled={isLoadingNotifications}
+                >
+                  Refresh
+                </Button>
+              </Box>
+
+              <Divider />
+
+              {scheduledNotifications.length === 0 ? (
+                <Typography level='body-sm' color='neutral'>
+                  No scheduled notifications
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography level='body-sm'>
+                    Total scheduled:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {scheduledNotifications.length}
+                    </Chip>
+                  </Typography>
+
+                  <Divider />
+
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                      maxHeight: '400px',
+                      overflowY: 'auto',
+                    }}
                   >
-                    {sseDebugInfo.isCircuitBreakerOpen ? 'OPEN' : 'CLOSED'}
-                  </Chip>
-                </Typography>
-                <Typography level='body-sm'>
-                  Connection State:{' '}
-                  <Chip variant='soft' size='sm'>
-                    {sseDebugInfo.connectionState === 0
-                      ? 'CONNECTING'
-                      : sseDebugInfo.connectionState === 1
-                        ? 'OPEN'
-                        : 'CLOSED'}
-                  </Chip>
-                </Typography>
-              </Box>
-            ) : (
-              <Typography level='body-sm' color='neutral'>
-                No debug information available
+                    {scheduledNotifications.map((notification, index) => {
+                      const scheduleTime = notification.schedule?.at
+                      const scheduledDate = scheduleTime
+                        ? new Date(scheduleTime)
+                        : null
+                      const now = new Date()
+                      const timeUntil = scheduledDate
+                        ? scheduledDate - now
+                        : null
+
+                      return (
+                        <Card
+                          key={notification.id || index}
+                          variant='soft'
+                          size='sm'
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 0.5,
+                            }}
+                          >
+                            <Typography level='title-sm'>
+                              {notification.title || 'No title'}
+                            </Typography>
+                            <Typography level='body-xs' color='neutral'>
+                              {notification.body || 'No body'}
+                            </Typography>
+
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                gap: 1,
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                mt: 0.5,
+                              }}
+                            >
+                              {scheduledDate && (
+                                <>
+                                  <Chip
+                                    size='sm'
+                                    variant='soft'
+                                    color={getNotificationStatusColor(
+                                      scheduleTime,
+                                    )}
+                                  >
+                                    {timeUntil && timeUntil > 0
+                                      ? formatTimeLeft(timeUntil)
+                                      : 'Past due'}
+                                  </Chip>
+                                  <Typography level='body-xs' color='neutral'>
+                                    {scheduledDate.toLocaleString()}
+                                  </Typography>
+                                </>
+                              )}
+                              {notification.extra?.choreId && (
+                                <Chip size='sm' variant='outlined'>
+                                  Chore ID: {notification.extra.choreId}
+                                </Chip>
+                              )}
+                            </Box>
+                          </Box>
+                        </Card>
+                      )
+                    })}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </Card>
+        )}
+
+        <Card variant='outlined'>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography level='title-lg'>Server-Sent Events (SSE)</Typography>
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Connection Status
               </Typography>
-            )}
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Chip
+                  color={
+                    isConnected
+                      ? 'success'
+                      : isConnecting
+                        ? 'warning'
+                        : 'neutral'
+                  }
+                  variant='soft'
+                >
+                  {getConnectionStatus
+                    ? getConnectionStatus().toUpperCase()
+                    : 'Unknown'}
+                </Chip>
+              </Box>
+              {sseError && (
+                <Typography level='body-sm' color='danger' sx={{ mt: 0.5 }}>
+                  Error: {sseError}
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Last Event Received
+              </Typography>
+              {lastEvent ? (
+                <>
+                  <Typography level='body-sm'>
+                    Type:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {lastEvent.type}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-xs' color='neutral' sx={{ mt: 0.5 }}>
+                    Received:{' '}
+                    {lastEvent.timestamp
+                      ? new Date(lastEvent.timestamp).toLocaleString()
+                      : 'N/A'}
+                  </Typography>
+                </>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  No events received yet
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Heartbeat Status
+              </Typography>
+              {sseDebugInfo?.lastHeartbeat ? (
+                <>
+                  <Typography level='body-sm'>
+                    Last Heartbeat:{' '}
+                    {new Date(sseDebugInfo.lastHeartbeat).toLocaleString()}
+                  </Typography>
+                  <Typography level='body-sm' sx={{ mt: 0.5 }}>
+                    Time Since Last Heartbeat:{' '}
+                    <Chip
+                      variant='soft'
+                      size='sm'
+                      color={
+                        timeSinceLastHeartbeat > 120000 ? 'warning' : 'success'
+                      }
+                    >
+                      {formatTimeLeft(timeSinceLastHeartbeat)}
+                    </Chip>
+                  </Typography>
+                </>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  No heartbeat received yet
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Reconnection Schedule
+              </Typography>
+              {sseDebugInfo ? (
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                >
+                  {sseDebugInfo.nextReconnectTime ? (
+                    <>
+                      <Typography level='body-sm'>
+                        Next Reconnect:{' '}
+                        {new Date(
+                          sseDebugInfo.nextReconnectTime,
+                        ).toLocaleString()}
+                      </Typography>
+                      <Typography level='body-sm'>
+                        Time Until Reconnect:{' '}
+                        <Chip variant='soft' size='sm' color='warning'>
+                          {formatTimeLeft(sseDebugInfo.timeUntilReconnect)}
+                        </Chip>
+                      </Typography>
+                      <Typography level='body-sm'>
+                        Current Delay:{' '}
+                        <Chip variant='soft' size='sm'>
+                          {formatTimeLeft(sseDebugInfo.currentReconnectDelay)}
+                        </Chip>
+                      </Typography>
+                    </>
+                  ) : (
+                    <Typography level='body-sm' color='neutral'>
+                      No reconnection scheduled
+                    </Typography>
+                  )}
+                </Box>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  No reconnection information available
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Timeout Configuration
+              </Typography>
+              {sseDebugInfo ? (
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                >
+                  <Typography level='body-sm'>
+                    Heartbeat Timeout:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {formatTimeLeft(sseDebugInfo.heartbeatTimeout)}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-sm'>
+                    Monitor Interval:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {formatTimeLeft(sseDebugInfo.heartbeatMonitorInterval)}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-sm'>
+                    Monitor Timeout:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {formatTimeLeft(sseDebugInfo.heartbeatMonitorTimeout)}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-sm'>
+                    Circuit Breaker Reset:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {formatTimeLeft(sseDebugInfo.circuitBreakerResetTime)}
+                    </Chip>
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  No timeout information available
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography level='title-sm' mb={1}>
+                Debug Information
+              </Typography>
+              {sseDebugInfo ? (
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                >
+                  <Typography level='body-sm'>
+                    Reconnect Attempts:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {sseDebugInfo.reconnectAttempts} /{' '}
+                      {sseDebugInfo.maxReconnectAttempts}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-sm'>
+                    Circuit Breaker:{' '}
+                    <Chip
+                      variant='soft'
+                      size='sm'
+                      color={
+                        sseDebugInfo.isCircuitBreakerOpen ? 'danger' : 'success'
+                      }
+                    >
+                      {sseDebugInfo.isCircuitBreakerOpen ? 'OPEN' : 'CLOSED'}
+                    </Chip>
+                  </Typography>
+                  <Typography level='body-sm'>
+                    Connection State:{' '}
+                    <Chip variant='soft' size='sm'>
+                      {sseDebugInfo.connectionState === 0
+                        ? 'CONNECTING'
+                        : sseDebugInfo.connectionState === 1
+                          ? 'OPEN'
+                          : 'CLOSED'}
+                    </Chip>
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography level='body-sm' color='neutral'>
+                  No debug information available
+                </Typography>
+              )}
+            </Box>
           </Box>
-        </Box>
-      </Card>
+        </Card>
 
-      <FeedbackModal
-        open={feedbackModalOpen}
-        onClose={() => {
-          setFeedbackModalOpen(false)
-          refreshFeedbackEligibility()
-        }}
-      />
+        <FeedbackModal
+          open={feedbackModalOpen}
+          onClose={() => {
+            setFeedbackModalOpen(false)
+            refreshFeedbackEligibility()
+          }}
+        />
 
-      <ConfirmationModal config={confirmModalConfig} />
+        <ConfirmationModal config={confirmModalConfig} />
       </Box>
     </SettingsLayout>
   )

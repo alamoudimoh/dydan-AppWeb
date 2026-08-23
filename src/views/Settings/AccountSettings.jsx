@@ -11,12 +11,12 @@ import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
+import { formStackSx } from '../../theme/appLayout'
 import { CancelSubscription, UpdatePassword } from '../../utils/Fetcher'
 import {
   resolveSettingsQueryState,
   SETTINGS_QUERY_STATE,
 } from '../../utils/SettingsQueryState'
-import { formStackSx } from '../../theme/appLayout'
 import LoadingComponent from '../components/Loading'
 import NativeCancelSubscriptionModal from '../Modals/Inputs/NativeCancelSubscriptionModal'
 import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
@@ -248,13 +248,18 @@ const AccountSettings = () => {
             {changePasswordModal ? (
               <PassowrdChangeModal
                 isOpen={changePasswordModal}
-                onClose={password => {
-                  if (password) {
-                    UpdatePassword(password).then(resp => {
+                onClose={({ currentPassword, password } = {}) => {
+                  if (password && currentPassword) {
+                    UpdatePassword(currentPassword, password).then(resp => {
                       if (resp.ok) {
                         showNotification({
                           type: 'success',
                           message: 'Password changed successfully',
+                        })
+                      } else if (resp.status === 403) {
+                        showNotification({
+                          type: 'error',
+                          message: 'Current password is incorrect',
                         })
                       } else {
                         showNotification({

@@ -853,13 +853,18 @@ const Settings = () => {
             {changePasswordModal ? (
               <PassowrdChangeModal
                 isOpen={changePasswordModal}
-                onClose={password => {
-                  if (password) {
-                    UpdatePassword(password).then(resp => {
+                onClose={({ currentPassword, password } = {}) => {
+                  if (password && currentPassword) {
+                    UpdatePassword(currentPassword, password).then(resp => {
                       if (resp.ok) {
                         showNotification({
                           type: 'success',
                           message: 'Password changed successfully',
+                        })
+                      } else if (resp.status === 403) {
+                        showNotification({
+                          type: 'error',
+                          message: 'Current password is incorrect',
                         })
                       } else {
                         showNotification({
