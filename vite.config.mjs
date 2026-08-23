@@ -125,6 +125,11 @@ export default defineConfig(({ command }) => ({
   build: {
     // Only the production build with Sentry credentials emits source maps.
     sourcemap: hasSentryBuildCredentials,
+    // Route-level code splitting keeps every page out of the initial payload.
+    // The largest remaining chunk (~570kB) is shared vendor code pulled by
+    // lazy routes; raise the warning threshold slightly above it so genuine
+    // regressions still warn, without hiding real problems.
+    chunkSizeWarningLimit: 600,
   },
 
   resolve: {

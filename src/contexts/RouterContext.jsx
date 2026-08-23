@@ -1,72 +1,118 @@
+import { lazy } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import App from '@/App'
-import ChoreEdit from '@/views/ChoreEdit/ChoreEdit'
-import Error from '@/views/Error'
-import AccountSettings from '@/views/Settings/AccountSettings'
-import AdvancedSettings from '@/views/Settings/AdvancedSettings'
-import ChildUserSettings from '@/views/Settings/ChildUserSettings'
-import CircleSettings from '@/views/Settings/CircleSettings'
-import DeveloperSettings from '@/views/Settings/DeveloperSettings'
-import Settings from '@/views/Settings/Settings'
-import SettingsOverview from '@/views/Settings/SettingsOverview'
-import SettingsPermissionGuard from '@/views/Settings/SettingsPermissionGuard'
-import SettingsRoutes from '@/views/Settings/SettingsRoutes'
-import ThemeSettings from '@/views/Settings/ThemeSettings'
 
-import GlobalSearchPage from '../search/GlobalSearchPage'
+// Route-level code splitting: every page is loaded on demand so the initial
+// payload only needs the app shell. Keep truly shell-critical, tiny components
+// static (App, Error, guards); everything else goes through React.lazy().
+const ChoreEdit = lazy(() => import('@/views/ChoreEdit/ChoreEdit'))
+const Error = lazy(() => import('@/views/Error'))
+const AccountSettings = lazy(() => import('@/views/Settings/AccountSettings'))
+const AdvancedSettings = lazy(() => import('@/views/Settings/AdvancedSettings'))
+const ChildUserSettings = lazy(
+  () => import('@/views/Settings/ChildUserSettings'),
+)
+const CircleSettings = lazy(() => import('@/views/Settings/CircleSettings'))
+const DeveloperSettings = lazy(
+  () => import('@/views/Settings/DeveloperSettings'),
+)
+const Settings = lazy(() => import('@/views/Settings/Settings'))
+const SettingsOverview = lazy(() => import('@/views/Settings/SettingsOverview'))
+const SettingsPermissionGuard = lazy(
+  () => import('@/views/Settings/SettingsPermissionGuard'),
+)
+const SettingsRoutes = lazy(() => import('@/views/Settings/SettingsRoutes'))
+const ThemeSettings = lazy(() => import('@/views/Settings/ThemeSettings'))
+
+const GlobalSearchPage = lazy(() => import('../search/GlobalSearchPage'))
+const AuthenticationLoading = lazy(
+  () => import('../views/Authorization/Authenticating'),
+)
+const ForgotPasswordView = lazy(
+  () => import('../views/Authorization/ForgotPasswordView'),
+)
+const LoginSettings = lazy(() => import('../views/Authorization/LoginSettings'))
+const LoginView = lazy(() => import('../views/Authorization/LoginView'))
+const SignupView = lazy(() => import('../views/Authorization/Signup'))
+const UpdatePasswordView = lazy(
+  () => import('../views/Authorization/UpdatePasswordView'),
+)
+const CalendarView = lazy(() => import('../views/Calendar/CalendarView'))
+const CategoryView = lazy(() => import('../views/Categories/CategoryView'))
+const ChoreView = lazy(() => import('../views/ChoreEdit/ChoreView'))
+const ArchivedTasks = lazy(() => import('../views/Chores/ArchivedTasks'))
+const MyChores = lazy(() => import('../views/Chores/MyChores'))
+const JoinCircleView = lazy(() => import('../views/Circles/JoinCircle'))
+const NotFound = lazy(() => import('../views/components/NotFound'))
+const Dashboard = lazy(() => import('../views/Dashboard/Dashboard'))
+const FamilyProgress = lazy(
+  () => import('../views/FamilyProgress/FamilyProgress'),
+)
+const FamilyCircleGuard = lazy(() => import('../components/FamilyCircleGuard'))
+const FilterView = lazy(() => import('../views/Filters/FilterView'))
+const ChoreHistory = lazy(() => import('../views/History/ChoreHistory'))
+const Landing = lazy(() => import('../views/Landing/Landing'))
+const MaintenanceViewLazy = lazy(
+  () => import('../views/Maintenance/MaintenanceView'),
+)
+const AssetDetailLazy = lazy(() =>
+  import('../views/Maintenance/MaintenanceView').then(m => ({
+    default: m.AssetDetail,
+  })),
+)
+const MetersView = lazy(() => import('../views/Meters/MetersView'))
+const NotificationsView = lazy(
+  () => import('../views/Notifications/NotificationsView'),
+)
+const CircleSetupView = lazy(
+  () => import('../views/Onboarding/CircleSetupView'),
+)
+const GetStartedView = lazy(() => import('../views/Onboarding/GetStartedView'))
+const HeardAboutView = lazy(() => import('../views/Onboarding/HeardAboutView'))
+const OnboardingView = lazy(() => import('../views/Onboarding/OnboardingView'))
+const WorkspaceReadyView = lazy(
+  () => import('../views/Onboarding/WorkspaceReadyView'),
+)
+const PaymentCancelledView = lazy(
+  () => import('../views/Payments/PaymentFailView'),
+)
+const PaymentSuccessView = lazy(
+  () => import('../views/Payments/PaymentSuccessView'),
+)
+const PrivacyPolicyView = lazy(
+  () => import('../views/PrivacyPolicy/PrivacyPolicyView'),
+)
+const ProjectView = lazy(() => import('../views/Projects/ProjectView'))
+const ShoppingListDetail = lazy(
+  () => import('../views/ShoppingLists/ShoppingListDetail'),
+)
+const ShoppingListsView = lazy(
+  () => import('../views/ShoppingLists/ShoppingListsView'),
+)
+const RewardsView = lazy(() => import('../views/Rewards/RewardsView'))
+const RoutinesView = lazy(() => import('../views/Routines/RoutinesView'))
+const APITokenSettings = lazy(() => import('@/views/Settings/APITokenSettings'))
+const LocalizationSettings = lazy(
+  () => import('@/views/Settings/LocalizationSettings'),
+)
+const MFASettings = lazy(() => import('@/views/Settings/MFASettings'))
+const NotificationSetting = lazy(
+  () => import('@/views/Settings/NotificationSetting'),
+)
+const ProfileSettings = lazy(() => import('@/views/Settings/ProfileSettings'))
+const SidepanelSettings = lazy(
+  () => import('@/views/Settings/SidepanelSettings'),
+)
+const StorageSettings = lazy(() => import('@/views/Settings/StorageSettings'))
+const TermsView = lazy(() => import('../views/Terms/TermsView'))
+const ThingsHistory = lazy(() => import('../views/Things/ThingsHistory'))
+const ThingsView = lazy(() => import('../views/Things/ThingsView'))
+const TimerDetails = lazy(() => import('../views/Timer/TimerDetails'))
+const UserActivities = lazy(() => import('../views/User/UserActivities'))
+const UserPoints = lazy(() => import('../views/User/UserPoints'))
+
 import { PERMISSIONS } from '../utils/PermissionModel'
-import AuthenticationLoading from '../views/Authorization/Authenticating'
-import ForgotPasswordView from '../views/Authorization/ForgotPasswordView'
-import LoginSettings from '../views/Authorization/LoginSettings'
-import LoginView from '../views/Authorization/LoginView'
-import SignupView from '../views/Authorization/Signup'
-import UpdatePasswordView from '../views/Authorization/UpdatePasswordView'
-import CalendarView from '../views/Calendar/CalendarView'
-import CategoryView from '../views/Categories/CategoryView'
-import ChoreView from '../views/ChoreEdit/ChoreView'
-import ArchivedTasks from '../views/Chores/ArchivedTasks'
-import MyChores from '../views/Chores/MyChores'
-import JoinCircleView from '../views/Circles/JoinCircle'
-import NotFound from '../views/components/NotFound'
-import Dashboard from '../views/Dashboard/Dashboard'
-import FamilyProgress from '../views/FamilyProgress/FamilyProgress'
-import FamilyCircleGuard from '../components/FamilyCircleGuard'
-import FilterView from '../views/Filters/FilterView'
-import ChoreHistory from '../views/History/ChoreHistory'
-import Landing from '../views/Landing/Landing'
-import MaintenanceView, {
-  AssetDetail,
-} from '../views/Maintenance/MaintenanceView'
-import MetersView from '../views/Meters/MetersView'
-import NotificationsView from '../views/Notifications/NotificationsView'
-import CircleSetupView from '../views/Onboarding/CircleSetupView'
-import GetStartedView from '../views/Onboarding/GetStartedView'
-import HeardAboutView from '../views/Onboarding/HeardAboutView'
-import OnboardingView from '../views/Onboarding/OnboardingView'
-import WorkspaceReadyView from '../views/Onboarding/WorkspaceReadyView'
-import PaymentCancelledView from '../views/Payments/PaymentFailView'
-import PaymentSuccessView from '../views/Payments/PaymentSuccessView'
-import PrivacyPolicyView from '../views/PrivacyPolicy/PrivacyPolicyView'
-import ProjectView from '../views/Projects/ProjectView'
-import ShoppingListDetail from '../views/ShoppingLists/ShoppingListDetail'
-import ShoppingListsView from '../views/ShoppingLists/ShoppingListsView'
-import RewardsView from '../views/Rewards/RewardsView'
-import RoutinesView from '../views/Routines/RoutinesView'
-import APITokenSettings from '../views/Settings/APITokenSettings'
-import LocalizationSettings from '../views/Settings/LocalizationSettings'
-import MFASettings from '../views/Settings/MFASettings'
-import NotificationSetting from '../views/Settings/NotificationSetting'
-import ProfileSettings from '../views/Settings/ProfileSettings'
-import SidepanelSettings from '../views/Settings/SidepanelSettings'
-import StorageSettings from '../views/Settings/StorageSettings'
-import TermsView from '../views/Terms/TermsView'
-import TestView from '../views/TestView/Test'
-import ThingsHistory from '../views/Things/ThingsHistory'
-import ThingsView from '../views/Things/ThingsView'
-import TimerDetails from '../views/Timer/TimerDetails'
-import UserActivities from '../views/User/UserActivities'
-import UserPoints from '../views/User/UserPoints'
 
 const restrictedSetting = (permission, element) => (
   <SettingsPermissionGuard permission={permission}>
@@ -272,10 +318,6 @@ export const appRouteConfig = [
         element: <Landing />,
       },
       {
-        path: '/test',
-        element: <TestView />,
-      },
-      {
         path: '/forgot-password',
         element: <ForgotPasswordView />,
       },
@@ -313,7 +355,7 @@ export const appRouteConfig = [
       },
       {
         path: 'maintenance',
-        element: <MaintenanceView />,
+        element: <MaintenanceViewLazy />,
       },
       {
         path: 'routines',
@@ -321,7 +363,7 @@ export const appRouteConfig = [
       },
       {
         path: 'maintenance/assets/:id',
-        element: <AssetDetail />,
+        element: <AssetDetailLazy />,
       },
       {
         path: 'things/:id',

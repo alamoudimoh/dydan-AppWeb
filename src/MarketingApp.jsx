@@ -1,14 +1,19 @@
 import { useColorScheme } from '@mui/joy'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { ImpersonateUserProvider } from './contexts/ImpersonateUserContext'
 import { LocalizationProvider } from './contexts/LocalizationContext'
 import ThemeContext from './contexts/ThemeContext'
 import Landing from './views/Landing/Landing'
-import PrivacyPolicyView from './views/PrivacyPolicy/PrivacyPolicyView'
-import TermsView from './views/Terms/TermsView'
+
+const PrivacyPolicyView = lazy(
+  () => import('./views/PrivacyPolicy/PrivacyPolicyView'),
+)
+const TermsView = lazy(() => import('./views/Terms/TermsView'))
+
+const page = element => <Suspense fallback={null}>{element}</Suspense>
 
 const AppRedirect = () => {
   useEffect(() => {
@@ -23,8 +28,8 @@ const AppRedirect = () => {
 
 const router = createBrowserRouter([
   { path: '/', element: <Landing /> },
-  { path: '/privacy', element: <PrivacyPolicyView /> },
-  { path: '/terms', element: <TermsView /> },
+  { path: '/privacy', element: page(<PrivacyPolicyView />) },
+  { path: '/terms', element: page(<TermsView />) },
   { path: '*', element: <AppRedirect /> },
 ])
 

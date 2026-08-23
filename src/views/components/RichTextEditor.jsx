@@ -1,37 +1,55 @@
 import imageCompression from 'browser-image-compression'
-import Quill from 'quill'
-import 'quill/dist/quill.snow.css'
-import QuillMarkdown from 'quilljs-markdown'
 
-// Extend the built-in Image blot to preserve dt-data-path
-const ImageBlot = Quill.import('formats/image')
-class DtImageBlot extends ImageBlot {
-  static create(value) {
-    const node = super.create(typeof value === 'string' ? value : value.src)
-    if (value?.path) node.setAttribute('dt-data-path', value.path)
-    return node
+// Quill (and quilljs-markdown) are loaded on demand: the rich editor is only
+// needed when an editable description is actually rendered, so keeping it out
+// of the initial bundle significantly reduces first-load cost.
+let quillModulesPromise = null
+const loadQuillModules = () => {
+  if (!quillModulesPromise) {
+    quillModulesPromise = Promise.all([
+      import('quill'),
+      import('quilljs-markdown'),
+      import('quill/dist/quill.snow.css'),
+    ]).then(([{ default: Quill }, { default: QuillMarkdown }]) => {
+      // Extend the built-in Image blot to preserve dt-data-path
+      const ImageBlot = Quill.import('formats/image')
+      class DtImageBlot extends ImageBlot {
+        static create(value) {
+          const node = super.create(
+            typeof value === 'string' ? value : value.src,
+          )
+          if (value?.path) node.setAttribute('dt-data-path', value.path)
+          return node
+        }
+        static value(node) {
+          return {
+            src: node.getAttribute('src'),
+            path: node.getAttribute('dt-data-path'),
+          }
+        }
+        static formats(node) {
+          return { 'dt-data-path': node.getAttribute('dt-data-path') }
+        }
+        format(name, value) {
+          if (name === 'dt-data-path') {
+            if (value) this.domNode.setAttribute('dt-data-path', value)
+            else this.domNode.removeAttribute('dt-data-path')
+          } else {
+            super.format(name, value)
+          }
+        }
+      }
+      DtImageBlot.blotName = 'image'
+      DtImageBlot.tagName = 'img'
+      Quill.register(DtImageBlot, true)
+
+      return { Quill, QuillMarkdown }
+    })
   }
-  static value(node) {
-    return {
-      src: node.getAttribute('src'),
-      path: node.getAttribute('dt-data-path'),
-    }
-  }
-  static formats(node) {
-    return { 'dt-data-path': node.getAttribute('dt-data-path') }
-  }
-  format(name, value) {
-    if (name === 'dt-data-path') {
-      if (value) this.domNode.setAttribute('dt-data-path', value)
-      else this.domNode.removeAttribute('dt-data-path')
-    } else {
-      super.format(name, value)
-    }
-  }
+  return quillModulesPromise
 }
-DtImageBlot.blotName = 'image'
-DtImageBlot.tagName = 'img'
-Quill.register(DtImageBlot, true)
+import './RichTextEditor.css'
+
 import {
   forwardRef,
   useCallback,
@@ -39,25 +57,25 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react'
+
 import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { apiClient } from '../../utils/ApiClient'
 import { isPlusAccount, resolvePhotoURL } from '../../utils/Helpers'
 import { patchDescriptionHtml } from '../../utils/ImageCache'
-import './RichTextEditor.css'
 
 const RichTextEditor = forwardRef(
   (
     {
-      value = '',
-      onChange,
-      isEditable = true,
-      placeholder = 'Enter description...',
-      variant = 'outlined',
+      draftId,
       entityId,
       entityType,
-      draftId,
+      isEditable = true,
+      onChange,
+      placeholder = 'Enter description...',
+      value = '',
+      variant = 'outlined',
     },
     ref,
   ) => {
@@ -209,32 +227,39 @@ const RichTextEditor = forwardRef(
     useEffect(() => {
       if (!quillRef.current) return
       if (!editorRef.current && isEditable) {
-        editorRef.current = new Quill(quillRef.current, {
-          theme: variant === 'bubble' ? 'bubble' : 'snow',
-          modules: {
-            toolbar: {
-              container: [
-                [{ header: [1, 2, 3, 4, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
-                ['clean'],
-              ],
-              handlers: {
-                image: handleImageUpload,
+        let cancelled = false
+        loadQuillModules().then(({ Quill, QuillMarkdown }) => {
+          if (cancelled || !quillRef.current) return
+          editorRef.current = new Quill(quillRef.current, {
+            theme: variant === 'bubble' ? 'bubble' : 'snow',
+            modules: {
+              toolbar: {
+                container: [
+                  [{ header: [1, 2, 3, 4, false] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  ['blockquote', 'code-block'],
+                  [{ list: 'ordered' }, { list: 'bullet' }],
+                  ['link', 'image'],
+                  ['clean'],
+                ],
+                handlers: {
+                  image: handleImageUpload,
+                },
               },
             },
-          },
-          placeholder: placeholder,
+            placeholder: placeholder,
+          })
+          new QuillMarkdown(editorRef.current, {})
+          editorRef.current.root.innerHTML = value
+          editorRef.current.on('text-change', () => {
+            if (onChange) {
+              onChange(editorRef.current.root.innerHTML)
+            }
+          })
         })
-        new QuillMarkdown(editorRef.current, {})
-        editorRef.current.root.innerHTML = value
-        editorRef.current.on('text-change', () => {
-          if (onChange) {
-            onChange(editorRef.current.root.innerHTML)
-          }
-        })
+        return () => {
+          cancelled = true
+        }
       }
       // Keep Quill's editing state in sync with the isEditable prop
       if (editorRef.current) {

@@ -1,7 +1,7 @@
 import './styles/safe-area.css'
 
-import { Button, Typography, useColorScheme } from '@mui/joy'
-import { useCallback, useEffect } from 'react'
+import { Button, LinearProgress, Typography, useColorScheme } from '@mui/joy'
+import { Suspense, useCallback, useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
@@ -105,7 +105,11 @@ const AppContent = () => {
         <ImpersonateUserProvider>
           <NavBar />
           <PageTransition>
-            <Outlet />
+            {/* Route components are React.lazy chunks; Suspense keeps the shell
+                mounted while a page bundle loads. */}
+            <Suspense fallback={<LinearProgress />}>
+              <Outlet />
+            </Suspense>
           </PageTransition>
         </ImpersonateUserProvider>
       </div>
