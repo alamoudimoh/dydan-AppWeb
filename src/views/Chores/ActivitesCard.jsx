@@ -27,9 +27,11 @@ import {
 } from '@mui/joy'
 import moment from 'moment'
 import { useState } from 'react'
+
 import { useChores, useChoresHistory } from '../../queries/ChoreQueries'
 import { useCircleMembers } from '../../queries/UserQueries'
 import { resolvePhotoURL } from '../../utils/Helpers'
+import { stripHtmlTags } from '../../utils/stripHtmlTags'
 import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
 
 const ActivityItem = ({ activity, members, onViewNote }) => {
@@ -38,14 +40,8 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
     member => member.userId === activity.completedBy,
   )
 
-  // Strip HTML tags from notes for plain text display
-  const stripHtmlTags = html => {
-    if (!html) return ''
-    const div = document.createElement('div')
-    div.innerHTML = html
-    return div.textContent || div.innerText || ''
-  }
-
+  // Strip HTML tags from notes for plain text display (DOMParser-based, no
+  // script execution or resource loading)
   const plainTextNotes = activity.notes ? stripHtmlTags(activity.notes) : ''
 
   // Calculate if notes should be truncated (more than 2 lines in the UI, which is roughly 100 characters)

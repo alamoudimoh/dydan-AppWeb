@@ -1,11 +1,6 @@
-const stripHtml = value => {
-  if (!value) return ''
-  if (typeof globalThis.document === 'undefined')
-    return String(value).replace(/<[^>]*>/g, ' ')
-  const element = globalThis.document.createElement('div')
-  element.innerHTML = String(value)
-  return element.textContent || element.innerText || ''
-}
+import { stripHtmlTags } from '../utils/stripHtmlTags'
+
+const stripHtml = value => stripHtmlTags(value)
 
 const HISTORY_STATUS = {
   0: 'in progress',

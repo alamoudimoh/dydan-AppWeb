@@ -1,18 +1,26 @@
-import { useEffect, useState } from 'react'
-import { patchDescriptionHtml } from '../utils/ImageCache'
+import { useEffect, useMemo, useState } from 'react'
 
-// Returns description HTML safe to render: embedded images with an expired
-// signed src are swapped for the offline-cached blob or a freshly signed URL.
-// Renders the raw HTML immediately and patches in place when needed.
+import { patchDescriptionHtml } from '../utils/ImageCache'
+import { sanitizeHtml } from '../utils/sanitizeHtml'
+
+// Returns description HTML safe to render: sanitized against stored XSS and
+// with embedded images whose signed src expired swapped for the offline-cached
+// blob or a freshly signed URL. Renders the sanitized HTML immediately and
+// swaps in the image-patched version once ready.
+//
+// No synchronous setState in the effect: the sanitized value is derived during
+// render and the async patch result is keyed on its source html.
 export const useDescriptionHtml = (html, meta = {}) => {
-  const [patched, setPatched] = useState(html)
+  const sanitized = useMemo(() => sanitizeHtml(html), [html])
+  // The resolved patch is keyed on the html it came from so a stale result
+  // never leaks into a new render after the input changes.
+  const [patched, setPatched] = useState({ source: null, html: null })
 
   useEffect(() => {
-    let cancelled = false
-    setPatched(html)
     if (!html || !html.includes('dt-data-path')) return undefined
+    let cancelled = false
     patchDescriptionHtml(html, meta).then(result => {
-      if (!cancelled && result !== html) setPatched(result)
+      if (!cancelled) setPatched({ source: html, html: sanitizeHtml(result) })
     })
     return () => {
       cancelled = true
@@ -22,5 +30,7 @@ export const useDescriptionHtml = (html, meta = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [html])
 
-  return patched
+  return patched.source === html && patched.html !== null
+    ? patched.html
+    : sanitized
 }

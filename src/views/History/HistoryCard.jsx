@@ -14,6 +14,7 @@ import moment from 'moment'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { TASK_COLOR } from '../../utils/Colors.jsx'
+import { stripHtmlTags as stripHtmlTagsUtil } from '../../utils/stripHtmlTags'
 import PendingBadge from '../components/PendingBadge'
 
 const formatTime = seconds => {
@@ -24,15 +25,7 @@ const formatTime = seconds => {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
-const stripHtmlTags = html => {
-  if (!html) return ''
-  if (typeof document === 'undefined') {
-    return String(html).replace(/<[^>]*>/g, '')
-  }
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return div.textContent || div.innerText || ''
-}
+const stripHtmlTags = html => stripHtmlTagsUtil(html)
 
 const statusConfig = {
   0: { label: 'In Progress', color: 'primary', icon: <AccessTime /> },
