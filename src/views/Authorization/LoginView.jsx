@@ -348,30 +348,70 @@ const LoginView = () => {
   const handleForgotPassword = () => {
     Navigate('/forgot-password')
   }
+  // Cryptographically strong fallback state for servers that predate the
+  // hardened /auth/oauth2/start endpoint (which issues its own state).
   const generateRandomState = () => {
-    const randomState = Math.random().toString(32).substring(5)
+    const bytes = new Uint8Array(32)
+    crypto.getRandomValues(bytes)
+    const randomState = Array.from(bytes, b =>
+      b.toString(16).padStart(2, '0'),
+    ).join('')
     localStorage.setItem('authState', randomState)
 
     return randomState
   }
 
+  const startOAuthTransaction = async redirectUri => {
+    // Ask the server to mint a single-use state bound to a PKCE S256
+    // verifier. Falls back to a local crypto-random state when talking to an
+    // older server that does not implement the start endpoint.
+    try {
+      await apiClient.init()
+      const baseURL = apiClient.getApiURL()
+      const response = await fetch(`${baseURL}/auth/oauth2/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirect_uri: redirectUri }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (data?.state && data?.code_challenge) {
+          localStorage.setItem('authState', data.state)
+          return {
+            state: data.state,
+            codeChallenge: data.code_challenge,
+            codeChallengeMethod: data.code_challenge_method || 'S256',
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(
+        'Server-side OAuth state unavailable, using local fallback',
+        error,
+      )
+    }
+    return { state: generateRandomState() }
+  }
+
   const handleAuthentikLogin = async () => {
     const authentikAuthorizeUrl = resource?.identity_provider?.auth_url
-    const state = generateRandomState()
 
     if (Capacitor.isNativePlatform()) {
       const redirectUri = 'donetick://auth/oauth2'
-
+      const txn = await startOAuthTransaction(redirectUri)
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: resource?.identity_provider?.client_id,
         redirect_uri: redirectUri,
         scope: 'openid profile email',
-        state: state,
+        state: txn.state,
       })
+      if (txn.codeChallenge) {
+        params.set('code_challenge', txn.codeChallenge)
+        params.set('code_challenge_method', txn.codeChallengeMethod)
+      }
 
       const authUrl = `${authentikAuthorizeUrl}?${params.toString()}`
-      console.log('Opening OAuth in browser:', authUrl)
 
       try {
         // Open OAuth flow in system browser
@@ -389,15 +429,20 @@ const LoginView = () => {
       }
     } else {
       // For web platforms, use the current approach
+      const redirectUri = `${window.location.origin}/auth/oauth2`
+      const txn = await startOAuthTransaction(redirectUri)
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: resource?.identity_provider?.client_id,
-        redirect_uri: `${window.location.origin}/auth/oauth2`,
+        redirect_uri: redirectUri,
         scope: 'openid profile email',
-        state: state,
+        state: txn.state,
       })
+      if (txn.codeChallenge) {
+        params.set('code_challenge', txn.codeChallenge)
+        params.set('code_challenge_method', txn.codeChallengeMethod)
+      }
 
-      console.log('redirect', `${authentikAuthorizeUrl}?${params.toString()}`)
       window.location.href = `${authentikAuthorizeUrl}?${params.toString()}`
     }
   }
