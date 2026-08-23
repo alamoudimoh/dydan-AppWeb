@@ -436,13 +436,6 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     nav: false,
     heading: /payment has been cancelled/i,
   },
-  '/test': {
-    status: 'covered',
-    group: 'public',
-    auth: true,
-    nav: true,
-    heading: /test view/i,
-  },
   '/not-a-real-route': {
     status: 'covered',
     group: 'public',

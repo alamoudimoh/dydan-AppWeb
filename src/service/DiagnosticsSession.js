@@ -74,10 +74,7 @@ export const getPreviousRoute = () =>
 export const recordServerVersionFromResponse = response => {
   if (serverVersion) return
   try {
-    serverVersion =
-      response?.headers?.get?.('x-donetick-version') ||
-      response?.headers?.get?.('x-api-version') ||
-      null
+    serverVersion = response?.headers?.get?.('x-api-version') || null
   } catch {
     // headers may be inaccessible on opaque responses; not worth reporting
   }

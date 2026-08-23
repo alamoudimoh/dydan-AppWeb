@@ -103,7 +103,6 @@ export const ROUTE_SMOKE_ENTRIES = Object.freeze([
   { path: '/terms', label: 'Terms' },
   { path: '/payments/success', label: 'Payment success' },
   { path: '/payments/cancel', label: 'Payment cancelled' },
-  { path: '/test', label: 'Test view' },
   { path: '/not-a-real-route', label: 'Not found' },
 ])
 
@@ -182,7 +181,6 @@ export const ROUTE_SMOKE_GROUPS = Object.freeze({
     '/terms',
     '/payments/success',
     '/payments/cancel',
-    '/test',
     '/not-a-real-route',
   ],
 })
