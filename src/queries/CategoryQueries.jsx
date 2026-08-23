@@ -6,12 +6,13 @@ import {
   SetCategoryArchived,
   UpdateCategory,
 } from '../utils/Fetcher'
+import { getAccessToken } from '../utils/TokenStorage.js'
 import { activeCategories, categoryCatalog } from './categoryModel'
 
 export const categoryKey = token => ['categories', token]
 
 export const useCategories = (includeArchived = false) => {
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
   return useQuery({
     queryKey: categoryKey(token),
     queryFn: async () => categoryCatalog(await GetCategories(true)),

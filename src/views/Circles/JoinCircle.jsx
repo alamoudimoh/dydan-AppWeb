@@ -7,6 +7,7 @@ import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { JoinCircle } from '../../utils/Fetcher'
 import { clearPendingInvite, setPendingInvite } from '../../utils/PendingInvite'
+import { getAccessToken } from '../../utils/TokenStorage'
 import { authButtonSx } from '../Authorization/authStyles'
 import AcknowledgmentModal from '../Modals/Inputs/AcknowledgmentModal'
 import { CircleVignette } from '../Onboarding/OnboardingVignettes'
@@ -28,7 +29,7 @@ const JoinCircleView = () => {
   // through its own login(), so signup and the OAuth callback — which save
   // tokens directly — would still look signed out here. The query hooks read
   // storage the same way.
-  const isAuthenticated = !!localStorage.getItem('token')
+  const isAuthenticated = !!getAccessToken()
   const { showError } = useNotification()
   const { ackModalConfig, showAcknowledgment } = useAcknowledgmentModal()
   const [isJoining, setIsJoining] = useState(false)

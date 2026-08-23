@@ -1,5 +1,7 @@
 import Cookies from 'js-cookie'
 
+import { getAccessToken, getAccessTokenExpiry } from './TokenStorage.js'
+
 // Shared with PendingInvite OAuth round-trips; one cookie for all post-auth redirects.
 export const RETURN_PATH_COOKIE = 'ca_redirect'
 
@@ -114,9 +116,9 @@ export const isPublicAppPath = pathname => {
 }
 
 export const hasValidSession = () => {
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
   if (!token) return false
-  const expiry = localStorage.getItem('token_expiry')
+  const expiry = getAccessTokenExpiry()
   if (!expiry) return true
   const expiryDate = new Date(expiry)
   if (Number.isNaN(expiryDate.getTime())) return true

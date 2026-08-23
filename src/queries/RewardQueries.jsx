@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiClient } from '../utils/ApiClient'
+import { getAccessToken } from '../utils/TokenStorage.js'
 
 const json = async response => {
   const body = await response.json().catch(() => ({}))
@@ -13,18 +14,18 @@ const send = (path, method, data) =>
 
 export const useRewards = includeArchived =>
   useQuery({
-    queryKey: ['rewards', localStorage.getItem('token'), includeArchived],
+    queryKey: ['rewards', getAccessToken(), includeArchived],
     queryFn: () =>
       get(`/rewards${includeArchived ? '?includeArchived=true' : ''}`),
   })
 export const useMyRewardRequests = () =>
   useQuery({
-    queryKey: ['rewardRequests', localStorage.getItem('token'), 'mine'],
+    queryKey: ['rewardRequests', getAccessToken(), 'mine'],
     queryFn: () => get('/rewards/requests/mine'),
   })
 export const useAdminRewardRequests = enabled =>
   useQuery({
-    queryKey: ['rewardRequests', localStorage.getItem('token'), 'admin'],
+    queryKey: ['rewardRequests', getAccessToken(), 'admin'],
     queryFn: () => get('/rewards/requests'),
     enabled,
   })

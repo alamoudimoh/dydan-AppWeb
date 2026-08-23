@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { hasSeenOnboarding, isNativeApp } from '../utils/Onboarding'
 import { setPendingInvite } from '../utils/PendingInvite'
+import { getAccessToken } from '../utils/TokenStorage'
 
 // Routes a first-run user may legitimately be on without having gone through
 // onboarding: the flow itself, deep-link auth callbacks, and the legal pages
@@ -32,7 +33,7 @@ const useOnboardingGate = () => {
   const isRedirecting =
     isNativeApp() &&
     !hasSeenOnboarding() &&
-    !localStorage.getItem('token') &&
+    !getAccessToken() &&
     !isAllowed(pathname)
 
   useEffect(() => {

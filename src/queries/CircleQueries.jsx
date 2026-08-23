@@ -7,6 +7,7 @@ import {
   syncActiveCircleId,
 } from '../utils/ActiveCircle'
 import { GetUserCircle } from '../utils/Fetcher'
+import { getAccessToken } from '../utils/TokenStorage.js'
 import { useUserProfile } from './UserQueries'
 
 const readUserCircles = async () => {
@@ -20,7 +21,7 @@ const readUserCircles = async () => {
 }
 
 export const useUserCircles = () => {
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
   return useQuery({
     queryKey: ['userCircles', token],
     queryFn: readUserCircles,

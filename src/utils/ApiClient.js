@@ -17,6 +17,8 @@ import {
 } from './ReturnPath'
 import {
   clearAllTokens,
+  getAccessToken,
+  getAccessTokenExpiry,
   isRefreshTokenExpired,
   saveTokens,
 } from './TokenStorage'
@@ -30,6 +32,7 @@ class ApiClient {
     this.failedQueue = []
     this.lastRefreshTime = 0
     this.refreshCooldown = 3 * 1000 // 3 seconds in milliseconds
+    this.refreshPromise = null // single-flight refresh handle
   }
 
   async init(force = false) {
@@ -72,33 +75,47 @@ class ApiClient {
     this.initialized = true
   }
 
-  async refreshToken() {
+  /**
+   * Refresh the access credential. Single-flight: concurrent callers share
+   * one in-flight request so parallel 401s can never trigger two rotations.
+   *
+   * @param {object} [options]
+   * @param {boolean} [options.allowLogoutFallback] When false (session restore
+   *   at boot), a failed refresh just reports failure instead of tearing the
+   *   app down with a forced logout redirect.
+   */
+  refreshToken(options = {}) {
     // No session exists yet while an OAuth code exchange is in flight, so there
     // is nothing to refresh. Callers must treat this as a non-fatal failure
     // (see request()) rather than an expired session.
     if (isOAuthExchangeInProgress()) {
-      return { success: false, error: OAUTH_EXCHANGE_IN_PROGRESS }
+      return Promise.resolve({
+        success: false,
+        error: OAUTH_EXCHANGE_IN_PROGRESS,
+      })
     }
 
-    // Check if refresh token is expired BEFORE attempting refresh
+    if (!this.refreshPromise) {
+      this.refreshPromise = this._doRefresh(options).finally(() => {
+        this.refreshPromise = null
+      })
+    }
+    return this.refreshPromise
+  }
+
+  async _doRefresh(options = {}) {
+    const allowLogoutFallback = options.allowLogoutFallback !== false
+
+    // Check if refresh token is expired BEFORE attempting refresh (native only;
+    // web relies on the server rejecting the cookie)
     const refreshExpired = await isRefreshTokenExpired()
     if (refreshExpired) {
       console.log('Refresh token expired, forcing logout')
-      await this.handleLogout()
+      if (allowLogoutFallback) {
+        await this.handleLogout()
+      }
       return { success: false, error: 'Refresh token expired' }
     }
-
-    if (this.isRefreshing) {
-      return { success: false, error: 'Already refreshing' }
-    }
-
-    // Check cooldown
-    const now = Date.now()
-    if (now - this.lastRefreshTime < this.refreshCooldown) {
-      return { success: false, error: 'Refresh cooldown active' }
-    }
-
-    this.isRefreshing = true
 
     try {
       const refreshReq = await RefreshToken()
@@ -107,7 +124,9 @@ class ApiClient {
         const data = await refreshReq.json()
         const newToken = data.token || data.access_token
 
-        // Save all tokens including rotated refresh token
+        // Save all tokens including rotated refresh token. On the web the
+        // access token lands in memory and the rotated refresh token stays in
+        // the HttpOnly cookie the response carries.
         await saveTokens({
           accessToken: newToken,
           accessTokenExpiry: data.expire || data.access_token_expiry,
@@ -117,9 +136,13 @@ class ApiClient {
 
         // Update last refresh time
         this.lastRefreshTime = Date.now()
+        this.isRefreshing = false
 
         return { success: true, token: newToken }
       } else {
+        if (allowLogoutFallback) {
+          await this.handleLogout()
+        }
         return { success: false, error: 'Refresh failed' }
       }
     } catch (error) {
@@ -130,7 +153,11 @@ class ApiClient {
   }
 
   getToken() {
-    return localStorage.getItem('token')
+    return getAccessToken()
+  }
+
+  getTokenExpiry() {
+    return getAccessTokenExpiry()
   }
 
   getHeaders(customHeaders = {}) {
@@ -280,49 +307,29 @@ class ApiClient {
           })
         })
 
-        // If already refreshing, just return the queued promise
-        if (this.isRefreshing) {
-          console.log('Token refresh already in progress, queueing request')
-          return queuedPromise
-        }
-
-        // Attempt to refresh the token
+        // Single-flight: every parallel 401 shares one refresh request, so a
+        // rotated refresh token can never be double-spent by racing requests.
         const refreshResult = await this.refreshToken()
 
         if (refreshResult.success) {
           // Process queue with success - this will retry all queued requests
           this.processQueue(null, refreshResult.token)
-        } else if (refreshResult.error === 'Refresh cooldown active') {
-          // We're in cooldown - token was just refreshed, retry with current token
-          console.log('Refresh cooldown - retrying with current token')
-          const currentToken = this.getToken()
-          if (currentToken) {
-            this.processQueue(null, currentToken)
-          } else {
-            this.processQueue(new Error('No token available'), null)
-            this.handleLogout()
-            return null
-          }
-        } else if (refreshResult.error === OAUTH_EXCHANGE_IN_PROGRESS) {
+          return queuedPromise
+        }
+
+        if (refreshResult.error === OAUTH_EXCHANGE_IN_PROGRESS) {
           // Expected 401: the code exchange hasn't produced tokens yet. Fail
           // just this request — logging out here would wipe storage and hard
           // navigate to /login, aborting the exchange fetch mid-flight.
           queuedPromise.catch(() => {}) // not returned below; keep it handled
           this.processQueue(new Error(refreshResult.error), null)
           return response
-        } else if (refreshResult.error === 'Already refreshing') {
-          // This shouldn't happen since we check isRefreshing above, but handle it anyway
-          console.log('Already refreshing - waiting for refresh to complete')
-          return queuedPromise
-        } else {
-          // Actual refresh failure - logout
-          this.processQueue(new Error(refreshResult.error), null)
-          this.handleLogout()
-          return null
         }
 
-        // Return the queued promise for this request
-        return queuedPromise
+        // Actual refresh failure - the forced-logout side effect already ran
+        // inside refreshToken (when allowed).
+        this.processQueue(new Error(refreshResult.error), null)
+        return null
       }
 
       return response

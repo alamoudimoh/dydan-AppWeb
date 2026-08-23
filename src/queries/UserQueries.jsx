@@ -8,13 +8,14 @@ import {
   GetUserProfile,
 } from '../utils/Fetcher'
 import { offlineDB } from '../utils/OfflineDB'
+import { getAccessToken, getAccessTokenExpiry } from '../utils/TokenStorage.js'
 
 // Helper to check if we have a valid token
 const isTokenValid = () => {
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
   if (!token) return false
 
-  const expiry = localStorage.getItem('token_expiry')
+  const expiry = getAccessTokenExpiry()
   if (!expiry) return true // No expiry set, assume valid
 
   return new Date() < new Date(expiry)
@@ -29,7 +30,7 @@ export const useAllUsers = () => {
 
 export const useCircleMembers = () => {
   const queryClient = useQueryClient()
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['allCircleMembers'],
@@ -62,7 +63,7 @@ export const useCircleMembers = () => {
 
 export const useUserProfile = ({ enabled = true } = {}) => {
   const queryClient = useQueryClient()
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['userProfile', token],

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { getStoredCircleId } from '../utils/ActiveCircle'
 import { apiClient } from '../utils/ApiClient'
+import { getAccessToken } from '../utils/TokenStorage.js'
 import {
   normalizeGoals,
   normalizeReport,
@@ -14,7 +15,7 @@ const json = async response => {
     throw new Error(body.error || 'Unable to load family progress')
   return body
 }
-const token = () => localStorage.getItem('token')
+const token = () => getAccessToken()
 const progressScope = () => [token(), getStoredCircleId()]
 const get = path => apiClient.get(path).then(json)
 

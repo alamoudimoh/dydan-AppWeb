@@ -1,19 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
+
 import { GetResource } from '../utils/Fetcher'
+import { getAccessToken, getAccessTokenExpiry } from '../utils/TokenStorage.js'
 
 // Helper to check if we have a valid token
 const isTokenValid = () => {
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
   if (!token) return false
 
-  const expiry = localStorage.getItem('token_expiry')
+  const expiry = getAccessTokenExpiry()
   if (!expiry) return true // No expiry set, assume valid
 
   return new Date() < new Date(expiry)
 }
 
 export const useResource = () => {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ['resource'],
     queryFn: async () => {
       const response = await GetResource()

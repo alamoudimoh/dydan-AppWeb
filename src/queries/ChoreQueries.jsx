@@ -29,6 +29,7 @@ import { offlineDB } from '../utils/OfflineDB'
 import { isOfflineFeatureEnabled } from '../utils/OfflineFeatureToggle'
 import { createSingleFlight } from '../utils/SubmissionGuards'
 import { syncEngine } from '../utils/SyncEngine'
+import { getAccessToken } from '../utils/TokenStorage.js'
 
 const runChoreCreation = createSingleFlight()
 
@@ -174,7 +175,7 @@ export const useChores = (includeArchive = false) => {
 }
 export const usePersonalChores = () =>
   useQuery({
-    queryKey: ['chores', 'personal', localStorage.getItem('token')],
+    queryKey: ['chores', 'personal', getAccessToken()],
     queryFn: GetPersonalChores,
     refetchOnWindowFocus: true,
   })
@@ -347,7 +348,7 @@ export const useUpdateChore = () => {
 
 export const useChoresHistory = (initialLimit, includeMembers) => {
   const [limit, setLimit] = useState(initialLimit) // Initially, no limit is selected
-  const token = localStorage.getItem('token')
+  const token = getAccessToken()
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['choresHistory', token, limit, Boolean(includeMembers)],

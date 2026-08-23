@@ -4,7 +4,14 @@ import { useNavigate } from 'react-router-dom'
 import { API_URL } from '../Config'
 import { apiClient } from '../utils/ApiClient'
 import { offlineDB } from '../utils/OfflineDB'
-import { clearAllTokens, saveTokens } from '../utils/TokenStorage'
+import {
+  adoptLegacyStoredToken,
+  clearAllTokens,
+  getAccessToken,
+  getAccessTokenExpiry,
+  hasAccessToken,
+  saveTokens,
+} from '../utils/TokenStorage'
 
 const AuthContext = createContext(null)
 
@@ -17,15 +24,16 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem('token'))
+  // The access token lives in memory on the web (restored via the HttpOnly
+  // refresh cookie below); native builds read their persisted copy.
+  const [token, setToken] = useState(() => getAccessToken())
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
-  const baseURL = apiClient.getApiURL()
   const isAuthenticated = !!token
 
   const isTokenExpired = () => {
-    const expiry = localStorage.getItem('token_expiry')
+    const expiry = getAccessTokenExpiry()
     if (!expiry) return false
     return new Date() >= new Date(expiry)
   }
@@ -35,6 +43,69 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
     await clearAllTokens()
   }
+
+  /**
+   * Boot-time session establishment for browser/PWA clients:
+   *
+   * 1. Migrate any legacy localStorage token into the new model and scrub it
+   *    from storage immediately (one-time upgrade path).
+   * 2. Restore/rotate the session through POST /auth/refresh using the
+   *    HttpOnly cookie. A restored page therefore never relies on a
+   *    JavaScript-readable credential.
+   *
+   * Native builds keep reading their persisted tokens synchronously and skip
+   * the cookie dance entirely.
+   */
+  useEffect(() => {
+    let cancelled = false
+    const restoreSession = async () => {
+      try {
+        await apiClient.init()
+
+        const isNative =
+          typeof window !== 'undefined' &&
+          window.Capacitor?.isNativePlatform?.()
+
+        if (!isNative) {
+          // One-time migration from the legacy localStorage token build.
+          const adopted = adoptLegacyStoredToken()
+          if (adopted) {
+            console.info(
+              'Migrated legacy stored session out of localStorage; rotating credentials',
+            )
+          }
+
+          // Restore or rotate through the HttpOnly refresh cookie. A missing
+          // cookie simply means "not signed in" - no forced-logout redirect.
+          const result = await apiClient.refreshToken({
+            allowLogoutFallback: false,
+          })
+          if (cancelled) return
+          if (result.success && result.token) {
+            setToken(result.token)
+          } else if (hasAccessToken()) {
+            // Migration adopted a still-valid access token but the refresh
+            // rotation failed (e.g. very old server). Keep working until it
+            // expires; the next refresh attempt will require a fresh login.
+            setToken(getAccessToken())
+          } else {
+            setToken(null)
+          }
+        } else if (isNative && !token && hasAccessToken()) {
+          setToken(getAccessToken())
+        }
+      } catch (error) {
+        console.error('Session restore failed:', error)
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    restoreSession()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const login = async credentials => {
     setIsLoading(true)
@@ -96,7 +167,9 @@ export const AuthProvider = ({ children }) => {
           console.error('Error clearing offline data on login', e)
         }
 
-        // Use centralized token storage
+        // Use centralized token storage. On the web this keeps the access
+        // token in memory only and leaves the refresh credential in the
+        // server's HttpOnly cookie.
         await saveTokens({
           accessToken: userToken,
           accessTokenExpiry: data.expire || data.access_token_expiry,
@@ -105,8 +178,9 @@ export const AuthProvider = ({ children }) => {
         })
 
         // Publish the authenticated state only after token storage is ready.
-        // Profile queries read the token from storage, so setting React state
-        // first can start them as signed out and leave the login route stuck.
+        // Profile queries read the token through TokenStorage, so setting
+        // React state first can start them as signed out and leave the login
+        // route stuck.
         setToken(userToken)
 
         const profileResponse = await apiClient.get('/users/profile')
@@ -154,24 +228,6 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  useEffect(() => {
-    // const initAuth = async () => {
-    //   if (token && !isTokenExpired()) {
-    //     await fetchUser()
-    //   } else if (token && isTokenExpired()) {
-    //     // Token is expired, but don't refresh here
-    //     // Let the first API call handle refresh via ApiClient
-    //     // Just try to fetch user - if it fails, ApiClient will handle refresh
-    //     await fetchUser()
-    //   } else {
-    //     clearAuth()
-    //     navigate('/login')
-    //   }
-    //   setIsLoading(false)
-    // }
-    // initAuth()
-  }, [token, navigate])
-
   const value = {
     token,
     user,
@@ -179,6 +235,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     login,
     fetchUser,
+    clearAuth,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

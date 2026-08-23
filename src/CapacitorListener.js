@@ -12,6 +12,7 @@ import { ensureAndroidPushNotificationChannels } from './utils/notificationChann
 import { beginOAuthExchange } from './utils/OAuthExchangeState'
 import { hasSeenOnboarding } from './utils/Onboarding'
 import { setPendingInvite } from './utils/PendingInvite'
+import { getAccessToken } from './utils/TokenStorage.js'
 
 // React Router navigate(), injected by <App /> once the router is mounted.
 // Using client-side navigation (instead of window.location.href) avoids a full
@@ -82,8 +83,7 @@ const handleUrlOpen = (url, isColdStart = false) => {
 
   if (isCircleInvite) {
     setPendingInvite(parsedUrl.searchParams.get('code'))
-    const needsOnboarding =
-      !hasSeenOnboarding() && !localStorage.getItem('token')
+    const needsOnboarding = !hasSeenOnboarding() && !getAccessToken()
     routerNavigate(
       needsOnboarding ? '/onboarding' : `/circle/join${parsedUrl.search}`,
     )

@@ -2,10 +2,12 @@ import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { useUserProfile } from '../queries/UserQueries'
 import { useAlerts } from '../service/AlertsProvider'
 import { useNotification } from '../service/NotificationProvider'
 import { apiClient } from '../utils/ApiClient'
+import { getAccessToken } from '../utils/TokenStorage'
 import { useAuth } from './useAuth.jsx'
 
 const SSE_STATES = {
@@ -401,7 +403,7 @@ export const useSSE = () => {
       } else {
         eventSourceRef.current = new EventSourcePolyfill(sseConfig.url, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${getAccessToken()}`,
             'Cache-Control': 'no-cache',
             Accept: 'text/event-stream',
           },

@@ -7,8 +7,9 @@ import {
 
 import { getStoredCircleId } from '../utils/ActiveCircle'
 import { apiClient } from '../utils/ApiClient'
+import { getAccessToken } from '../utils/TokenStorage.js'
 
-const scope = () => [localStorage.getItem('token'), getStoredCircleId()]
+const scope = () => [getAccessToken(), getStoredCircleId()]
 const json = async response => {
   const body = await response.json().catch(() => ({}))
   if (!response.ok)
@@ -37,7 +38,7 @@ export const useNotifications = () =>
       page.res?.length === 30 ? page.res[page.res.length - 1].id : undefined,
     refetchInterval: 60000,
     refetchOnWindowFocus: true,
-    enabled: Boolean(localStorage.getItem('token')),
+    enabled: Boolean(getAccessToken()),
   })
 export const useNotificationCount = () =>
   useQuery({
@@ -45,7 +46,7 @@ export const useNotificationCount = () =>
     queryFn: () => apiClient.get('/notifications/unread-count').then(json),
     refetchInterval: 60000,
     refetchOnWindowFocus: true,
-    enabled: Boolean(localStorage.getItem('token')),
+    enabled: Boolean(getAccessToken()),
   })
 export const useNotificationActions = () => {
   const client = useQueryClient()
