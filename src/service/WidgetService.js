@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core'
+
 import { apiClient } from '../utils/ApiClient'
 
 // Native bridge implemented in ios/App/App/WidgetBridgePlugin.swift and
@@ -137,9 +138,5 @@ export const initWidgetSync = queryClient => {
 /** Wipe widget storage so no task data lingers after logout. */
 export const clearWidgetData = async () => {
   if (!isNative()) return
-  try {
-    await WidgetBridge.clear()
-  } catch (err) {
-    console.error('Failed to clear widget data', err)
-  }
+  await WidgetBridge.clear()
 }

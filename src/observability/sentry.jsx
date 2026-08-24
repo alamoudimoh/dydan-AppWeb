@@ -53,6 +53,7 @@ const sanitizeUrl = value => {
       'token',
       'access_token',
       'refresh_token',
+      'c',
     ]) {
       parsed.searchParams.delete(key)
     }

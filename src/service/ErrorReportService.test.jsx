@@ -36,4 +36,12 @@ describe('manual error report flow (unchanged by Sentry baseline)', () => {
     expect(sanitized).not.toContain('secret')
     expect(sanitized).not.toContain('state=')
   })
+
+  it('removes password-reset credentials from diagnostic URLs', () => {
+    const sanitized = sanitizeDiagnosticUrl(
+      'https://daydan.example/password/update?c=reset-secret&safe=1',
+    )
+    expect(sanitized).toContain('safe=1')
+    expect(sanitized).not.toContain('reset-secret')
+  })
 })

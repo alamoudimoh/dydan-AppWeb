@@ -126,6 +126,16 @@ describe('Sentry baseline', () => {
     expect(scrubbed.breadcrumbs[0].data.to).not.toContain('secret')
   })
 
+  it('scrubs password-reset credentials', () => {
+    const scrubbed = sanitizeSentryEvent({
+      request: {
+        url: 'https://daydan.example/password/update?c=reset-secret&safe=1',
+      },
+    })
+    expect(scrubbed.request.url).toContain('safe=1')
+    expect(scrubbed.request.url).not.toContain('reset-secret')
+  })
+
   it('renders children directly when Sentry is disabled', () => {
     vi.stubEnv('VITE_SENTRY_DSN', '')
     const { getByText } = render(
