@@ -6,6 +6,7 @@ import moment from 'moment'
 import { useEffect, useState } from 'react'
 
 import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
+import AccountSessionsCard from '../../components/settings/AccountSessionsCard'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -275,6 +276,8 @@ const AccountSettings = () => {
             ) : null}
           </Box>
         )}
+
+        <AccountSessionsCard userId={userProfile?.id} />
 
         <Box>
           <Typography level='title-md' mb={1} color='danger'>

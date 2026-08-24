@@ -41,6 +41,20 @@ const smokeMembers = {
   ],
 }
 
+const smokeSessions = {
+  res: {
+    sessions: [
+      {
+        id: 'smoke-session-family',
+        createdAt: '2026-08-24T05:00:00Z',
+        lastActiveAt: '2026-08-24T06:00:00Z',
+        expiresAt: '2026-10-24T06:00:00Z',
+        current: true,
+      },
+    ],
+  },
+}
+
 const smokeChore = {
   id: 42,
   name: 'Smoke Chore',
@@ -227,6 +241,10 @@ const handlers = [
   {
     pattern: '**/api/v1/users/profile',
     handler: route => route.fulfill(json({ res: smokeProfile })),
+  },
+  {
+    pattern: '**/api/v1/auth/sessions',
+    handler: route => route.fulfill(json(smokeSessions)),
   },
   {
     pattern: '**/api/v1/chores/42/details',
