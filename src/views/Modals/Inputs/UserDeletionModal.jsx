@@ -10,10 +10,12 @@ import {
   Typography,
 } from '@mui/joy'
 import { useCallback, useEffect, useState } from 'react'
-import ModalActions from '../../../components/common/ModalActions'
 import { useNavigate } from 'react-router-dom'
+
+import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
 import { CheckUserDeletion, DeleteUser } from '../../../utils/Fetcher'
+import { clearAllTokens } from '../../../utils/TokenStorage'
 
 function UserDeletionModal({ isOpen, onClose }) {
   const { ResponsiveModal } = useResponsiveModal()
@@ -109,9 +111,7 @@ function UserDeletionModal({ isOpen, onClose }) {
       console.log(response)
 
       if (response.status === 200) {
-        // Clear authentication tokens
-        localStorage.removeItem('ca_token')
-        localStorage.removeItem('ca_expiration')
+        await clearAllTokens()
         Navigate('/login', { replace: true })
         handleClose(true)
         // Redirect to login or home page after successful deletion
