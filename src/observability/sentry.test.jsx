@@ -77,7 +77,7 @@ describe('Sentry baseline', () => {
       message: 'boom',
       user: { id: '123' },
       request: {
-        url: '/api/x',
+        url: 'https://daydan.example/auth/oauth2?code=secret&state=secret-state&safe=1',
         headers: {
           authorization: 'Bearer secret',
           cookie: 'a=b',
@@ -99,12 +99,31 @@ describe('Sentry baseline', () => {
     expect(scrubbed.request.headers.authorization).toBeUndefined()
     expect(scrubbed.request.headers.cookie).toBeUndefined()
     expect(scrubbed.request.headers['content-type']).toBe('application/json')
+    expect(scrubbed.request.url).toContain('safe=1')
+    expect(scrubbed.request.url).not.toContain('secret')
     expect(scrubbed.extra.safe).toBe('keep')
     expect(scrubbed.extra.token).toBeUndefined()
     expect(scrubbed.extra.nested.password).toBeUndefined()
     expect(scrubbed.extra.nested.name).toBe('ok')
     expect(scrubbed.contexts.auth.accessToken).toBeUndefined()
     expect(scrubbed.contexts.runtime.name).toBe('browser')
+  })
+
+  it('scrubs OAuth URLs without request headers and in breadcrumbs', () => {
+    const secretUrl =
+      'https://daydan.example/auth/oauth2?code=secret&state=secret-state'
+    const scrubbed = sanitizeSentryEvent({
+      request: { url: secretUrl },
+      breadcrumbs: [
+        {
+          data: { from: secretUrl, to: secretUrl, url: secretUrl },
+        },
+      ],
+    })
+    expect(scrubbed.request.url).not.toContain('secret')
+    expect(scrubbed.breadcrumbs[0].data.url).not.toContain('secret')
+    expect(scrubbed.breadcrumbs[0].data.from).not.toContain('secret')
+    expect(scrubbed.breadcrumbs[0].data.to).not.toContain('secret')
   })
 
   it('renders children directly when Sentry is disabled', () => {

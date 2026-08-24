@@ -4,17 +4,18 @@ import { useEffect, useState } from 'react'
 import { useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
+import { useAuth } from '../../hooks/useAuth'
 import { useUserProfile } from '../../queries/UserQueries'
 import { apiClient } from '../../utils/ApiClient'
 import { GetUserProfile } from '../../utils/Fetcher'
 import { endOAuthExchange } from '../../utils/OAuthExchangeState'
 import { consumeReturnPath } from '../../utils/ReturnPath'
-import { saveTokens } from '../../utils/TokenStorage'
 import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
 import MFAVerificationModal from './MFAVerificationModal'
 
 const AuthenticationLoading = () => {
+  const { establishSession } = useAuth()
   const { refetch: refetchUserProfile } = useUserProfile()
   const Navigate = useNavigate()
   const hasCalledHandleOAuth2 = useRef(false)
@@ -48,12 +49,7 @@ const AuthenticationLoading = () => {
   }
 
   const handleMFASuccess = async data => {
-    await saveTokens({
-      accessToken: data.token,
-      accessTokenExpiry: data.expire,
-      refreshToken: data.refresh_token,
-      refreshTokenExpiry: data.refresh_token_expiry,
-    })
+    await establishSession(data)
 
     setMfaModalOpen(false)
     setMfaSessionToken('')
@@ -74,8 +70,12 @@ const AuthenticationLoading = () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
     const returnedState = urlParams.get('state')
+    // Authorization codes are bearer credentials. Remove them from history,
+    // referrers, diagnostics, and crash-report URLs before any network work.
+    window.history.replaceState(null, '', window.location.pathname)
 
     const storedState = localStorage.getItem('authState')
+    localStorage.removeItem('authState')
 
     if (returnedState !== storedState) {
       setMessage('Sign-in failed')
@@ -135,12 +135,7 @@ const AuthenticationLoading = () => {
           return
         }
 
-        await saveTokens({
-          accessToken: data.token || data.access_token,
-          accessTokenExpiry: data.expire || data.access_token_expiry,
-          refreshToken: data.refresh_token,
-          refreshTokenExpiry: data.refresh_token_expiry,
-        })
+        await establishSession(data)
 
         getUserProfileAndNavigateToHome()
       } catch (error) {

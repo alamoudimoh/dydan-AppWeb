@@ -64,6 +64,24 @@ const describeError = (error, errorInfo) => {
 }
 
 /** Everything about the environment the failure happened in. */
+export const sanitizeDiagnosticUrl = value => {
+  try {
+    const parsed = new URL(value, window.location.origin)
+    for (const key of [
+      'code',
+      'state',
+      'token',
+      'access_token',
+      'refresh_token',
+    ]) {
+      parsed.searchParams.delete(key)
+    }
+    return parsed.toString()
+  } catch {
+    return String(value).split('?')[0]
+  }
+}
+
 const describeRuntime = () => {
   const connection =
     navigator.connection ||
@@ -71,9 +89,13 @@ const describeRuntime = () => {
     navigator.webkitConnection
 
   return {
-    url: window.location.href,
-    route: window.location.pathname + window.location.search,
-    referrer: document.referrer || null,
+    url: sanitizeDiagnosticUrl(window.location.href),
+    route: sanitizeDiagnosticUrl(
+      window.location.pathname + window.location.search,
+    ),
+    referrer: document.referrer
+      ? sanitizeDiagnosticUrl(document.referrer)
+      : null,
     viewport: `${window.innerWidth}×${window.innerHeight}`,
     screen: `${window.screen?.width}×${window.screen?.height}`,
     devicePixelRatio: window.devicePixelRatio,

@@ -3,11 +3,16 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import WifiIcon from '@mui/icons-material/Wifi'
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/joy'
+import { useQueryClient } from '@tanstack/react-query'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import { API_URL } from '../../Config'
+import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import { useResource } from '../../queries/ResourceQueries'
 import { apiClient } from '../../utils/ApiClient'
+import { logout } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
 import { AuthSubmitButton, AuthTextField } from './AuthFields'
 import AuthShell from './AuthShell'
@@ -17,6 +22,9 @@ const CONNECTION_TIMEOUT_MS = 8000
 
 const LoginSettings = () => {
   const Navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { stopImpersonation } = useImpersonateUser()
+  const { clearAuth } = useAuth()
   const { refetch: refetchResource } = useResource()
   const [serverURL, setServerURL] = React.useState('')
   const [status, setStatus] = React.useState('idle') // 'idle' | 'testing' | 'success' | 'error'
@@ -131,12 +139,31 @@ const LoginSettings = () => {
     }
   }
 
+  const switchServer = async targetURL => {
+    try {
+      await logout()
+    } catch {
+      // The old server may be unavailable; local credentials still must go.
+    }
+    await clearAuth()
+    stopImpersonation()
+    queryClient.clear()
+    try {
+      await offlineDB.clearAll()
+    } catch (e) {
+      console.error('Error clearing offline data on server change', e)
+    }
+    await Preferences.set({ key: 'customServerUrl', value: targetURL })
+    await apiClient.init(true)
+    refetchResource()
+  }
+
   const handleSave = async e => {
     e.preventDefault()
     const trimmedURL = serverURL.trim()
 
     if (trimmedURL === '') {
-      await Preferences.set({ key: 'customServerUrl', value: API_URL })
+      await switchServer(API_URL)
       Navigate('/login')
       return
     }
@@ -160,14 +187,9 @@ const LoginSettings = () => {
       return
     }
 
-    await Preferences.set({ key: 'customServerUrl', value: trimmedURL })
-    try {
-      await offlineDB.clearAll()
-    } catch (e) {
-      console.error('Error clearing offline data on server change', e)
-    }
-    await apiClient.init(true)
-    refetchResource()
+    // Never carry credentials across server origins. Revoke against the old
+    // origin first, then clear before persisting or contacting the new origin.
+    await switchServer(trimmedURL)
     setStatus('success')
 
     setTimeout(() => {
@@ -276,9 +298,7 @@ const LoginSettings = () => {
           disabled={isTesting}
           sx={{ ...authButtonSx, mt: 1 }}
           onClick={async () => {
-            await Preferences.set({ key: 'customServerUrl', value: API_URL })
-            await apiClient.init(true)
-            refetchResource()
+            await switchServer(API_URL)
             Navigate('/login')
           }}
         >

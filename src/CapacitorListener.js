@@ -67,7 +67,7 @@ const handleNFCChoreDeepLink = (url, isColdStart) => {
 }
 
 const handleUrlOpen = (url, isColdStart = false) => {
-  console.log('[NFC] handleUrlOpen:', url)
+  console.log('[deeplink] URL received')
   let parsedUrl
   try {
     parsedUrl = new URL(url)
@@ -111,7 +111,7 @@ const handleUrlOpen = (url, isColdStart = false) => {
 
 // OAuth callback handler for deep links
 const handleOAuthDeepLink = async url => {
-  console.log('OAuth deep link received:', url)
+  console.log('OAuth deep link received')
 
   try {
     // Parse the URL to extract code and state
@@ -135,12 +135,6 @@ const handleOAuthDeepLink = async url => {
       // early return above so the flag is only ever claimed by the navigation
       // that Authenticating.jsx will clear.
       beginOAuthExchange()
-
-      // Store the OAuth params for the app to pick up
-      await Preferences.set({
-        key: 'oauth_callback',
-        value: JSON.stringify({ code, state, timestamp: Date.now() }),
-      })
 
       // Close the browser if it's still open
       try {

@@ -25,7 +25,6 @@ import {
   consumeReturnPath,
   wasSessionExpired,
 } from '../../utils/ReturnPath'
-import { saveTokens } from '../../utils/TokenStorage'
 import { buildChildUsername, getUserDisplayInfo } from '../../utils/UserHelpers'
 import {
   AuthDivider,
@@ -115,7 +114,12 @@ const LoginView = () => {
   }
   const { data: resource } = useResource()
   const { showError } = useNotification()
-  const { isAuthenticated, login: authLogin, user } = useAuth()
+  const {
+    establishSession,
+    isAuthenticated,
+    login: authLogin,
+    user,
+  } = useAuth()
   const Navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const sessionExpired =
@@ -279,12 +283,7 @@ const LoginView = () => {
           const expiry = responseData.expire || responseData.access_token_expiry
 
           // Save all tokens including refresh tokens
-          await saveTokens({
-            accessToken: token,
-            accessTokenExpiry: expiry,
-            refreshToken: responseData.refresh_token,
-            refreshTokenExpiry: responseData.refresh_token_expiry,
-          })
+          await establishSession({ ...responseData, token, expire: expiry })
 
           // Refetch user profile after successful OAuth login
           queryClient.invalidateQueries(['userProfile'])
@@ -317,12 +316,7 @@ const LoginView = () => {
 
   const handleMFASuccess = async data => {
     // Save all tokens including refresh tokens
-    await saveTokens({
-      accessToken: data.token,
-      accessTokenExpiry: data.expire,
-      refreshToken: data.refresh_token,
-      refreshTokenExpiry: data.refresh_token_expiry,
-    })
+    await establishSession(data)
 
     setMfaModalOpen(false)
     setMfaSessionToken('')
@@ -348,23 +342,9 @@ const LoginView = () => {
   const handleForgotPassword = () => {
     Navigate('/forgot-password')
   }
-  // Cryptographically strong fallback state for servers that predate the
-  // hardened /auth/oauth2/start endpoint (which issues its own state).
-  const generateRandomState = () => {
-    const bytes = new Uint8Array(32)
-    crypto.getRandomValues(bytes)
-    const randomState = Array.from(bytes, b =>
-      b.toString(16).padStart(2, '0'),
-    ).join('')
-    localStorage.setItem('authState', randomState)
-
-    return randomState
-  }
-
   const startOAuthTransaction = async redirectUri => {
     // Ask the server to mint a single-use state bound to a PKCE S256
-    // verifier. Falls back to a local crypto-random state when talking to an
-    // older server that does not implement the start endpoint.
+    // verifier. Fail closed rather than silently downgrading PKCE.
     try {
       await apiClient.init()
       const baseURL = apiClient.getApiURL()
@@ -384,21 +364,37 @@ const LoginView = () => {
           }
         }
       }
+      throw new Error('Server did not start a secure OAuth transaction')
     } catch (error) {
-      console.warn(
-        'Server-side OAuth state unavailable, using local fallback',
-        error,
-      )
+      console.error('Unable to start secure OAuth transaction', error)
+      showError({
+        title: t('auth.oauthError'),
+        message: t('auth.oauthBrowserFailed'),
+      })
+      return null
     }
-    return { state: generateRandomState() }
   }
 
   const handleAuthentikLogin = async () => {
     const authentikAuthorizeUrl = resource?.identity_provider?.auth_url
+    let authorizeURL
+    try {
+      authorizeURL = new URL(authentikAuthorizeUrl)
+      if (!['http:', 'https:'].includes(authorizeURL.protocol)) {
+        throw new Error('HTTP(S) required')
+      }
+    } catch {
+      showError({
+        title: t('auth.oauthError'),
+        message: t('auth.oauthBrowserFailed'),
+      })
+      return
+    }
 
     if (Capacitor.isNativePlatform()) {
       const redirectUri = 'donetick://auth/oauth2'
       const txn = await startOAuthTransaction(redirectUri)
+      if (!txn) return
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: resource?.identity_provider?.client_id,
@@ -411,7 +407,8 @@ const LoginView = () => {
         params.set('code_challenge_method', txn.codeChallengeMethod)
       }
 
-      const authUrl = `${authentikAuthorizeUrl}?${params.toString()}`
+      authorizeURL.search = params.toString()
+      const authUrl = authorizeURL.toString()
 
       try {
         // Open OAuth flow in system browser
@@ -431,6 +428,7 @@ const LoginView = () => {
       // For web platforms, use the current approach
       const redirectUri = `${window.location.origin}/auth/oauth2`
       const txn = await startOAuthTransaction(redirectUri)
+      if (!txn) return
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: resource?.identity_provider?.client_id,
@@ -443,7 +441,8 @@ const LoginView = () => {
         params.set('code_challenge_method', txn.codeChallengeMethod)
       }
 
-      window.location.href = `${authentikAuthorizeUrl}?${params.toString()}`
+      authorizeURL.search = params.toString()
+      window.location.href = authorizeURL.toString()
     }
   }
 

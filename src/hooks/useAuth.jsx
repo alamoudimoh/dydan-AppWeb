@@ -44,6 +44,20 @@ export const AuthProvider = ({ children }) => {
     await clearAllTokens()
   }
 
+  const establishSession = async data => {
+    const accessToken = data.token || data.access_token
+    if (!accessToken)
+      throw new Error('Authentication response has no access token')
+    await saveTokens({
+      accessToken,
+      accessTokenExpiry: data.expire || data.access_token_expiry,
+      refreshToken: data.refresh_token,
+      refreshTokenExpiry: data.refresh_token_expiry,
+    })
+    setToken(accessToken)
+    return accessToken
+  }
+
   /**
    * Boot-time session establishment for browser/PWA clients:
    *
@@ -170,21 +184,11 @@ export const AuthProvider = ({ children }) => {
         // Use centralized token storage. On the web this keeps the access
         // token in memory only and leaves the refresh credential in the
         // server's HttpOnly cookie.
-        await saveTokens({
-          accessToken: userToken,
-          accessTokenExpiry: data.expire || data.access_token_expiry,
-          refreshToken: data.refresh_token,
-          refreshTokenExpiry: data.refresh_token_expiry,
-        })
-
-        // Publish the authenticated state only after token storage is ready.
-        // Profile queries read the token through TokenStorage, so setting
-        // React state first can start them as signed out and leave the login
-        // route stuck.
-        setToken(userToken)
+        await establishSession(data)
 
         const profileResponse = await apiClient.get('/users/profile')
         if (!profileResponse.ok) {
+          await clearAuth()
           return {
             success: false,
             status: profileResponse.status,
@@ -234,6 +238,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     isAuthenticated,
     login,
+    establishSession,
     fetchUser,
     clearAuth,
   }

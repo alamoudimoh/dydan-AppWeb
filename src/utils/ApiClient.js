@@ -118,7 +118,15 @@ class ApiClient {
     }
 
     try {
-      const refreshReq = await RefreshToken()
+      let refreshReq = await RefreshToken()
+
+      // A parallel browser tab may have won rotation. The server deliberately
+      // issues no credentials to this stale request; retry against the shared
+      // successor cookie after the winning response has landed.
+      for (let retry = 0; refreshReq.status === 409 && retry < 3; retry += 1) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+        refreshReq = await RefreshToken()
+      }
 
       if (refreshReq.ok) {
         const data = await refreshReq.json()
@@ -216,6 +224,14 @@ class ApiClient {
       console.error('Error preserving pending invite on logout', e)
     }
 
+    // Revoke while native still has its body refresh credential and the web
+    // still has its HttpOnly cookie. Local cleanup follows even if offline.
+    try {
+      await logout()
+    } catch (e) {
+      console.error('Error during logout', e)
+    }
+
     await clearAllTokens()
     syncActiveCircleId(null)
     try {
@@ -237,12 +253,6 @@ class ApiClient {
     } catch (e) {
       console.error('Error clearing widget data on logout', e)
     }
-    try {
-      await logout()
-    } catch (e) {
-      console.error('Error during logout', e)
-    }
-
     if (window.location.pathname !== '/login') {
       markSessionExpired()
       storeReturnPath(getCurrentReturnPath())
