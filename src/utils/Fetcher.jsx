@@ -1,6 +1,6 @@
 import { apiClient } from './ApiClient'
 import { createSingleFlight, ensureOperationId } from './SubmissionGuards'
-import { getRefreshToken } from './TokenStorage'
+import { getRefreshToken, isNative } from './TokenStorage'
 
 const runCompletion = createSingleFlight()
 
@@ -81,15 +81,14 @@ const login = async (username, password) => {
 const logout = async () => {
   await apiClient.init(true)
   const baseURL = apiManager.getApiURL()
-  const isNative =
-    typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
+  const nativePlatform = isNative()
 
   const config = {
     method: 'POST',
   }
 
   // Only use credentials for web, not for native apps
-  if (!isNative) {
+  if (!nativePlatform) {
     config.credentials = 'include'
   } else {
     const refreshToken = await getRefreshToken()
@@ -760,15 +759,11 @@ const RefreshToken = async () => {
   const basedURL = apiManager.getApiURL()
 
   // Check if running on native platform
-  const isNative =
-    typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
+  const nativePlatform = isNative()
 
-  if (isNative) {
+  if (nativePlatform) {
     // For native platforms, send refresh token in request body
-    const { Preferences } = await import('@capacitor/preferences')
-    const { value: refreshToken } = await Preferences.get({
-      key: 'refresh_token',
-    })
+    const refreshToken = await getRefreshToken()
 
     if (!refreshToken) {
       throw new Error('No refresh token available')

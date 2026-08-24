@@ -9,6 +9,8 @@ import {
   getAccessToken,
   getAccessTokenExpiry,
   hasAccessToken,
+  isNative,
+  migrateNativeCredentials,
   saveTokens,
 } from '../utils/TokenStorage'
 
@@ -66,8 +68,8 @@ export const AuthProvider = ({ children }) => {
    *    HttpOnly cookie. A restored page therefore never relies on a
    *    JavaScript-readable credential.
    *
-   * Native builds keep reading their persisted tokens synchronously and skip
-   * the cookie dance entirely.
+   * Native builds first migrate refresh credentials into OS secure storage,
+   * then refresh to repopulate the memory-only access token.
    */
   useEffect(() => {
     let cancelled = false
@@ -75,11 +77,9 @@ export const AuthProvider = ({ children }) => {
       try {
         await apiClient.init()
 
-        const isNative =
-          typeof window !== 'undefined' &&
-          window.Capacitor?.isNativePlatform?.()
+        const nativePlatform = isNative()
 
-        if (!isNative) {
+        if (!nativePlatform) {
           // One-time migration from the legacy localStorage token build.
           const adopted = adoptLegacyStoredToken()
           if (adopted) {
@@ -104,8 +104,28 @@ export const AuthProvider = ({ children }) => {
           } else {
             setToken(null)
           }
-        } else if (isNative && !token && hasAccessToken()) {
-          setToken(getAccessToken())
+        } else {
+          const migration = await migrateNativeCredentials()
+          if (migration.status === 'failed') {
+            console.error(
+              'Native credential migration failed:',
+              migration.error,
+            )
+          }
+
+          const result = await apiClient.refreshToken({
+            allowLogoutFallback: false,
+          })
+          if (cancelled) return
+          if (result.success && result.token) {
+            setToken(result.token)
+          } else if (hasAccessToken()) {
+            // A failed secure-store migration may temporarily adopt the intact
+            // legacy access token without creating any new insecure writes.
+            setToken(getAccessToken())
+          } else {
+            setToken(null)
+          }
         }
       } catch (error) {
         console.error('Session restore failed:', error)
@@ -117,7 +137,6 @@ export const AuthProvider = ({ children }) => {
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const login = async credentials => {
@@ -127,8 +146,7 @@ export const AuthProvider = ({ children }) => {
       await apiClient.init()
       const currentBaseURL = apiClient.getApiURL()
 
-      const isNative =
-        typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
+      const nativePlatform = isNative()
 
       const config = {
         method: 'POST',
@@ -137,7 +155,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Only use credentials for web, not for native apps
-      if (!isNative) {
+      if (!nativePlatform) {
         config.credentials = 'include'
       }
 

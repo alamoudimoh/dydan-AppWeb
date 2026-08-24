@@ -13,6 +13,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
 const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
+const secureStorage = vi.hoisted(() => ({
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+}))
 
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
@@ -27,6 +32,10 @@ vi.mock('@capacitor/preferences', () => ({
     set: vi.fn(),
     remove: vi.fn(),
   },
+}))
+
+vi.mock('@aparajita/capacitor-secure-storage', () => ({
+  SecureStorage: secureStorage,
 }))
 
 const TOKEN_LIKE_KEYS = [
@@ -46,6 +55,9 @@ describe('TokenStorage (web)', () => {
     vi.resetModules()
     setItemSpy.mockClear()
     removeItemSpy.mockClear()
+    secureStorage.getItem.mockReset()
+    secureStorage.setItem.mockReset()
+    secureStorage.removeItem.mockReset()
     storage = await import('./TokenStorage')
   })
 
@@ -71,6 +83,7 @@ describe('TokenStorage (web)', () => {
     // ...and absent from storage.
     expect(localStorage.getItem('token')).toBeNull()
     expect(localStorage.getItem('refresh_token')).toBeNull()
+    expect(secureStorage.setItem).not.toHaveBeenCalled()
   })
 
   it('clearAllTokens removes legacy token keys instead of leaving duplicates', async () => {

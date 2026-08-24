@@ -1,12 +1,22 @@
+import { SecureStorage } from '@aparajita/capacitor-secure-storage'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 
+import {
+  migrateNativeCredentialStorage,
+  NATIVE_CREDENTIAL_KEYS,
+  NativeCredentialErrorCode,
+  NativeCredentialStorageError,
+  persistNativeRefreshCredentials,
+  readNativeRefreshCredential,
+} from './NativeCredentialStorage.js'
+
 // Token storage keys
 const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'token',
-  ACCESS_TOKEN_EXPIRY: 'token_expiry',
-  REFRESH_TOKEN: 'refresh_token',
-  REFRESH_TOKEN_EXPIRY: 'refresh_token_expiry',
+  ACCESS_TOKEN: NATIVE_CREDENTIAL_KEYS.accessToken,
+  ACCESS_TOKEN_EXPIRY: NATIVE_CREDENTIAL_KEYS.accessTokenExpiry,
+  REFRESH_TOKEN: NATIVE_CREDENTIAL_KEYS.refreshToken,
+  REFRESH_TOKEN_EXPIRY: NATIVE_CREDENTIAL_KEYS.refreshTokenExpiry,
 }
 
 // Legacy keys written by older builds. They are only ever removed.
@@ -19,8 +29,7 @@ let _isNativePlatform = null
 const isNativePlatform = () => {
   if (_isNativePlatform === null) {
     try {
-      _isNativePlatform =
-        typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
+      _isNativePlatform = Capacitor.isNativePlatform()
     } catch (error) {
       console.warn('Platform detection failed, defaulting to web:', error)
       _isNativePlatform = false
@@ -35,9 +44,8 @@ const isNativePlatform = () => {
 // The browser keeps its access token in this module-scope memory ONLY: a page
 // reload starts unauthenticated and restores the session through the HttpOnly
 // refresh cookie via POST /auth/refresh. Nothing token-like is ever written to
-// localStorage/sessionStorage/IndexedDB on the web. Native builds keep their
-// established contract (localStorage access token + Capacitor Preferences
-// refresh token), which lives in an app-private WebView storage.
+// localStorage/sessionStorage/IndexedDB on the web. Native access tokens use
+// the same memory-only model, while refresh credentials use OS secure storage.
 // ---------------------------------------------------------------------------
 
 let memoryAccessToken = null
@@ -45,53 +53,23 @@ let memoryAccessTokenExpiry = null
 
 /**
  * Synchronously read the current access token.
- * Web: module memory. Native: localStorage.
+ * Web and native: module memory.
  */
-export const getAccessToken = () => {
-  if (!isNativePlatform()) {
-    return memoryAccessToken
-  }
-  try {
-    return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
-  } catch {
-    return null
-  }
-}
+export const getAccessToken = () => memoryAccessToken
 
 /**
  * Synchronously read the current access-token expiry (ISO string or null).
  */
-export const getAccessTokenExpiry = () => {
-  if (!isNativePlatform()) {
-    return memoryAccessTokenExpiry
-  }
-  try {
-    return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN_EXPIRY)
-  } catch {
-    return null
-  }
-}
+export const getAccessTokenExpiry = () => memoryAccessTokenExpiry
 
 export const hasAccessToken = () => Boolean(getAccessToken())
 
 /**
- * Store just the browser-side access credential (memory on web,
- * localStorage on native). Refresh credentials never pass through here on
- * the web — they live in the server's HttpOnly cookie.
+ * Store the access credential in memory on every platform. Refresh credentials
+ * never pass through here on the web; they live in the HttpOnly cookie.
  */
 export const setAccessToken = ({ accessToken, accessTokenExpiry }) => {
   if (!accessToken) {
-    return
-  }
-  if (isNativePlatform()) {
-    try {
-      localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
-      if (accessTokenExpiry) {
-        localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN_EXPIRY, accessTokenExpiry)
-      }
-    } catch (error) {
-      console.error('Error persisting access token:', error)
-    }
     return
   }
   memoryAccessToken = accessToken
@@ -104,7 +82,7 @@ let clearingTokens = false
 /**
  * Save tokens based on platform.
  * Web: access token in memory only (refresh handled by HttpOnly cookie).
- * Native: access token in localStorage + refresh token in Capacitor Preferences.
+ * Native: access token in memory + refresh token and expiry in secure storage.
  */
 export const saveTokens = async ({
   accessToken,
@@ -112,41 +90,35 @@ export const saveTokens = async ({
   refreshToken,
   refreshTokenExpiry,
 }) => {
-  setAccessToken({ accessToken, accessTokenExpiry })
-
   if (!Capacitor.isNativePlatform()) {
     // Web: the refresh credential stays in the HttpOnly cookie set by the
     // server. Never persist it client-side.
-    return
+    setAccessToken({ accessToken, accessTokenExpiry })
+    return { status: 'saved-memory' }
   }
 
-  // On native platforms, also save refresh tokens to Capacitor Preferences
-  try {
-    if (refreshToken) {
-      await Preferences.set({
-        key: TOKEN_KEYS.REFRESH_TOKEN,
-        value: refreshToken,
-      })
-    }
-    if (refreshTokenExpiry) {
-      await Preferences.set({
-        key: TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
-        value: refreshTokenExpiry,
-      })
-    }
-  } catch (error) {
-    console.error(
-      'Failed to save refresh tokens to Capacitor Preferences:',
-      error,
+  if (!accessToken) {
+    throw new NativeCredentialStorageError(
+      NativeCredentialErrorCode.INVALID_CREDENTIALS,
+      'Native authentication response has no access token',
     )
-    // Don't throw - access token is still saved
   }
+  await persistNativeRefreshCredentials(SecureStorage, {
+    refreshToken,
+    refreshTokenExpiry,
+  })
+  setAccessToken({ accessToken, accessTokenExpiry })
+  legacyRefreshFallbackEnabled = false
+  return { status: 'saved-secure' }
 }
+
+let legacyRefreshFallbackEnabled = false
 
 /**
  * Get refresh token from storage
  * Web: Returns null (uses HTTP-only cookies)
- * Native: Returns from Capacitor Preferences
+ * Native: Returns from secure storage. An intact Preferences value is only
+ * available after a failed migration, for the upgrade recovery window.
  */
 export const getRefreshToken = async () => {
   if (!isNativePlatform()) {
@@ -154,18 +126,22 @@ export const getRefreshToken = async () => {
   }
 
   try {
-    const { value } = await Preferences.get({ key: TOKEN_KEYS.REFRESH_TOKEN })
-    return value
+    const value = await readNativeRefreshCredential(
+      SecureStorage,
+      TOKEN_KEYS.REFRESH_TOKEN,
+    )
+    if (value || !legacyRefreshFallbackEnabled) return value
   } catch (error) {
-    console.error('Error reading refresh token from Preferences:', error)
-    return null
+    if (!legacyRefreshFallbackEnabled) throw error
   }
+  const { value } = await Preferences.get({ key: TOKEN_KEYS.REFRESH_TOKEN })
+  return value
 }
 
 /**
  * Get refresh token expiry from storage
  * Web: Returns null (uses HTTP-only cookies)
- * Native: Returns from Capacitor Preferences
+ * Native: Returns from secure storage, with migration-only legacy fallback.
  */
 export const getRefreshTokenExpiry = async () => {
   if (!isNativePlatform()) {
@@ -173,14 +149,18 @@ export const getRefreshTokenExpiry = async () => {
   }
 
   try {
-    const { value } = await Preferences.get({
-      key: TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
-    })
-    return value
+    const value = await readNativeRefreshCredential(
+      SecureStorage,
+      TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
+    )
+    if (value || !legacyRefreshFallbackEnabled) return value
   } catch (error) {
-    console.error('Error reading refresh token expiry from Preferences:', error)
-    return null
+    if (!legacyRefreshFallbackEnabled) throw error
   }
+  const { value } = await Preferences.get({
+    key: TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
+  })
+  return value
 }
 
 /**
@@ -245,15 +225,20 @@ export const clearAllTokens = async () => {
     memoryAccessToken = null
     memoryAccessTokenExpiry = null
 
-    // Clear Capacitor Preferences on native
+    const errors = []
     if (isNativePlatform()) {
-      try {
-        await Preferences.remove({ key: TOKEN_KEYS.REFRESH_TOKEN })
-        await Preferences.remove({ key: TOKEN_KEYS.REFRESH_TOKEN_EXPIRY })
-      } catch (error) {
-        console.error('Error clearing tokens from Preferences:', error)
+      const removals = await Promise.allSettled([
+        SecureStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN),
+        SecureStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN_EXPIRY),
+        Preferences.remove({ key: TOKEN_KEYS.REFRESH_TOKEN }),
+        Preferences.remove({ key: TOKEN_KEYS.REFRESH_TOKEN_EXPIRY }),
+      ])
+      for (const removal of removals) {
+        if (removal.status === 'rejected') errors.push(removal.reason)
       }
     }
+    legacyRefreshFallbackEnabled = false
+    return { status: errors.length ? 'partial' : 'cleared', errors }
   } catch (error) {
     console.error('Error clearing tokens:', error)
   } finally {
@@ -296,10 +281,7 @@ export const adoptLegacyStoredToken = () => {
     return null
   }
 
-  if (isNativePlatform()) {
-    // Native already persists by design; nothing to move.
-    return legacyToken
-  }
+  if (isNativePlatform()) return null
 
   memoryAccessToken = legacyToken
   memoryAccessTokenExpiry = legacyExpiry
@@ -314,6 +296,27 @@ export const adoptLegacyStoredToken = () => {
   }
   return legacyToken
 }
+
+export const migrateNativeCredentials = async () => {
+  if (!isNativePlatform()) {
+    return { status: 'not-native', canUseLegacyRefresh: false }
+  }
+
+  const result = await migrateNativeCredentialStorage({
+    secureStore: SecureStorage,
+    preferences: Preferences,
+    localStorage: typeof localStorage === 'undefined' ? null : localStorage,
+  })
+  legacyRefreshFallbackEnabled = result.canUseLegacyRefresh
+
+  if (result.status === 'failed' && result.accessToken) {
+    memoryAccessToken = result.accessToken
+    memoryAccessTokenExpiry = result.accessTokenExpiry || null
+  }
+  return result
+}
+
+export { NativeCredentialStorageError }
 
 /**
  * Export platform detection helper
