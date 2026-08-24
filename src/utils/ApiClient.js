@@ -7,6 +7,12 @@ import {
   recordServerVersionFromResponse,
 } from '../service/DiagnosticsSession'
 import { syncActiveCircleId } from './ActiveCircle'
+import {
+  classifyRefreshStatus,
+  classifyRefreshThrow,
+  isDefinitiveRefreshFailure,
+  RefreshFailureKind as REFRESH_FAILURE_KIND,
+} from './authErrors'
 import { logout, RefreshToken } from './Fetcher'
 import { isOAuthExchangeInProgress } from './OAuthExchangeState'
 import { offlineDB } from './OfflineDB'
@@ -107,14 +113,34 @@ class ApiClient {
     const allowLogoutFallback = options.allowLogoutFallback !== false
 
     // Check if refresh token is expired BEFORE attempting refresh (native only;
-    // web relies on the server rejecting the cookie)
-    const refreshExpired = await isRefreshTokenExpired()
+    // web relies on the server rejecting the cookie). A secure-store read
+    // failure here must not escape as an unhandled rejection: it is a
+    // transient device/storage condition, so report it as such and leave all
+    // credentials untouched.
+    let refreshExpired = false
+    try {
+      refreshExpired = await isRefreshTokenExpired()
+    } catch (storageError) {
+      console.error(
+        'Secure storage unreadable while checking refresh expiry:',
+        storageError,
+      )
+      return {
+        success: false,
+        kind: classifyRefreshThrow(storageError),
+        error: storageError.message || 'Refresh credential unreadable',
+      }
+    }
     if (refreshExpired) {
       console.log('Refresh token expired, forcing logout')
       if (allowLogoutFallback) {
         await this.handleLogout()
       }
-      return { success: false, error: 'Refresh token expired' }
+      return {
+        success: false,
+        kind: REFRESH_FAILURE_KIND.EXPIRED,
+        error: 'Refresh token expired',
+      }
     }
 
     try {
@@ -148,13 +174,20 @@ class ApiClient {
 
         return { success: true, token: newToken }
       } else {
-        if (allowLogoutFallback) {
+        const kind = classifyRefreshStatus(refreshReq.status)
+        // Only definitive verdicts tear the session down; transient server
+        // trouble leaves the (server-enforced) session state untouched.
+        if (allowLogoutFallback && isDefinitiveRefreshFailure(kind)) {
           await this.handleLogout()
         }
-        return { success: false, error: 'Refresh failed' }
+        return { success: false, kind, error: 'Refresh failed' }
       }
     } catch (error) {
-      return { success: false, error: error.message }
+      return {
+        success: false,
+        kind: classifyRefreshThrow(error),
+        error: error.message,
+      }
     } finally {
       this.isRefreshing = false
     }
