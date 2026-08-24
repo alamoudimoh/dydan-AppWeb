@@ -1,5 +1,7 @@
 import { Typography } from '@mui/joy'
-import { useCallback, useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
@@ -7,6 +9,8 @@ import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
 function ConfirmationModal({ config }) {
   const { ResponsiveModal } = useResponsiveModal()
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
+  const cancelButtonRef = useRef(null)
+  const isDestructive = config?.color === 'danger'
 
   const handleAction = useCallback(
     isConfirmed => {
@@ -16,12 +20,20 @@ function ConfirmationModal({ config }) {
   )
 
   useEffect(() => {
+    if (config?.isOpen && isDestructive) cancelButtonRef.current?.focus()
+  }, [config?.isOpen, isDestructive])
+
+  useEffect(() => {
     const handleKeyDown = event => {
       if (!config?.isOpen) return
 
       if (event.ctrlKey || event.metaKey) setShowKeyboardShortcuts(true)
 
-      if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key === 'y' &&
+        config?.color !== 'danger'
+      ) {
         event.preventDefault()
         handleAction(true)
       } else if ((event.ctrlKey || event.metaKey) && event.key === 'x') {
@@ -51,8 +63,6 @@ function ConfirmationModal({ config }) {
     }
   }, [config?.isOpen, config?.color, handleAction])
 
-  const isDestructive = config?.color === 'danger'
-
   return (
     <ResponsiveModal
       open={config?.isOpen}
@@ -67,6 +77,7 @@ function ConfirmationModal({ config }) {
           stackOnMobile
           secondary={{
             label: config?.cancelText,
+            ref: cancelButtonRef,
             onClick: () => handleAction(false),
             endDecorator: showKeyboardShortcuts ? (
               <KeyboardShortcutHint shortcut='X' />
@@ -76,9 +87,10 @@ function ConfirmationModal({ config }) {
             label: config?.confirmText,
             color: config?.color || 'primary',
             onClick: () => handleAction(true),
-            endDecorator: showKeyboardShortcuts ? (
-              <KeyboardShortcutHint shortcut='Y' />
-            ) : undefined,
+            endDecorator:
+              showKeyboardShortcuts && !isDestructive ? (
+                <KeyboardShortcutHint shortcut='Y' />
+              ) : undefined,
           }}
         />
       }
@@ -88,6 +100,18 @@ function ConfirmationModal({ config }) {
       </Typography>
     </ResponsiveModal>
   )
+}
+
+ConfirmationModal.propTypes = {
+  config: PropTypes.shape({
+    cancelText: PropTypes.node,
+    color: PropTypes.string,
+    confirmText: PropTypes.node,
+    isOpen: PropTypes.bool,
+    message: PropTypes.node,
+    onClose: PropTypes.func,
+    title: PropTypes.node,
+  }).isRequired,
 }
 
 export default ConfirmationModal
