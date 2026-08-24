@@ -1,7 +1,18 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { apiClient } from '../utils/ApiClient'
+import {
+  isTransientRefreshFailure,
+  RefreshFailureKind,
+} from '../utils/authErrors'
 import { offlineDB } from '../utils/OfflineDB'
 import {
   adoptLegacyStoredToken,
@@ -30,8 +41,18 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => getAccessToken())
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  /**
+   * Non-null when boot-time session restore could not complete for a
+   * transient reason ({ reason: 'connectivity' | 'storage' }) even though a
+   * refresh credential may still exist locally. This is NOT a logout: the
+   * user is offered a retry instead of a definitive login screen, and no
+   * server-protected data becomes reachable until a real refresh succeeds.
+   */
+  const [restorePending, setRestorePending] = useState(null)
   const navigate = useNavigate()
   const isAuthenticated = !!token
+  // Holds the latest boot-restore routine so retryRestore can re-run it.
+  const restoreSessionRef = useRef(null)
 
   const isTokenExpired = () => {
     const expiry = getAccessTokenExpiry()
@@ -42,6 +63,7 @@ export const AuthProvider = ({ children }) => {
   const clearAuth = async () => {
     setToken(null)
     setUser(null)
+    setRestorePending(null)
     await clearAllTokens()
   }
 
@@ -55,6 +77,7 @@ export const AuthProvider = ({ children }) => {
       refreshToken: data.refresh_token,
       refreshTokenExpiry: data.refresh_token_expiry,
     })
+    setRestorePending(null)
     setToken(accessToken)
     return accessToken
   }
@@ -72,7 +95,6 @@ export const AuthProvider = ({ children }) => {
    * then refresh to repopulate the memory-only access token.
    */
   useEffect(() => {
-    let cancelled = false
     const restoreSession = async () => {
       try {
         await apiClient.init()
@@ -93,17 +115,7 @@ export const AuthProvider = ({ children }) => {
           const result = await apiClient.refreshToken({
             allowLogoutFallback: false,
           })
-          if (cancelled) return
-          if (result.success && result.token) {
-            setToken(result.token)
-          } else if (hasAccessToken()) {
-            // Migration adopted a still-valid access token but the refresh
-            // rotation failed (e.g. very old server). Keep working until it
-            // expires; the next refresh attempt will require a fresh login.
-            setToken(getAccessToken())
-          } else {
-            setToken(null)
-          }
+          if (applyRefreshResult(result)) return
         } else {
           const migration = await migrateNativeCredentials()
           if (migration.status === 'failed') {
@@ -116,28 +128,86 @@ export const AuthProvider = ({ children }) => {
           const result = await apiClient.refreshToken({
             allowLogoutFallback: false,
           })
-          if (cancelled) return
-          if (result.success && result.token) {
-            setToken(result.token)
-          } else if (hasAccessToken()) {
-            // A failed secure-store migration may temporarily adopt the intact
-            // legacy access token without creating any new insecure writes.
-            setToken(getAccessToken())
-          } else {
-            setToken(null)
-          }
+          if (applyRefreshResult(result)) return
         }
       } catch (error) {
         console.error('Session restore failed:', error)
       } finally {
-        if (!cancelled) setIsLoading(false)
+        setIsLoading(false)
       }
     }
+
+    /**
+     * Decide what a failed refresh means for boot state. Definitive failures
+     * (auth rejection, expired/absent credential) land logged-out; transient
+     * ones (offline, unreachable server, secure-store hiccup) keep a
+     * retryable pending state instead of pretending the user signed out.
+     */
+    const applyRefreshResult = result => {
+      if (result.success && result.token) {
+        setRestorePending(null)
+        setToken(result.token)
+        return true
+      }
+      if (hasAccessToken()) {
+        // Migration adopted a still-valid access token but the refresh
+        // rotation failed (e.g. very old server). Keep working until it
+        // expires; the next refresh attempt will require a fresh login.
+        setToken(getAccessToken())
+        return true
+      }
+      if (!result.success && isTransientRefreshFailure(result.kind)) {
+        setRestorePending({
+          reason:
+            result.kind === RefreshFailureKind.STORAGE
+              ? 'storage'
+              : 'connectivity',
+        })
+      } else {
+        setRestorePending(null)
+        setToken(null)
+      }
+      return false
+    }
+
+    restoreSessionRef.current = restoreSession
     restoreSession()
     return () => {
-      cancelled = true
+      restoreSessionRef.current = null
     }
   }, [])
+
+  /**
+   * Retry boot-time session restoration after a transient failure
+   * (connectivity came back, secure storage recovered). Never throws;
+   * failures simply keep or refresh the pending state.
+   */
+  const retryRestore = useCallback(async () => {
+    const run = restoreSessionRef.current
+    if (!run) return { success: false, error: 'restore-unavailable' }
+    setRestorePending(null)
+    setIsLoading(true)
+    try {
+      await run()
+      return { success: !!getAccessToken() }
+    } catch (error) {
+      console.error('Session restore retry failed:', error)
+      return { success: false, error: error?.message || 'restore-failed' }
+    }
+  }, [])
+
+  // Deferred refresh when connectivity returns: a boot that failed offline
+  // retries automatically instead of stranding the user on a stale screen.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const handleOnline = () => {
+      if (restorePending?.reason === 'connectivity') {
+        retryRestore()
+      }
+    }
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [restorePending, retryRestore])
 
   const login = async credentials => {
     setIsLoading(true)
@@ -242,6 +312,8 @@ export const AuthProvider = ({ children }) => {
     user,
     isLoading,
     isAuthenticated,
+    restorePending,
+    retryRestore,
     login,
     establishSession,
     fetchUser,
