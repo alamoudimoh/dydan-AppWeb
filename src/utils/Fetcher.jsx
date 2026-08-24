@@ -653,14 +653,15 @@ const SetCategoryArchived = (id, archived) =>
     body: JSON.stringify({ archived }),
   })
 
-const ChangePassword = (verifiticationCode, password) => {
+const ChangePassword = async (verificationCode, password) => {
+  await apiClient.init()
   const baseURL = apiManager.getApiURL()
-  return fetch(`${baseURL}/auth/password?c=${verifiticationCode}`, {
+  return fetch(`${baseURL}/auth/password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ password: password }),
+    body: JSON.stringify({ password, code: verificationCode }),
   })
 }
 
@@ -719,7 +720,8 @@ const RegenerateBackupCodes = code => {
   })
 }
 
-const VerifyMFA = (sessionToken, code) => {
+const VerifyMFA = async (sessionToken, code) => {
+  await apiClient.init()
   const baseURL = apiManager.getApiURL()
   return fetch(`${baseURL}/auth/mfa/verify`, {
     method: 'POST',
@@ -754,6 +756,7 @@ const RedeemPoints = (userId, points, circleID) => {
   })
 }
 const RefreshToken = async () => {
+  await apiClient.init()
   const basedURL = apiManager.getApiURL()
 
   // Check if running on native platform

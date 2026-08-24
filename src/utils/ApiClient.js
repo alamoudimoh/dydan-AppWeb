@@ -172,7 +172,6 @@ class ApiClient {
     const headers = {
       ...customHeaders,
     }
-
     const token = this.getToken()
     if (token) {
       headers.Authorization = `Bearer ${token}`

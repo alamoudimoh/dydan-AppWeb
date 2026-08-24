@@ -11,6 +11,7 @@ import { API_URL } from '../../Config'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { useResource } from '../../queries/ResourceQueries'
+import { clearWidgetData } from '../../service/WidgetService'
 import { apiClient } from '../../utils/ApiClient'
 import { logout } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
@@ -148,6 +149,7 @@ const LoginSettings = () => {
     await clearAuth()
     stopImpersonation()
     queryClient.clear()
+    await clearWidgetData()
     try {
       await offlineDB.clearAll()
     } catch (e) {
@@ -163,8 +165,13 @@ const LoginSettings = () => {
     const trimmedURL = serverURL.trim()
 
     if (trimmedURL === '') {
-      await switchServer(API_URL)
-      Navigate('/login')
+      try {
+        await switchServer(API_URL)
+        Navigate('/login')
+      } catch {
+        setStatus('error')
+        setErrorMessage('Unable to clear local session data. Please try again.')
+      }
       return
     }
 
@@ -189,7 +196,13 @@ const LoginSettings = () => {
 
     // Never carry credentials across server origins. Revoke against the old
     // origin first, then clear before persisting or contacting the new origin.
-    await switchServer(trimmedURL)
+    try {
+      await switchServer(trimmedURL)
+    } catch {
+      setStatus('error')
+      setErrorMessage('Unable to clear local session data. Please try again.')
+      return
+    }
     setStatus('success')
 
     setTimeout(() => {

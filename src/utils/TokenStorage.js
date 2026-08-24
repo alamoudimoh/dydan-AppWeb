@@ -230,6 +230,7 @@ export const clearAllTokens = async () => {
     const keysToRemove = [
       TOKEN_KEYS.ACCESS_TOKEN,
       TOKEN_KEYS.ACCESS_TOKEN_EXPIRY,
+      TOKEN_KEYS.REFRESH_TOKEN,
       TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
       ...LEGACY_TOKEN_KEYS,
     ]
@@ -279,6 +280,18 @@ export const adoptLegacyStoredToken = () => {
   } catch {
     return null
   }
+
+  if (!isNativePlatform()) {
+    try {
+      localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
+      localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN_EXPIRY)
+      for (const key of LEGACY_TOKEN_KEYS) {
+        localStorage.removeItem(key)
+      }
+    } catch (error) {
+      console.error('Failed to remove legacy refresh token storage:', error)
+    }
+  }
   if (!legacyToken) {
     return null
   }
@@ -296,10 +309,6 @@ export const adoptLegacyStoredToken = () => {
   try {
     localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
     localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN_EXPIRY)
-    localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN_EXPIRY)
-    for (const key of LEGACY_TOKEN_KEYS) {
-      localStorage.removeItem(key)
-    }
   } catch (error) {
     console.error('Failed to remove legacy token storage:', error)
   }

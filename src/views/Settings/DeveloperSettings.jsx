@@ -274,7 +274,6 @@ const DeveloperSettings = () => {
       const response = await RefreshToken()
 
       if (response.ok) {
-        const data = await response.json()
         showNotification({
           type: 'success',
           message: 'Refresh token endpoint called successfully',
@@ -288,8 +287,6 @@ const DeveloperSettings = () => {
           const refreshExpiry = await getRefreshTokenExpiry()
           setRefreshTokenExpiry(refreshExpiry)
         }
-
-        console.log('Refresh token response:', data)
       } else {
         const error = await response.text()
         showNotification({

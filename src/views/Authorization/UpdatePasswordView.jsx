@@ -1,9 +1,10 @@
 import { Box, Button } from '@mui/joy'
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { useNotification } from '../../service/NotificationProvider'
 import { ChangePassword } from '../../utils/Fetcher'
+import { consumePasswordResetCredential } from '../../utils/PasswordResetCredential.js'
 import { AuthPasswordField, AuthSubmitButton, LegalLinks } from './AuthFields'
 import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
@@ -16,10 +17,9 @@ const UpdatePasswordView = () => {
   const [passwordConfirmationError, setPasswordConfirmationError] =
     useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [searchParams] = useSearchParams()
   const { showError, showNotification } = useNotification()
 
-  const verificationCode = searchParams.get('c')
+  const [verificationCode] = useState(consumePasswordResetCredential)
 
   const handlePasswordChange = e => {
     setPassword(e.target.value)

@@ -299,14 +299,14 @@ const registerCapacitorListeners = navigate => {
   mobileApp.getLaunchUrl().then(result => {
     if (result?.url && !launchUrlHandled) {
       launchUrlHandled = true
-      console.log('[NFC] getLaunchUrl:', result.url)
+      console.log('[Deep link] handling launch URL')
       handleUrlOpen(result.url, true /* isColdStart */)
     }
   })
 
   // Foreground / singleTask resume: app was already running when the tag was tapped
   mobileApp.addListener('appUrlOpen', event => {
-    console.log('[NFC] appUrlOpen:', event.url)
+    console.log('[Deep link] handling app URL')
     handleUrlOpen(event.url, false /* isColdStart */)
   })
 

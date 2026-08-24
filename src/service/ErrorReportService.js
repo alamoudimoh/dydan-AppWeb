@@ -73,6 +73,7 @@ export const sanitizeDiagnosticUrl = value => {
       'token',
       'access_token',
       'refresh_token',
+      'c',
     ]) {
       parsed.searchParams.delete(key)
     }

@@ -11,7 +11,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 import { initSentry, SentryBoundary } from './observability/sentry.jsx'
+import { capturePasswordResetCredential } from './utils/PasswordResetCredential.js'
 
+capturePasswordResetCredential(window)
 // No-op unless VITE_SENTRY_DSN is configured; the SDK stays dormant otherwise.
 initSentry()
 

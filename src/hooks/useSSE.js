@@ -46,11 +46,7 @@ export const useSSE = () => {
   const getSSEUrl = useCallback(() => {
     const authToken = token
     if (!authToken || !isAuthenticated) {
-      console.log(
-        'SSE: No valid authentication token',
-        authToken,
-        isAuthenticated,
-      )
+      console.log('SSE: No valid authentication token')
       return null
     }
 
@@ -356,7 +352,6 @@ export const useSSE = () => {
     }
 
     const sseConfig = getSSEUrl()
-    console.log('SSE connect - Config:', sseConfig)
 
     if (!sseConfig) {
       console.log('Cannot connect to SSE: missing URL, token, or user profile')
