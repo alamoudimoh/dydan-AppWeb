@@ -43,6 +43,25 @@ const scrub = value => {
   return value
 }
 
+const sanitizeUrl = value => {
+  if (!value) return value
+  try {
+    const parsed = new URL(value, window.location.origin)
+    for (const key of [
+      'code',
+      'state',
+      'token',
+      'access_token',
+      'refresh_token',
+    ]) {
+      parsed.searchParams.delete(key)
+    }
+    return parsed.toString()
+  } catch {
+    return String(value).split('?')[0]
+  }
+}
+
 /**
  * Centralized beforeSend sanitizer: drops obviously sensitive fields already
  * known in this app (auth tokens, authorization headers, cookies, passwords)
@@ -61,6 +80,22 @@ export const sanitizeSentryEvent = event => {
         ),
       ),
     }
+  }
+  if (scrubbed.request?.url) {
+    scrubbed.request = {
+      ...scrubbed.request,
+      url: sanitizeUrl(scrubbed.request.url),
+    }
+  }
+  if (scrubbed.breadcrumbs) {
+    scrubbed.breadcrumbs = scrubbed.breadcrumbs.map(crumb => {
+      if (!crumb.data) return crumb
+      const data = { ...crumb.data }
+      for (const key of ['url', 'from', 'to']) {
+        if (data[key]) data[key] = sanitizeUrl(data[key])
+      }
+      return { ...crumb, data }
+    })
   }
   if (scrubbed.extra) scrubbed.extra = scrub(scrubbed.extra)
   if (scrubbed.contexts) scrubbed.contexts = scrub(scrubbed.contexts)

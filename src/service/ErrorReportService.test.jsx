@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   newReportId,
+  sanitizeDiagnosticUrl,
   SUBMIT_RESULT,
   submitErrorReport,
 } from './ErrorReportService.js'
@@ -25,5 +26,14 @@ describe('manual error report flow (unchanged by Sentry baseline)', () => {
 
   it('still generates report ids', () => {
     expect(newReportId()).toMatch(/^TD-[0-9A-Z]+-[0-9A-Z]+$/)
+  })
+
+  it('removes OAuth credentials from diagnostic URLs', () => {
+    const sanitized = sanitizeDiagnosticUrl(
+      'https://daydan.example/auth/oauth2?code=secret&state=state-secret&safe=1',
+    )
+    expect(sanitized).toContain('safe=1')
+    expect(sanitized).not.toContain('secret')
+    expect(sanitized).not.toContain('state=')
   })
 })

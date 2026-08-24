@@ -1,5 +1,6 @@
 import { apiClient } from './ApiClient'
 import { createSingleFlight, ensureOperationId } from './SubmissionGuards'
+import { getRefreshToken } from './TokenStorage'
 
 const runCompletion = createSingleFlight()
 
@@ -90,6 +91,12 @@ const logout = async () => {
   // Only use credentials for web, not for native apps
   if (!isNative) {
     config.credentials = 'include'
+  } else {
+    const refreshToken = await getRefreshToken()
+    if (refreshToken) {
+      config.headers = { 'Content-Type': 'application/json' }
+      config.body = JSON.stringify({ refresh_token: refreshToken })
+    }
   }
 
   return fetch(`${baseURL}/auth/logout`, config)
