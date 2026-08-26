@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -307,18 +308,32 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const value = {
-    token,
-    user,
-    isLoading,
-    isAuthenticated,
-    restorePending,
-    retryRestore,
-    login,
-    establishSession,
-    fetchUser,
-    clearAuth,
-  }
+  const value = useMemo(
+    () => ({
+      token,
+      user,
+      isLoading,
+      isAuthenticated,
+      restorePending,
+      retryRestore,
+      login,
+      establishSession,
+      fetchUser,
+      clearAuth,
+    }),
+    [
+      token,
+      user,
+      isLoading,
+      isAuthenticated,
+      restorePending,
+      retryRestore,
+      login,
+      establishSession,
+      fetchUser,
+      clearAuth,
+    ],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

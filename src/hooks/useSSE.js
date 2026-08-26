@@ -46,7 +46,6 @@ export const useSSE = () => {
   const getSSEUrl = useCallback(() => {
     const authToken = token
     if (!authToken || !isAuthenticated) {
-      console.log('SSE: No valid authentication token')
       return null
     }
 
@@ -207,7 +206,7 @@ export const useSSE = () => {
               ['choreDetails', String(eventData.data.choreId)], // this should be string to match the query key type which is param in the url in choreView
               oldData => {
                 if (!oldData) return oldData
-                console.log('Old choreDetails data:', oldData)
+                console.debug('Old choreDetails data:', oldData)
 
                 // Update the specific subtask within the chore details
                 const newChoreData = { ...oldData.res }
@@ -232,7 +231,7 @@ export const useSSE = () => {
             break
 
           case 'connection.established':
-            console.log('SSE connection established')
+            console.debug('SSE connection established')
             setError(null)
             lastHeartbeatRef.current = Date.now()
             showAlert({

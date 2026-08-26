@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
@@ -19,7 +20,6 @@ export const ImpersonateUserProvider = ({ children }) => {
 
   // Start impersonation
   const startImpersonation = useCallback((userToImpersonate, currentUser) => {
-    console.log('Starting impersonation:', { userToImpersonate, currentUser })
     const newState = {
       isImpersonating: true,
       impersonatedUser: userToImpersonate,
@@ -35,7 +35,6 @@ export const ImpersonateUserProvider = ({ children }) => {
 
   // Stop impersonation
   const stopImpersonation = useCallback(() => {
-    console.log('Stopping impersonation')
     setImpersonationState({
       isImpersonating: false,
       impersonatedUser: null,
@@ -110,38 +109,48 @@ export const ImpersonateUserProvider = ({ children }) => {
     }
   }, [])
 
-  const value = {
-    // State
-    ...impersonationState,
+  const value = useMemo(
+    () => ({
+      // State
+      ...impersonationState,
 
-    // Actions
-    startImpersonation,
-    stopImpersonation,
+      // Actions
+      startImpersonation,
+      stopImpersonation,
 
-    getEffectiveUser,
-    getImpersonationHeaders,
-    canImpersonate,
+      getEffectiveUser,
+      getImpersonationHeaders,
+      canImpersonate,
 
-    // Computed properties
-    isImpersonating: impersonationState.isImpersonating,
-    impersonatedUser: impersonationState.impersonatedUser,
-    originalUser: impersonationState.originalUser,
+      // Computed properties
+      isImpersonating: impersonationState.isImpersonating,
+      impersonatedUser: impersonationState.impersonatedUser,
+      originalUser: impersonationState.originalUser,
 
-    // Legacy support
-    setImpersonatedUser: user => {
-      if (user) {
-        // If setting a user, assume we're starting impersonation
-        // Note: This won't have originalUser, so it's for backward compatibility only
-        setImpersonationState(prev => ({
-          isImpersonating: true,
-          impersonatedUser: user,
-          originalUser: prev.originalUser,
-        }))
-      } else {
-        stopImpersonation()
-      }
-    },
-  }
+      // Legacy support
+      setImpersonatedUser: user => {
+        if (user) {
+          // If setting a user, assume we're starting impersonation
+          // Note: This won't have originalUser, so it's for backward compatibility only
+          setImpersonationState(prev => ({
+            isImpersonating: true,
+            impersonatedUser: user,
+            originalUser: prev.originalUser,
+          }))
+        } else {
+          stopImpersonation()
+        }
+      },
+    }),
+    [
+      impersonationState,
+      startImpersonation,
+      stopImpersonation,
+      getEffectiveUser,
+      getImpersonationHeaders,
+      canImpersonate,
+    ],
+  )
 
   return (
     <ImpersonateUserContext.Provider value={value}>

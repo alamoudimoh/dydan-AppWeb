@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { createContext, useContext, useEffect } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import useStickyState from '@/hooks/useStickyState'
@@ -131,20 +131,35 @@ export const LocalizationProvider = ({ children }) => {
     intlDateTime: formatIntlDateTime,
   }
 
-  const value = {
-    dateFormat,
-    setDateFormat,
-    timeFormat,
-    setTimeFormat,
-    firstDayOfWeek,
-    setFirstDayOfWeek,
-    language,
-    setLanguage,
-    isRTL,
-    intlLocale,
-    fmt,
-    availableLanguages: AVAILABLE_LANGUAGES,
-  }
+  const value = useMemo(
+    () => ({
+      dateFormat,
+      setDateFormat,
+      timeFormat,
+      setTimeFormat,
+      firstDayOfWeek,
+      setFirstDayOfWeek,
+      language,
+      setLanguage,
+      isRTL,
+      intlLocale,
+      fmt,
+      availableLanguages: AVAILABLE_LANGUAGES,
+    }),
+    [
+      dateFormat,
+      setDateFormat,
+      timeFormat,
+      setTimeFormat,
+      firstDayOfWeek,
+      setFirstDayOfWeek,
+      language,
+      setLanguage,
+      isRTL,
+      intlLocale,
+      fmt,
+    ],
+  )
 
   return (
     <LocalizationContext.Provider value={value}>

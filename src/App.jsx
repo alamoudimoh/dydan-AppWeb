@@ -15,6 +15,7 @@ import { hasAppShell } from '@/navigation/appShellModel'
 import { NAV_DRAWER_WIDTH } from '@/navigation/navStyles'
 import NavBar from '@/views/components/NavBar'
 
+import ErrorBoundary from './components/ErrorBoundary'
 import { registerCapacitorListeners } from './CapacitorListener'
 import PageTransition from './components/animations/PageTransition'
 import RequireAuth from './components/auth/RequireAuth'
@@ -135,9 +136,11 @@ const AppContent = () => {
             <PageTransition>
               {/* Route components are React.lazy chunks; Suspense keeps the shell
                 mounted while a page bundle loads. */}
-              <Suspense fallback={<LinearProgress />}>
-                <Outlet />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LinearProgress />}>
+                  <Outlet />
+                </Suspense>
+              </ErrorBoundary>
             </PageTransition>
           </Box>
         </ImpersonateUserProvider>
