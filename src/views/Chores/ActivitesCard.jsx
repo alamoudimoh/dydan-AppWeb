@@ -26,6 +26,7 @@ import {
 } from '@mui/joy'
 import moment from 'moment'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import SectionCard from '../../components/common/SectionCard'
 import { useChores, useChoresHistory } from '../../queries/ChoreQueries'
@@ -36,6 +37,8 @@ import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
 import { sideCardSx } from './sideCardSx'
 
 const ActivityItem = ({ activity, members, onViewNote }) => {
+  const { i18n, t } = useTranslation('chores')
+  const locale = i18n.resolvedLanguage || i18n.language
   // Find the member who completed the activity
   const completedByMember = members?.find(
     member => member.userId === activity.completedBy,
@@ -55,13 +58,16 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
     const diffInDays = now.diff(completed, 'days')
 
     if (diffInHours < 1) {
-      return 'Just now'
+      return t('sideCards.justNow')
     } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`
+      return t('sideCards.hoursAgo', { count: diffInHours })
     } else if (diffInDays < 7) {
-      return `${diffInDays}d ago`
+      return t('sideCards.daysAgo', { count: diffInDays })
     } else {
-      return completed.format('MMM DD')
+      return new Intl.DateTimeFormat(locale, {
+        month: 'short',
+        day: 'numeric',
+      }).format(completed.toDate())
     }
   }
 
@@ -69,7 +75,7 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
     if (activity.status === 0) {
       return {
         color: 'primary',
-        text: 'Started',
+        text: t('sideCards.started'),
         icon: <Timelapse />,
       }
     } else if (activity.status === 1) {
@@ -80,44 +86,44 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
       if (wasOnTime) {
         return {
           color: 'success',
-          text: 'Done',
+          text: t('sideCards.done'),
           icon: <CheckCircle />,
         }
       } else {
         return {
           color: 'primary',
-          text: 'Late',
+          text: t('sideCards.late'),
           icon: <WatchLater />,
         }
       }
     } else if (activity.status === 2) {
       return {
         color: 'warning',
-        text: 'Skipped',
+        text: t('sideCards.skipped'),
         icon: <Redo />,
       }
     } else if (activity.status === 3) {
       return {
         color: 'neutral',
-        text: 'Pending Approval',
+        text: t('sideCards.pendingApproval'),
         icon: <HourglassEmpty />,
       }
     } else if (activity.status === 4) {
       return {
         color: 'danger',
-        text: 'Rejected',
+        text: t('sideCards.rejected'),
         icon: <ThumbDown />,
       }
     } else if (activity.status === 5) {
       return {
         color: 'danger',
-        text: 'Missed',
+        text: t('sideCards.missed'),
         icon: <EventNote />,
       }
     } else if (activity.status === 6) {
       return {
         color: 'neutral',
-        text: 'Rescheduled',
+        text: t('sideCards.rescheduled'),
         icon: <Refresh />,
       }
     }
@@ -125,7 +131,7 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
     // Fallback for completed status
     return {
       color: 'success',
-      text: 'Completed',
+      text: t('sideCards.completed'),
       icon: <CheckCircle />,
     }
   }
@@ -171,11 +177,13 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
             >
               {getStatusInfo(activity).text}
             </Chip>
-            <Typography level='body-xs' color='text.secondary' sx={{ ml: 0 }}>
-              by{' '}
-              {completedByMember?.displayName ||
-                completedByMember?.name ||
-                'Unknown'}
+            <Typography level='body-xs' color='text.secondary'>
+              {t('sideCards.byMember', {
+                name:
+                  completedByMember?.displayName ||
+                  completedByMember?.name ||
+                  t('sideCards.unknown'),
+              })}
             </Typography>
             {/* Points chip */}
             {activity.points && activity.points > 0 && (
@@ -185,25 +193,14 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
                 color='success'
                 startDecorator={<Toll />}
               >
-                {activity.points} pts
+                {t('sideCards.points', { count: activity.points })}
               </Chip>
             )}
           </Box>
 
-          {/* Status, Points, and Notes */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 0.5,
-              mt: 0.5,
-              ml: 2.5,
-            }}
-          ></Box>
-
           {/* Notes */}
           {plainTextNotes && (
-            <Box sx={{ mt: 0.5, ml: 2.5 }}>
+            <Box sx={{ mt: 0.5, marginInlineStart: 2.5 }}>
               <Typography
                 level='body-xs'
                 sx={{
@@ -240,7 +237,7 @@ const ActivityItem = ({ activity, members, onViewNote }) => {
                         display: 'inline-block',
                       }}
                     >
-                      Show more
+                      {t('sideCards.showMore')}
                     </Link>
                   )}
                 </Box>
@@ -269,7 +266,10 @@ const groupActivitiesByDate = activities => {
   return groups
 }
 
-const ActivitiesCard = ({ title = 'Recent Activities' }) => {
+const ActivitiesCard = ({ title }) => {
+  const { i18n, t } = useTranslation('chores')
+  const locale = i18n.resolvedLanguage || i18n.language
+  const cardTitle = title || t('sideCards.recentActivities')
   const [noteViewerConfig, setNoteViewerConfig] = useState({ isOpen: false })
 
   // Use hooks to fetch data
@@ -297,7 +297,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
 
   // Refresh function to refetch all data
   const handleRefresh = async () => {
-    await Promise.all([refetchChores(), refetchHistory, refetchMembers])
+    await Promise.all([refetchChores(), refetchHistory(), refetchMembers()])
   }
 
   // Show loading state
@@ -305,7 +305,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
     return (
       <SectionCard sx={{ ...sideCardSx, maxHeight: 400 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Typography level='title-md'>{title}</Typography>
+          <Typography level='title-md'>{cardTitle}</Typography>
         </Box>
         <Box
           sx={{
@@ -316,7 +316,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
           }}
         >
           <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            Loading activities...
+            {t('sideCards.loadingActivities')}
           </Typography>
         </Box>
       </SectionCard>
@@ -329,7 +329,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
       const chore = chores?.find(c => c.id === history.choreId)
       return {
         ...history,
-        choreName: chore?.name || 'Unknown Chore',
+        choreName: chore?.name || t('sideCards.unknownTask'),
       }
     }) || []
 
@@ -349,7 +349,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
       <SectionCard sx={{ ...sideCardSx, maxHeight: 400 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <EventNote color='' />
-          <Typography level='title-md'>{title}</Typography>
+          <Typography level='title-md'>{cardTitle}</Typography>
         </Box>
         <Box
           sx={{
@@ -362,7 +362,9 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
           }}
         >
           <EventNote sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
-          <Typography level='body-sm'>No recent activities</Typography>
+          <Typography level='body-sm'>
+            {t('sideCards.noRecentActivities')}
+          </Typography>
         </Box>
       </SectionCard>
     )
@@ -381,7 +383,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <EventNote color='' />
-            <Typography level='title-md'>{title}</Typography>
+            <Typography level='title-md'>{cardTitle}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip size='sm' variant='soft' color='neutral'>
@@ -392,6 +394,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
               variant='soft'
               color='neutral'
               onClick={handleRefresh}
+              aria-label={t('sideCards.refreshActivities')}
               sx={{ minHeight: 24, minWidth: 24 }}
             >
               <Refresh sx={{ fontSize: 16 }} />
@@ -411,11 +414,14 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
 
           let dateLabel
           if (isToday) {
-            dateLabel = 'Today'
+            dateLabel = t('sideCards.today')
           } else if (isYesterday) {
-            dateLabel = 'Yesterday'
+            dateLabel = t('sideCards.yesterday')
           } else {
-            dateLabel = moment(date).format('MMM DD')
+            dateLabel = new Intl.DateTimeFormat(locale, {
+              month: 'short',
+              day: 'numeric',
+            }).format(new Date(`${date}T12:00:00`))
           }
 
           return (

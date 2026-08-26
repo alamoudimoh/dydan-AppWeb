@@ -36,9 +36,6 @@ import {
   Menu,
   MenuButton,
   MenuItem,
-  Modal,
-  ModalClose,
-  ModalDialog,
   Option,
   Select,
   Sheet,
@@ -51,6 +48,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import ChoreQueryStateView from '../../components/chores/ChoreQueryStateView.jsx'
+import AppModal from '../../components/common/AppModal'
 import { formatPageTitle } from '../../config/AppBranding'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -370,7 +369,10 @@ const ChoreView = () => {
     )
     const data = await response.json()
     if (!response.ok) {
-      showError({ title: 'Unable to update meter', message: data.error })
+      showError({
+        title: t('choreView.meterUpdateError'),
+        message: data.error,
+      })
       return
     }
     setMeterReadingOpen(false)
@@ -378,9 +380,22 @@ const ChoreView = () => {
     const detailResponse = await GetChoreDetailById(choreId)
     if (detailResponse.ok) setChore((await detailResponse.json()).res)
     showSuccess({
-      title: 'Meter updated',
-      message: 'The reading was saved and the next reminder was scheduled.',
+      title: t('choreView.meterUpdated'),
+      message: t('choreView.meterUpdatedMessage'),
     })
+  }
+  const saveToRoutine = async () => {
+    try {
+      await routineMutation.mutateAsync({
+        path: `/routines/${targetRoutine}/from-chore/${choreId}`,
+        method: 'post',
+      })
+      setSaveRoutineOpen(false)
+      setTargetRoutine(null)
+      showSuccess(t('choreView.routineSaved'))
+    } catch (error) {
+      showError(error.message)
+    }
   }
   const handleSkippingTask = async () => {
     try {
@@ -978,7 +993,7 @@ const ChoreView = () => {
             }}
           >
             <Edit />
-            Edit
+            {t('choreView.edit')}
           </Button>
           <Button
             size='sm'
@@ -994,52 +1009,48 @@ const ChoreView = () => {
             onClick={() => setSaveRoutineOpen(true)}
           >
             <BookmarkAdd />
-            Save to Routine
+            {t('choreView.saveToRoutine')}
           </Button>
         </Box>
 
-        <Modal open={saveRoutineOpen} onClose={() => setSaveRoutineOpen(false)}>
-          <ModalDialog sx={{ width: 'min(440px, calc(100vw - 32px))' }}>
-            <ModalClose />
-            <Typography level='h3'>Save Task to Routine</Typography>
-            <Typography level='body-sm'>
-              Reusable settings are copied. History, status, due-date progress,
-              and meter readings are not copied.
-            </Typography>
-            <FormControl required>
-              <Select
-                placeholder='Choose a Routine Pack'
-                value={targetRoutine}
-                onChange={(_, value) => setTargetRoutine(value)}
+        <AppModal
+          open={saveRoutineOpen}
+          onClose={() => setSaveRoutineOpen(false)}
+          title={t('choreView.saveRoutineTitle')}
+          description={t('choreView.saveRoutineDescription')}
+          footer={
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+              <Button
+                variant='plain'
+                color='neutral'
+                onClick={() => setSaveRoutineOpen(false)}
               >
-                {(routinesData?.res || []).map(routine => (
-                  <Option key={routine.id} value={routine.id}>
-                    {routine.name}
-                  </Option>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              loading={routineMutation.isPending}
-              disabled={!targetRoutine}
-              onClick={async () => {
-                try {
-                  await routineMutation.mutateAsync({
-                    path: `/routines/${targetRoutine}/from-chore/${choreId}`,
-                    method: 'post',
-                  })
-                  setSaveRoutineOpen(false)
-                  setTargetRoutine(null)
-                  showSuccess('Task saved to Routine')
-                } catch (error) {
-                  showError(error.message)
-                }
-              }}
+                {t('choreView.cancel')}
+              </Button>
+              <Button
+                loading={routineMutation.isPending}
+                disabled={!targetRoutine}
+                onClick={saveToRoutine}
+              >
+                {t('choreView.saveToRoutine')}
+              </Button>
+            </Box>
+          }
+        >
+          <FormControl required>
+            <Select
+              placeholder={t('choreView.chooseRoutine')}
+              value={targetRoutine}
+              onChange={(_, value) => setTargetRoutine(value)}
             >
-              Save to Routine
-            </Button>
-          </ModalDialog>
-        </Modal>
+              {(routinesData?.res || []).map(routine => (
+                <Option key={routine.id} value={routine.id}>
+                  {routine.name}
+                </Option>
+              ))}
+            </Select>
+          </FormControl>
+        </AppModal>
 
         {chore.description && (
           <>
@@ -1496,37 +1507,45 @@ const ChoreView = () => {
         )}
 
         <ConfirmationModal config={confirmModelConfig} />
-        <Modal
+        <AppModal
           open={meterReadingOpen}
           onClose={() => setMeterReadingOpen(false)}
+          title={t('choreView.updateMeterTitle', {
+            name: chore.meterUpdateReminder?.meterName,
+          })}
+          description={t('choreView.previousReading', {
+            reading:
+              chore.meterUpdateReminder?.currentReading?.toLocaleString(),
+            unit: chore.meterUpdateReminder?.unit,
+          })}
+          footer={
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+              <Button
+                variant='plain'
+                color='neutral'
+                onClick={() => setMeterReadingOpen(false)}
+              >
+                {t('choreView.cancel')}
+              </Button>
+              <Button
+                onClick={completeMeterUpdate}
+                disabled={meterReading === ''}
+              >
+                {t('choreView.updateAndComplete')}
+              </Button>
+            </Box>
+          }
         >
-          <ModalDialog>
-            <ModalClose />
-            <Typography level='h4'>
-              Update {chore.meterUpdateReminder?.meterName}
-            </Typography>
-            <Typography level='body-sm'>
-              Previous reading:{' '}
-              {chore.meterUpdateReminder?.currentReading?.toLocaleString()}{' '}
-              {chore.meterUpdateReminder?.unit}
-            </Typography>
-            <FormControl required>
-              <FormLabel>New reading</FormLabel>
-              <Input
-                type='number'
-                value={meterReading}
-                onChange={e => setMeterReading(e.target.value)}
-                endDecorator={chore.meterUpdateReminder?.unit}
-              />
-            </FormControl>
-            <Button
-              onClick={completeMeterUpdate}
-              disabled={meterReading === ''}
-            >
-              Update &amp; Complete
-            </Button>
-          </ModalDialog>
-        </Modal>
+          <FormControl required>
+            <FormLabel>{t('choreView.newReading')}</FormLabel>
+            <Input
+              type='number'
+              value={meterReading}
+              onChange={event => setMeterReading(event.target.value)}
+              endDecorator={chore.meterUpdateReminder?.unit}
+            />
+          </FormControl>
+        </AppModal>
         <ConfirmationModal config={timerActionConfig} />
         <NoteViewerModal config={noteViewerConfig} />
         <AttachmentBrowserModal

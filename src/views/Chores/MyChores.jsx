@@ -510,7 +510,10 @@ const MyChores = () => {
       tempFilterMeta?.id !== filterId
     ) {
       const def = INSIGHT_FILTER_DEFS[filterId]
-      applyTempFilter(def.filter, { id: filterId, name: def.name })
+      applyTempFilter(def.filter, {
+        id: filterId,
+        name: t(def.translationKey),
+      })
       return
     }
 
@@ -563,6 +566,7 @@ const MyChores = () => {
     setQuickFilter,
     setViewMode,
     setSelectedCalendarDate,
+    t,
   ])
 
   // Sync tempFilterMeta (smart insight) → URL using filterId param

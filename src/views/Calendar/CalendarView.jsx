@@ -13,7 +13,6 @@ import {
   ButtonGroup,
   Card,
   Chip,
-  Container,
   IconButton,
   Option,
   Select,
@@ -27,17 +26,22 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
+import PageHeader from '../../components/common/PageHeader'
 import { useLocalization } from '../../contexts/LocalizationContext'
-import {
-  inlineErrorAlertSx,
-  pageStackSpacing,
-  widePageContainerSx,
-} from '../../theme/appLayout'
 import { useCalendar } from '../../queries/CalendarQueries'
 import { useCategories } from '../../queries/CategoryQueries'
 import { useUserProfile } from '../../queries/UserQueries'
-import PageHeader from '../../components/common/PageHeader'
+import {
+  inlineErrorAlertSx,
+  pageShellSx,
+  pageStackSpacing,
+} from '../../theme/appLayout'
 import { MarkChoreComplete } from '../../utils/Fetcher'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import {
+  readMigratedLocalStorageItem,
+  writeLocalStorageItem,
+} from '../../utils/storageMigration'
 import {
   addDays,
   dateKey,
@@ -47,11 +51,6 @@ import {
   monthGrid,
   zonedMidnight,
 } from './calendarModel'
-import { STORAGE_KEYS } from '../../utils/storageKeys'
-import {
-  readMigratedLocalStorageItem,
-  writeLocalStorageItem,
-} from '../../utils/storageMigration'
 
 const preferenceKey = STORAGE_KEYS.calendarView
 const supportedViews = ['agenda', 'month']
@@ -61,6 +60,7 @@ const labelDate = (key, locale, options = {}) =>
   )
 
 const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const specialized = Boolean(item.meterUpdateReminder || item.meterSchedule)
   const time = new Intl.DateTimeFormat(locale, {
@@ -77,7 +77,7 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
     >
       {item.actionable && !specialized ? (
         <IconButton
-          aria-label={`Complete ${item.name}`}
+          aria-label={t('calendar.completeTask', { name: item.name })}
           loading={pending}
           onClick={() => onComplete(item)}
           color={item.overdue ? 'danger' : 'primary'}
@@ -112,7 +112,7 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
             </Typography>
             {item.projected && (
               <Chip size='sm' variant='outlined'>
-                Projected
+                {t('calendar.projected')}
               </Chip>
             )}
             {item.category && (
@@ -122,15 +122,17 @@ const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
             )}
             {item.meterUpdateReminder && (
               <Chip size='sm' color='info'>
-                Meter update
+                {t('calendar.meterUpdate')}
               </Chip>
             )}
             {item.meterSchedule && (
               <Chip size='sm' color='warning'>
-                Maintenance
+                {t('calendar.maintenance')}
               </Chip>
             )}
-            {item.requireApproval && <Chip size='sm'>Approval required</Chip>}
+            {item.requireApproval && (
+              <Chip size='sm'>{t('calendar.approvalRequired')}</Chip>
+            )}
           </Stack>
         </Box>
       </Button>
@@ -225,7 +227,7 @@ export default function CalendarView() {
     setActionError('')
     try {
       const response = await MarkChoreComplete(item.choreId, {})
-      if (!response.ok) throw new Error('The task could not be completed')
+      if (!response.ok) throw new Error(t('calendar.completeError'))
       await Promise.all([
         client.invalidateQueries({ queryKey: ['calendar'] }),
         client.invalidateQueries({ queryKey: ['chores'] }),
@@ -274,66 +276,71 @@ export default function CalendarView() {
         />
       ))
     ) : (
-      <Typography color='neutral'>Nothing scheduled.</Typography>
+      <Typography color='neutral'>{t('calendar.nothingScheduled')}</Typography>
     )
 
   return (
-    <Container maxWidth='xl' sx={widePageContainerSx}>
+    <Box sx={pageShellSx}>
       <Stack spacing={pageStackSpacing}>
         <PageHeader
-          title='Calendar'
-          subtitle='Your personal scheduled work'
+          title={t('calendar.title')}
+          subtitle={t('calendar.subtitle')}
           action={
-            <ButtonGroup aria-label='Calendar view'>
+            <ButtonGroup aria-label={t('calendar.view')}>
               <Button
                 variant={view === 'agenda' ? 'solid' : 'outlined'}
                 onClick={() => switchView('agenda')}
                 startDecorator={<EventNoteRounded />}
               >
-                Agenda
+                {t('calendar.agenda')}
               </Button>
               <Button
                 variant={view === 'month' ? 'solid' : 'outlined'}
                 onClick={() => switchView('month')}
                 startDecorator={<CalendarMonthRounded />}
               >
-                Calendar
+                {t('calendar.monthView')}
               </Button>
             </ButtonGroup>
           }
         />
         <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
-          <Button onClick={() => setState({ date: today })}>Today</Button>
+          <Button onClick={() => setState({ date: today })}>
+            {t('dates.today')}
+          </Button>
           {view === 'month' && (
             <>
               <IconButton
-                aria-label='Previous month'
+                aria-label={t('calendar.previousMonth')}
                 onClick={() => moveMonth(-1)}
               >
                 {isRTL ? <ChevronRightRounded /> : <ChevronLeftRounded />}
               </IconButton>
-              <IconButton aria-label='Next month' onClick={() => moveMonth(1)}>
+              <IconButton
+                aria-label={t('calendar.nextMonth')}
+                onClick={() => moveMonth(1)}
+              >
                 {isRTL ? <ChevronLeftRounded /> : <ChevronRightRounded />}
               </IconButton>
             </>
           )}
           {view === 'agenda' && (
             <Select
-              aria-label='Agenda range'
+              aria-label={t('calendar.agendaRange')}
               value={range}
               onChange={(_, value) => setState({ range: value })}
             >
-              <Option value={7}>7 days</Option>
-              <Option value={14}>14 days</Option>
-              <Option value={30}>30 days</Option>
+              <Option value={7}>{t('calendar.sevenDays')}</Option>
+              <Option value={14}>{t('calendar.fourteenDays')}</Option>
+              <Option value={30}>{t('calendar.thirtyDays')}</Option>
             </Select>
           )}
           <Select
-            aria-label='Category filter'
+            aria-label={t('calendar.categoryFilter')}
             value={categoryFilter}
             onChange={(_, value) => setState({ category: value })}
           >
-            <Option value='all'>All</Option>
+            <Option value='all'>{t('calendar.allCategories')}</Option>
             {[...categories]
               .sort((a, b) => new Intl.Collator(locale).compare(a.name, b.name))
               .map(category => (
@@ -342,24 +349,26 @@ export default function CalendarView() {
                 </Option>
               ))}
             {hasUncategorized && (
-              <Option value='uncategorized'>Uncategorized</Option>
+              <Option value='uncategorized'>
+                {t('calendar.uncategorized')}
+              </Option>
             )}
           </Select>
           <Select
-            aria-label='System type filter'
+            aria-label={t('calendar.systemTypeFilter')}
             value={typeFilter}
             onChange={(_, value) => setState({ type: value })}
             size='sm'
             variant='plain'
           >
-            <Option value='all'>All types</Option>
-            <Option value='tasks'>Tasks</Option>
-            <Option value='maintenance'>Maintenance</Option>
-            <Option value='meter'>Meter updates</Option>
+            <Option value='all'>{t('calendar.allTypes')}</Option>
+            <Option value='tasks'>{t('calendar.tasks')}</Option>
+            <Option value='maintenance'>{t('calendar.maintenance')}</Option>
+            <Option value='meter'>{t('calendar.meterUpdates')}</Option>
           </Select>
         </Stack>
         {calendar.isLoading && (
-          <Stack aria-label='Loading calendar'>
+          <Stack aria-label={t('calendar.loading')}>
             <Skeleton variant='rectangular' height={180} />
             <Skeleton variant='rectangular' height={120} />
           </Stack>
@@ -388,7 +397,7 @@ export default function CalendarView() {
             {overdue.length > 0 && (
               <Card variant='outlined' color='danger'>
                 <Typography level='h2' color='danger'>
-                  Overdue
+                  {t('calendar.overdue')}
                 </Typography>
                 {renderRows(overdue)}
               </Card>
@@ -399,9 +408,9 @@ export default function CalendarView() {
               <Card variant='outlined' key={key}>
                 <Typography level='h2'>
                   {key === today
-                    ? 'Today'
+                    ? t('dates.today')
                     : key === addDays(today, 1)
-                      ? 'Tomorrow'
+                      ? t('dates.tomorrow')
                       : labelDate(key, locale, { weekday: 'long' })}
                 </Typography>
                 <Typography level='body-sm' color='neutral'>
@@ -423,7 +432,7 @@ export default function CalendarView() {
               </Typography>
               <Box
                 role='grid'
-                aria-label='Month calendar'
+                aria-label={t('calendar.monthCalendar')}
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
@@ -452,7 +461,10 @@ export default function CalendarView() {
                     <Button
                       key={key}
                       role='gridcell'
-                      aria-label={`${accessibleDate}, ${items.length} scheduled`}
+                      aria-label={t('calendar.scheduledCount', {
+                        date: accessibleDate,
+                        count: items.length,
+                      })}
                       aria-selected={key === selected}
                       variant={key === selected ? 'soft' : 'plain'}
                       color='neutral'
@@ -492,7 +504,9 @@ export default function CalendarView() {
                           ))}
                           {items.length > 2 && (
                             <Typography level='body-xs'>
-                              +{items.length - 2} more
+                              {t('calendar.moreCount', {
+                                count: items.length - 2,
+                              })}
                             </Typography>
                           )}
                         </Box>
@@ -515,6 +529,6 @@ export default function CalendarView() {
           </>
         )}
       </Stack>
-    </Container>
+    </Box>
   )
 }
