@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import { useSSE } from '../hooks/useSSE'
 
 export const SSEContext = createContext({
@@ -18,8 +18,19 @@ export const useSSEContext = () => {
 
 export const SSEProvider = ({ children }) => {
   const sseState = useSSE()
+  const value = useMemo(() => sseState, [
+    sseState.connectionState,
+    sseState.isConnected,
+    sseState.isConnecting,
+    sseState.lastEvent,
+    sseState.error,
+    sseState.connect,
+    sseState.disconnect,
+    sseState.toggleSSEEnabled,
+    sseState.isSSEEnabled,
+  ])
 
-  return <SSEContext.Provider value={sseState}>{children}</SSEContext.Provider>
+  return <SSEContext.Provider value={value}>{children}</SSEContext.Provider>
 }
 
 export default SSEProvider
