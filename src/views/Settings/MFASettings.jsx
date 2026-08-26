@@ -91,8 +91,6 @@ const MFASettings = () => {
           return
         }
         if (data.backupCodes) {
-          console.log('Backup Codes:', data.backupCodes)
-
           setBackupCodes(data.backupCodes)
         }
         // If we have a qrCodeUrl, generate the QR code image

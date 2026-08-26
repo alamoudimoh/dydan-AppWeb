@@ -9,7 +9,6 @@ import {
   Webhook,
 } from '@mui/icons-material'
 import { Box, Checkbox, Chip, IconButton, Typography } from '@mui/joy'
-import { useNavigate } from 'react-router-dom'
 
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -42,8 +41,6 @@ const CompactChoreCard = ({
   sx,
   viewOnly,
 }) => {
-  const navigate = useNavigate()
-
   const { data: userProfile } = useUserProfile()
   const { timeFormat } = useLocalization()
   const { data: circleMembersData } = useCircleMembers()
