@@ -1,6 +1,6 @@
 import { useColorScheme } from '@mui/joy'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { ImpersonateUserProvider } from './contexts/ImpersonateUserContext'

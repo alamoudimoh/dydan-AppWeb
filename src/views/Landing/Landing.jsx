@@ -1,8 +1,10 @@
+import 'aos/dist/aos.css'
+
 import { Box, Container, Grid } from '@mui/joy'
 import AOS from 'aos'
-import 'aos/dist/aos.css'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import CookiePermissionSnackbar from './CookiePermissionSnackbar'
 import DemoAssignee from './DemoAssignee'
 import DemoHistory from './DemoHistory'
@@ -24,10 +26,10 @@ const Landing = () => {
     AOS.init({
       once: false, // whether animation should happen only once - while scrolling down
     })
-  }, [])
+  }, [Navigate])
 
   return (
-    <Container className='flex h-full items-center justify-center'>
+    <Container className='flex min-h-full flex-col'>
       <HomeHero />
       <Grid
         overflow={'hidden'}

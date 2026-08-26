@@ -1,4 +1,3 @@
-import LogoSVG from '@/assets/logo.svg'
 import { Email, GitHub } from '@mui/icons-material'
 import {
   Box,
@@ -9,9 +8,16 @@ import {
   Link,
   Typography,
 } from '@mui/joy'
-import { version } from '../../../package.json'
-import { APP_SUPPORT_URL } from '@/config/AppBranding'
+
+import LogoSVG from '@/assets/logo.svg'
+import {
+  APP_BRAND_ID,
+  APP_DISPLAY_NAME,
+  APP_SUPPORT_URL,
+} from '@/config/AppBranding'
 import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
+
+import { version } from '../../../package.json'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -46,23 +52,31 @@ const Footer = () => {
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      {
-        label: 'License',
-        href: `${DAYDAN_APP_REPO}/blob/develop/LICENSE`,
-      },
-      {
-        label: 'Changelog',
-        href: `${DAYDAN_APP_REPO}/releases`,
-      },
+      ...(APP_BRAND_ID === 'daydan'
+        ? [
+            {
+              label: 'License',
+              href: `${DAYDAN_APP_REPO}/blob/develop/LICENSE`,
+            },
+            {
+              label: 'Changelog',
+              href: `${DAYDAN_APP_REPO}/releases`,
+            },
+          ]
+        : []),
     ],
   }
 
   const socialLinks = [
-    {
-      icon: <GitHub />,
-      href: DAYDAN_APP_REPO,
-      label: 'GitHub',
-    },
+    ...(APP_BRAND_ID === 'daydan'
+      ? [
+          {
+            icon: <GitHub />,
+            href: DAYDAN_APP_REPO,
+            label: 'GitHub',
+          },
+        ]
+      : []),
     {
       icon: <Email />,
       href: APP_SUPPORT_URL,
@@ -88,22 +102,19 @@ const Footer = () => {
           <Grid item xs={12} md={4}>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <img
-                  src={LogoSVG}
-                  alt='DayDan Logo'
-                  width='48px'
-                  height='48px'
-                />
+                {APP_BRAND_ID === 'daydan' && (
+                  <img src={LogoSVG} alt='' width='48px' height='48px' />
+                )}
                 <Typography
                   level='h4'
                   sx={{
-                    ml: 2,
+                    marginInlineStart: 2,
                     fontWeight: 700,
                     fontSize: 28,
                     color: 'text.primary',
                   }}
                 >
-                  Done<span style={{ color: '#06b6d4' }}>tick</span>
+                  {APP_DISPLAY_NAME}
                 </Typography>
               </Box>
               <Typography
@@ -184,73 +195,81 @@ const Footer = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={6} sm={3}>
-                <Typography
-                  level='title-md'
-                  sx={{
-                    color: 'text.primary',
-                    fontWeight: 600,
-                    mb: 3,
-                  }}
-                >
-                  Resources
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {footerLinks.resources.map((link, index) => (
-                    <Link
-                      key={index}
-                      href={link.href}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      sx={{
-                        color: 'text.secondary',
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        '&:hover': {
-                          color: 'primary.500',
-                        },
-                        transition: 'color 0.3s ease',
-                      }}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </Box>
-              </Grid>
+              {APP_BRAND_ID === 'daydan' && (
+                <Grid item xs={6} sm={3}>
+                  <Typography
+                    level='title-md'
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 600,
+                      mb: 3,
+                    }}
+                  >
+                    Resources
+                  </Typography>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                  >
+                    {footerLinks.resources.map((link, index) => (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        sx={{
+                          color: 'text.secondary',
+                          textDecoration: 'none',
+                          fontSize: 14,
+                          '&:hover': {
+                            color: 'primary.500',
+                          },
+                          transition: 'color 0.3s ease',
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </Box>
+                </Grid>
+              )}
 
-              <Grid item xs={6} sm={3}>
-                <Typography
-                  level='title-md'
-                  sx={{
-                    color: 'text.primary',
-                    fontWeight: 600,
-                    mb: 3,
-                  }}
-                >
-                  Downloads
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {footerLinks.downloads.map((link, index) => (
-                    <Link
-                      key={index}
-                      href={link.href}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      sx={{
-                        color: 'text.secondary',
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        '&:hover': {
-                          color: 'primary.500',
-                        },
-                        transition: 'color 0.3s ease',
-                      }}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </Box>
-              </Grid>
+              {APP_BRAND_ID === 'daydan' && (
+                <Grid item xs={6} sm={3}>
+                  <Typography
+                    level='title-md'
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: 600,
+                      mb: 3,
+                    }}
+                  >
+                    Downloads
+                  </Typography>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                  >
+                    {footerLinks.downloads.map((link, index) => (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        sx={{
+                          color: 'text.secondary',
+                          textDecoration: 'none',
+                          fontSize: 14,
+                          '&:hover': {
+                            color: 'primary.500',
+                          },
+                          transition: 'color 0.3s ease',
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </Box>
+                </Grid>
+              )}
 
               <Grid item xs={6} sm={3}>
                 <Typography
@@ -314,14 +333,13 @@ const Footer = () => {
               gap: 1,
             }}
           >
-            © {currentYear} DayDan. All rights reserved.
+            © {currentYear} {APP_DISPLAY_NAME}. All rights reserved.
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
               Version {version}
             </Typography>
-         
           </Box>
         </Box>
       </Container>
