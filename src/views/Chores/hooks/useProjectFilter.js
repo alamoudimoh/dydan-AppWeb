@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { DEFAULT_PROJECT_COLOR } from '../../../utils/Colors'
+
 export const useProjectFilter = (projects, projectsLoaded = false) => {
   const [selectedProject, setSelectedProject] = useState(() => {
     const saved = localStorage.getItem('selectedProject')
@@ -11,7 +13,7 @@ export const useProjectFilter = (projects, projectsLoaded = false) => {
       id: 'default',
       name: 'Default Project',
       description: 'Your default project workspace',
-      color: '#1976d2',
+      color: DEFAULT_PROJECT_COLOR,
       icon: 'FolderOpen',
     }
 

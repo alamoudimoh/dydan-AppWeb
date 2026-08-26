@@ -27,7 +27,9 @@ import {
 import { useMediaQuery } from '@mui/material'
 import moment from 'moment'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import { useImpersonateUser } from '../contexts/ImpersonateUserContext'
 import useStickyState from '../hooks/useStickyState'
 import { useCircleMembers, useUserProfile } from '../queries/UserQueries'
@@ -37,15 +39,16 @@ import UserModal from '../views/Modals/Inputs/UserModal'
 import SubscriptionModal from './SubscriptionModal'
 
 const UserProfileAvatar = () => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { mode, setMode } = useColorScheme()
   const { data: userProfile } = useUserProfile()
   const {
+    canImpersonate,
+    getEffectiveUser,
     isImpersonating,
     startImpersonation,
     stopImpersonation,
-    canImpersonate,
-    getEffectiveUser,
   } = useImpersonateUser()
   const { data: circleMembersData } = useCircleMembers()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -60,20 +63,20 @@ const UserProfileAvatar = () => {
   const isPlusUser = isPlusAccount(userProfile)
 
   const getSubscriptionStatus = () => {
-    if (!userProfile) return 'Free'
+    if (!userProfile) return t('profileMenu.free')
 
     if (userProfile.subscription === 'active') {
-      return 'Plus'
+      return t('profileMenu.plus')
     }
 
     if (
       userProfile.subscription === 'cancelled' &&
       moment().isBefore(userProfile.expiration)
     ) {
-      return 'Plus (expires soon)'
+      return t('profileMenu.plusExpiresSoon')
     }
 
-    return 'Free'
+    return t('profileMenu.free')
   }
 
   const handleLogout = () => {
@@ -127,7 +130,9 @@ const UserProfileAvatar = () => {
                   }}
                 />
                 <Avatar
-                  src={resolvePhotoURL(userProfile?.image || userProfile?.avatar)}
+                  src={resolvePhotoURL(
+                    userProfile?.image || userProfile?.avatar,
+                  )}
                   alt={userProfile?.displayName || userProfile?.name}
                   size='sm'
                   sx={{
@@ -265,7 +270,7 @@ const UserProfileAvatar = () => {
                         fontWeight: 500,
                       }}
                     >
-                      Impersonating
+                      {t('profileMenu.impersonating')}
                     </Typography>
                   </Box>
                 )}
@@ -291,13 +296,15 @@ const UserProfileAvatar = () => {
                 </ListItemDecorator>
                 <ListItemContent>
                   <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                    {isImpersonating ? 'Switch User' : 'Impersonate User'}
+                    {isImpersonating
+                      ? t('profileMenu.switchUser')
+                      : t('profileMenu.impersonateUser')}
                   </Typography>
                   <Typography
                     level='body-xs'
                     sx={{ color: 'var(--joy-palette-text-tertiary)' }}
                   >
-                    Act as another user
+                    {t('profileMenu.actAsAnotherUser')}
                   </Typography>
                 </ListItemContent>
               </MenuItem>
@@ -319,13 +326,13 @@ const UserProfileAvatar = () => {
                   </ListItemDecorator>
                   <ListItemContent>
                     <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                      Stop Impersonating
+                      {t('profileMenu.stopImpersonating')}
                     </Typography>
                     <Typography
                       level='body-xs'
                       sx={{ color: 'var(--joy-palette-text-tertiary)' }}
                     >
-                      Return to your account
+                      {t('profileMenu.returnToAccount')}
                     </Typography>
                   </ListItemContent>
                 </MenuItem>
@@ -349,13 +356,13 @@ const UserProfileAvatar = () => {
             </ListItemDecorator>
             <ListItemContent>
               <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                Settings
+                {t('settings')}
               </Typography>
               <Typography
                 level='body-xs'
                 sx={{ color: 'var(--joy-palette-text-tertiary)' }}
               >
-                Account & preferences
+                {t('profileMenu.settingsDescription')}
               </Typography>
             </ListItemContent>
           </MenuItem>
@@ -374,13 +381,13 @@ const UserProfileAvatar = () => {
             </ListItemDecorator>
             <ListItemContent>
               <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                Invite People
+                {t('profileMenu.invitePeople')}
               </Typography>
               <Typography
                 level='body-xs'
                 sx={{ color: 'var(--joy-palette-text-tertiary)' }}
               >
-                Add members to your circle
+                {t('profileMenu.inviteDescription')}
               </Typography>
             </ListItemContent>
           </MenuItem>
@@ -401,13 +408,13 @@ const UserProfileAvatar = () => {
               </ListItemDecorator>
               <ListItemContent>
                 <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                  Side Panel Settings
+                  {t('profileMenu.sidePanelSettings')}
                 </Typography>
                 <Typography
                   level='body-xs'
                   sx={{ color: 'var(--joy-palette-text-tertiary)' }}
                 >
-                  Customize layout & cards
+                  {t('profileMenu.sidePanelDescription')}
                 </Typography>
               </ListItemContent>
             </MenuItem>
@@ -427,13 +434,15 @@ const UserProfileAvatar = () => {
             </ListItemDecorator>
             <ListItemContent>
               <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                {isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
+                {isDarkMode
+                  ? t('profileMenu.switchToLight')
+                  : t('profileMenu.switchToDark')}
               </Typography>
               <Typography
                 level='body-xs'
                 sx={{ color: 'var(--joy-palette-text-tertiary)' }}
               >
-                Toggle theme appearance
+                {t('profileMenu.toggleThemeAppearance')}
               </Typography>
             </ListItemContent>
           </MenuItem>
@@ -460,9 +469,11 @@ const UserProfileAvatar = () => {
                     fontWeight: 500,
                   }}
                 >
-                  Upgrade to Plus
+                  {t('profileMenu.upgradeTitle')}
                 </Typography>
-                <Typography level='body-xs'>Unlock premium features</Typography>
+                <Typography level='body-xs'>
+                  {t('profileMenu.upgradeDescription')}
+                </Typography>
               </ListItemContent>
             </MenuItem>
           )}
@@ -511,7 +522,7 @@ const UserProfileAvatar = () => {
                 level='body-sm'
                 sx={{ fontWeight: 500, color: 'var(--joy-palette-danger-500)' }}
               >
-                Logout
+                {t('logout')}
               </Typography>
             </ListItemContent>
           </MenuItem>

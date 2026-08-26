@@ -13,6 +13,7 @@ const NAMESPACES = ['common', 'settings', 'chores', 'shoppingLists']
 const ALLOWED_IDENTICAL = new Set([
   'circleSettings.webhookPlaceholder', // example URL
   'accountSettings.plus', // product plan name
+  'profileMenu.plus', // product plan name
   'localization.formats.ymd', // ISO date format token
   'profile.accountIdentity.providers.google', // brand name
   'profile.accountIdentity.providers.apple', // brand name

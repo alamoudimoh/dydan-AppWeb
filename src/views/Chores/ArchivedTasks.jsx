@@ -21,7 +21,6 @@ import {
   IconButton,
   Input,
   List,
-  Stack,
   Typography,
 } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
@@ -32,11 +31,13 @@ import { useNavigate } from 'react-router-dom'
 import EmptyState from '../../components/common/EmptyState'
 import FilterBar from '../../components/common/FilterBar'
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
+import PageHeader from '../../components/common/PageHeader'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useFilter } from '../../hooks/useFilter'
 import { useUnArchiveChore } from '../../queries/ChoreQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
+import { ENTITY_COLOR_FALLBACK } from '../../utils/Colors'
 import { commandQueue, CommandType } from '../../utils/CommandQueue'
 import { DeleteChore, GetArchivedChores } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
@@ -173,7 +174,7 @@ const ArchivedTasks = () => {
                       width: 10,
                       height: 10,
                       borderRadius: '50%',
-                      bgcolor: l.color || '#90a4ae',
+                      bgcolor: l.color || ENTITY_COLOR_FALLBACK,
                       flexShrink: 0,
                     }}
                   />
@@ -646,20 +647,10 @@ const ArchivedTasks = () => {
 
   return (
     <Container maxWidth='md'>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        {/* <EmojiEvents sx={{ fontSize: '2rem', color: '#FFD700' }} /> */}
-        <Stack sx={{ flex: 1 }}>
-          <Typography
-            level='h3'
-            sx={{ fontWeight: 'lg', color: 'text.primary' }}
-          >
-            Archived Tasks
-          </Typography>
-          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            View and manage tasks that have been archived or completed.
-          </Typography>
-        </Stack>
-      </Box>
+      <PageHeader
+        title='Archived Tasks'
+        subtitle='View and manage tasks that have been archived or completed.'
+      />
       {/* Header */}
       {/* <Box
         sx={{
@@ -814,7 +805,7 @@ const ArchivedTasks = () => {
               p: 2,
               border: '1px solid',
               borderColor: 'divider',
-              boxShadow: 'm',
+              boxShadow: 'md',
               gap: 2,
               display: 'flex',
               flexDirection: {

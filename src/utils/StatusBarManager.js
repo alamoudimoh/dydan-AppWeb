@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { SafeArea } from 'capacitor-plugin-safe-area'
 
-import { THEME_BACKGROUND } from '@/constants/theme'
+import { resolveStatusBarBackground } from '@/utils/statusBarModel'
 
 /**
  * StatusBarManager - A utility class to handle status bar configuration
@@ -64,7 +64,7 @@ class StatusBarManager {
 
       await StatusBar.setStyle({ style })
       await StatusBar.setBackgroundColor({
-        color: THEME_BACKGROUND[resolvedTheme],
+        color: resolveStatusBarBackground(resolvedTheme),
       })
       console.log(`StatusBarManager: Theme set to ${theme}, style: ${style}`)
     } catch (error) {

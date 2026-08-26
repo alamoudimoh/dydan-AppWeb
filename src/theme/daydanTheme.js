@@ -1,5 +1,6 @@
 import { extendTheme } from '@mui/joy/styles'
 
+import { neutralPaletteFor } from './neutralPalette'
 import {
   productCssVariables,
   productTokens,
@@ -205,7 +206,12 @@ const colorScheme = (brandId, scheme) => {
         softColor: colors.primary,
         outlinedBorder: colors.boundary,
       },
-      neutral: neutralPalettes[brandId][scheme],
+      neutral: neutralPaletteFor(
+        brandId,
+        scheme,
+        neutralPalettes[brandId][scheme],
+        colors.textMuted,
+      ),
       info: {
         ...signal,
         solidBg: colors.signal,

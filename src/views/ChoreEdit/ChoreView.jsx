@@ -79,7 +79,7 @@ import {
   ChoreStatus,
   notInCompletionWindow,
 } from '../../utils/Chores.jsx'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import { commandQueue, CommandType } from '../../utils/CommandQueue'
 import {
   ApproveChore,
@@ -815,13 +815,14 @@ const ChoreView = () => {
               <Card
                 variant='soft'
                 sx={{
-                  borderRadius: 'md',
-                  boxShadow: 1,
+                  borderRadius: 'var(--daydan-radius-row)',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.surface',
                   px: 2,
                   py: 1,
                   minHeight: 90,
                   height: '100%',
-                  // change from space-between to start:
                   justifyContent: 'start',
                 }}
               >

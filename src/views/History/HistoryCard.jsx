@@ -13,7 +13,7 @@ import { Avatar, Box, Card, Chip, IconButton, Typography } from '@mui/joy'
 import moment from 'moment'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
-import { TASK_COLOR } from '../../utils/Colors.jsx'
+import { TASK_COLOR } from '../../utils/Colors'
 import { stripHtmlTags as stripHtmlTagsUtil } from '../../utils/stripHtmlTags'
 import PendingBadge from '../components/PendingBadge'
 

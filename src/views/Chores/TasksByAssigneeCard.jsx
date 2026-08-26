@@ -1,10 +1,13 @@
 import { BarChart, Person } from '@mui/icons-material'
-import { Avatar, Box, Sheet, Typography } from '@mui/joy'
+import { Avatar, Box, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+
 import EmptyState from '../../components/common/EmptyState'
+import SectionCard from '../../components/common/SectionCard'
 import { useCircleMembers } from '../../queries/UserQueries'
 import { TASK_COLOR } from '../../utils/Colors'
 import { resolvePhotoURL } from '../../utils/Helpers'
+import { sideCardSx } from './sideCardSx'
 
 const TasksByAssigneeCard = ({ chores = [] }) => {
   const [assigneeData, setAssigneeData] = useState([])
@@ -91,42 +94,18 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
 
   if (isCircleMembersLoading) {
     return (
-      <Sheet
-        variant='plain'
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: 'sm',
-          borderRadius: 20,
-          width: '315px',
-          minHeight: 300,
-          mb: 1,
-        }}
-      >
-        <Typography level='body-sm' color='neutral'>
+      <SectionCard sx={sideCardSx}>
+        <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
           Loading tasks by assignee...
         </Typography>
-      </Sheet>
+      </SectionCard>
     )
   }
 
   if (assigneeData.length === 0) {
     return (
-      <Sheet
-        variant='plain'
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: 'sm',
-          borderRadius: 20,
-          width: '315px',
-          minHeight: 300,
-          mb: 1,
-        }}
+      <SectionCard
+        sx={{ ...sideCardSx, alignItems: 'center', justifyContent: 'center' }}
       >
         <EmptyState
           variant='no-results'
@@ -135,24 +114,12 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
           title='No one has tasks yet'
           description='Assign a task to someone in your circle and their workload shows up here.'
         />
-      </Sheet>
+      </SectionCard>
     )
   }
 
   return (
-    <Sheet
-      variant='plain'
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: 'sm',
-        borderRadius: 20,
-        width: '315px',
-        minHeight: 300,
-        mb: 1,
-      }}
-    >
+    <SectionCard sx={sideCardSx}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Box
@@ -242,8 +209,8 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
             alignItems: 'end',
             gap: 1,
             height: '100%',
-            pl: 4,
-            pr: 2,
+            paddingInlineStart: 4,
+            paddingInlineEnd: 2,
             pt: 2,
           }}
         >
@@ -270,7 +237,8 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
                     width: 28,
                     height: 28,
                     mb: 1,
-                    border: '2px solid white',
+                    border: '2px solid',
+                    borderColor: 'background.surface',
                     boxShadow: 'sm',
                     fontSize: '12px',
                   }}
@@ -289,8 +257,9 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
                     maxWidth: 28,
                     borderRadius: 4,
                     overflow: 'hidden',
-                    border: '1px solid #E5E7EB',
-                    backgroundColor: '#F9FAFB',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    backgroundColor: 'background.level1',
                   }}
                 >
                   {/* Pending Review - bottom */}
@@ -366,7 +335,7 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
         <Box
           sx={{
             position: 'absolute',
-            left: 0,
+            insetInlineStart: 0,
             bottom: 20,
             height: 140,
             width: 32,
@@ -395,7 +364,7 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
           })}
         </Box>
       </Box>
-    </Sheet>
+    </SectionCard>
   )
 }
 

@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   Dropdown,
   IconButton,
   Menu,
@@ -21,8 +20,8 @@ import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import { hasActiveFamilyCircle } from '../../navigation/navModel'
-import { useUserProfile, useCircleMembers } from '../../queries/UserQueries'
-import { listPageContainerSx, sectionCardSx } from '../../theme/appLayout'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import { pageShellSx, sectionCardSx } from '../../theme/appLayout'
 import { resolveEffectiveRole } from '../../utils/PermissionModel'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import ShoppingListModal from '../Modals/Inputs/ShoppingListModal'
@@ -37,9 +36,19 @@ import {
   useShoppingLists,
 } from './ShoppingListQueries'
 
-const ListCard = ({ list, canManage, onOpen, onRename, onArchive, onDelete }) => {
+const ListCard = ({
+  canManage,
+  list,
+  onArchive,
+  onDelete,
+  onOpen,
+  onRename,
+}) => {
   const { t } = useTranslation('shoppingLists')
-  const remaining = Math.max(0, (list.itemCount || 0) - (list.checkedCount || 0))
+  const remaining = Math.max(
+    0,
+    (list.itemCount || 0) - (list.checkedCount || 0),
+  )
 
   return (
     <Card
@@ -53,11 +62,20 @@ const ListCard = ({ list, canManage, onOpen, onRename, onArchive, onDelete }) =>
     >
       <Stack direction='row' alignItems='center' spacing={1.5}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 0.5 }}>
+          <Stack
+            direction='row'
+            spacing={1}
+            alignItems='center'
+            sx={{ mb: 0.5 }}
+          >
             <Typography level='title-md' noWrap>
               {list.name}
             </Typography>
-            <Chip size='sm' variant='soft' color={list.circleId ? 'primary' : 'neutral'}>
+            <Chip
+              size='sm'
+              variant='soft'
+              color={list.circleId ? 'primary' : 'neutral'}
+            >
               {list.circleId ? t('scopeFamily') : t('scopePersonal')}
             </Chip>
           </Stack>
@@ -72,12 +90,17 @@ const ListCard = ({ list, canManage, onOpen, onRename, onArchive, onDelete }) =>
           <Dropdown>
             <MenuButton
               slots={{ root: IconButton }}
-              slotProps={{ root: { size: 'sm', variant: 'plain', color: 'neutral' } }}
+              slotProps={{
+                root: { size: 'sm', variant: 'plain', color: 'neutral' },
+              }}
               onClick={event => event.stopPropagation()}
             >
               <MoreVert />
             </MenuButton>
-            <Menu placement='bottom-end' onClick={event => event.stopPropagation()}>
+            <Menu
+              placement='bottom-end'
+              onClick={event => event.stopPropagation()}
+            >
               <MenuItem onClick={onRename}>
                 <Edit fontSize='small' /> {t('renameList')}
               </MenuItem>
@@ -98,7 +121,7 @@ const ShoppingListsView = () => {
   const navigate = useNavigate()
   const { data: profile } = useUserProfile()
   const { data: membersData } = useCircleMembers()
-  const { data: lists = [], isLoading, isError, refetch } = useShoppingLists()
+  const { data: lists = [], isError, isLoading, refetch } = useShoppingLists()
   const archiveList = useArchiveShoppingList()
   const deleteList = useDeleteShoppingList()
 
@@ -109,7 +132,10 @@ const ShoppingListsView = () => {
 
   const hasFamilyCircle = hasActiveFamilyCircle(profile, membersData)
   const effectiveRole = resolveEffectiveRole(profile, membersData)
-  const { personal, family } = useMemo(() => partitionShoppingLists(lists), [lists])
+  const { family, personal } = useMemo(
+    () => partitionShoppingLists(lists),
+    [lists],
+  )
 
   const openCreate = scope => {
     setEditingList(null)
@@ -123,7 +149,7 @@ const ShoppingListsView = () => {
 
   if (isError) {
     return (
-      <Container maxWidth='md' sx={listPageContainerSx}>
+      <Box sx={pageShellSx}>
         <EmptyState
           variant='error'
           size='sm'
@@ -131,7 +157,7 @@ const ShoppingListsView = () => {
           description={t('common:errors.pleaseTryAgain')}
           primaryAction={{ label: t('common:retry'), onClick: () => refetch() }}
         />
-      </Container>
+      </Box>
     )
   }
 
@@ -198,7 +224,7 @@ const ShoppingListsView = () => {
   )
 
   return (
-    <Container maxWidth='md' sx={listPageContainerSx}>
+    <Box sx={pageShellSx}>
       <PageHeader
         title={t('shoppingLists:title')}
         subtitle={t('shoppingLists:subtitle')}
@@ -241,7 +267,10 @@ const ShoppingListsView = () => {
             <Typography level='title-sm' sx={{ mb: 0.5 }}>
               {t('shoppingLists:familySection')}
             </Typography>
-            <Typography level='body-sm' sx={{ color: 'text.secondary', mb: 1.5 }}>
+            <Typography
+              level='body-sm'
+              sx={{ color: 'text.secondary', mb: 1.5 }}
+            >
               {t('shoppingLists:familyHint')}
             </Typography>
             {renderSection(
@@ -265,7 +294,7 @@ const ShoppingListsView = () => {
       />
 
       <ConfirmationModal config={confirmationModel} />
-    </Container>
+    </Box>
   )
 }
 

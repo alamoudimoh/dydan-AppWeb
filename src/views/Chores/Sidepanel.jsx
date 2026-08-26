@@ -1,19 +1,22 @@
-import { Box, Sheet } from '@mui/joy'
+import { Box } from '@mui/joy'
 import { useMediaQuery } from '@mui/material'
 import { useEffect, useState } from 'react'
+
+import SectionCard from '../../components/common/SectionCard'
 import { useChoresHistory } from '../../queries/ChoreQueries'
 import { ChoresGrouper } from '../../utils/Chores'
 import { getSidepanelConfig } from '../../utils/SidepanelConfig'
 import CalendarCard from '../components/CalendarCard'
 import ActivitiesCard from './ActivitesCard'
+import { sideCardSx } from './sideCardSx'
 import SmartInsightsCard from './SmartInsightsCard'
 import TasksByAssigneeCard from './TasksByAssigneeCard'
 import UserSwitcher from './UserSwitcher'
 
 const Sidepanel = ({
-  chores,
   allChores,
   applyTempFilter,
+  chores,
   clearTempFilter,
   tempFilter,
 }) => {
@@ -22,8 +25,8 @@ const Sidepanel = ({
   const [sidepanelConfig, setSidepanelConfig] = useState([])
   const {
     data: choresHistory,
-    isChoresHistoryLoading,
     handleLimitChange: refetchHistory,
+    isChoresHistoryLoading,
   } = useChoresHistory(7, true)
 
   useEffect(() => {
@@ -76,20 +79,13 @@ const Sidepanel = ({
         return <TasksByAssigneeCard key='assignees' chores={chores} />
       case 'calendar':
         return (
-          <Sheet
+          <SectionCard
             key='calendar'
-            variant='plain'
             sx={{
+              ...sideCardSx,
               my: 1,
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
-              mr: 10,
               justifyContent: 'space-between',
-              boxShadow: 'sm',
-              borderRadius: 20,
-              width: '315px',
             }}
           >
             <Box
@@ -97,7 +93,7 @@ const Sidepanel = ({
             >
               <CalendarCard chores={chores} />
             </Box>
-          </Sheet>
+          </SectionCard>
         )
       case 'activities':
         return (
@@ -119,7 +115,11 @@ const Sidepanel = ({
 
   const sortedCards = [...sidepanelConfig].sort((a, b) => a.order - b.order)
 
-  return <Box>{sortedCards.map(cardConfig => renderCard(cardConfig))}</Box>
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      {sortedCards.map(cardConfig => renderCard(cardConfig))}
+    </Box>
+  )
 }
 
 export default Sidepanel

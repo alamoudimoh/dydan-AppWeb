@@ -6,9 +6,8 @@ import {
   TrendingUp,
   WatchLater,
 } from '@mui/icons-material'
-import { Box, Button, Chip, Sheet, Typography } from '@mui/joy'
+import { Box, Button, Chip, Typography } from '@mui/joy'
 import { useMemo } from 'react'
-import { TASK_COLOR } from '../../utils/Colors'
 
 // Static insight filter definitions – used for URL restoration
 export const INSIGHT_FILTER_DEFS = {
@@ -57,8 +56,8 @@ export const INSIGHT_FILTER_DEFS = {
 }
 
 const SmartInsightsCard = ({
-  chores,
   applyTempFilter,
+  chores,
   clearTempFilter,
   tempFilter,
 }) => {
@@ -87,7 +86,6 @@ const SmartInsightsCard = ({
         title: 'Overdue',
         description: `${overdueTasks.length} ${overdueTasks.length === 1 ? 'task is' : 'tasks are'} overdue`,
         color: 'danger',
-        bgColor: TASK_COLOR.OVERDUE,
         icon: <WatchLater />,
         filter: {
           conditions: [
@@ -116,7 +114,6 @@ const SmartInsightsCard = ({
         title: 'Due Today',
         description: `${dueTodayTasks.length} ${dueTodayTasks.length === 1 ? 'task' : 'tasks'} due by end of day`,
         color: 'warning',
-        bgColor: '#FFA500',
         icon: <EventNote />,
         filter: {
           conditions: [
@@ -141,7 +138,6 @@ const SmartInsightsCard = ({
         title: 'Pending Approval',
         description: `${pendingApprovalTasks.length} ${pendingApprovalTasks.length === 1 ? 'task awaits' : 'tasks await'} approval`,
         color: 'neutral',
-        bgColor: TASK_COLOR.PENDING_REVIEW,
         icon: <HourglassEmpty />,
         filter: {
           conditions: [
@@ -170,7 +166,6 @@ const SmartInsightsCard = ({
         title: 'Due This Week',
         description: `${dueThisWeekTasks.length} ${dueThisWeekTasks.length === 1 ? 'task' : 'tasks'} due in the next 7 days`,
         color: 'primary',
-        bgColor: TASK_COLOR.IN_PROGRESS,
         icon: <TrendingUp />,
         filter: {
           conditions: [
@@ -197,7 +192,6 @@ const SmartInsightsCard = ({
         title: 'High Priority',
         description: `${highPriorityTasks.length} ${highPriorityTasks.length === 1 ? 'task requires' : 'tasks require'} immediate attention`,
         color: 'warning',
-        bgColor: '#FF6B6B',
         icon: <PriorityHigh />,
         filter: {
           conditions: [
@@ -224,7 +218,6 @@ const SmartInsightsCard = ({
         title: 'No Due Date',
         description: `${noDueDateTasks.length} ${noDueDateTasks.length === 1 ? 'task needs' : 'tasks need'} a deadline`,
         color: 'neutral',
-        bgColor: '#9E9E9E',
         icon: <EventBusy />,
         filter: {
           conditions: [
@@ -271,18 +264,7 @@ const SmartInsightsCard = ({
   }
 
   return (
-    <Sheet
-      variant='plain'
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: 'sm',
-        borderRadius: 20,
-        width: '315px',
-        mb: 1,
-      }}
-    >
+    <SectionCard sx={sideCardSx}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Box
@@ -362,7 +344,7 @@ const SmartInsightsCard = ({
               <Typography
                 level='body-xs'
                 sx={{
-                  textAlign: 'left',
+                  textAlign: 'start',
                   opacity: 0.9,
                 }}
               >
@@ -372,7 +354,7 @@ const SmartInsightsCard = ({
           )
         })}
       </Box>
-    </Sheet>
+    </SectionCard>
   )
 }
 

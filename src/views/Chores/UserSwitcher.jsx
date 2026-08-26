@@ -1,17 +1,19 @@
 import { SupervisorAccount } from '@mui/icons-material'
-import { Avatar, Box, Button, Sheet, Typography } from '@mui/joy'
-
+import { Avatar, Box, Button, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+
+import SectionCard from '../../components/common/SectionCard'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import UserModal from '../Modals/Inputs/UserModal'
+import { sideCardSx } from './sideCardSx'
 const UserSwitcher = () => {
-  const { 
-    impersonatedUser, 
+  const {
+    canImpersonate,
+    impersonatedUser,
     isImpersonating,
-    startImpersonation, 
+    startImpersonation,
     stopImpersonation,
-    canImpersonate 
   } = useImpersonateUser()
   const { data: userProfile } = useUserProfile()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -25,19 +27,11 @@ const UserSwitcher = () => {
     return null
   } else if (isCircleMembersLoading || !isImpersonating) {
     return (
-      <Sheet
-        variant='plain'
+      <SectionCard
         sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
+          ...sideCardSx,
           alignItems: 'center',
-          mr: 10,
           justifyContent: 'space-between',
-          boxShadow: 'sm',
-          borderRadius: 20,
-          width: '315px',
-          mb: 1,
         }}
       >
         <Box sx={{ textAlign: 'center', width: '100%' }}>
@@ -81,24 +75,16 @@ const UserSwitcher = () => {
             onClose={() => setIsModalOpen(false)}
           />
         </Box>
-      </Sheet>
+      </SectionCard>
     )
   }
 
   return (
-    <Sheet
-      variant='plain'
+    <SectionCard
       sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
+        ...sideCardSx,
         alignItems: 'center',
-        mr: 10,
         justifyContent: 'space-between',
-        boxShadow: 'sm',
-        borderRadius: 20,
-        width: '310px',
-        mb: 1,
       }}
     >
       <Box
@@ -181,7 +167,7 @@ const UserSwitcher = () => {
           setIsModalOpen(false)
         }}
       />
-    </Sheet>
+    </SectionCard>
   )
 }
 export default UserSwitcher

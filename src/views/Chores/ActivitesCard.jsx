@@ -22,17 +22,18 @@ import {
   ListItem,
   ListItemContent,
   ListItemDecorator,
-  Sheet,
   Typography,
 } from '@mui/joy'
 import moment from 'moment'
 import { useState } from 'react'
 
+import SectionCard from '../../components/common/SectionCard'
 import { useChores, useChoresHistory } from '../../queries/ChoreQueries'
 import { useCircleMembers } from '../../queries/UserQueries'
 import { resolvePhotoURL } from '../../utils/Helpers'
 import { stripHtmlTags } from '../../utils/stripHtmlTags'
 import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
+import { sideCardSx } from './sideCardSx'
 
 const ActivityItem = ({ activity, members, onViewNote }) => {
   // Find the member who completed the activity
@@ -302,20 +303,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
   // Show loading state
   if (isChoresLoading || isChoresHistoryLoading || isCircleMembersLoading) {
     return (
-      <Sheet
-        variant='plain'
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: 'sm',
-          borderRadius: 20,
-          width: '310px',
-          minHeight: 300,
-          maxHeight: 400,
-          mb: 1,
-        }}
-      >
+      <SectionCard sx={{ ...sideCardSx, maxHeight: 400 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Typography level='title-md'>{title}</Typography>
         </Box>
@@ -327,11 +315,11 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
             height: 200,
           }}
         >
-          <Typography level='body-sm' color='neutral'>
+          <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
             Loading activities...
           </Typography>
         </Box>
-      </Sheet>
+      </SectionCard>
     )
   }
 
@@ -358,20 +346,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
 
   if (!sortedHistory.length) {
     return (
-      <Sheet
-        variant='plain'
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: 'sm',
-          borderRadius: 20,
-          width: '310px',
-          minHeight: 300,
-          maxHeight: 400,
-          mb: 1,
-        }}
-      >
+      <SectionCard sx={{ ...sideCardSx, maxHeight: 400 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <EventNote color='' />
           <Typography level='title-md'>{title}</Typography>
@@ -389,25 +364,12 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
           <EventNote sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
           <Typography level='body-sm'>No recent activities</Typography>
         </Box>
-      </Sheet>
+      </SectionCard>
     )
   }
 
   return (
-    <Sheet
-      variant='plain'
-      sx={{
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: 'sm',
-        borderRadius: 20,
-        width: '310px',
-        minHeight: 300,
-        maxHeight: 400,
-        mb: 1,
-      }}
-    >
+    <SectionCard sx={{ ...sideCardSx, maxHeight: 400 }}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Box
@@ -501,7 +463,7 @@ const ActivitiesCard = ({ title = 'Recent Activities' }) => {
       </Box>
 
       <NoteViewerModal config={noteViewerConfig} />
-    </Sheet>
+    </SectionCard>
   )
 }
 

@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------
+// Persisted entity colors (DATA, not theme).
+//
+// These hex values are user-selectable and stored on backend records (labels,
+// projects, saved filters). They round-trip through the database, so they must
+// never be renumbered, renamed, or re-mapped to theme tokens: doing so would
+// corrupt existing rows. Presentation code should render them verbatim and use
+// getTextColorFromBackgroundColor() for contrast.
+// ---------------------------------------------------------------------------
 const LABEL_COLORS = [
   { name: 'Default', value: '#FFFFFF' },
   { name: 'Salmon', value: '#ff7961' },
@@ -61,6 +70,13 @@ export const COLORS = {
   sand: '#d7ccc8',
   white: '#FFFFFF',
 }
+// ---------------------------------------------------------------------------
+// Presentation-only UI state colors. These are never persisted; they describe
+// task/calendar state in charts, badges, and calendar views. They stay literal
+// (not theme tokens) because charts need fixed hues across both brands, but
+// new code should prefer CSS variables from src/theme/tokens.js when the
+// color participates in normal UI chrome.
+// ---------------------------------------------------------------------------
 export const NOTIFICATION_TYPE = {
   PREDUE: '#4ec1a2',
   DUE_DATE: '#f6ad55',
@@ -115,7 +131,21 @@ export const TASK_COLOR = {
   PRIORITY_4: '#90a4ae',
   NO_PRIORITY: '#90a4ae80',
 }
+export { LABEL_COLORS }
 export default LABEL_COLORS
+
+/**
+ * Fallback for entity colors missing on a record (legacy rows, partial API
+ * responses). Matches the LABEL_COLORS "Ash" entry so dots/chips stay stable.
+ */
+export const ENTITY_COLOR_FALLBACK = '#90a4ae'
+
+/**
+ * Display identity of the synthetic "Default Project". Persisted nowhere, but
+ * rendered wherever a project lacks a color; keep in one place so Chores,
+ * Projects, and pickers agree.
+ */
+export const DEFAULT_PROJECT_COLOR = '#1976d2'
 
 export const getTextColorFromBackgroundColor = bgColor => {
   if (!bgColor) return ''
