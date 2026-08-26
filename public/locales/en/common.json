@@ -522,7 +522,7 @@
     "getStartedSignInSubtitle": "Sign in to your account to pick up where you left off.",
     "getStartedSubtitle": "Create an account to sync everywhere, or sign in and pick up where you left off.",
     "createAccount": "Create an account",
-    "alreadyHaveAccount": "I already have an account",
+    "alreadyHaveAccount": "Already have an account?",
     "connectSelfHosted": "Connect to a self-hosted server",
     "mfaTitle": "Two-factor authentication",
     "mfaCodeDescription": "Enter the 6-digit code from your authenticator app.",
@@ -536,7 +536,93 @@
     "mfaBackupCodePlaceholder": "Enter backup code",
     "mfaUseAuthApp": "Use authenticator app instead",
     "mfaUseBackupCode": "Use a backup code instead",
-    "mfaBackupOneTime": "Each backup code can only be used once."
+    "mfaBackupOneTime": "Each backup code can only be used once.",
+    "createAccountTitle": "Create your account",
+    "createAccountInviteSubtitle": "Create an account and we’ll send your circle join request right after.",
+    "createAccountSubtitle": "Track chores and tasks together, in one shared place.",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "How others see your name",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "signUp": "Create account",
+    "termsAgreement": "By creating an account you agree to our Terms of Service and Privacy Policy.",
+    "signUpAlmostThere": "Almost there",
+    "signUpAutoLoginFailed": "Your account was created, but signing in failed. Please sign in.",
+    "signUpDisabled": "Signup disabled, please contact admin",
+    "signUpFailedDefault": "An error occurred during signup",
+    "validation": {
+      "usernameRequired": "Username is required",
+      "usernameMinLength": "Username must be at least 4 characters",
+      "emailInvalid": "Invalid email address",
+      "passwordLength": "Password must be between 8 and 64 characters",
+      "displayNameRequired": "Display name is required",
+      "displayNameInvalid": "Display name can only contain letters and numbers",
+      "usernameInvalid": "Username can only contain lowercase letters, numbers, dot and dash"
+    },
+    "forgotPasswordTitle": "Reset your password",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a link to get back into your account.",
+    "emailAddress": "Email address",
+    "sendResetLink": "Send reset link",
+    "rememberedPassword": "Remembered it?",
+    "emailRequired": "Email is required",
+    "resetEmailSent": "Reset Email Sent",
+    "resetEmailInstructions": "Check your email for password reset instructions",
+    "resetFailed": "Reset Failed",
+    "resetFailedMessage": "Failed to send reset email, please try again later",
+    "checkEmailTitle": "Check your email",
+    "checkEmailSubtitle": "If an account exists for {{email}}, we've sent instructions for resetting your password.",
+    "updatePasswordTitle": "Set a new password",
+    "updatePasswordSubtitle": "Choose a password you have not used on this account before.",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "reenterPassword": "Re-enter your password",
+    "savePassword": "Save password",
+    "linkInvalidTitle": "This link is not valid",
+    "linkInvalidSubtitle": "The password reset link is incomplete or has already been used. Request a new one to continue.",
+    "requestNewLink": "Request a new link",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordUpdated": "Password Updated",
+    "passwordUpdatedRedirect": "Your password has been updated successfully. Redirecting to login...",
+    "passwordUpdateFailed": "Password Update Failed",
+    "passwordUpdateFailedMessage": "Failed to update password, please try again later",
+    "signingIn": "Signing you in",
+    "signingInSubtitle": "This will only take a moment.",
+    "unknownProvider": "Unknown sign-in provider",
+    "contactSupport": "Please contact support.",
+    "signInFailed": "Sign-in failed",
+    "signInRequestUnverified": "The sign-in request could not be verified.",
+    "mfaSessionMissing": "The MFA session is missing. Please try again.",
+    "noTokenReturned": "No valid authentication token was returned.",
+    "verifyLogin": "Verify your login to continue.",
+    "mfaCancelled": "Two-factor authentication was cancelled.",
+    "mfaFailedRetry": "Two-factor authentication failed. Please try again.",
+    "backToSignIn": "Back to sign in",
+    "serverSettingsTitle": "Server settings",
+    "serverSettingsSubtitle": "Point the app at your own self-hosted DayDan server.",
+    "serverURL": "Server URL",
+    "serverURLPlaceholder": "https://your-server:2021",
+    "serverURLHelper": "Include the protocol (http:// or https://) and the port if needed. DayDan defaults to port 2021.",
+    "invalidURL": "Invalid URL format. Include the protocol (http:// or https://) and port if needed.",
+    "clearSessionFailed": "Unable to clear local session data. Please try again.",
+    "connectedRedirect": "Connected. Taking you to sign in...",
+    "testingConnection": "Testing connection to server...",
+    "saveAndConnect": "Save & connect",
+    "testingConnectionButton": "Testing connection",
+    "resetToDefaultServer": "Reset to default server",
+    "serverChangeClearsData": "Changing the server clears locally cached data on this device.",
+    "connectionErrors": {
+      "startingUp": "Server is starting up or temporarily unavailable (503). Try again in a moment.",
+      "serverError": "Server responded with error {{status}}. Please check your DayDan server.",
+      "timeout": "Connection timed out after {{seconds}}s. The host may be unreachable or behind a firewall — check the IP/hostname and network.",
+      "cors": "Server is reachable but blocked the request (CORS). Ensure your DayDan server allows requests from this origin, or check the server CORS config.",
+      "dns": "Hostname could not be resolved. Check the URL for typos or verify DNS.",
+      "refused": "Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default DayDan port is 2021).",
+      "unreachable": "Unable to reach the server. Check the URL, port, and network connection."
+    },
+    "password": "Password",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "or": "or"
   },
   "dashboard": {
     "hello": "Hello, {{name}}",
@@ -578,5 +664,197 @@
     "openTask": "Open {{name}}",
     "completeTask": "Complete {{name}}",
     "taskCouldNotBeCompleted": "The task could not be completed"
+  },
+  "onboarding": {
+    "carousel": {
+      "ariaLabel": "What you can do with DayDan",
+      "skip": "Skip",
+      "next": "Next",
+      "getStarted": "Get started",
+      "turnOnReminders": "Turn on reminders",
+      "notNow": "Not now",
+      "goToStep": "Go to step {{step}}",
+      "slideLabel": "{{index}} of {{count}}"
+    },
+    "slides": {
+      "problem": {
+        "title": "Stop forgetting the little things",
+        "body": "DayDan remembers the last time it happened, and when it's due next. So nobody else has to."
+      },
+      "capture": {
+        "title": "Add it before you forget it",
+        "body": "Type it, say it out loud, or snap a photo. DayDan fills in the due date, priority, labels, and who's on it."
+      },
+      "circle": {
+        "title": "Everyone gets a turn, No more arguing",
+        "body": "Rotate in the order you pick, or at random. DayDan remembers who went last, so turns stay fair."
+      },
+      "reminders": {
+        "title": "A nudge right when it matters & Widgets!",
+        "body": "Get a reminder before something's due, or send  a heads-up when someone forgets theirs. Today's list sits on your home screen too."
+      }
+    },
+    "vignettes": {
+      "capture": {
+        "speak": "Speak",
+        "snap": "Snap",
+        "type": "Type",
+        "voiceCaption": "Dates, labels and points from your words",
+        "photoCaption": "Read on your device",
+        "typeCaption": "#labels @people *points as you type",
+        "listening": "Listening…",
+        "typedText": "change ac filter friday @ryan",
+        "dueTomorrow": "Due tomorrow",
+        "dueAug3": "Due Aug 3",
+        "dueFri": "Due Fri",
+        "everyMonday": "Every Monday",
+        "every3Months": "Every 3 months",
+        "home": "Home",
+        "vehicle": "Vehicle"
+      },
+      "schedule": {
+        "due": "Due",
+        "done": "Done",
+        "next": "Next",
+        "rescheduleFromDueDate": "Reschedule from due date",
+        "rescheduleFromCompletionDate": "Reschedule from completion date",
+        "mon6": "Mon 6",
+        "wed8": "Wed 8",
+        "mon13": "Mon 13",
+        "wed15": "Wed 15"
+      },
+      "history": {
+        "completed": "Completed",
+        "justNow": "Just now",
+        "points": "{{count}} pts",
+        "lastWeek": "Last week"
+      },
+      "circle": {
+        "takesTurns": "Takes turns",
+        "kitchenDeepClean": "Kitchen deep clean",
+        "takeBins": "Take bins to the curb",
+        "dueSat": "Due Sat",
+        "dueTomorrow": "Due Tomorrow",
+        "everyWeek": "Every week"
+      },
+      "reminders": {
+        "today": "Today",
+        "tasksLeft": "{{count}} left",
+        "schoolForms": "School forms",
+        "takeOutTrash": "Take out the trash",
+        "waterPlants": "Water the plants",
+        "trashDue": "Due in 30 minutes · Bin night",
+        "kitchenDone": "Amalie finished Kitchen deep clean",
+        "yourTurn": "Your turn is next Saturday"
+      },
+      "problem": {
+        "waterBill": "Water bill",
+        "acFilter": "AC filter",
+        "trashDay": "Trash day",
+        "dogMedicine": "Dog's medicine",
+        "whoseTurnToCook": "Whose turn to cook",
+        "monthly": "Monthly",
+        "every3Months": "Every 3 months",
+        "everyMonday": "Every Monday",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "bills": "Bills",
+        "home": "Home",
+        "pets": "Pets",
+        "cooking": "Cooking"
+      },
+      "nfc": {
+        "tagOnWasher": "Tag on the washer",
+        "tapToOpen": "Tap to open",
+        "swapFilter": "Swap the washer filter",
+        "done": "Done",
+        "skip": "Skip",
+        "startTimer": "Start timer",
+        "waiting": "Amalie marked it done · waiting on you",
+        "approve": "Approve",
+        "reject": "Reject",
+        "filterNote": "Used the delicate cycle — filter needs a clean next time."
+      }
+    },
+    "getStarted": {
+      "subtitle": "Create an account to sync everywhere, or sign in and pick up where you left off.",
+      "signInSubtitle": "Sign in to your account to pick up where you left off."
+    },
+    "circleSetup": {
+      "inviteTitle": "Bring your squad in",
+      "inviteSubtitle": "Everyone who joins your Circle sees the same chores, takes their own turn, and stays in sync automatically.",
+      "joinTitle": "Join a circle",
+      "joinSubtitle": "Enter the code you were given and we'll send a request to join — the circle owner just needs to approve it.",
+      "codeLoading": "Loading…",
+      "copyCodeAria": "Copy circle code",
+      "copyLinkAria": "Copy invite link",
+      "copyCodeSuccess": "Code copied to clipboard",
+      "copyLinkSuccess": "Link copied to clipboard",
+      "continue": "Continue",
+      "joinExisting": "Join an existing circle instead",
+      "joinCircle": "Join Circle",
+      "enterCode": "Enter code",
+      "back": "Back",
+      "joinRequestSentTitle": "Request Sent",
+      "joinRequestSentBody": "Your join request has been sent! The circle owner will need to approve it before you can see their chores. You'll get a notification once you're in.",
+      "alreadyMember": "You are already a member of this circle",
+      "joinFailed": "Failed to join circle"
+    },
+    "heardAbout": {
+      "title": "Where'd you hear about DayDan?",
+      "subtitle": "Helps us know what's working. Totally optional.",
+      "continue": "Continue",
+      "skip": "Skip",
+      "other": "Something else",
+      "otherPlaceholder": "Tell us where",
+      "sources": {
+        "appStore": "App Store / Google Play",
+        "reddit": "Reddit or a forum",
+        "friend": "Friend or family",
+        "video": "YouTube or TikTok",
+        "search": "Search engine",
+        "other": "Something else"
+      }
+    },
+    "privacy": {
+      "title": "Help us improve DayDan",
+      "subtitle": "Your server, your data. Both of these are off from this point unless you turn them on.",
+      "continue": "Continue",
+      "crashReports": {
+        "label": "Share crash reports",
+        "description": "When DayDan crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster."
+      },
+      "analytics": {
+        "label": "Share anonymous usage analytics",
+        "description": "Send anonymous usage events which features get used, which get ignored so we know what to build next instead of guessing. No task content, no personal data, nothing tied back to you."
+      }
+    },
+    "ready": {
+      "title": "You're all set, {{name}}",
+      "titleFallback": "You're all set",
+      "subtitle": "Your workspace is ready. Here's what's waiting inside.",
+      "continue": "Continue",
+      "features": {
+        "sharedChores": "Shared chores for the whole house",
+        "recurringSchedules": "Recurring schedules that survive real life",
+        "capture": "Capture by voice, photo or text",
+        "reminders": "Reminders and home-screen widgets"
+      }
+    }
+  },
+  "legal": {
+    "termsTitle": "Terms of Service",
+    "privacyTitle": "Privacy Policy",
+    "effectiveDate": "Effective Date: {{date}}",
+    "lastUpdated": "Last Updated: {{date}}",
+    "effectiveForNewUsers": "These Terms of Service are effective immediately for new users and will become effective for existing users 30 days after posting.",
+    "important": "Important",
+    "cloudVsSelfHosted": "Cloud vs. Self-Hosted Services",
+    "contactUs": "Contact Information",
+    "email": "Email",
+    "support": "Support",
+    "address": "Address",
+    "cookieNotice": "We use cookies to ensure you get the best experience on our website.",
+    "accept": "Accept"
   }
 }

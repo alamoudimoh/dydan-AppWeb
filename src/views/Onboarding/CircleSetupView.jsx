@@ -4,15 +4,18 @@ import {
   LinkRounded,
 } from '@mui/icons-material'
 import { Box, Button, IconButton, Input, Link, Typography } from '@mui/joy'
+import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import useAcknowledgmentModal from '../../hooks/useAcknowledgmentModal'
 import { useNotification } from '../../service/NotificationProvider'
+import { productTypeScale } from '../../theme/typography'
 import { GetUserCircle, JoinCircle } from '../../utils/Fetcher'
 import { haptic } from '../../utils/Onboarding'
 import { clearPendingInvite, getPendingInvite } from '../../utils/PendingInvite'
-import { authButtonSx } from '../Authorization/authStyles'
+import { authButtonSx, authInputSx } from '../Authorization/authStyles'
 import AcknowledgmentModal from '../Modals/Inputs/AcknowledgmentModal'
 import { CircleVignette } from './OnboardingVignettes'
 
@@ -27,12 +30,13 @@ const enter = (delay = 0) => ({
   '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
 })
 
-/**
- * A halo'd icon standing in for the vignette on the join path — that side has
- * no living preview to show (there's nothing to illustrate about someone
- * else's circle yet), so it borrows the same glow treatment WorkspaceReadyView
- * puts behind its logo instead of inventing a third visual language.
- */
+const cardSx = {
+  bgcolor: 'background.surface',
+  border: '1px solid',
+  borderColor: 'divider',
+  borderRadius: 'var(--daydan-radius-card)',
+}
+
 const IconHalo = ({ icon }) => (
   <Box
     sx={{
@@ -73,14 +77,13 @@ const IconHalo = ({ icon }) => (
   </Box>
 )
 
-/**
- * Right after the account (and its solo Circle) is created: the moment to
- * either bring the household in or hop into one that already exists. Skipping
- * via Continue is always valid — chores work fine solo, this is an offer, not
- * a gate.
- */
+IconHalo.propTypes = {
+  icon: PropTypes.node.isRequired,
+}
+
 const CircleSetupView = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const { showNotification } = useNotification()
   const { ackModalConfig, showAcknowledgment } = useAcknowledgmentModal()
   const pendingInvite = getPendingInvite()
@@ -101,14 +104,20 @@ const CircleSetupView = () => {
 
   const copyCode = () => {
     navigator.clipboard.writeText(inviteCode)
-    showNotification({ type: 'success', message: 'Code copied to clipboard' })
+    showNotification({
+      type: 'success',
+      message: t('onboarding.circleSetup.copyCodeSuccess'),
+    })
   }
 
   const copyLink = () => {
     navigator.clipboard.writeText(
       `${window.location.protocol}//${window.location.host}/circle/join?code=${inviteCode}`,
     )
-    showNotification({ type: 'success', message: 'Link copied to clipboard' })
+    showNotification({
+      type: 'success',
+      message: t('onboarding.circleSetup.copyLinkSuccess'),
+    })
   }
 
   const joinCircle = async () => {
@@ -120,8 +129,8 @@ const CircleSetupView = () => {
       if (resp.ok) {
         clearPendingInvite()
         showAcknowledgment(
-          "Your join request has been sent! The circle owner will need to approve it before you can see their chores. You'll get a notification once you're in.",
-          'Request Sent',
+          t('onboarding.circleSetup.joinRequestSentBody'),
+          t('onboarding.circleSetup.joinRequestSentTitle'),
           finish,
         )
       } else {
@@ -129,8 +138,8 @@ const CircleSetupView = () => {
           type: 'error',
           message:
             resp.status === 409
-              ? 'You are already a member of this circle'
-              : 'Failed to join circle',
+              ? t('onboarding.circleSetup.alreadyMember')
+              : t('onboarding.circleSetup.joinFailed'),
         })
       }
     } finally {
@@ -184,13 +193,13 @@ const CircleSetupView = () => {
           <Typography
             level='h1'
             sx={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
+              ...productTypeScale.display,
               textWrap: 'balance',
             }}
           >
-            {mode === 'invite' ? 'Bring your squad in' : 'Join a circle'}
+            {mode === 'invite'
+              ? t('onboarding.circleSetup.inviteTitle')
+              : t('onboarding.circleSetup.joinTitle')}
           </Typography>
           <Typography
             level='body-md'
@@ -201,8 +210,8 @@ const CircleSetupView = () => {
             }}
           >
             {mode === 'invite'
-              ? 'Everyone who joins your Circle sees the same chores, takes their own turn, and stays in sync automatically.'
-              : "Enter the code you were given and we'll send a request to join — the circle owner just needs to approve it."}
+              ? t('onboarding.circleSetup.inviteSubtitle')
+              : t('onboarding.circleSetup.joinSubtitle')}
           </Typography>
         </Box>
 
@@ -211,16 +220,13 @@ const CircleSetupView = () => {
             <Box
               sx={{
                 ...enter(120),
+                ...cardSx,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 1.5,
                 px: 2,
                 py: 1.5,
-                borderRadius: '16px',
-                bgcolor: 'background.surface',
-                border: '1px solid',
-                borderColor: 'divider',
               }}
             >
               <Typography
@@ -233,14 +239,15 @@ const CircleSetupView = () => {
                   color: inviteCode ? 'text.primary' : 'text.tertiary',
                 }}
               >
-                {inviteCode ?? 'Loading…'}
+                {inviteCode ?? t('onboarding.circleSetup.codeLoading')}
               </Typography>
               <IconButton
                 variant='soft'
                 color='primary'
                 disabled={!inviteCode}
                 onClick={copyCode}
-                aria-label='Copy circle code'
+                aria-label={t('onboarding.circleSetup.copyCodeAria')}
+                size='lg'
               >
                 <ContentCopyRounded />
               </IconButton>
@@ -257,13 +264,13 @@ const CircleSetupView = () => {
                 disabled={!inviteCode}
                 onClick={copyLink}
               >
-                Copy invite link instead
+                {t('onboarding.circleSetup.copyLinkAria')}
               </Link>
             </Box>
 
             <Box sx={{ mt: 1, ...enter(190) }}>
               <Button size='lg' fullWidth onClick={finish} sx={authButtonSx}>
-                Continue
+                {t('onboarding.circleSetup.continue')}
               </Button>
             </Box>
 
@@ -277,7 +284,7 @@ const CircleSetupView = () => {
                 startDecorator={<GroupAddRounded fontSize='small' />}
                 onClick={() => setMode('join')}
               >
-                Join an existing circle instead
+                {t('onboarding.circleSetup.joinExisting')}
               </Link>
             </Box>
           </Box>
@@ -285,12 +292,13 @@ const CircleSetupView = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Box sx={{ ...enter(120) }}>
               <Input
-                placeholder='Enter code'
+                placeholder={t('onboarding.circleSetup.enterCode')}
                 value={joinCode}
                 onChange={e => setJoinCode(e.target.value)}
                 size='lg'
                 fullWidth
                 autoFocus
+                sx={authInputSx}
               />
             </Box>
             <Box sx={{ ...enter(160) }}>
@@ -302,7 +310,7 @@ const CircleSetupView = () => {
                 onClick={joinCircle}
                 sx={authButtonSx}
               >
-                Join Circle
+                {t('onboarding.circleSetup.joinCircle')}
               </Button>
             </Box>
             <Box sx={{ textAlign: 'center', ...enter(200) }}>
@@ -318,7 +326,7 @@ const CircleSetupView = () => {
                   setMode('invite')
                 }}
               >
-                Back
+                {t('onboarding.circleSetup.back')}
               </Link>
             </Box>
           </Box>

@@ -522,7 +522,7 @@
     "getStartedSignInSubtitle": "سجّل الدخول إلى حسابك لتكمل من حيث توقفت.",
     "getStartedSubtitle": "أنشئ حسابًا للمزامنة في كل مكان، أو سجّل الدخول لتكمل من حيث توقفت.",
     "createAccount": "إنشاء حساب",
-    "alreadyHaveAccount": "لديّ حساب بالفعل",
+    "alreadyHaveAccount": "لديك حساب بالفعل؟",
     "connectSelfHosted": "الاتصال بخادم ذاتي الاستضافة",
     "mfaTitle": "المصادقة الثنائية",
     "mfaCodeDescription": "أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة.",
@@ -536,7 +536,93 @@
     "mfaBackupCodePlaceholder": "أدخل رمز النسخ الاحتياطي",
     "mfaUseAuthApp": "استخدام تطبيق المصادقة بدلاً من ذلك",
     "mfaUseBackupCode": "استخدام رمز نسخ احتياطي بدلاً من ذلك",
-    "mfaBackupOneTime": "يمكن استخدام كل رمز نسخ احتياطي مرة واحدة فقط."
+    "mfaBackupOneTime": "يمكن استخدام كل رمز نسخ احتياطي مرة واحدة فقط.",
+    "createAccountTitle": "إنشاء حسابك",
+    "createAccountInviteSubtitle": "أنشئ حسابًا وسنرسل طلب الانضمام إلى دائرتك بعد ذلك مباشرة.",
+    "createAccountSubtitle": "تتبّع المهام والأعمال معًا، في مكان واحد مشترك.",
+    "displayName": "اسم العرض",
+    "displayNamePlaceholder": "الاسم الذي يراه الآخرون",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "signUp": "إنشاء حساب",
+    "termsAgreement": "بإنشائك حسابًا، فإنك توافق على شروط الخدمة وسياسة الخصوصية.",
+    "signUpAlmostThere": "أوشكت على الانتهاء",
+    "signUpAutoLoginFailed": "تم إنشاء حسابك، لكن فشل تسجيل الدخول. يرجى تسجيل الدخول.",
+    "signUpDisabled": "التسجيل معطل، يرجى التواصل مع المسؤول",
+    "signUpFailedDefault": "حدث خطأ أثناء التسجيل",
+    "validation": {
+      "usernameRequired": "اسم المستخدم مطلوب",
+      "usernameMinLength": "يجب أن يكون اسم المستخدم 4 أحرف على الأقل",
+      "emailInvalid": "عنوان بريد إلكتروني غير صالح",
+      "passwordLength": "يجب أن تكون كلمة المرور بين 8 و64 حرفًا",
+      "displayNameRequired": "اسم العرض مطلوب",
+      "displayNameInvalid": "يمكن لاسم العرض أن يحتوي على أحرف وأرقام فقط",
+      "usernameInvalid": "يمكن لاسم المستخدم أن يحتوي على أحرف إنجليزية صغيرة وأرقام ونقطة وشرطة فقط"
+    },
+    "forgotPasswordTitle": "إعادة تعيين كلمة المرور",
+    "forgotPasswordSubtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابطًا للعودة إلى حسابك.",
+    "emailAddress": "عنوان البريد الإلكتروني",
+    "sendResetLink": "إرسال رابط إعادة التعيين",
+    "rememberedPassword": "تذكّرتها؟",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "resetEmailSent": "تم إرسال بريد إعادة التعيين",
+    "resetEmailInstructions": "تحقق من بريدك الإلكتروني للحصول على تعليمات إعادة تعيين كلمة المرور",
+    "resetFailed": "فشل إعادة التعيين",
+    "resetFailedMessage": "فشل إرسال بريد إعادة التعيين، يرجى المحاولة لاحقًا",
+    "checkEmailTitle": "تحقق من بريدك الإلكتروني",
+    "checkEmailSubtitle": "إذا كان هناك حساب مسجل لـ {{email}}، فقد أرسلنا تعليمات إعادة تعيين كلمة المرور.",
+    "updatePasswordTitle": "تعيين كلمة مرور جديدة",
+    "updatePasswordSubtitle": "اختر كلمة مرور لم تستخدمها على هذا الحساب من قبل.",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "reenterPassword": "أعد إدخال كلمة المرور",
+    "savePassword": "حفظ كلمة المرور",
+    "linkInvalidTitle": "هذا الرابط غير صالح",
+    "linkInvalidSubtitle": "رابط إعادة تعيين كلمة المرور غير مكتمل أو سبق استخدامه. اطلب رابطًا جديدًا للمتابعة.",
+    "requestNewLink": "طلب رابط جديد",
+    "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+    "passwordUpdated": "تم تحديث كلمة المرور",
+    "passwordUpdatedRedirect": "تم تحديث كلمة المرور بنجاح. جارٍ التوجيه إلى تسجيل الدخول...",
+    "passwordUpdateFailed": "فشل تحديث كلمة المرور",
+    "passwordUpdateFailedMessage": "فشل تحديث كلمة المرور، يرجى المحاولة لاحقًا",
+    "signingIn": "جارٍ تسجيل الدخول",
+    "signingInSubtitle": "لن يستغرق هذا سوى لحظات.",
+    "unknownProvider": "مزود تسجيل دخول غير معروف",
+    "contactSupport": "يرجى التواصل مع الدعم.",
+    "signInFailed": "فشل تسجيل الدخول",
+    "signInRequestUnverified": "تعذّر التحقق من طلب تسجيل الدخول.",
+    "mfaSessionMissing": "جلسة المصادقة الثنائية مفقودة. يرجى المحاولة مرة أخرى.",
+    "noTokenReturned": "لم يتم إرجاع رمز مصادقة صالح.",
+    "verifyLogin": "تحقق من تسجيل الدخول للمتابعة.",
+    "mfaCancelled": "تم إلغاء المصادقة الثنائية.",
+    "mfaFailedRetry": "فشلت المصادقة الثنائية. يرجى المحاولة مرة أخرى.",
+    "backToSignIn": "العودة إلى تسجيل الدخول",
+    "serverSettingsTitle": "إعدادات الخادم",
+    "serverSettingsSubtitle": "وجّه التطبيق إلى خادم DayDan ذاتي الاستضافة.",
+    "serverURL": "عنوان URL للخادم",
+    "serverURLPlaceholder": "https://your-server:2021",
+    "serverURLHelper": "قم بتضمين البروتوكول (http:// أو https://) والمنفذ إذا لزم الأمر. المنفذ الافتراضي لـ DayDan هو 2021.",
+    "invalidURL": "تنسيق URL غير صالح. قم بتضمين البروتوكول (http:// أو https://) والمنفذ إذا لزم الأمر.",
+    "clearSessionFailed": "تعذر مسح بيانات الجلسة المحلية. يرجى المحاولة مرة أخرى.",
+    "connectedRedirect": "متصل. جارٍ نقلك إلى تسجيل الدخول...",
+    "testingConnection": "جارٍ اختبار الاتصال بالخادم...",
+    "saveAndConnect": "حفظ والاتصال",
+    "testingConnectionButton": "جارٍ اختبار الاتصال",
+    "resetToDefaultServer": "إعادة التعيين إلى الخادم الافتراضي",
+    "serverChangeClearsData": "تغيير الخادوم يمسح البيانات المخزنة محليًا على هذا الجهاز.",
+    "connectionErrors": {
+      "startingUp": "الخادم قيد التشغيل أو غير متاح مؤقتًا (503). حاول مرة أخرى خلال لحظات.",
+      "serverError": "استجاب الخادم بخطأ {{status}}. يرجى التحقق من خادم DayDan.",
+      "timeout": "انتهت مهلة الاتصال بعد {{seconds}} ثانية. قد يكون المضيف غير قابل للوصول أو خلف جدار ناري — تحقق من IP/اسم المضيف والشبكة.",
+      "cors": "الخادم قابل للوصول لكنه حظر الطلب (CORS). تأكد من أن خادم DayDan يسمح بالطلبات من هذا الأصل، أو تحقق من إعدادات CORS.",
+      "dns": "تعذر resolving اسم المضيف. تحقق من URL للتأكد من عدم وجود أخطاء إملائية أو تحقق من DNS.",
+      "refused": "تم رفض الاتصال. قد يكون المنفذ خاطئًا أو لا يوجد شيء يستمع — تحقق من URL والمنفذ (منفذ DayDan الافتراضي هو 2021).",
+      "unreachable": "تعذر الوصول إلى الخادم. تحقق من URL والمنفذ والاتصال بالشبكة."
+    },
+    "password": "كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "showPassword": "إظهار كلمة المرور",
+    "or": "أو"
   },
   "dashboard": {
     "hello": "أهلاً، {{name}}",
@@ -578,5 +664,197 @@
     "openTask": "فتح {{name}}",
     "completeTask": "إكمال {{name}}",
     "taskCouldNotBeCompleted": "تعذّر إكمال المهمة"
+  },
+  "onboarding": {
+    "carousel": {
+      "ariaLabel": "ما يمكنك فعله باستخدام DayDan",
+      "skip": "تخطي",
+      "next": "التالي",
+      "getStarted": "البدء",
+      "turnOnReminders": "تشغيل التذكيرات",
+      "notNow": "ليس الآن",
+      "goToStep": "الانتقال إلى الخطوة {{step}}",
+      "slideLabel": "{{index}} من {{count}}"
+    },
+    "slides": {
+      "problem": {
+        "title": "توقف عن نسيان الأشياء الصغيرة",
+        "body": "يتذكر DayDan آخر مرة حدث فيها الأمر، ومتى يستحق التالي. لذا لا يحتاج أحد آخر إلى ذلك."
+      },
+      "capture": {
+        "title": "أضفه قبل أن تنساه",
+        "body": "اكتبه، أو قله بصوت عالٍ، أو التقط صورة. يملأ DayDan تاريخ الاستحقاق والأولوية والتسميات ومن المسؤول عنه."
+      },
+      "circle": {
+        "title": "يحصل الجميع على دورهم، بلا جدال",
+        "body": "دوّر بالترتيب الذي تختاره، أو عشوائيًا. يتذكر DayDan من كان آخر مرة، لتبقى الأدوار عادلة."
+      },
+      "reminders": {
+        "title": "تنبيه في الوقت المناسب وعناصر واجهة!",
+        "body": "احصل على تذكير قبل استحقاق شيء ما، أو أرسل تنبيهًا عندما ينسى شخص آخر واجبه. قائمة اليوم تظهر على شاشتك الرئيسية أيضًا."
+      }
+    },
+    "vignettes": {
+      "capture": {
+        "speak": "تحدث",
+        "snap": "التقط",
+        "type": "اكتب",
+        "voiceCaption": "تواريخ وتسميات ونقاط من كلامك",
+        "photoCaption": "اقرأ على جهازك",
+        "typeCaption": "#تسميات @أشخاص *نقاط أثناء الكتابة",
+        "listening": "جارٍ الاستماع…",
+        "typedText": "غيّر فلتر المكيف الجمعة @ryan",
+        "dueTomorrow": "مستحق غدًا",
+        "dueAug3": "مستحق 3 أغسطس",
+        "dueFri": "مستحق الجمعة",
+        "everyMonday": "كل اثنين",
+        "every3Months": "كل 3 أشهر",
+        "home": "المنزل",
+        "vehicle": "المركبة"
+      },
+      "schedule": {
+        "due": "مستحق",
+        "done": "تم",
+        "next": "التالي",
+        "rescheduleFromDueDate": "إعادة الجدولة من تاريخ الاستحقاق",
+        "rescheduleFromCompletionDate": "إعادة الجدولة من تاريخ الإكمال",
+        "mon6": "الإثنين 6",
+        "wed8": "الأربعاء 8",
+        "mon13": "الإثنين 13",
+        "wed15": "الأربعاء 15"
+      },
+      "history": {
+        "completed": "مكتمل",
+        "justNow": "الآن",
+        "points": "{{count}} نقطة",
+        "lastWeek": "الأسبوع الماضي"
+      },
+      "circle": {
+        "takesTurns": "أدوار بالتناوب",
+        "kitchenDeepClean": "تنظيف المطبخ العميق",
+        "takeBins": "إخراج القمامة إلى الرصيف",
+        "dueSat": "مستحق السبت",
+        "dueTomorrow": "مستحق غدًا",
+        "everyWeek": "كل أسبوع"
+      },
+      "reminders": {
+        "today": "اليوم",
+        "tasksLeft": "تبقى {{count}}",
+        "schoolForms": "استمارات المدرسة",
+        "takeOutTrash": "إخراج القمامة",
+        "waterPlants": "سقي النباتات",
+        "trashDue": "مستحق خلال 30 دقيقة · ليلة القمامة",
+        "kitchenDone": "أنجزت Amalie تنظيف المطبخ العميق",
+        "yourTurn": "دورك السبت القادم"
+      },
+      "problem": {
+        "waterBill": "فاتورة المياه",
+        "acFilter": "فلتر المكيف",
+        "trashDay": "يوم القمامة",
+        "dogMedicine": "دواء الكلب",
+        "whoseTurnToCook": "دور من في الطبخ",
+        "monthly": "شهري",
+        "every3Months": "كل 3 أشهر",
+        "everyMonday": "كل اثنين",
+        "daily": "يومي",
+        "weekly": "أسبوعي",
+        "bills": "فواتير",
+        "home": "المنزل",
+        "pets": "حيوانات",
+        "cooking": "طبخ"
+      },
+      "nfc": {
+        "tagOnWasher": "بطاقة على الغسالة",
+        "tapToOpen": "انقر للفتح",
+        "swapFilter": "استبدال فلتر الغسالة",
+        "done": "تم",
+        "skip": "تخطي",
+        "startTimer": "بدء المؤقت",
+        "waiting": "أشارت Amalie إلى إنجازه · بانتظارك",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "filterNote": "استخدمت دورة الرقيقة — يحتاج الفلتر إلى تنظيف المرة القادمة."
+      }
+    },
+    "getStarted": {
+      "subtitle": "أنشئ حسابًا للمزامنة في كل مكان، أو سجّل الدخول لتكمل من حيث توقفت.",
+      "signInSubtitle": "سجّل الدخول إلى حسابك لتكمل من حيث توقفت."
+    },
+    "circleSetup": {
+      "inviteTitle": "أحضر فريقك",
+      "inviteSubtitle": "كل من ينضم إلى دائرتك يرى نفس المهام، ويأخذ دوره، ويبقى متزامنًا تلقائيًا.",
+      "joinTitle": "انضم إلى دائرة",
+      "joinSubtitle": "أدخل الرمز الذي حصلت عليه وسنرسل طلب انضمام — يكفي أن يوافق مالك الدائرة.",
+      "codeLoading": "جارٍ التحميل…",
+      "copyCodeAria": "نسخ رمز الدائرة",
+      "copyLinkAria": "نسخ رابط الدعوة",
+      "copyCodeSuccess": "تم نسخ الرمز إلى الحافظة",
+      "copyLinkSuccess": "تم نسخ الرابط إلى الحافظة",
+      "continue": "متابعة",
+      "joinExisting": "انضم إلى دائرة موجودة بدلاً من ذلك",
+      "joinCircle": "الانضمام إلى الدائرة",
+      "enterCode": "أدخل الرمز",
+      "back": "رجوع",
+      "joinRequestSentTitle": "تم إرسال الطلب",
+      "joinRequestSentBody": "تم إرسال طلب الانضمام! يحتاج مالك الدائرة إلى الموافقة عليه قبل أن تتمكن من رؤية مهامهم. ستتلقى إشعارًا بمجرد دخولك.",
+      "alreadyMember": "أنت عضو بالفعل في هذه الدائرة",
+      "joinFailed": "فشل الانضمام إلى الدائرة"
+    },
+    "heardAbout": {
+      "title": "من أين سمعت بـ DayDan؟",
+      "subtitle": "يساعدنا ذلك على معرفة ما ينجح. اختياري تمامًا.",
+      "continue": "متابعة",
+      "skip": "تخطي",
+      "other": "شيء آخر",
+      "otherPlaceholder": "أخبرنا من أين",
+      "sources": {
+        "appStore": "App Store / Google Play",
+        "reddit": "Reddit أو منتدى",
+        "friend": "صديق أو عائلة",
+        "video": "YouTube أو TikTok",
+        "search": "محرك بحث",
+        "other": "شيء آخر"
+      }
+    },
+    "privacy": {
+      "title": "ساعدنا في تحسين DayDan",
+      "subtitle": "خادمك، بياناتك. كلاهما معطل من هذه النقطة ما لم تُفعّله.",
+      "continue": "متابعة",
+      "crashReports": {
+        "label": "مشاركة تقارير الأعطال",
+        "description": "عند تعطل DayDan، أرسل إلينا الخطأ وما أدى إليه (الجهاز وإصدار التطبيق والشاشة التي كنت عليها) دون محتوى المهام. إنها طريقتنا للإمساك بالأخطاء التي لا تظهر في اختباراتنا وإصلاحها أسرع."
+      },
+      "analytics": {
+        "label": "مشاركة تحليلات الاستخدام المجهولة",
+        "description": "أرسل أحداث استخدام مجهولة — الميزات المستخدمة والمهملة — لنعرف ما سنبنيه بعد ذلك بدلاً من التخمين. لا محتوى مهام، ولا بيانات شخصية، ولا شيء يربطك بها."
+      }
+    },
+    "ready": {
+      "title": "أنت جاهز، {{name}}",
+      "titleFallback": "أنت جاهز",
+      "subtitle": "مساحة عملك جاهزة. إليك ما ينتظرك بداخلها.",
+      "continue": "متابعة",
+      "features": {
+        "sharedChores": "مهام مشتركة للمنزل بأكمله",
+        "recurringSchedules": "جداول متكررة تتحمل الحياة الحقيقية",
+        "capture": "التقاط بالصوت أو الصورة أو النص",
+        "reminders": "تذكيرات وعناصر واجهة للشاشة الرئيسية"
+      }
+    }
+  },
+  "legal": {
+    "termsTitle": "شروط الخدمة",
+    "privacyTitle": "سياسة الخصوصية",
+    "effectiveDate": "تاريخ السريان: {{date}}",
+    "lastUpdated": "آخر تحديث: {{date}}",
+    "effectiveForNewUsers": "تسري شروط الخدمة هذه فورًا للمستخدمين الجدد، وتسري للمستخدمين الحاليين بعد 30 يومًا من النشر.",
+    "important": "مهم",
+    "cloudVsSelfHosted": "الخدمة السحابية مقابل الخدمة ذاتية الاستضافة",
+    "contactUs": "معلومات التواصل",
+    "email": "البريد الإلكتروني",
+    "support": "الدعم",
+    "address": "العنوان",
+    "cookieNotice": "نستخدم ملفات تعريف الارتباط لضمان أفضل تجربة لك على موقعنا.",
+    "accept": "قبول"
   }
 }

@@ -4,6 +4,11 @@ const json = body => ({
   body: JSON.stringify(body),
 })
 
+export const hasAuthorization = request => {
+  const headers = request.headers()
+  return Boolean(headers.authorization || headers.Authorization)
+}
+
 const emptyList = { res: [] }
 
 const smokeProfile = {
@@ -146,14 +151,21 @@ const handlers = [
   },
   {
     pattern: '**/api/v1/auth/refresh**',
-    handler: route =>
-      route.fulfill(
+    handler: route => {
+      // Only mint a session when the client presents an existing credential.
+      // Public smoke tests clear storage, so return an empty success rather
+      // than a 401 that the runtime-error guard would flag.
+      if (!hasAuthorization(route.request())) {
+        return route.fulfill(json({ res: null }))
+      }
+      return route.fulfill(
         json({
           token: 'smoke-test-token',
           access_token: 'smoke-test-token',
           expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         }),
-      ),
+      )
+    },
   },
   {
     pattern: '**/api/v1/users/**',
@@ -240,7 +252,15 @@ const handlers = [
   },
   {
     pattern: '**/api/v1/users/profile',
-    handler: route => route.fulfill(json({ res: smokeProfile })),
+    handler: route => {
+      // Public auth pages must not show a returning user when the session
+      // has been cleared. Without an Authorization header return an empty
+      // success so the client sees no profile without logging a 401 error.
+      if (!hasAuthorization(route.request())) {
+        return route.fulfill(json({ res: null }))
+      }
+      return route.fulfill(json({ res: smokeProfile }))
+    },
   },
   {
     pattern: '**/api/v1/auth/sessions',

@@ -18,6 +18,7 @@ import { useAuth } from '../../hooks/useAuth.jsx'
 import { useResource } from '../../queries/ResourceQueries'
 import { useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
+import { productTypeScale } from '../../theme/typography.js'
 import { apiClient } from '../../utils/ApiClient'
 import { getPendingInvite } from '../../utils/PendingInvite'
 import {
@@ -41,14 +42,14 @@ import MFAVerificationModal from './MFAVerificationModal'
 const SegmentedControl = ({ onChange, options, value }) => (
   <Box
     role='tablist'
-    sx={{
+    sx={theme => ({
       display: 'flex',
       p: 0.5,
       gap: 0.5,
-      borderRadius: '12px',
+      borderRadius: theme.radius.lg,
       bgcolor: 'neutral.softBg',
       mb: 2.5,
-    }}
+    })}
   >
     {options.map(option => {
       const selected = option.value === value
@@ -60,13 +61,13 @@ const SegmentedControl = ({ onChange, options, value }) => (
           role='tab'
           aria-selected={selected}
           onClick={() => onChange(option.value)}
-          sx={{
+          sx={theme => ({
             flex: 1,
             border: 'none',
             cursor: 'pointer',
-            borderRadius: '9px',
+            borderRadius: theme.radius.sm,
             py: 1,
-            fontSize: '0.875rem',
+            fontSize: productTypeScale.bodySmall.fontSize,
             fontFamily: 'inherit',
             fontWeight: 600,
             color: selected ? 'text.primary' : 'text.secondary',
@@ -78,7 +79,7 @@ const SegmentedControl = ({ onChange, options, value }) => (
               outlineColor: 'primary.500',
               outlineOffset: '2px',
             },
-          }}
+          })}
         >
           {option.label}
         </Box>
