@@ -1,11 +1,12 @@
+import '@meauxt/react-swipeable-list/dist/styles.css'
+
 import {
-  Type as ListType,
   SwipeableList,
   SwipeableListItem,
   SwipeAction,
   TrailingActions,
+  Type as ListType,
 } from '@meauxt/react-swipeable-list'
-import '@meauxt/react-swipeable-list/dist/styles.css'
 import {
   Add,
   Delete,
@@ -27,7 +28,9 @@ import {
   Typography,
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import EmptyState from '../../components/common/EmptyState'
 import { useNotification } from '../../service/NotificationProvider'
 import {
@@ -42,7 +45,7 @@ import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import CreateThingModal from '../Modals/Inputs/CreateThingModal'
 import EditThingStateModal from '../Modals/Inputs/EditThingState'
 
-const ThingCardContent = ({ thing, onCardClick, onToggleActions }) => {
+const ThingCardContent = ({ onCardClick, onToggleActions, thing }) => {
   const getThingIcon = type => {
     if (type === 'text') {
       return <Flip />
@@ -205,6 +208,7 @@ const ThingCardContent = ({ thing, onCardClick, onToggleActions }) => {
 }
 
 const ThingsView = () => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [things, setThings] = useState([])
   const [isShowCreateThingModal, setIsShowCreateThingModal] = useState(false)
@@ -245,21 +249,21 @@ const ThingsView = () => {
           }
           showNotification({
             type: 'success',
-            title: 'Saved',
-            message: 'Thing saved successfully',
+            title: t('things.savedTitle'),
+            message: t('things.savedMessage'),
           })
         })
       })
       .catch(error => {
         if (error?.queued) {
           showError({
-            title: 'Unable to save thing',
-            message: 'You are offline and the request has been queued',
+            title: t('things.saveErrorTitle'),
+            message: t('things.offlineQueuedMessage'),
           })
         } else {
           showError({
-            title: 'Unable to save thing',
-            message: 'An error occurred while saving the thing',
+            title: t('things.saveErrorTitle'),
+            message: t('things.saveErrorMessage'),
           })
         }
       })
@@ -271,10 +275,10 @@ const ThingsView = () => {
   const handleDeleteClick = thing => {
     setConfirmModelConfig({
       isOpen: true,
-      title: 'Delete Things',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      message: 'Are you sure you want to delete this Thing?',
+      title: t('things.deleteTitle'),
+      confirmText: t('delete'),
+      cancelText: t('cancel'),
+      message: t('things.deleteConfirmMessage'),
       onClose: isConfirmed => {
         if (isConfirmed === true) {
           DeleteThing(thing.id)
@@ -288,8 +292,8 @@ const ThingsView = () => {
                 setThings(currentThings)
               } else if (response.status === 405) {
                 showError({
-                  title: 'Unable to Delete Thing',
-                  message: 'Unable to delete thing with associated tasks',
+                  title: t('things.deleteErrorTitle'),
+                  message: t('things.deleteAssociatedErrorMessage'),
                 })
               }
               // if method not allwo show snackbar:
@@ -297,13 +301,13 @@ const ThingsView = () => {
             .catch(error => {
               if (error?.queued) {
                 showError({
-                  title: 'Unable to delete thing',
-                  message: 'You are offline and the request has been queued',
+                  title: t('things.deleteErrorTitle'),
+                  message: t('things.offlineQueuedMessage'),
                 })
               } else {
                 showError({
-                  title: 'Unable to delete thing',
-                  message: 'An error occurred while deleting the thing',
+                  title: t('things.deleteErrorTitle'),
+                  message: t('things.deleteErrorMessage'),
                 })
               }
             })
@@ -336,21 +340,21 @@ const ThingsView = () => {
           setThings(currentThings)
           showNotification({
             type: 'success',
-            title: 'Updated',
-            message: 'Thing state updated successfully',
+            title: t('things.updatedTitle'),
+            message: t('things.updatedMessage'),
           })
         })
       })
       .catch(error => {
         if (error?.queued) {
           showError({
-            title: 'Unable to update thing state',
-            message: 'You are offline and the request has been queued',
+            title: t('things.updateErrorTitle'),
+            message: t('things.offlineQueuedMessage'),
           })
         } else {
           showError({
-            title: 'Unable to update thing state',
-            message: 'An error occurred while updating the thing state',
+            title: t('things.updateErrorTitle'),
+            message: t('things.updateErrorMessage'),
           })
         }
       })
@@ -368,15 +372,15 @@ const ThingsView = () => {
           setThings(currentThings)
           showNotification({
             type: 'success',
-            title: 'Updated',
-            message: 'Thing state updated successfully',
+            title: t('things.updatedTitle'),
+            message: t('things.updatedMessage'),
           })
         })
       })
       .catch(error => {
         showError({
-          title: 'Unable to update thing state',
-          message: 'An error occurred while updating the thing state',
+          title: t('things.updateErrorTitle'),
+          message: t('things.updateErrorMessage'),
         })
       })
   }
@@ -390,13 +394,10 @@ const ThingsView = () => {
             level='h3'
             sx={{ fontWeight: 'lg', color: 'text.primary' }}
           >
-            Things
+            {t('navigation.things')}
           </Typography>
           <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-            Things are custom fields that can be attached to tasks to capture
-            additional information. They can be of type text, number, or
-            boolean. You can associate things with tasks and have the task due
-            once condition is met
+            {t('things.description')}
           </Typography>
         </Stack>
       </Box>
@@ -409,10 +410,10 @@ const ThingsView = () => {
           <EmptyState
             fullHeight
             icon={<Widgets />}
-            title='No things yet'
-            description='A thing tracks a value, like a counter or a switch, that other tasks can react to. Create one to trigger tasks automatically.'
+            title={t('things.emptyTitle')}
+            description={t('things.emptyDescription')}
             primaryAction={{
-              label: 'Create a thing',
+              label: t('things.createThing'),
               startDecorator: <Add />,
               onClick: () => {
                 setCreateModalThing(null)
@@ -467,7 +468,9 @@ const ThingsView = () => {
                           <ToggleOff sx={{ fontSize: 20 }} />
                         )}
                         <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                          {thing?.type === 'text' ? 'Edit' : 'Toggle'}
+                          {thing?.type === 'text'
+                            ? t('edit')
+                            : t('things.toggle')}
                         </Typography>
                       </Box>
                     </SwipeAction>
@@ -486,7 +489,7 @@ const ThingsView = () => {
                       >
                         <Edit sx={{ fontSize: 20 }} />
                         <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                          Edit
+                          {t('edit')}
                         </Typography>
                       </Box>
                     </SwipeAction>
@@ -505,7 +508,7 @@ const ThingsView = () => {
                       >
                         <Delete sx={{ fontSize: 20 }} />
                         <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                          Delete
+                          {t('delete')}
                         </Typography>
                       </Box>
                     </SwipeAction>
