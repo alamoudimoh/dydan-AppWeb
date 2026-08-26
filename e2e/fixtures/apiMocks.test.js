@@ -29,7 +29,9 @@ test('installApiMocks registers auth/session mocks that require Authorization', 
   await installApiMocks(page)
 
   const profileRoute = routes.find(r => r.pattern === '**/api/v1/users/profile')
-  const refreshRoute = routes.find(r => r.pattern === '**/api/v1/auth/refresh**')
+  const refreshRoute = routes.find(
+    r => r.pattern === '**/api/v1/auth/refresh**',
+  )
 
   assert.ok(profileRoute, 'profile mock should be registered')
   assert.ok(refreshRoute, 'refresh mock should be registered')
@@ -57,13 +59,17 @@ test('installApiMocks registers auth/session mocks that require Authorization', 
   // With Authorization, both endpoints should succeed.
   fulfillCalls.length = 0
   await profileRoute.handler(
-    makeRoute({ headers: () => ({ authorization: 'Bearer smoke-test-token' }) }),
+    makeRoute({
+      headers: () => ({ authorization: 'Bearer smoke-test-token' }),
+    }),
   )
   assert.equal(fulfillCalls[0].status, 200)
 
   fulfillCalls.length = 0
   await refreshRoute.handler(
-    makeRoute({ headers: () => ({ authorization: 'Bearer smoke-test-token' }) }),
+    makeRoute({
+      headers: () => ({ authorization: 'Bearer smoke-test-token' }),
+    }),
   )
   assert.equal(fulfillCalls[0].status, 200)
 })

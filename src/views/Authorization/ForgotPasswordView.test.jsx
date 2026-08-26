@@ -18,7 +18,8 @@ const translations = {
   'auth.resetEmailSent': 'Reset Email Sent',
   'auth.resetEmailInstructions': 'Check your email.',
   'auth.checkEmailTitle': 'Check your email',
-  'auth.checkEmailSubtitle': 'If an account exists for {{email}}, instructions sent.',
+  'auth.checkEmailSubtitle':
+    'If an account exists for {{email}}, instructions sent.',
 }
 
 vi.mock('react-i18next', () => ({
@@ -78,7 +79,9 @@ describe('ForgotPasswordView', () => {
       target: { value: 'not-an-email' },
     })
     fireEvent.blur(screen.getByLabelText('Email address'))
-    expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument()
+    expect(
+      screen.getByText('Please enter a valid email address'),
+    ).toBeInTheDocument()
   })
 
   it('shows a localized success state after a valid submission', async () => {
@@ -93,7 +96,9 @@ describe('ForgotPasswordView', () => {
 
     await screen.findByRole('heading', { name: 'Check your email' })
     expect(
-      screen.getByText('If an account exists for test@example.com, instructions sent.'),
+      screen.getByText(
+        'If an account exists for test@example.com, instructions sent.',
+      ),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Back to sign in' }),
