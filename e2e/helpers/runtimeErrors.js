@@ -10,6 +10,10 @@ const IGNORED_CONSOLE_PATTERNS = [
   /^SSE: Ticket request failed/,
   /^SSE error:/,
   /^SSE: Failed to obtain connection ticket/,
+  // Playwright/Chrome in container environments occasionally reports transient
+  // network-interface changes while resource loads are in flight. This is an
+  // environment flake, not an application runtime error.
+  /Failed to load resource: net::ERR_NETWORK_CHANGED/,
 ]
 
 export const attachRuntimeErrorGuard = page => {
