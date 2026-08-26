@@ -18,14 +18,10 @@
   "emptyPersonalDescription": "أنشئ قائمة للبقالة أو المهمات أو أي شيء تحتاج إلى شرائه.",
   "emptyFamilyTitle": "لا توجد قوائم عائلية بعد",
   "emptyFamilyDescription": "تساعدك القوائم المشتركة أنت وأفراد دائرتك على إضافة العناصر ووضع علامة عليها معًا.",
-  "itemsRemaining": {
-    "_one": "عنصر واحد متبقي",
-    "_other": "{{count}} متبقية"
-  },
-  "itemsChecked": {
-    "_one": "عنصر واحد محدد",
-    "_other": "{{count}} محدد"
-  },
+  "itemsRemaining_one": "عنصر واحد متبقي",
+  "itemsRemaining_other": "{{count}} متبقية",
+  "itemsChecked_one": "عنصر واحد محدد",
+  "itemsChecked_other": "{{count}} محدد",
   "addItem": "إضافة عنصر",
   "itemPlaceholder": "حليب، بطاريات، سائل غسيل الأطباق…",
   "quantityPlaceholder": "الكمية",

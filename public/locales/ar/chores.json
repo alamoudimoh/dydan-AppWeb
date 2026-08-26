@@ -169,10 +169,8 @@
     "filterNamePlaceholder": "اسم عامل التصفية…",
     "save": "حفظ",
     "cancel": "إلغاء",
-    "showResults": {
-      "_one": "عرض نتيجة واحدة",
-      "_other": "عرض {{count}}"
-    },
+    "showResults_one": "عرض نتيجة واحدة",
+    "showResults_other": "عرض {{count}}",
     "moreSaveOptions": "المزيد من خيارات الحفظ",
     "assignee": "المكلف",
     "createdBy": "أُنشئ بواسطة",
@@ -184,10 +182,8 @@
     "custom": "مخصص",
     "chipNot": "ليس {{type}}",
     "chipValue": "{{type}}: {{value}}",
-    "chipCount": {
-      "_one": "{{type}} (1)",
-      "_other": "{{type}} ({{count}})"
-    },
+    "chipCount_one": "{{type}} (1)",
+    "chipCount_other": "{{type}} ({{count}})",
     "chipPoints": "{{type}} {{op}} {{value}}",
     "defaultProject": "المشروع الافتراضي",
     "smart": "ذكي",
@@ -209,15 +205,11 @@
     "dateRange": "نطاق التاريخ",
     "from": "من {{date}}",
     "until": "حتى {{date}}",
-    "selected": {
-      "_one": "واحد محدد",
-      "_other": "{{count}} محدد"
-    },
+    "selected_one": "واحد محدد",
+    "selected_other": "{{count}} محدد",
     "removeFilter": "إزالة عامل تصفية {{label}}",
-    "more": {
-      "_one": "+1 إضافية",
-      "_other": "+{{count}} إضافية"
-    },
+    "more_one": "+1 إضافية",
+    "more_other": "+{{count}} إضافية",
     "addFilterCondition": "إضافة شرط تصفية",
     "include": "يشمل",
     "exclude": "يستثني",
@@ -260,10 +252,8 @@
     "deleteFilter": "حذف عامل التصفية",
     "filterTasksCount_one": "{{count}} مهمة",
     "filterTasksCount_other": "{{count}} مهام",
-    "filterOverdueCount": {
-      "_one": "واحدة متأخرة",
-      "_other": "{{count}} متأخرة"
-    }
+    "filterOverdueCount_one": "واحدة متأخرة",
+    "filterOverdueCount_other": "{{count}} متأخرة"
   },
   "multiselect": {
     "selected_one": "{{count}} مهمة محددة",
@@ -370,10 +360,8 @@
     "anyActiveMember": "أي عضو نشط في الدائرة",
     "approvalRequired": "تتطلب الموافقة",
     "chooseAssetWhenUsedShort": "اختيار أصل عند الاستخدام",
-    "recurrenceInterval": {
-      "_one": "كل {{unit}}",
-      "_other": "كل {{count}} {{unit}}"
-    },
+    "recurrenceInterval_one": "كل {{unit}}",
+    "recurrenceInterval_other": "كل {{count}} {{unit}}",
     "recurrenceMonthlyOnDay": "شهريًا في اليوم {{day}}",
     "member": "عضو {{id}}",
     "units": {
@@ -448,14 +436,10 @@
     "today": "اليوم",
     "yesterday": "أمس",
     "justNow": "الآن",
-    "hoursAgo": {
-      "_one": "منذ ساعة واحدة",
-      "_other": "منذ {{count}} ساعة"
-    },
-    "daysAgo": {
-      "_one": "منذ يوم واحد",
-      "_other": "منذ {{count}} يومًا"
-    },
+    "hoursAgo_one": "منذ ساعة واحدة",
+    "hoursAgo_other": "منذ {{count}} ساعة",
+    "daysAgo_one": "منذ يوم واحد",
+    "daysAgo_other": "منذ {{count}} يومًا",
     "started": "بدأت",
     "done": "منجزة",
     "late": "متأخرة",
@@ -466,10 +450,8 @@
     "completed": "مكتملة",
     "byMember": "بواسطة {{name}}",
     "unknown": "غير معروف",
-    "points": {
-      "_one": "نقطة واحدة",
-      "_other": "{{count}} نقطة"
-    },
+    "points_one": "نقطة واحدة",
+    "points_other": "{{count}} نقطة",
     "showMore": "عرض المزيد"
   },
   "shortcuts": {

@@ -22,8 +22,8 @@ const ALLOWED_IDENTICAL = new Set([
   // themselves localized values.
   'toolbar.chipValue',
   'toolbar.chipCount',
-  'toolbar.chipCount._one',
-  'toolbar.chipCount._other',
+  'toolbar.chipCount_one',
+  'toolbar.chipCount_other',
   'toolbar.chipPoints',
   // Auth placeholders are example values, not translatable copy.
   'auth.emailPlaceholder',

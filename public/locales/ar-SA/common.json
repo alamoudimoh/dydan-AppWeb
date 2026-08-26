@@ -271,31 +271,19 @@
     "currentMeterReading": "قراءة العداد الحالية",
     "completionNotes": "ملاحظات الإكمال",
     "dueNow": "مستحقة الآن",
-    "dueInDays": {
-      "_one": "مستحقة خلال يوم واحد",
-      "_other": "مستحقة خلال {{count}} أيام"
-    },
-    "overdueDays": {
-      "_one": "متأخرة منذ يوم واحد",
-      "_other": "متأخرة {{count}} أيام"
-    },
-    "meterRemaining": {
-      "_one": "متبقي {{unit}} واحد",
-      "_other": "متبقي {{count}} {{unit}}"
-    },
-    "meterOverdue": {
-      "_one": "متأخرة بمقدار {{unit}} واحد",
-      "_other": "متأخرة بمقدار {{count}} {{unit}}"
-    },
+    "dueInDays_one": "مستحقة خلال يوم واحد",
+    "dueInDays_other": "مستحقة خلال {{count}} أيام",
+    "overdueDays_one": "متأخرة منذ يوم واحد",
+    "overdueDays_other": "متأخرة {{count}} أيام",
+    "meterRemaining_one": "متبقي {{unit}} واحد",
+    "meterRemaining_other": "متبقي {{count}} {{unit}}",
+    "meterOverdue_one": "متأخرة بمقدار {{unit}} واحد",
+    "meterOverdue_other": "متأخرة بمقدار {{count}} {{unit}}",
     "dueToday": "مستحقة اليوم",
-    "everyDays": {
-      "_one": "كل يوم",
-      "_other": "كل {{count}} أيام"
-    },
-    "everyMeterUnits": {
-      "_one": "كل وحدة عداد",
-      "_other": "كل {{count}} وحدة عداد"
-    },
+    "everyDays_one": "كل يوم",
+    "everyDays_other": "كل {{count}} أيام",
+    "everyMeterUnits_one": "كل وحدة عداد",
+    "everyMeterUnits_other": "كل {{count}} وحدة عداد",
     "whicheverFirst": "أيهما يأتي أولًا",
     "lastServiced": "آخر صيانة {{date}}",
     "atReading": " عند {{reading}} {{unit}}",
@@ -361,10 +349,8 @@
     "available": "متاحة",
     "reserved": "محجوزة",
     "spendable": "قابلة للإنفاق",
-    "points": {
-      "_one": "نقطة واحدة",
-      "_other": "{{count}} نقطة"
-    },
+    "points_one": "نقطة واحدة",
+    "points_other": "{{count}} نقطة",
     "availableRewards": "المكافآت المتاحة",
     "createReward": "إنشاء مكافأة",
     "editReward": "تعديل المكافأة",
@@ -372,16 +358,12 @@
     "noRewards": "لا توجد مكافآت بعد",
     "requestReward": "طلب المكافأة",
     "notEnoughPoints": "النقاط غير كافية",
-    "requestConfirm": {
-      "_one": "طلب «{{name}}» مقابل نقطة واحدة؟ سينتظر هذا الطلب موافقة المشرف.",
-      "_other": "طلب «{{name}}» مقابل {{count}} نقطة؟ سينتظر هذا الطلب موافقة المشرف."
-    },
+    "requestConfirm_one": "طلب «{{name}}» مقابل نقطة واحدة؟ سينتظر هذا الطلب موافقة المشرف.",
+    "requestConfirm_other": "طلب «{{name}}» مقابل {{count}} نقطة؟ سينتظر هذا الطلب موافقة المشرف.",
     "myRequests": "طلباتي",
     "noRequests": "لم تطلب أي مكافآت بعد.",
-    "requestedAt": {
-      "_one": "نقطة واحدة · طُلبت في {{date}}",
-      "_other": "{{count}} نقطة · طُلبت في {{date}}"
-    },
+    "requestedAt_one": "نقطة واحدة · طُلبت في {{date}}",
+    "requestedAt_other": "{{count}} نقطة · طُلبت في {{date}}",
     "resolvedAt": "حُسمت في {{date}}",
     "status_pending": "قيد الانتظار",
     "status_approved": "مقبولة",
@@ -393,10 +375,8 @@
     "memberFallback": "العضو {{id}}",
     "approve": "موافقة",
     "reject": "رفض",
-    "approveConfirm": {
-      "_one": "الموافقة على {{name}} للعضو {{member}} مقابل نقطة واحدة؟",
-      "_other": "الموافقة على {{name}} للعضو {{member}} مقابل {{count}} نقطة؟"
-    },
+    "approveConfirm_one": "الموافقة على {{name}} للعضو {{member}} مقابل نقطة واحدة؟",
+    "approveConfirm_other": "الموافقة على {{name}} للعضو {{member}} مقابل {{count}} نقطة؟",
     "rejectConfirm": "رفض طلب المكافأة هذا؟",
     "manageRewards": "إدارة المكافآت",
     "active": "نشطة",
@@ -683,23 +663,15 @@
     "viewRewards": "عرض المكافآت",
     "spendable": "المتاح للصرف",
     "pendingReserved": "محجوز معلّق",
-    "ptsValue": {
-      "_one": "نقطة واحدة",
-      "_other": "{{count}} نقطة"
-    },
-    "ptsPlus": {
-      "_one": "+نقطة واحدة",
-      "_other": "+{{count}} نقطة"
-    },
-    "pendingRequest": {
-      "_one": "{{name}} · بانتظار الموافقة · نقطة محجوزة",
-      "_other": "{{name}} · بانتظار الموافقة · {{count}} نقطة محجوزة"
-    },
+    "ptsValue_one": "نقطة واحدة",
+    "ptsValue_other": "{{count}} نقطة",
+    "ptsPlus_one": "+نقطة واحدة",
+    "ptsPlus_other": "+{{count}} نقطة",
+    "pendingRequest_one": "{{name}} · بانتظار الموافقة · نقطة محجوزة",
+    "pendingRequest_other": "{{name}} · بانتظار الموافقة · {{count}} نقطة محجوزة",
     "youCanRedeem": "يمكنك الاستبدال",
-    "rewardChip": {
-      "_one": "{{name}} · نقطة واحدة",
-      "_other": "{{name}} · {{count}} نقطة"
-    },
+    "rewardChip_one": "{{name}} · نقطة واحدة",
+    "rewardChip_other": "{{name}} · {{count}} نقطة",
     "overdue": "متأخرة",
     "approvalRequired": "تتطلب موافقة",
     "meterReadingRequired": "تتطلب قراءة العداد",

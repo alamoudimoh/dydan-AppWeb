@@ -271,31 +271,19 @@
     "currentMeterReading": "Current meter reading",
     "completionNotes": "Completion notes",
     "dueNow": "Due now",
-    "dueInDays": {
-      "_one": "Due in 1 day",
-      "_other": "Due in {{count}} days"
-    },
-    "overdueDays": {
-      "_one": "1 day overdue",
-      "_other": "{{count}} days overdue"
-    },
-    "meterRemaining": {
-      "_one": "1 {{unit}} remaining",
-      "_other": "{{count}} {{unit}} remaining"
-    },
-    "meterOverdue": {
-      "_one": "1 {{unit}} overdue",
-      "_other": "{{count}} {{unit}} overdue"
-    },
+    "dueInDays_one": "Due in 1 day",
+    "dueInDays_other": "Due in {{count}} days",
+    "overdueDays_one": "1 day overdue",
+    "overdueDays_other": "{{count}} days overdue",
+    "meterRemaining_one": "1 {{unit}} remaining",
+    "meterRemaining_other": "{{count}} {{unit}} remaining",
+    "meterOverdue_one": "1 {{unit}} overdue",
+    "meterOverdue_other": "{{count}} {{unit}} overdue",
     "dueToday": "Due today",
-    "everyDays": {
-      "_one": "Every day",
-      "_other": "Every {{count}} days"
-    },
-    "everyMeterUnits": {
-      "_one": "Every meter unit",
-      "_other": "Every {{count}} meter units"
-    },
+    "everyDays_one": "Every day",
+    "everyDays_other": "Every {{count}} days",
+    "everyMeterUnits_one": "Every meter unit",
+    "everyMeterUnits_other": "Every {{count}} meter units",
     "whicheverFirst": "Whichever comes first",
     "lastServiced": "Last serviced {{date}}",
     "atReading": " at {{reading}} {{unit}}",
@@ -361,10 +349,8 @@
     "available": "Available",
     "reserved": "Reserved",
     "spendable": "Spendable",
-    "points": {
-      "_one": "1 point",
-      "_other": "{{count}} points"
-    },
+    "points_one": "1 point",
+    "points_other": "{{count}} points",
     "availableRewards": "Available rewards",
     "createReward": "Create reward",
     "editReward": "Edit reward",
@@ -372,16 +358,12 @@
     "noRewards": "No rewards yet",
     "requestReward": "Request reward",
     "notEnoughPoints": "Not enough points",
-    "requestConfirm": {
-      "_one": "Request \"{{name}}\" for 1 point? This request will wait for admin approval.",
-      "_other": "Request \"{{name}}\" for {{count}} points? This request will wait for admin approval."
-    },
+    "requestConfirm_one": "Request \"{{name}}\" for 1 point? This request will wait for admin approval.",
+    "requestConfirm_other": "Request \"{{name}}\" for {{count}} points? This request will wait for admin approval.",
     "myRequests": "My requests",
     "noRequests": "You haven't requested any rewards yet.",
-    "requestedAt": {
-      "_one": "1 point · Requested {{date}}",
-      "_other": "{{count}} points · Requested {{date}}"
-    },
+    "requestedAt_one": "1 point · Requested {{date}}",
+    "requestedAt_other": "{{count}} points · Requested {{date}}",
     "resolvedAt": "Resolved {{date}}",
     "status_pending": "Pending",
     "status_approved": "Approved",
@@ -393,10 +375,8 @@
     "memberFallback": "Member {{id}}",
     "approve": "Approve",
     "reject": "Reject",
-    "approveConfirm": {
-      "_one": "Approve {{name}} for {{member}} for 1 point?",
-      "_other": "Approve {{name}} for {{member}} for {{count}} points?"
-    },
+    "approveConfirm_one": "Approve {{name}} for {{member}} for 1 point?",
+    "approveConfirm_other": "Approve {{name}} for {{member}} for {{count}} points?",
     "rejectConfirm": "Reject this reward request?",
     "manageRewards": "Manage rewards",
     "active": "Active",
@@ -683,23 +663,15 @@
     "viewRewards": "View rewards",
     "spendable": "Spendable",
     "pendingReserved": "Pending reserved",
-    "ptsValue": {
-      "_one": "1 pt",
-      "_other": "{{count}} pts"
-    },
-    "ptsPlus": {
-      "_one": "+1 pt",
-      "_other": "+{{count}} pts"
-    },
-    "pendingRequest": {
-      "_one": "{{name}} · Pending approval · 1 pt reserved",
-      "_other": "{{name}} · Pending approval · {{count}} pts reserved"
-    },
+    "ptsValue_one": "1 pt",
+    "ptsValue_other": "{{count}} pts",
+    "ptsPlus_one": "+1 pt",
+    "ptsPlus_other": "+{{count}} pts",
+    "pendingRequest_one": "{{name}} · Pending approval · 1 pt reserved",
+    "pendingRequest_other": "{{name}} · Pending approval · {{count}} pts reserved",
     "youCanRedeem": "You can redeem",
-    "rewardChip": {
-      "_one": "{{name}} · 1 pt",
-      "_other": "{{name}} · {{count}} pts"
-    },
+    "rewardChip_one": "{{name}} · 1 pt",
+    "rewardChip_other": "{{name}} · {{count}} pts",
     "overdue": "Overdue",
     "approvalRequired": "Approval required",
     "meterReadingRequired": "Meter reading required",

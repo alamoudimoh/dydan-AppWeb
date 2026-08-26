@@ -169,10 +169,8 @@
     "filterNamePlaceholder": "Filter name…",
     "save": "Save",
     "cancel": "Cancel",
-    "showResults": {
-      "_one": "Show 1 result",
-      "_other": "Show {{count}}"
-    },
+    "showResults_one": "Show 1 result",
+    "showResults_other": "Show {{count}}",
     "moreSaveOptions": "More save options",
     "assignee": "Assignee",
     "createdBy": "Created By",
@@ -184,10 +182,8 @@
     "custom": "Custom",
     "chipNot": "Not {{type}}",
     "chipValue": "{{type}}: {{value}}",
-    "chipCount": {
-      "_one": "{{type}} (1)",
-      "_other": "{{type}} ({{count}})"
-    },
+    "chipCount_one": "{{type}} (1)",
+    "chipCount_other": "{{type}} ({{count}})",
     "chipPoints": "{{type}} {{op}} {{value}}",
     "defaultProject": "Default Project",
     "smart": "Smart",
@@ -209,15 +205,11 @@
     "dateRange": "Date Range",
     "from": "From {{date}}",
     "until": "Until {{date}}",
-    "selected": {
-      "_one": "1 selected",
-      "_other": "{{count}} selected"
-    },
+    "selected_one": "1 selected",
+    "selected_other": "{{count}} selected",
     "removeFilter": "Remove {{label}} filter",
-    "more": {
-      "_one": "+1 more",
-      "_other": "+{{count}} more"
-    },
+    "more_one": "+1 more",
+    "more_other": "+{{count}} more",
     "addFilterCondition": "Add filter condition",
     "include": "Include",
     "exclude": "Exclude",
@@ -260,10 +252,8 @@
     "deleteFilter": "Delete filter",
     "filterTasksCount_one": "{{count}} task",
     "filterTasksCount_other": "{{count}} tasks",
-    "filterOverdueCount": {
-      "_one": "1 overdue",
-      "_other": "{{count}} overdue"
-    }
+    "filterOverdueCount_one": "1 overdue",
+    "filterOverdueCount_other": "{{count}} overdue"
   },
   "multiselect": {
     "selected_one": "{{count}} task selected",
@@ -370,10 +360,8 @@
     "anyActiveMember": "Any active Circle member",
     "approvalRequired": "Approval required",
     "chooseAssetWhenUsedShort": "Choose Asset when used",
-    "recurrenceInterval": {
-      "_one": "Every {{unit}}",
-      "_other": "Every {{count}} {{unit}}"
-    },
+    "recurrenceInterval_one": "Every {{unit}}",
+    "recurrenceInterval_other": "Every {{count}} {{unit}}",
     "recurrenceMonthlyOnDay": "Monthly on day {{day}}",
     "member": "Member {{id}}",
     "units": {
@@ -448,14 +436,10 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "justNow": "Just now",
-    "hoursAgo": {
-      "_one": "1 hour ago",
-      "_other": "{{count}} hours ago"
-    },
-    "daysAgo": {
-      "_one": "1 day ago",
-      "_other": "{{count}} days ago"
-    },
+    "hoursAgo_one": "1 hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo_one": "1 day ago",
+    "daysAgo_other": "{{count}} days ago",
     "started": "Started",
     "done": "Done",
     "late": "Late",
@@ -466,10 +450,8 @@
     "completed": "Completed",
     "byMember": "by {{name}}",
     "unknown": "Unknown",
-    "points": {
-      "_one": "1 point",
-      "_other": "{{count}} points"
-    },
+    "points_one": "1 point",
+    "points_other": "{{count}} points",
     "showMore": "Show more"
   },
   "shortcuts": {
