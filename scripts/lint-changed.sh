@@ -11,6 +11,7 @@ mapfile -t files < <(
     git diff --name-only --diff-filter=ACMR "$base" -- '*.js' '*.jsx' '*.ts' '*.tsx'
     git diff --name-only --diff-filter=ACMR -- '*.js' '*.jsx' '*.ts' '*.tsx'
   } | sort -u | while read -r file; do
+    [[ "$file" == design-source/figma-make/* ]] && continue
     [[ -f "$file" ]] && printf '%s\n' "$file"
   done
 )

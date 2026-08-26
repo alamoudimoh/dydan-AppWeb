@@ -15,7 +15,7 @@ import globals from 'globals'
 
 export default [
   {
-    ignores: ['dist'],
+    ignores: ['**/dist/**', 'design-source/figma-make/**'],
   },
   js.configs.recommended,
   react.configs.flat.recommended,
@@ -69,7 +69,7 @@ export default [
     },
   },
   {
-    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    files: ['design-reference/src/**/*.{js,jsx}', 'src/**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       globals: globals.browser,
@@ -113,6 +113,12 @@ export default [
       'no-undef': 'warn',
       'no-unused-vars': 'off', // @typescript-eslint/no-unused-vars
       'space-infix-ops': 'off', // @stylistic/space-infix-ops
+    },
+  },
+  {
+    files: ['design-reference/src/screens.jsx'],
+    rules: {
+      'max-lines': 'off',
     },
   },
   {
@@ -190,6 +196,12 @@ export default [
       'react/jsx-no-undef': 'warn',
       'react/no-unescaped-entities': 'warn',
       'react/prop-types': 'warn',
+    },
+  },
+  {
+    files: ['design-reference/src/**/*.{js,jsx}'],
+    rules: {
+      'react/prop-types': 'off',
     },
   },
 ]
