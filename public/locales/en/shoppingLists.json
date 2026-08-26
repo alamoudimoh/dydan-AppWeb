@@ -18,8 +18,14 @@
   "emptyPersonalDescription": "Create a list for groceries, errands, or anything you need to pick up.",
   "emptyFamilyTitle": "No family lists yet",
   "emptyFamilyDescription": "Shared lists help everyone in your circle add and check off items together.",
-  "itemsRemaining": "{{count}} remaining",
-  "itemsChecked": "{{count}} checked",
+  "itemsRemaining": {
+    "_one": "1 item remaining",
+    "_other": "{{count}} items remaining"
+  },
+  "itemsChecked": {
+    "_one": "1 item checked",
+    "_other": "{{count}} items checked"
+  },
   "addItem": "Add item",
   "itemPlaceholder": "Milk, batteries, dish soap…",
   "quantityPlaceholder": "Qty",
