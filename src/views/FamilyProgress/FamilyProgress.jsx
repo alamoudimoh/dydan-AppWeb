@@ -32,6 +32,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import PageHeader from '../../components/common/PageHeader'
+import QueryLoadingView from '../../components/common/QueryLoadingView'
+import SectionCard from '../../components/common/SectionCard'
 import {
   useGoalMutation,
   useGoals,
@@ -39,9 +42,6 @@ import {
   useStreak,
   useWorkload,
 } from '../../queries/ProgressQueries'
-import PageHeader from '../../components/common/PageHeader'
-import QueryLoadingView from '../../components/common/QueryLoadingView'
-import SectionCard from '../../components/common/SectionCard'
 import {
   inlineErrorAlertSx,
   pageShellSx,
@@ -83,7 +83,7 @@ const Workload = () => {
         <Select
           value={range}
           onChange={(_, value) => setRange(value)}
-          aria-label='Workload range'
+          aria-label={t('familyProgress.workloadRange')}
         >
           <Option value='today'>{t('familyProgress.today')}</Option>
           <Option value='week'>{t('familyProgress.thisWeek')}</Option>
@@ -93,7 +93,7 @@ const Workload = () => {
           value={category}
           onChange={(_, value) => setCategory(value || '')}
           placeholder={t('familyProgress.allCategories')}
-          aria-label='Category filter'
+          aria-label={t('familyProgress.categoryFilter')}
         >
           <Option value=''>{t('familyProgress.allCategories')}</Option>
           {data?.categories
@@ -183,7 +183,7 @@ const Reports = () => {
       <Select
         value={range}
         onChange={(_, value) => setRange(value)}
-        aria-label='Report range'
+        aria-label={t('familyProgress.reportRange')}
       >
         <Option value='week'>{t('familyProgress.thisWeek')}</Option>
         <Option value='7d'>{t('familyProgress.sevenDays')}</Option>
@@ -279,9 +279,7 @@ const Reports = () => {
               key={row.status}
               sx={{ display: 'flex', justifyContent: 'space-between' }}
             >
-              <Typography sx={{ textTransform: 'capitalize' }}>
-                {row.status}
-              </Typography>
+              <Typography>{t(`rewards.status_${row.status}`)}</Typography>
               <Chip>{row.count}</Chip>
             </Box>
           ))
@@ -504,12 +502,17 @@ const Goals = () => {
             </Chip>
           </Stack>
           <Typography>
-            {goal.progress} / {goal.target}
+            {t('familyProgress.goalProgress', {
+              progress: goal.progress,
+              target: goal.target,
+            })}
           </Typography>
           <LinearProgress
             determinate
             value={goal.percent}
-            aria-label={`${goal.name} progress`}
+            aria-label={t('familyProgress.goalProgressLabel', {
+              name: goal.name,
+            })}
           />
           <Typography level='body-xs'>
             {t(

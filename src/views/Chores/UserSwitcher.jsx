@@ -1,6 +1,7 @@
 import { SupervisorAccount } from '@mui/icons-material'
 import { Avatar, Box, Button, Typography } from '@mui/joy'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import SectionCard from '../../components/common/SectionCard'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
@@ -8,6 +9,7 @@ import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import UserModal from '../Modals/Inputs/UserModal'
 import { sideCardSx } from './sideCardSx'
 const UserSwitcher = () => {
+  const { t } = useTranslation('chores')
   const {
     canImpersonate,
     impersonatedUser,
@@ -46,15 +48,17 @@ const UserSwitcher = () => {
               }}
             >
               <SupervisorAccount color='' />
-              <Typography level='title-md'>View tasks as</Typography>
+              <Typography level='title-md'>
+                {t('sideCards.viewTasksAs')}
+              </Typography>
             </Box>
           </Box>
           <Box sx={{ mb: 2 }}>
             <Typography level='title-md' sx={{ mb: 0.5 }}>
-              Switch to user view
+              {t('sideCards.switchUserView')}
             </Typography>
             <Typography level='body-sm' sx={{ mb: 1, color: 'text.secondary' }}>
-              Tasks will be filtered to show only assignments for selected user
+              {t('sideCards.switchUserDescription')}
             </Typography>
           </Box>
           <Button
@@ -63,7 +67,7 @@ const UserSwitcher = () => {
             onClick={() => setIsModalOpen(true)}
             size='sm'
           >
-            Choose User
+            {t('sideCards.chooseUser')}
           </Button>
           <UserModal
             isOpen={isModalOpen}
@@ -106,12 +110,14 @@ const UserSwitcher = () => {
             }}
           >
             <SupervisorAccount color='' />
-            <Typography level='title-md'>View tasks as</Typography>
+            <Typography level='title-md'>
+              {t('sideCards.viewTasksAs')}
+            </Typography>
           </Box>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <Box sx={{ mr: 2 }}>
+          <Box sx={{ marginInlineEnd: 2 }}>
             <Avatar
               sx={{
                 width: 48,
@@ -124,7 +130,7 @@ const UserSwitcher = () => {
             />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography level='title-md' sx={{ mb: 1, ml: 0.5 }}>
+            <Typography level='title-md' sx={{ mb: 1, marginInlineStart: 0.5 }}>
               {impersonatedUser?.displayName || impersonatedUser?.name}
             </Typography>
             {/* <Box sx={{ fontSize: 14, color: 'text.secondary', mb: 0.5 }}>
@@ -139,18 +145,18 @@ const UserSwitcher = () => {
                   setIsModalOpen(true)
                 }}
               >
-                Change User
+                {t('sideCards.changeUser')}
               </Button>
               <Button
                 variant='plain'
                 color='neutral'
                 size='sm'
-                sx={{ ml: 0.5 }}
+                sx={{ marginInlineStart: 0.5 }}
                 onClick={() => {
                   stopImpersonation()
                 }}
               >
-                Cancel
+                {t('sideCards.cancelUserView')}
               </Button>
             </Box>
           </Box>

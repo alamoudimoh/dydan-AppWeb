@@ -1,7 +1,7 @@
 .reactCalendar {
   width: 100%;
   min-width: 280px;
-  font-family: 'Roboto', sans-serif;
+  font-family: inherit;
   background-color: transparent;
   border: none;
   margin: 0 auto;
@@ -71,7 +71,7 @@
   text-decoration: none;
   font-weight: 500;
   padding: 0.5em;
-  color: #666;
+  color: var(--joy-palette-text-secondary);
   font-size: 0.875rem;
   display: flex;
   align-items: center;
@@ -127,7 +127,7 @@
   background-color: var(--joy-palette-primary-solidBg) !important;
   color: var(--joy-palette-primary-solidColor) !important;
   border: none !important;
-  box-shadow: 0 2px 4px var(--joy-palette-primary-shadowRing);
+  box-shadow: var(--joy-shadow-sm);
 }
 
 .reactCalendar :global(.react-calendar__tile--active:hover) {
@@ -172,7 +172,7 @@
   flex-wrap: wrap;
   position: absolute;
   bottom: 2px;
-  left: 50%;
+  inset-inline-start: 50%;
   transform: translateX(-50%);
   min-height: 12px;
   width: 100%;
@@ -194,23 +194,6 @@
 
 .dotEmpty {
   background-color: transparent;
-}
-
-.choreTooltip {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  z-index: 10;
-  visibility: hidden;
-  opacity: 0;
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease;
 }
 
 /* Year view month tiles - override circular styling */

@@ -8,6 +8,7 @@ import {
   DriveFileMove,
   SelectAll,
   SkipNext,
+  Unarchive,
 } from '@mui/icons-material'
 import {
   Avatar,
@@ -48,6 +49,7 @@ const MultiSelectToolbar = ({
   onComplete,
   onDelete,
   onMoveToProject,
+  onRestore,
   onSelectAll,
   onSkip,
   projects = [],
@@ -155,7 +157,7 @@ const MultiSelectToolbar = ({
                   sx={{
                     position: 'absolute',
                     top: -8,
-                    right: -8,
+                    insetInlineEnd: -8,
                     zIndex: 1000,
                   }}
                 />
@@ -190,7 +192,7 @@ const MultiSelectToolbar = ({
                   sx={{
                     position: 'absolute',
                     top: -8,
-                    right: -8,
+                    insetInlineEnd: -8,
                     zIndex: 1000,
                   }}
                 />
@@ -214,58 +216,62 @@ const MultiSelectToolbar = ({
             },
           }}
         >
-          <Button
-            size='sm'
-            variant='solid'
-            color='success'
-            onClick={onComplete}
-            startDecorator={<Done />}
-            disabled={selectedCount === 0}
-            sx={{
-              '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-              position: 'relative',
-            }}
-            title={t('multiselect.completeSelected')}
-          >
-            {t('multiselect.complete')}
-            {showKeyboardShortcuts && selectedCount > 0 && (
-              <KeyboardShortcutHint
-                shortcut='Enter'
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  zIndex: 1000,
-                }}
-              />
-            )}
-          </Button>
-          <Button
-            size='sm'
-            variant='soft'
-            color='warning'
-            onClick={onSkip}
-            startDecorator={<SkipNext />}
-            disabled={selectedCount === 0}
-            sx={{
-              '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-              position: 'relative',
-            }}
-            title={t('multiselect.skipSelected')}
-          >
-            {t('multiselect.skip')}
-            {showKeyboardShortcuts && selectedCount > 0 && (
-              <KeyboardShortcutHint
-                shortcut='/'
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  zIndex: 1000,
-                }}
-              />
-            )}
-          </Button>
+          {onComplete && (
+            <Button
+              size='sm'
+              variant='solid'
+              color='success'
+              onClick={onComplete}
+              startDecorator={<Done />}
+              disabled={selectedCount === 0}
+              sx={{
+                '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
+                position: 'relative',
+              }}
+              title={t('multiselect.completeSelected')}
+            >
+              {t('multiselect.complete')}
+              {showKeyboardShortcuts && selectedCount > 0 && (
+                <KeyboardShortcutHint
+                  shortcut='Enter'
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    insetInlineEnd: -8,
+                    zIndex: 1000,
+                  }}
+                />
+              )}
+            </Button>
+          )}
+          {onSkip && (
+            <Button
+              size='sm'
+              variant='soft'
+              color='warning'
+              onClick={onSkip}
+              startDecorator={<SkipNext />}
+              disabled={selectedCount === 0}
+              sx={{
+                '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
+                position: 'relative',
+              }}
+              title={t('multiselect.skipSelected')}
+            >
+              {t('multiselect.skip')}
+              {showKeyboardShortcuts && selectedCount > 0 && (
+                <KeyboardShortcutHint
+                  shortcut='/'
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    insetInlineEnd: -8,
+                    zIndex: 1000,
+                  }}
+                />
+              )}
+            </Button>
+          )}
           {onMoveToProject && (
             <>
               <Button
@@ -328,59 +334,92 @@ const MultiSelectToolbar = ({
             </>
           )}
 
-          <Button
-            size='sm'
-            variant='soft'
-            color='danger'
-            onClick={onArchive}
-            startDecorator={<Archive />}
-            disabled={selectedCount === 0}
-            sx={{
-              '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-              position: 'relative',
-            }}
-            title={t('multiselect.archiveSelected')}
-          >
-            {t('multiselect.archive')}
-            {showKeyboardShortcuts && selectedCount > 0 && (
-              <KeyboardShortcutHint
-                shortcut='X'
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  zIndex: 1000,
-                }}
-              />
-            )}
-          </Button>
+          {onRestore && (
+            <Button
+              size='sm'
+              variant='solid'
+              color='success'
+              onClick={onRestore}
+              startDecorator={<Unarchive />}
+              disabled={selectedCount === 0}
+              sx={{
+                '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
+                position: 'relative',
+              }}
+              title={t('multiselect.restoreSelected')}
+            >
+              {t('multiselect.restore')}
+              {showKeyboardShortcuts && selectedCount > 0 && (
+                <KeyboardShortcutHint
+                  shortcut='R'
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    insetInlineEnd: -8,
+                    zIndex: 1000,
+                  }}
+                />
+              )}
+            </Button>
+          )}
 
-          <Button
-            size='sm'
-            variant='soft'
-            color='danger'
-            onClick={onDelete}
-            startDecorator={<Delete />}
-            disabled={selectedCount === 0}
-            sx={{
-              '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-              position: 'relative',
-            }}
-            title={t('multiselect.deleteSelected')}
-          >
-            {t('multiselect.delete')}
-            {showKeyboardShortcuts && selectedCount > 0 && (
-              <KeyboardShortcutHint
-                shortcut='E'
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  zIndex: 1000,
-                }}
-              />
-            )}
-          </Button>
+          {onArchive && (
+            <Button
+              size='sm'
+              variant='soft'
+              color='danger'
+              onClick={onArchive}
+              startDecorator={<Archive />}
+              disabled={selectedCount === 0}
+              sx={{
+                '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
+                position: 'relative',
+              }}
+              title={t('multiselect.archiveSelected')}
+            >
+              {t('multiselect.archive')}
+              {showKeyboardShortcuts && selectedCount > 0 && (
+                <KeyboardShortcutHint
+                  shortcut='X'
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    insetInlineEnd: -8,
+                    zIndex: 1000,
+                  }}
+                />
+              )}
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              size='sm'
+              variant='soft'
+              color='danger'
+              onClick={onDelete}
+              startDecorator={<Delete />}
+              disabled={selectedCount === 0}
+              sx={{
+                '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
+                position: 'relative',
+              }}
+              title={t('multiselect.deleteSelected')}
+            >
+              {t('multiselect.delete')}
+              {showKeyboardShortcuts && selectedCount > 0 && (
+                <KeyboardShortcutHint
+                  shortcut='E'
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    insetInlineEnd: -8,
+                    zIndex: 1000,
+                  }}
+                />
+              )}
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>

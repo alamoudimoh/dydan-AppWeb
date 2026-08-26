@@ -3,13 +3,10 @@ import {
   CheckBox,
   CheckBoxOutlineBlank,
   Close,
-  Delete,
   Label,
   Person,
   PriorityHigh,
   SearchOff,
-  SelectAll,
-  Unarchive,
   ViewAgenda,
   ViewModule,
 } from '@mui/icons-material'
@@ -17,7 +14,6 @@ import {
   Box,
   Button,
   Container,
-  Divider,
   IconButton,
   Input,
   List,
@@ -48,6 +44,7 @@ import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import ChoreCard from './ChoreCard'
 import ChoreListView from './ChoreListView.jsx'
 import CompactChoreCard from './CompactChoreCard'
+import MultiSelectToolbar from './components/MultiSelectToolbar'
 import MultiSelectHelp from './MultiSelectHelp'
 
 const sortByUpdatedAtDesc = chores =>
@@ -787,207 +784,16 @@ const ArchivedTasks = () => {
         totalCount={filteredChores.length}
       />
 
-      {/* Multi-select Toolbar */}
-      {isMultiSelectMode && (
-        <Box
-          sx={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 1000,
-            mb: 2,
-          }}
-        >
-          <Box
-            sx={{
-              backgroundColor: 'background.surface',
-              backdropFilter: 'blur(8px)',
-              borderRadius: 'lg',
-              p: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              boxShadow: 'md',
-              gap: 2,
-              display: 'flex',
-              flexDirection: {
-                sm: 'column',
-                md: 'row',
-              },
-              alignItems: {
-                xs: 'stretch',
-                sm: 'center',
-              },
-              justifyContent: {
-                xs: 'center',
-                sm: 'space-between',
-              },
-            }}
-          >
-            {/* Selection Info and Controls */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                flexWrap: {
-                  xs: 'wrap',
-                  sm: 'nowrap',
-                },
-                justifyContent: {
-                  xs: 'center',
-                  sm: 'flex-start',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CheckBox sx={{ color: 'primary.500' }} />
-                <Typography level='body-sm' fontWeight='md'>
-                  {selectedChores.size} task
-                  {selectedChores.size !== 1 ? 's' : ''} selected
-                </Typography>
-              </Box>
-
-              <Divider
-                orientation='vertical'
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              />
-
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  size='sm'
-                  variant='outlined'
-                  onClick={selectAllVisibleChores}
-                  startDecorator={<SelectAll />}
-                  disabled={selectedChores.size === finalChores.length}
-                  sx={{
-                    minWidth: 'auto',
-                    '--Button-paddingInline': '0.75rem',
-                    position: 'relative',
-                  }}
-                  title='Select all visible tasks (Ctrl+A)'
-                >
-                  All
-                  {showKeyboardShortcuts && (
-                    <KeyboardShortcutHint
-                      shortcut='A'
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        zIndex: 1000,
-                      }}
-                    />
-                  )}
-                </Button>
-                <Button
-                  size='sm'
-                  variant='outlined'
-                  onClick={clearSelection}
-                  startDecorator={
-                    selectedChores.size === 0 ? (
-                      <Close />
-                    ) : (
-                      <CheckBoxOutlineBlank />
-                    )
-                  }
-                  sx={{
-                    minWidth: 'auto',
-                    '--Button-paddingInline': '0.75rem',
-                    position: 'relative',
-                  }}
-                  title={`${selectedChores.size === 0 ? 'Close' : 'Clear'} multi-select (Esc)`}
-                >
-                  {selectedChores.size === 0 ? 'Close' : 'Clear'}
-                  {showKeyboardShortcuts && (
-                    <KeyboardShortcutHint
-                      withCtrl={false}
-                      shortcut='Esc'
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                        zIndex: 1000,
-                      }}
-                    />
-                  )}
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Action Buttons */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                flexWrap: {
-                  xs: 'wrap',
-                  sm: 'nowrap',
-                },
-                justifyContent: {
-                  xs: 'center',
-                  sm: 'flex-end',
-                },
-              }}
-            >
-              <Button
-                size='sm'
-                variant='solid'
-                color='success'
-                onClick={handleBulkRestore}
-                startDecorator={<Unarchive />}
-                disabled={selectedChores.size === 0}
-                sx={{
-                  '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-                  position: 'relative',
-                }}
-                title='Restore selected tasks (R)'
-              >
-                Restore
-                {showKeyboardShortcuts && selectedChores.size > 0 && (
-                  <KeyboardShortcutHint
-                    shortcut='R'
-                    sx={{
-                      position: 'absolute',
-                      top: -8,
-                      right: -8,
-                      zIndex: 1000,
-                    }}
-                  />
-                )}
-              </Button>
-
-              <Button
-                size='sm'
-                variant='soft'
-                color='danger'
-                onClick={handleBulkDelete}
-                startDecorator={<Delete />}
-                disabled={selectedChores.size === 0}
-                sx={{
-                  '--Button-paddingInline': { xs: '0.75rem', sm: '1rem' },
-                  position: 'relative',
-                }}
-                title='Delete selected tasks (E)'
-              >
-                Delete
-                {showKeyboardShortcuts && selectedChores.size > 0 && (
-                  <KeyboardShortcutHint
-                    shortcut='E'
-                    sx={{
-                      position: 'absolute',
-                      top: -8,
-                      right: -8,
-                      zIndex: 1000,
-                    }}
-                  />
-                )}
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      )}
+      <MultiSelectToolbar
+        isVisible={isMultiSelectMode}
+        selectedCount={selectedChores.size}
+        onSelectAll={selectAllVisibleChores}
+        onClear={clearSelection}
+        onRestore={handleBulkRestore}
+        onDelete={handleBulkDelete}
+        showKeyboardShortcuts={showKeyboardShortcuts}
+        selectAllDisabled={selectedChores.size === finalChores.length}
+      />
 
       {/* Content */}
       {finalChores.length === 0 ? (

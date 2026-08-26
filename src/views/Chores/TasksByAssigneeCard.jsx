@@ -1,6 +1,7 @@
 import { BarChart, Person } from '@mui/icons-material'
 import { Avatar, Box, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import EmptyState from '../../components/common/EmptyState'
 import SectionCard from '../../components/common/SectionCard'
@@ -10,6 +11,7 @@ import { resolvePhotoURL } from '../../utils/Helpers'
 import { sideCardSx } from './sideCardSx'
 
 const TasksByAssigneeCard = ({ chores = [] }) => {
+  const { t } = useTranslation('chores')
   const [assigneeData, setAssigneeData] = useState([])
   const { data: circleMembersData, isLoading: isCircleMembersLoading } =
     useCircleMembers()
@@ -96,7 +98,7 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
     return (
       <SectionCard sx={sideCardSx}>
         <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-          Loading tasks by assignee...
+          {t('sideCards.loadingAssignees')}
         </Typography>
       </SectionCard>
     )
@@ -111,8 +113,8 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
           variant='no-results'
           size='sm'
           icon={<Person />}
-          title='No one has tasks yet'
-          description='Assign a task to someone in your circle and their workload shows up here.'
+          title={t('sideCards.noAssigneeTasks')}
+          description={t('sideCards.noAssigneeTasksDescription')}
         />
       </SectionCard>
     )
@@ -131,7 +133,9 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
           }}
         >
           <BarChart color='' />
-          <Typography level='title-md'>Tasks by Assignee</Typography>
+          <Typography level='title-md'>
+            {t('sideCards.tasksByAssignee')}
+          </Typography>
         </Box>
       </Box>
 
@@ -148,22 +152,22 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
         {[
           {
             key: 'inProgress',
-            label: 'In Progress',
+            label: t('sideCards.inProgress'),
             color: getStatusColor('inProgress'),
           },
           {
             key: 'overdue',
-            label: 'Overdue',
+            label: t('sideCards.overdue'),
             color: getStatusColor('overdue'),
           },
           {
             key: 'scheduled',
-            label: 'Scheduled',
+            label: t('sideCards.scheduled'),
             color: getStatusColor('scheduled'),
           },
           {
             key: 'pendingReview',
-            label: 'Pending Review',
+            label: t('sideCards.pendingReview'),
             color: getStatusColor('pendingReview'),
           },
         ].map(status => (
@@ -354,7 +358,7 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
                   lineHeight: 1,
                   position: 'absolute',
                   bottom: `${yPosition}px`,
-                  right: 4,
+                  insetInlineEnd: 4,
                   transform: 'translateY(50%)',
                 }}
               >

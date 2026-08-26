@@ -4,14 +4,10 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   Divider,
   FormControl,
   FormLabel,
   Input,
-  Modal,
-  ModalClose,
-  ModalDialog,
   Option,
   Select,
   Stack,
@@ -23,17 +19,16 @@ import {
   Typography,
 } from '@mui/joy'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { useNotification } from '../../service/NotificationProvider'
+import AppModal from '../../components/common/AppModal'
+import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
-import {
-  listPageContainerSx,
-  pageStackSpacing,
-  settingsPageSx,
-} from '../../theme/appLayout'
+import { useNotification } from '../../service/NotificationProvider'
+import { pageShellSx, pageStackSpacing } from '../../theme/appLayout'
 import { getRecurrentChipText } from '../../utils/ChoreCardHelpers'
 import {
   AddMeterReading,
@@ -58,63 +53,92 @@ const categories = [
   'Other',
 ]
 
-const StatusLines = ({ item }) => (
+const ModalActions = ({ disabled, onClose, onSave, saveLabel, t }) => (
+  <Stack direction='row' justifyContent='flex-end' spacing={1}>
+    <Button variant='plain' color='neutral' onClick={onClose}>
+      {t('cancel')}
+    </Button>
+    <Button disabled={disabled} onClick={onSave}>
+      {saveLabel}
+    </Button>
+  </Stack>
+)
+
+const StatusLines = ({ item, t }) => (
   <Stack spacing={0.25}>
     {item.meterSchedule && (
       <Typography level='body-sm'>
-        {meterRemaining(item.meterSchedule)}
+        {meterRemaining(item.meterSchedule, t)}
       </Typography>
     )}
     {item.nextDueDate && (
-      <Typography level='body-sm'>{timeRemaining(item.nextDueDate)}</Typography>
+      <Typography level='body-sm'>
+        {timeRemaining(item.nextDueDate, t)}
+      </Typography>
     )}
     {item.meterSchedule && item.nextDueDate && (
-      <Typography level='body-xs'>Whichever comes first</Typography>
+      <Typography level='body-xs'>{t('maintenance.whicheverFirst')}</Typography>
     )}
   </Stack>
 )
 
-const MaintenanceCard = ({ item, onComplete }) => (
-  <Card variant='outlined'>
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={1}
-      alignItems={{ sm: 'center' }}
-    >
-      <Box sx={{ flex: 1 }}>
-        <Typography level='title-md'>{item.name}</Typography>
-        <Typography level='body-sm'>{item.assetName}</Typography>
-        <StatusLines item={item} />
-        {item.lastService && (
-          <Typography level='body-xs' sx={{ mt: 0.5 }}>
-            Last serviced{' '}
-            {new Date(item.lastService.performedAt).toLocaleString()}
-            {item.lastService.meterReading != null
-              ? ` at ${item.lastService.meterReading.toLocaleString()} ${item.lastService.meterUnit}`
-              : ''}
-          </Typography>
-        )}
-      </Box>
-      <Chip
-        color={
-          item.status === 'due'
-            ? 'danger'
-            : item.status === 'approaching'
-              ? 'warning'
-              : 'neutral'
-        }
-        variant='soft'
+const MaintenanceCard = ({ item, onComplete }) => {
+  const { i18n, t } = useTranslation('common')
+  const locale = i18n.resolvedLanguage || i18n.language
+  return (
+    <Card variant='outlined'>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.5}
+        alignItems={{ sm: 'center' }}
       >
-        {item.status === 'approaching'
-          ? 'Approaching'
-          : dueReason(item.dueReason)}
-      </Chip>
-      {onComplete && <Button onClick={() => onComplete(item)}>Complete</Button>}
-    </Stack>
-  </Card>
-)
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography level='title-md'>{item.name}</Typography>
+          <Typography level='body-sm'>{item.assetName}</Typography>
+          <StatusLines item={item} t={t} />
+          {item.lastService && (
+            <Typography level='body-xs' sx={{ mt: 0.5 }}>
+              {t('maintenance.lastServiced', {
+                date: new Date(item.lastService.performedAt).toLocaleString(
+                  locale,
+                ),
+              })}
+              {item.lastService.meterReading != null
+                ? t('maintenance.atReading', {
+                    reading:
+                      item.lastService.meterReading.toLocaleString(locale),
+                    unit: item.lastService.meterUnit,
+                  })
+                : ''}
+            </Typography>
+          )}
+        </Box>
+        <Chip
+          color={
+            item.status === 'due'
+              ? 'danger'
+              : item.status === 'approaching'
+                ? 'warning'
+                : 'neutral'
+          }
+          variant='soft'
+        >
+          {item.status === 'approaching'
+            ? t('maintenance.approaching')
+            : dueReason(item.dueReason, t)}
+        </Chip>
+        {onComplete && (
+          <Button onClick={() => onComplete(item)}>
+            {t('maintenance.complete')}
+          </Button>
+        )}
+      </Stack>
+    </Card>
+  )
+}
 
 const AssetForm = ({ asset, onClose, onSaved }) => {
+  const { t } = useTranslation('common')
   const [form, setForm] = useState({
     name: asset?.name || '',
     description: asset?.description || '',
@@ -125,59 +149,73 @@ const AssetForm = ({ asset, onClose, onSaved }) => {
       ? await SaveAsset({ ...form, id: asset.id })
       : await CreateAsset(form)
     if (response.ok) {
-      onSaved()
+      await onSaved()
       onClose()
     }
   }
   return (
-    <Modal open onClose={onClose}>
-      <ModalDialog sx={{ width: { xs: 'calc(100% - 24px)', sm: 440 } }}>
-        <ModalClose />
-        <Typography level='h4'>
-          {asset?.id ? 'Edit asset' : 'Create asset'}
-        </Typography>
+    <AppModal
+      open
+      onClose={onClose}
+      title={
+        asset?.id ? t('maintenance.editAsset') : t('maintenance.createAsset')
+      }
+      description={t('maintenance.assetDescription')}
+      footer={
+        <ModalActions
+          t={t}
+          saveLabel={t('maintenance.saveAsset')}
+          disabled={!form.name.trim()}
+          onClose={onClose}
+          onSave={save}
+        />
+      }
+    >
+      <Stack spacing={2}>
         <FormControl required>
-          <FormLabel>Name</FormLabel>
+          <FormLabel>{t('maintenance.name')}</FormLabel>
           <Input
             value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
+            onChange={event => setForm({ ...form, name: event.target.value })}
           />
         </FormControl>
         <FormControl>
-          <FormLabel>Category</FormLabel>
+          <FormLabel>{t('maintenance.category')}</FormLabel>
           <Select
             value={form.category || null}
-            placeholder='Optional'
+            placeholder={t('maintenance.optional')}
             onChange={(_, value) => setForm({ ...form, category: value || '' })}
           >
             {categories.map(value => (
               <Option value={value} key={value}>
-                {value}
+                {t(`maintenance.categories.${value.toLowerCase()}`)}
               </Option>
             ))}
           </Select>
         </FormControl>
         <FormControl>
-          <FormLabel>Description</FormLabel>
+          <FormLabel>{t('maintenance.description')}</FormLabel>
           <Textarea
             minRows={3}
             value={form.description}
-            onChange={e => setForm({ ...form, description: e.target.value })}
+            onChange={event =>
+              setForm({ ...form, description: event.target.value })
+            }
           />
         </FormControl>
-        <Button disabled={!form.name.trim()} onClick={save}>
-          Save asset
-        </Button>
-      </ModalDialog>
-    </Modal>
+      </Stack>
+    </AppModal>
   )
 }
 
 export const AssetDetail = () => {
+  const { i18n, t } = useTranslation('common')
+  const locale = i18n.resolvedLanguage || i18n.language
   const { id } = useParams()
   const navigate = useNavigate()
   const { showError } = useNotification()
   const [asset, setAsset] = useState(null)
+  const [loadError, setLoadError] = useState(false)
   const [editing, setEditing] = useState(false)
   const [linking, setLinking] = useState(false)
   const [meters, setMeters] = useState([])
@@ -186,12 +224,16 @@ export const AssetDetail = () => {
   const [readingMeter, setReadingMeter] = useState(null)
   const [reading, setReading] = useState('')
   const load = useCallback(async () => {
+    setLoadError(false)
     const response = await GetAsset(id)
     if (response.ok) setAsset((await response.json()).res)
+    else setLoadError(true)
   }, [id])
+
   useEffect(() => {
     void load()
   }, [load])
+
   const openLinks = async () => {
     const [meterResponse, choreResponse] = await Promise.all([
       GetMeters(),
@@ -206,15 +248,15 @@ export const AssetDetail = () => {
       asset.id,
       link.kind === 'meter' ? { meterId: link.id } : { choreId: link.id },
     )
-    if (!response.ok)
+    if (!response.ok) {
       showError({
-        title: 'Unable to link',
+        title: t('maintenance.linkErrorTitle'),
         message: (await response.json()).error,
       })
-    else {
-      setLinking(false)
-      await load()
+      return
     }
+    setLinking(false)
+    await load()
   }
   const updateReading = async () => {
     const response = await AddMeterReading(readingMeter.id, {
@@ -226,127 +268,163 @@ export const AssetDetail = () => {
       await load()
     }
   }
-  if (!asset)
+
+  if (loadError) {
     return (
-      <Container sx={settingsPageSx}>
-        <QueryLoadingView label='Loading asset…' />
-      </Container>
+      <Box sx={pageShellSx}>
+        <EmptyState
+          variant='error'
+          icon={<Build />}
+          title={t('maintenance.assetLoadError')}
+          primaryAction={{ label: t('retry'), onClick: load }}
+        />
+      </Box>
     )
+  }
+  if (!asset) {
+    return (
+      <Box sx={pageShellSx}>
+        <QueryLoadingView label={t('maintenance.loadingAsset')} />
+      </Box>
+    )
+  }
+
   return (
-    <Container maxWidth='md' sx={settingsPageSx}>
-      <Stack spacing={2}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent='space-between'
-          gap={1}
-        >
-          <Box>
-            <Typography level='h2'>{asset.name}</Typography>
-            <Typography>
-              {asset.category || 'Asset'}
-              {asset.description ? ` · ${asset.description}` : ''}
-            </Typography>
-          </Box>
-          <Stack direction='row'>
-            <Button
-              variant='outlined'
-              startDecorator={<Edit />}
-              onClick={() => setEditing(true)}
-            >
-              Edit
-            </Button>
-            <Button startDecorator={<Add />} onClick={openLinks}>
-              Link
-            </Button>
-          </Stack>
-        </Stack>
-        <Box>
-          <Typography level='h3' mb={1}>
-            Meters
-          </Typography>
-          <Stack spacing={1}>
-            {asset.meters.map(meter => (
-              <Card
-                key={meter.id}
-                orientation='horizontal'
-                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+    <Box sx={pageShellSx}>
+      <Stack spacing={pageStackSpacing}>
+        <PageHeader
+          title={asset.name}
+          subtitle={`${asset.category || t('maintenance.assetFallback')}${
+            asset.description ? ` · ${asset.description}` : ''
+          }`}
+          action={
+            <Stack direction='row' flexWrap='wrap' gap={1}>
+              <Button
+                variant='outlined'
+                startDecorator={<Edit />}
+                onClick={() => setEditing(true)}
               >
-                <Speed />
-                <Box sx={{ flex: 1 }}>
-                  <Typography level='title-md'>{meter.name}</Typography>
-                  <Typography level='body-xs'>
-                    Updated {new Date(meter.updatedAt).toLocaleString()}
-                  </Typography>
-                  {meter.updateReminder && (
-                    <Typography
-                      level='body-xs'
-                      color={
-                        meter.updateReminder.updateStatus === 'overdue'
-                          ? 'warning'
-                          : 'neutral'
-                      }
-                    >
-                      Update reminder:{' '}
-                      {getRecurrentChipText(meter.updateReminder)}
-                      {meter.updateReminder.nextUpdateDue
-                        ? ` · Next ${new Date(meter.updateReminder.nextUpdateDue).toLocaleString()}`
-                        : ''}
-                      {meter.updateReminder.updateStatus === 'overdue'
-                        ? ' · Reading may be outdated'
-                        : ''}
+                {t('edit')}
+              </Button>
+              <Button startDecorator={<Add />} onClick={openLinks}>
+                {t('maintenance.link')}
+              </Button>
+            </Stack>
+          }
+        />
+
+        <SectionCard title={t('maintenance.meters')}>
+          {asset.meters.length === 0 ? (
+            <EmptyState size='sm' title={t('maintenance.noLinkedMeters')} />
+          ) : (
+            <Stack spacing={1}>
+              {asset.meters.map(meter => (
+                <Card key={meter.id} variant='soft'>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ sm: 'center' }}
+                    gap={1.5}
+                  >
+                    <Speed />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography level='title-md'>{meter.name}</Typography>
+                      <Typography level='body-xs'>
+                        {t('maintenance.updated', {
+                          date: new Date(meter.updatedAt).toLocaleString(
+                            locale,
+                          ),
+                        })}
+                      </Typography>
+                      {meter.updateReminder && (
+                        <Typography
+                          level='body-xs'
+                          color={
+                            meter.updateReminder.updateStatus === 'overdue'
+                              ? 'warning'
+                              : 'neutral'
+                          }
+                        >
+                          {t('maintenance.updateReminder', {
+                            recurrence: getRecurrentChipText(
+                              meter.updateReminder,
+                            ),
+                          })}
+                          {meter.updateReminder.nextUpdateDue
+                            ? t('maintenance.nextUpdate', {
+                                date: new Date(
+                                  meter.updateReminder.nextUpdateDue,
+                                ).toLocaleString(locale),
+                              })
+                            : ''}
+                          {meter.updateReminder.updateStatus === 'overdue'
+                            ? t('maintenance.readingOutdated')
+                            : ''}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Typography level='h3' className='daydan-metric'>
+                      {meter.currentReading.toLocaleString(locale)} {meter.unit}
                     </Typography>
-                  )}
+                    <Button
+                      size='sm'
+                      onClick={() => {
+                        setReadingMeter(meter)
+                        setReading(meter.currentReading)
+                      }}
+                    >
+                      {t('maintenance.updateReading')}
+                    </Button>
+                  </Stack>
+                </Card>
+              ))}
+            </Stack>
+          )}
+        </SectionCard>
+
+        <SectionCard title={t('maintenance.maintenanceStatus')}>
+          {asset.maintenance.length === 0 ? (
+            <EmptyState size='sm' title={t('maintenance.noMaintenance')} />
+          ) : (
+            <Stack spacing={1}>
+              {asset.maintenance.map(item => (
+                <MaintenanceCard
+                  key={item.choreId}
+                  item={item}
+                  onComplete={() => navigate(`/chores/${item.choreId}`)}
+                />
+              ))}
+            </Stack>
+          )}
+        </SectionCard>
+
+        <SectionCard title={t('maintenance.maintenanceHistory')}>
+          {asset.history.length === 0 ? (
+            <EmptyState size='sm' title={t('maintenance.noHistory')} />
+          ) : (
+            <Stack divider={<Divider />} spacing={1}>
+              {asset.history.map(entry => (
+                <Box key={entry.id}>
+                  <Typography level='title-sm'>{entry.choreName}</Typography>
+                  <Typography level='body-sm'>
+                    {t('maintenance.completedBy', {
+                      date: new Date(entry.performedAt).toLocaleString(locale),
+                      name:
+                        entry.completedByName || t('maintenance.unknownMember'),
+                    })}
+                    {entry.meterReading != null
+                      ? t('maintenance.atReading', {
+                          reading: entry.meterReading.toLocaleString(locale),
+                          unit: entry.meterUnit,
+                        })
+                      : ''}
+                  </Typography>
                 </Box>
-                <Typography level='h3' className='daydan-metric'>
-                  {meter.currentReading.toLocaleString()} {meter.unit}
-                </Typography>
-                <Button
-                  size='sm'
-                  onClick={() => {
-                    setReadingMeter(meter)
-                    setReading(meter.currentReading)
-                  }}
-                >
-                  Update reading
-                </Button>
-              </Card>
-            ))}
-          </Stack>
-        </Box>
-        <Box>
-          <Typography level='h3' mb={1}>
-            Maintenance status
-          </Typography>
-          <Stack spacing={1}>
-            {asset.maintenance.map(item => (
-              <MaintenanceCard
-                key={item.choreId}
-                item={item}
-                onComplete={() => navigate(`/chores/${item.choreId}`)}
-              />
-            ))}
-          </Stack>
-        </Box>
-        <Box>
-          <Typography level='h3' mb={1}>
-            Maintenance history
-          </Typography>
-          <Stack divider={<Divider />} spacing={1}>
-            {asset.history.map(entry => (
-              <Box key={entry.id}>
-                <Typography level='title-sm'>{entry.choreName}</Typography>
-                <Typography level='body-sm'>
-                  {new Date(entry.performedAt).toLocaleString()} · Completed by{' '}
-                  {entry.completedByName || 'Unknown'}
-                  {entry.meterReading != null
-                    ? ` · ${entry.meterReading.toLocaleString()} ${entry.meterUnit}`
-                    : ''}
-                </Typography>
-              </Box>
-            ))}
-          </Stack>
-        </Box>
+              ))}
+            </Stack>
+          )}
+        </SectionCard>
       </Stack>
+
       {editing && (
         <AssetForm
           asset={asset}
@@ -354,19 +432,32 @@ export const AssetDetail = () => {
           onSaved={load}
         />
       )}
-      <Modal open={linking} onClose={() => setLinking(false)}>
-        <ModalDialog>
-          <ModalClose />
-          <Typography level='h4'>Link maintenance data</Typography>
+      <AppModal
+        open={linking}
+        onClose={() => setLinking(false)}
+        title={t('maintenance.linkTitle')}
+        footer={
+          <ModalActions
+            t={t}
+            saveLabel={t('maintenance.linkAction')}
+            disabled={!link.id}
+            onClose={() => setLinking(false)}
+            onSave={saveLink}
+          />
+        }
+      >
+        <Stack spacing={2}>
           <Select
             value={link.kind}
             onChange={(_, value) => setLink({ kind: value, id: null })}
           >
-            <Option value='meter'>Meter</Option>
-            <Option value='chore'>Maintenance chore</Option>
+            <Option value='meter'>{t('maintenance.meterOption')}</Option>
+            <Option value='chore'>{t('maintenance.choreOption')}</Option>
           </Select>
           <Select
-            placeholder={`Choose ${link.kind}`}
+            placeholder={t('maintenance.chooseKind', {
+              kind: t(`maintenance.${link.kind}Option`),
+            })}
             value={link.id}
             onChange={(_, value) => setLink({ ...link, id: value })}
           >
@@ -376,156 +467,223 @@ export const AssetDetail = () => {
               </Option>
             ))}
           </Select>
-          <Button disabled={!link.id} onClick={saveLink}>
-            Link to asset
-          </Button>
-        </ModalDialog>
-      </Modal>
-      <Modal open={!!readingMeter} onClose={() => setReadingMeter(null)}>
-        <ModalDialog>
-          <ModalClose />
-          <Typography level='h4'>Update {readingMeter?.name}</Typography>
-          <Input
-            type='number'
-            value={reading}
-            endDecorator={readingMeter?.unit}
-            onChange={e => setReading(e.target.value)}
+        </Stack>
+      </AppModal>
+      <AppModal
+        open={!!readingMeter}
+        onClose={() => setReadingMeter(null)}
+        title={t('maintenance.updateTitle', { name: readingMeter?.name })}
+        footer={
+          <ModalActions
+            t={t}
+            saveLabel={t('maintenance.saveReading')}
+            onClose={() => setReadingMeter(null)}
+            onSave={updateReading}
           />
-          <Button onClick={updateReading}>Save reading</Button>
-        </ModalDialog>
-      </Modal>
-    </Container>
+        }
+      >
+        <Input
+          type='number'
+          value={reading}
+          endDecorator={readingMeter?.unit}
+          onChange={event => setReading(event.target.value)}
+        />
+      </AppModal>
+    </Box>
   )
 }
 
+const emptyMaintenance = {
+  due: [],
+  approaching: [],
+  upcoming: [],
+  assets: [],
+}
+
 const MaintenanceView = () => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const [data, setData] = useState({
-    due: [],
-    approaching: [],
-    upcoming: [],
-    assets: [],
-  })
+  const [data, setData] = useState(emptyMaintenance)
   const [creating, setCreating] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const load = useCallback(async () => {
+    setLoadError(false)
     const response = await GetMaintenance()
     if (response.ok) setData((await response.json()).res)
+    else setLoadError(true)
+    setIsLoading(false)
   }, [])
+
   useEffect(() => {
     void load()
   }, [load])
+
   const complete = async item => {
     const response = await MarkChoreComplete(item.choreId, {})
     if (response.ok) await load()
     else navigate(`/chores/${item.choreId}`)
   }
-  const archive = async (event, id) => {
-    event.stopPropagation()
+  const archive = async id => {
     if ((await ArchiveAsset(id)).ok) await load()
   }
+
   return (
-    <Container maxWidth='lg' sx={listPageContainerSx}>
+    <Box sx={pageShellSx}>
       <Stack spacing={pageStackSpacing}>
         <PageHeader
-          title='Maintenance'
-          subtitle='Assets, meter readings, and service schedules for your circle.'
+          title={t('maintenance.title')}
+          subtitle={t('maintenance.subtitle')}
           action={
             <Button startDecorator={<Add />} onClick={() => setCreating(true)}>
-              New asset
+              {t('maintenance.addAsset')}
             </Button>
           }
         />
-      <Tabs defaultValue={0}>
-        <TabList>
-          <Tab>Due now ({data.due.length})</Tab>
-          <Tab>Approaching ({data.approaching.length})</Tab>
-          <Tab>Upcoming</Tab>
-          <Tab>Assets</Tab>
-        </TabList>
-        <TabPanel value={0}>
-          <Stack spacing={1}>
-            {data.due.length ? (
-              data.due.map(item => (
-                <MaintenanceCard
-                  key={item.choreId}
-                  item={item}
-                  onComplete={complete}
-                />
-              ))
-            ) : (
-              <SectionCard>
-                <Typography>
-                  Nothing is due. Your maintenance is on track.
-                </Typography>
-              </SectionCard>
-            )}
-          </Stack>
-        </TabPanel>
-        <TabPanel value={1}>
-          <Stack spacing={1}>
-            {data.approaching.map(item => (
-              <MaintenanceCard key={item.choreId} item={item} />
-            ))}
-          </Stack>
-        </TabPanel>
-        <TabPanel value={2}>
-          <Stack spacing={1}>
-            {data.upcoming.map(item => (
-              <MaintenanceCard key={item.choreId} item={item} />
-            ))}
-          </Stack>
-        </TabPanel>
-        <TabPanel value={3}>
-          <Stack spacing={1}>
-            {data.assets.map(asset => (
-              <Card
-                key={asset.id}
-                onClick={() => navigate(`/maintenance/assets/${asset.id}`)}
-                sx={{ cursor: 'pointer' }}
-              >
-                <Stack direction='row' alignItems='center'>
-                  <Build />
-                  <Box sx={{ flex: 1, ml: 1 }}>
-                    <Typography level='title-md'>{asset.name}</Typography>
-                    <Typography level='body-sm'>
-                      {asset.category || 'Asset'}
-                    </Typography>
-                  </Box>
-                  <Chip
-                    color={
-                      asset.status === 'attention'
-                        ? 'danger'
-                        : asset.status === 'upcoming'
-                          ? 'warning'
-                          : 'success'
-                    }
-                    variant='soft'
-                  >
-                    {asset.status === 'attention'
-                      ? 'Attention required'
-                      : asset.status === 'upcoming'
-                        ? 'Upcoming maintenance'
-                        : 'All good'}
-                  </Chip>
-                  <Button
-                    variant='plain'
-                    color='danger'
-                    startDecorator={<Archive />}
-                    onClick={event => archive(event, asset.id)}
-                  >
-                    Archive
-                  </Button>
+
+        {isLoading && <QueryLoadingView label={t('maintenance.loading')} />}
+        {!isLoading && loadError && (
+          <EmptyState
+            variant='error'
+            icon={<Build />}
+            title={t('maintenance.loadError')}
+            primaryAction={{ label: t('retry'), onClick: load }}
+          />
+        )}
+        {!isLoading && !loadError && (
+          <Tabs defaultValue={0}>
+            <TabList sx={{ overflowX: 'auto' }}>
+              <Tab>{t('maintenance.dueTab', { count: data.due.length })}</Tab>
+              <Tab>
+                {t('maintenance.approachingTab', {
+                  count: data.approaching.length,
+                })}
+              </Tab>
+              <Tab>{t('maintenance.upcomingTab')}</Tab>
+              <Tab>{t('maintenance.assetsTab')}</Tab>
+            </TabList>
+            <TabPanel value={0} sx={{ px: 0 }}>
+              {data.due.length ? (
+                <Stack spacing={1}>
+                  {data.due.map(item => (
+                    <MaintenanceCard
+                      key={item.choreId}
+                      item={item}
+                      onComplete={complete}
+                    />
+                  ))}
                 </Stack>
-              </Card>
-            ))}
-          </Stack>
-        </TabPanel>
-      </Tabs>
+              ) : (
+                <EmptyState
+                  size='sm'
+                  icon={<Build />}
+                  title={t('maintenance.onTrack')}
+                />
+              )}
+            </TabPanel>
+            <TabPanel value={1} sx={{ px: 0 }}>
+              {data.approaching.length ? (
+                <Stack spacing={1}>
+                  {data.approaching.map(item => (
+                    <MaintenanceCard key={item.choreId} item={item} />
+                  ))}
+                </Stack>
+              ) : (
+                <EmptyState
+                  size='sm'
+                  title={t('maintenance.noneApproaching')}
+                />
+              )}
+            </TabPanel>
+            <TabPanel value={2} sx={{ px: 0 }}>
+              {data.upcoming.length ? (
+                <Stack spacing={1}>
+                  {data.upcoming.map(item => (
+                    <MaintenanceCard key={item.choreId} item={item} />
+                  ))}
+                </Stack>
+              ) : (
+                <EmptyState size='sm' title={t('maintenance.noneUpcoming')} />
+              )}
+            </TabPanel>
+            <TabPanel value={3} sx={{ px: 0 }}>
+              {data.assets.length ? (
+                <Stack spacing={1}>
+                  {data.assets.map(asset => (
+                    <Card key={asset.id} variant='outlined'>
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        alignItems={{ sm: 'center' }}
+                        gap={1.5}
+                      >
+                        <Build />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography level='title-md'>{asset.name}</Typography>
+                          <Typography level='body-sm'>
+                            {asset.category || t('maintenance.assetFallback')}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          color={
+                            asset.status === 'attention'
+                              ? 'danger'
+                              : asset.status === 'upcoming'
+                                ? 'warning'
+                                : 'success'
+                          }
+                          variant='soft'
+                        >
+                          {asset.status === 'attention'
+                            ? t('maintenance.attentionRequired')
+                            : asset.status === 'upcoming'
+                              ? t('maintenance.upcomingMaintenance')
+                              : t('maintenance.allGood')}
+                        </Chip>
+                        <Stack direction='row' flexWrap='wrap' gap={0.5}>
+                          <Button
+                            variant='outlined'
+                            onClick={() =>
+                              navigate(`/maintenance/assets/${asset.id}`)
+                            }
+                            aria-label={t('maintenance.openAsset', {
+                              name: asset.name,
+                            })}
+                          >
+                            {t('maintenance.open')}
+                          </Button>
+                          <Button
+                            variant='plain'
+                            color='danger'
+                            startDecorator={<Archive />}
+                            onClick={() => archive(asset.id)}
+                          >
+                            {t('maintenance.archive')}
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    </Card>
+                  ))}
+                </Stack>
+              ) : (
+                <EmptyState
+                  size='sm'
+                  icon={<Build />}
+                  title={t('maintenance.noAssets')}
+                  description={t('maintenance.noAssetsDescription')}
+                  primaryAction={{
+                    label: t('maintenance.addAsset'),
+                    onClick: () => setCreating(true),
+                  }}
+                />
+              )}
+            </TabPanel>
+          </Tabs>
+        )}
+      </Stack>
       {creating && (
         <AssetForm onClose={() => setCreating(false)} onSaved={load} />
       )}
-      </Stack>
-    </Container>
+    </Box>
   )
 }
 

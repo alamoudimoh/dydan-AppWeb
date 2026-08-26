@@ -2,11 +2,12 @@ import { CalendarMonth } from '@mui/icons-material'
 import { Avatar, Box, Chip, Grid, Typography } from '@mui/joy'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { getPriorityColor, TASK_COLOR } from '../../utils/Colors'
-
 import CalendarMonthly from './CalendarMonthly'
 
 const getAssigneeColor = (assignee, userProfile) => {
@@ -15,6 +16,7 @@ const getAssigneeColor = (assignee, userProfile) => {
     : TASK_COLOR.ASSIGNED_TO_OTHER
 }
 const CalendarCard = ({ chores }) => {
+  const { t } = useTranslation('chores')
   const { data: userProfile } = useUserProfile()
   const { fmt } = useLocalization()
 
@@ -35,14 +37,14 @@ const CalendarCard = ({ chores }) => {
     const tomorrow = new Date(now)
     tomorrow.setDate(tomorrow.getDate() + 1)
     tomorrow.setHours(0, 0, 0, 0) // Set to start of tomorrow
-    
+
     const msUntilTomorrow = tomorrow.getTime() - now.getTime()
 
     const timeout = setTimeout(() => {
       const today = new Date()
       const yesterday = new Date(today)
       yesterday.setDate(yesterday.getDate() - 1)
-      
+
       // Check if selected date is now yesterday and update to today
       if (selectedDate.toDateString() === yesterday.toDateString()) {
         setSeletedDate(today)
@@ -58,12 +60,12 @@ const CalendarCard = ({ chores }) => {
       return userProfile.displayName
     }
     const assignee = circleMembers.find(member => member.userId === assignedTo)
-    return assignee ? `${assignee.displayName}` : 'Assigned to other'
+    return assignee ? `${assignee.displayName}` : t('sideCards.assignedOther')
   }
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -83,10 +85,12 @@ const CalendarCard = ({ chores }) => {
         }}
       >
         <CalendarMonth />
-        <Typography level='title-md'>Calendar Overview</Typography>
+        <Typography level='title-md'>
+          {t('sideCards.calendarOverview')}
+        </Typography>
       </Box>
 
-      <div>
+      <Box>
         <CalendarMonthly
           // className={styled.reactCalendar}
           chores={chores}
@@ -94,19 +98,17 @@ const CalendarCard = ({ chores }) => {
             setSeletedDate(date)
           }}
         />
-      </div>
+      </Box>
 
       {!selectedDate && (
         <Grid
           container
-          ml={3}
-          mt={1}
-          // start from left:
           sx={{
             width: '100%',
             display: 'flex',
-            // alignItems: 'center',
             justifyContent: 'start',
+            mt: 1,
+            marginInlineStart: 3,
           }}
         >
           {/* Show legend with priority colors */}
@@ -119,25 +121,25 @@ const CalendarCard = ({ chores }) => {
             // Add priority levels that exist in the chores
             if (priorityLevels.has(1)) {
               legendItems.push({
-                name: 'High Priority',
+                name: t('sideCards.highPriority'),
                 color: TASK_COLOR.PRIORITY_1,
               })
             }
             if (priorityLevels.has(2)) {
               legendItems.push({
-                name: 'Medium Priority',
+                name: t('sideCards.mediumPriority'),
                 color: TASK_COLOR.PRIORITY_2,
               })
             }
             if (priorityLevels.has(3)) {
               legendItems.push({
-                name: 'Low Priority',
+                name: t('sideCards.lowPriority'),
                 color: TASK_COLOR.PRIORITY_3,
               })
             }
             if (priorityLevels.has(4)) {
               legendItems.push({
-                name: 'Lowest Priority',
+                name: t('sideCards.lowestPriority'),
                 color: TASK_COLOR.PRIORITY_4,
               })
             }
@@ -148,7 +150,7 @@ const CalendarCard = ({ chores }) => {
               )
             ) {
               legendItems.push({
-                name: 'No Priority',
+                name: t('sideCards.noPriority'),
                 color: TASK_COLOR.NO_PRIORITY,
               })
             }
@@ -172,7 +174,7 @@ const CalendarCard = ({ chores }) => {
                     backgroundColor: item.color,
                   }}
                 />
-                <Typography level='body-xs' ml={0.5}>
+                <Typography level='body-xs' sx={{ marginInlineStart: 0.5 }}>
                   {item.name}
                 </Typography>
               </Grid>
@@ -198,9 +200,7 @@ const CalendarCard = ({ chores }) => {
               width: '100%',
             }}
           >
-            <Typography level='title-md'>
-              {fmt.date(selectedDate)}
-            </Typography>
+            <Typography level='title-md'>{fmt.date(selectedDate)}</Typography>
             <Chip variant='soft' color='primary' size='md'>
               {(() => {
                 const count = chores.filter(chore => {
@@ -210,7 +210,7 @@ const CalendarCard = ({ chores }) => {
                   const selectedLocalDate = selectedDate.toLocaleDateString()
                   return choreDate === selectedLocalDate
                 }).length
-                return `${count} Tasks`
+                return t('sideCards.tasksCount', { count })
               })()}
             </Chip>
           </Box>
@@ -236,19 +236,27 @@ const CalendarCard = ({ chores }) => {
                 return choreDate === selectedLocalDate
               })
               .sort((a, b) => moment(a.nextDueDate).diff(moment(b.nextDueDate)))
-              .map((chore, idx) => (
+              .map(chore => (
                 <Box
-                  key={idx}
+                  key={chore.id}
+                  component='button'
+                  type='button'
+                  aria-label={t('sideCards.openTask', { name: chore.name })}
                   onClick={() => {
                     Navigate('/chores/' + chore.id)
                   }}
                   sx={{
+                    width: '100%',
+                    border: 0,
+                    background: 'none',
+                    color: 'inherit',
+                    textAlign: 'start',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 0.25,
                     cursor: 'pointer',
                     position: 'relative',
-                    pl: '16px',
+                    paddingInlineStart: '16px',
                     py: 0.75,
                     transition: 'all 0.2s ease-in-out',
                     borderRadius: 'sm',
@@ -259,7 +267,7 @@ const CalendarCard = ({ chores }) => {
                     '&::before': {
                       content: '""',
                       position: 'absolute',
-                      left: 0,
+                      insetInlineStart: 0,
                       top: 0,
                       bottom: 0,
                       width: '3px',
@@ -332,7 +340,7 @@ const CalendarCard = ({ chores }) => {
           </Box>
         </Box>
       )}
-    </div>
+    </Box>
   )
 }
 

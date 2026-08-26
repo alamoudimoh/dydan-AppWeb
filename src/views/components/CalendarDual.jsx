@@ -1,51 +1,24 @@
 import { Box, Typography } from '@mui/joy'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Calendar from 'react-calendar'
-import { useNavigate } from 'react-router-dom'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
-import { getPriorityColor, TASK_COLOR } from '../../utils/Colors'
+
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { getPriorityColor } from '../../utils/Colors'
 import styles from './CalendarDual.module.css'
 
-const getAssigneeColor = (assignee, userProfile) => {
-  return assignee === userProfile.id
-    ? TASK_COLOR.ASSIGNED_TO_ME
-    : TASK_COLOR.ASSIGNED_TO_OTHER
-}
 const CalendarDual = ({ chores, onDateChange }) => {
-  const { data: userProfile } = useUserProfile()
   const { firstDayOfWeek, fmt } = useLocalization()
   const calendarType =
-    firstDayOfWeek === 1 ? 'iso8601' : firstDayOfWeek === 6 ? 'islamic' : 'gregory'
+    firstDayOfWeek === 1
+      ? 'iso8601'
+      : firstDayOfWeek === 6
+        ? 'islamic'
+        : 'gregory'
 
   const [selectedDate, setSeletedDate] = useState(null)
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [nextMonth, setNextMonth] = useState(() => {
-    const next = new Date()
-    next.setMonth(next.getMonth() + 1)
-    return next
-  })
-  const Navigate = useNavigate()
-
-  // Fetch circle members data to get assignee names
-  const { data: circleMembersData } = useCircleMembers()
-  const circleMembers = circleMembersData?.res || []
-
-  // Update next month whenever current date changes
-  useEffect(() => {
-    const next = new Date(currentDate.getTime())
-    next.setMonth(currentDate.getMonth() + 1)
-    setNextMonth(next)
-  }, [currentDate])
-
-  // Helper function to get assignee display name
-  const getAssigneeName = assignedTo => {
-    if (assignedTo === userProfile.id) {
-      return userProfile.displayName
-    }
-    const assignee = circleMembers.find(member => member.userId === assignedTo)
-    return assignee ? `${assignee.displayName}` : 'Assigned to other'
-  }
+  const nextMonth = new Date(currentDate.getTime())
+  nextMonth.setMonth(currentDate.getMonth() + 1)
 
   const tileContent = ({ date, view }) => {
     if (view === 'month') {
@@ -117,9 +90,8 @@ const CalendarDual = ({ chores, onDateChange }) => {
         activeStartDate={date}
         // Don't show navigation on secondary calendar
         showNavigation={!isSecondary}
-        // format the days from MON, TUE, WED, THU, FRI, SAT, SUN to first three letters:
         formatShortWeekday={(locale, date) =>
-          ['S', 'M', 'T', 'W', 'T', 'F', 'S'][date.getDay()]
+          new Intl.DateTimeFormat(locale, { weekday: 'narrow' }).format(date)
         }
         onActiveStartDateChange={({ activeStartDate }) => {
           if (!isSecondary) {
