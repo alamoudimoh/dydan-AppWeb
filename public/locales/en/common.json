@@ -870,5 +870,11 @@
     "address": "Address",
     "cookieNotice": "We use cookies to ensure you get the best experience on our website.",
     "accept": "Accept"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. Please try refreshing the page.",
+    "goHome": "Go to Home",
+    "refresh": "Refresh Page"
   }
 }

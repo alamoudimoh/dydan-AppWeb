@@ -38,6 +38,7 @@ export const useSSE = () => {
   const nextReconnectTimeRef = useRef(null)
   // Track if reconnect is already scheduled to prevent duplicates
   const isReconnectScheduledRef = useRef(false)
+  const connectRef = useRef(null)
 
   const queryClient = useQueryClient()
   const { showError, showNotification } = useNotification()
@@ -296,9 +297,7 @@ export const useSSE = () => {
       isReconnectScheduledRef.current = false
       reconnectAttemptsRef.current++
       nextReconnectTimeRef.current = null
-      // Note: connect will be called by the caller after this returns
-      // We need to trigger it here
-      window.dispatchEvent(new CustomEvent('sse-reconnect'))
+      connectRef.current?.()
     }, delay)
   }, [])
 
@@ -339,25 +338,21 @@ export const useSSE = () => {
 
     // Prevent race conditions by checking if already connecting or connected
     if (eventSourceRef.current?.readyState === SSE_STATES.OPEN) {
-      console.log('SSE: Already connected')
       return // Already connected
     }
 
     if (eventSourceRef.current?.readyState === SSE_STATES.CONNECTING) {
-      console.log('SSE: Connection already in progress')
       return // Already connecting
     }
 
     const sseConfig = getSSEUrl()
 
     if (!sseConfig) {
-      console.log('Cannot connect to SSE: missing URL, token, or user profile')
       return
     }
 
     // Create connection logic inline to avoid circular dependency
     try {
-      console.log('Connecting to SSE:', sseConfig.url)
       setConnectionState(SSE_STATES.CONNECTING)
       isManuallyClosedRef.current = false
 
@@ -627,6 +622,8 @@ export const useSSE = () => {
     showError,
   ])
 
+  connectRef.current = connect
+
   const disconnect = useCallback(() => {
     isManuallyClosedRef.current = true
     isReconnectScheduledRef.current = false
@@ -649,16 +646,10 @@ export const useSSE = () => {
 
   const toggleSSEEnabled = useCallback(
     enabled => {
-      console.log('SSE toggleSSEEnabled called:', {
-        enabled,
-        isTokenValid: isAuthenticated,
-      })
       localStorage.setItem('sse_enabled', enabled.toString())
       if (enabled && isAuthenticated) {
-        console.log('SSE toggleSSEEnabled: Calling connect()')
         connect()
       } else {
-        console.log('SSE toggleSSEEnabled: Calling disconnect()')
         disconnect()
       }
     },
@@ -671,24 +662,17 @@ export const useSSE = () => {
 
   // Auto-connect when SSE is enabled and token is valid
   useEffect(() => {
-    console.log('SSE auto-connect effect triggered')
-    console.log('Token valid:', isAuthenticated)
-
     const isSSEEnabledSetting = localStorage.getItem('sse_enabled') === 'true'
-    console.log('SSE enabled in settings:', isSSEEnabledSetting)
-
     if (isAuthenticated && isSSEEnabledSetting) {
-      console.log('SSE: Conditions met, attempting to connect')
       connect()
     } else {
-      console.log('SSE: Conditions not met, disconnecting')
       disconnect()
     }
 
     return () => {
       disconnect()
     }
-  }, [isAuthenticated]) // Fixed: Added isAuthenticated dependency
+  }, [isAuthenticated, connect, disconnect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup timeouts on unmount
   useEffect(() => {

@@ -64,6 +64,23 @@ i18n
     },
   })
 
+// Override Arabic plural rules: i18next v25+ uses CLDR which generates
+// 6 forms for Arabic (zero/one/two/few/many/other), but we only maintain
+// _one/_other keys. Override to use simple one/other rule matching English.
+const origGetRule = i18n.services.pluralResolver.getRule.bind(
+  i18n.services.pluralResolver,
+)
+i18n.services.pluralResolver.getRule = (code, options = {}) => {
+  if (code && String(code).startsWith('ar')) {
+    return {
+      resolvedOptions: () => ({ pluralCategories: ['one', 'other'] }),
+      select: count => (count === 1 ? 'one' : 'other'),
+    }
+  }
+  return origGetRule(code, options)
+}
+i18n.services.pluralResolver.clearCache()
+
 loadMomentLocale(i18n.language)
 i18n.on('languageChanged', loadMomentLocale)
 
