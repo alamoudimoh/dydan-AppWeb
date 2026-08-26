@@ -485,11 +485,11 @@ const ProjectView = () => {
       <Box
         sx={{
           ...getSafeBottomStyles({ bottom: 0, padding: 16 }),
-          left: 10,
+          insetInlineStart: 10,
           display: 'flex',
           justifyContent: 'flex-end',
           gap: 2,
-          zIndex: Z_INDEX.FLOATING,
+          zIndex: Z_INDEX.FLOATING_ACTION,
         }}
       >
         <IconButton
