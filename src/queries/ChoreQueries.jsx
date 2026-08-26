@@ -465,7 +465,7 @@ export const useChoreHistory = choreId => {
     },
     enabled: !!choreId,
     staleTime: 0, // Always consider data stale
-    cacheTime: 0, // Don't cache the data
+    gcTime: 0, // Don't cache the data
     refetchOnMount: true, // Always refetch when component mounts
     refetchOnWindowFocus: true, // Refetch when window gains focus
   })
