@@ -318,6 +318,7 @@ const SmartTaskTitleInput = ({
                     size='sm'
                     variant='plain'
                     color='neutral'
+                    aria-label='Select photo'
                     onClick={() => photoInputRef.current?.click()}
                     sx={{ borderRadius: 'xl' }}
                   >
@@ -339,6 +340,7 @@ const SmartTaskTitleInput = ({
                   size='sm'
                   variant='plain'
                   color='neutral'
+                  aria-label='Scan to create task'
                   onClick={onScanClick}
                   sx={{ borderRadius: 'xl' }}
                 >
@@ -352,6 +354,7 @@ const SmartTaskTitleInput = ({
                   size='sm'
                   variant='plain'
                   color='neutral'
+                  aria-label='Speak to create tasks'
                   onClick={onVoiceClick}
                   sx={{ borderRadius: 'xl' }}
                 >

@@ -141,3 +141,21 @@ body {
 [dir='rtl'] .gap-4 {
   direction: rtl;
 }
+
+/* Skip-to-content link for keyboard accessibility */
+.skip-link {
+  position: absolute;
+  inset-block-start: -100%;
+  inset-inline-start: 0;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--joy-palette-primary-500, #1976d2);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  transition: inset-block-start 0.15s ease;
+}
+.skip-link:focus {
+  inset-block-start: 0;
+}

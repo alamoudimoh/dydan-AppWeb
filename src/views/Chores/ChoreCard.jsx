@@ -374,6 +374,7 @@ const ChoreCard = ({
                         <IconButton
                           variant='soft'
                           color='success'
+                          aria-label='Approve'
                           onClick={e => {
                             e.stopPropagation()
                             onAction('approve', chore)
@@ -403,6 +404,7 @@ const ChoreCard = ({
                         <IconButton
                           variant='soft'
                           color='danger'
+                          aria-label='Reject'
                           onClick={e => {
                             e.stopPropagation()
                             onAction('reject', chore)
@@ -431,6 +433,7 @@ const ChoreCard = ({
                         variant='soft'
                         color='neutral'
                         disabled={true}
+                        aria-label='Pending approval'
                         sx={{
                           borderRadius: '50%',
                           width: 50,
@@ -448,6 +451,13 @@ const ChoreCard = ({
                     <IconButton
                       variant={chore.status === 0 ? 'solid' : 'soft'}
                       color={chore.status === 0 ? 'success' : 'warning'}
+                      aria-label={
+                        chore.status === 0
+                          ? 'Complete chore'
+                          : chore.status === 1
+                            ? 'Pause chore'
+                            : 'Resume chore'
+                      }
                       onClick={e => {
                         e.stopPropagation()
                         switch (chore.status) {

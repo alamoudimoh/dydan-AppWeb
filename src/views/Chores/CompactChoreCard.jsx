@@ -203,6 +203,7 @@ const CompactChoreCard = ({
                     variant='soft'
                     color='success'
                     size='sm'
+                    aria-label='Approve'
                     onClick={e => {
                       e.stopPropagation()
                       onAction('approve', chore)
@@ -252,6 +253,7 @@ const CompactChoreCard = ({
                   color='neutral'
                   size='sm'
                   disabled={true}
+                  aria-label='Pending approval'
                   sx={{
                     width: 32,
                     height: 32,
@@ -267,6 +269,13 @@ const CompactChoreCard = ({
                 variant='soft'
                 color={chore.status === 0 ? 'success' : 'warning'}
                 size='sm'
+                aria-label={
+                  chore.status === 0
+                    ? 'Complete chore'
+                    : chore.status === 1
+                      ? 'Pause chore'
+                      : 'Resume chore'
+                }
                 onClick={e => {
                   e.stopPropagation()
                   if (chore.status === 0) {

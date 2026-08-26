@@ -5,12 +5,14 @@ import {
   LightModeOutlined,
 } from '@mui/icons-material'
 import { FormControl, IconButton, useColorScheme } from '@mui/joy'
+import { useTranslation } from 'react-i18next'
 
 const ELEMENTID = 'select-theme-mode'
 
 const ThemeToggleButton = ({ sx }) => {
   const { mode, setMode } = useColorScheme()
   const [themeMode, setThemeMode] = useStickyState(mode, 'themeMode')
+  const { t } = useTranslation('common')
 
   const handleThemeModeChange = e => {
     e.preventDefault()
@@ -33,9 +35,16 @@ const ThemeToggleButton = ({ sx }) => {
     setMode(newThemeMode)
   }
 
+  const ariaLabel =
+    themeMode === 'light'
+      ? t('profileMenu.switchToDark')
+      : themeMode === 'dark'
+        ? t('profileMenu.switchToLight')
+        : t('profileMenu.switchToLight')
+
   return (
     <FormControl sx={sx}>
-      <IconButton onClick={handleThemeModeChange}>
+      <IconButton onClick={handleThemeModeChange} aria-label={ariaLabel}>
         {themeMode === 'light' ? (
           <DarkModeOutlined />
         ) : themeMode === 'dark' ? (

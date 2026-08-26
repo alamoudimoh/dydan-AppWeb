@@ -54,6 +54,7 @@ const DurationInput = ({ value, onChange, size = 'md', minValue = 1 }) => {
         size={size}
         variant='outlined'
         color='neutral'
+        aria-label='Decrement'
         onClick={handleDecrement}
         disabled={displayValue <= minValue}
       >
@@ -77,6 +78,7 @@ const DurationInput = ({ value, onChange, size = 'md', minValue = 1 }) => {
         size={size}
         variant='outlined'
         color='neutral'
+        aria-label='Increment'
         onClick={handleIncrement}
       >
         <Add fontSize='small' />
@@ -85,7 +87,7 @@ const DurationInput = ({ value, onChange, size = 'md', minValue = 1 }) => {
       <Select
         value={unit}
         size={size}
-        sx={{ minWidth: 90, ml: 0.5 }}
+        sx={{ minWidth: 90, marginInlineStart: 0.5 }}
         onChange={(_, newUnit) => {
           setUnit(newUnit)
           emit(displayValue, newUnit)

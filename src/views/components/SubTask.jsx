@@ -86,7 +86,7 @@ function SortableItem({
     display: 'flex',
     alignItems: 'center',
     touchAction: 'auto',
-    paddingLeft: `${level * 24}px`,
+    paddingInlineStart: `${level * 24}px`,
   }
 
   return (
@@ -97,6 +97,7 @@ function SortableItem({
             {...listeners}
             size='sm'
             data-drag-handle='true'
+            aria-label='Drag to reorder'
             sx={{ touchAction: 'none', cursor: 'grab' }}
           >
             <DragIndicator />
@@ -108,9 +109,10 @@ function SortableItem({
             size='sm'
             variant='plain'
             color='neutral'
+            aria-label={expanded ? 'Collapse subtasks' : 'Expand subtasks'}
             onClick={() => onToggleExpand(task.id)}
           >
-            {expanded ? <ExpandMore /> : <ChevronRight />}
+            {expanded ? <ExpandMore /> : <ChevronRight className='rtl-flip' />}
           </IconButton>
         ) : level > 0 ? (
           <Box sx={{ width: 28 }} />
@@ -197,6 +199,7 @@ function SortableItem({
               variant='soft'
               color='danger'
               size='sm'
+              aria-label='Delete subtask'
               title='Delete (Shift+Backspace)'
               onClick={() =>
                 onKeyDown(
@@ -685,7 +688,7 @@ const SubTasks = ({
                 }}
                 sx={{ flex: 1 }}
               />
-              <IconButton onClick={handleAdd}>
+              <IconButton onClick={handleAdd} aria-label='Add subtask'>
                 <KeyboardReturn />
               </IconButton>
             </ListItem>
