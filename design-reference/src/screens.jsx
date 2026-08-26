@@ -8,8 +8,8 @@ import {
   CalendarMonthRounded,
   CardGiftcardRounded,
   CheckCircleRounded,
-  CheckRounded,
   ChecklistRounded,
+  CheckRounded,
   ChevronLeftRounded,
   ChevronRightRounded,
   CircleNotificationsRounded,
@@ -275,7 +275,7 @@ const StatCard = ({ detail, icon, label, tone = 'primary', value }) => (
   </Card>
 )
 
-const TaskRow = ({ task, completed = false, compact = false }) => (
+const TaskRow = ({ compact = false, completed = false, task }) => (
   <Stack
     className='reference-accent-line'
     direction='row'
@@ -350,7 +350,7 @@ const MemberStack = () => (
   </AvatarGroup>
 )
 
-const StreakPips = ({ done = 5, total = 7, label }) => (
+const StreakPips = ({ done = 5, label, total = 7 }) => (
   <Stack direction='row' spacing={1} alignItems='center'>
     <Box
       className='reference-streak-pips'
@@ -1186,7 +1186,10 @@ function ProgressScreen() {
     <Page>
       <PageIntro
         title='Family progress'
-        subtitle='Member identity colors come from the active product theme and carry through avatars, bars, and charts.'
+        subtitle={
+          'Member identity colors come from the active product theme and ' +
+          'carry through avatars, bars, and charts.'
+        }
         action={
           <Select defaultValue='30d' size='sm'>
             <Option value='7d'>Last 7 days</Option>
@@ -1374,7 +1377,10 @@ function MetersScreen() {
     <Page>
       <PageIntro
         title='Meters & maintenance'
-        subtitle='Readings use mono typography; reminder state stays semantic while each meter accent follows the active theme.'
+        subtitle={
+          'Readings use mono typography; reminder state stays semantic while ' +
+          'each meter accent follows the active theme.'
+        }
         action={<Button startDecorator={<AddRounded />}>New meter</Button>}
       />
       <Box className='reference-grid reference-grid--cards' sx={{ mb: 3 }}>
@@ -1646,7 +1652,10 @@ function NotificationsScreen() {
     <Page narrow>
       <PageIntro
         title='Notifications'
-        subtitle='Actionable events are concise, scannable, and distinguish read state without depending on color alone.'
+        subtitle={
+          'Actionable events are concise, scannable, and distinguish read ' +
+          'state without depending on color alone.'
+        }
         action={<Button variant='plain'>Mark all read</Button>}
       />
       <SectionCard sx={{ p: 0, overflow: 'hidden' }}>
@@ -2039,7 +2048,10 @@ function ComponentsScreen() {
     <Page>
       <PageIntro
         title='Component reference'
-        subtitle='Joy UI primitives plus the repository’s shared SectionCard, PageHeader, AppModal, ModalActions, EmptyState, and loading components.'
+        subtitle={
+          'Joy UI primitives plus the repository’s shared SectionCard, ' +
+          'PageHeader, AppModal, ModalActions, EmptyState, and loading components.'
+        }
       />
       <Box className='reference-grid reference-grid--split'>
         <Stack spacing={2.5}>
@@ -2337,7 +2349,10 @@ function StatesScreen() {
     <Page>
       <PageIntro
         title='System states'
-        subtitle='Loading, empty, no-results, error, disabled, offline, and success states use one reusable visual grammar.'
+        subtitle={
+          'Loading, empty, no-results, error, disabled, offline, and success ' +
+          'states use one reusable visual grammar.'
+        }
       />
       <Box className='reference-grid reference-grid--cards'>
         <SectionCard title='Loading'>
