@@ -91,7 +91,7 @@ const TimerCard = ({
             <Typography
               level='body-md'
               sx={{
-                ml: 1,
+                marginInlineStart: 1,
                 fontWeight: '500',
                 color: 'text.primary',
               }}
@@ -221,6 +221,7 @@ const TimerCard = ({
               variant='solid'
               color='success'
               size='sm'
+              aria-label='Start timer'
               onClick={startTimer}
               sx={{ borderRadius: '50%' }}
             >
@@ -232,6 +233,7 @@ const TimerCard = ({
                 variant='soft'
                 color={isPaused ? 'success' : 'warning'}
                 size='sm'
+                aria-label={isPaused ? 'Resume timer' : 'Pause timer'}
                 onClick={isPaused ? resumeTimer : pauseTimer}
                 sx={{ borderRadius: '50%' }}
               >
@@ -241,6 +243,7 @@ const TimerCard = ({
                 variant='soft'
                 color='danger'
                 size='sm'
+                aria-label='Stop timer'
                 onClick={stopTimer}
                 sx={{ borderRadius: '50%' }}
               >

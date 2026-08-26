@@ -5,23 +5,23 @@ const SummaryCard = () => {
     <Card>
       <div className='flex justify-between'>
         <div>
-          <Typography level='h2'>Summary</Typography>
+          <Typography level='h3'>Summary</Typography>
           <Typography level='body-xs'>
             This is a summary of your chores
           </Typography>
         </div>
-        <IconButton>
+        <IconButton aria-label='More options'>
           <MoreVert />
         </IconButton>
       </div>
       <div className='flex justify-between'>
         <div>
-          <Typography level='h3'>Due Today</Typography>
-          <Typography level='h1'>3</Typography>
+          <Typography level='body-sm'>Due Today</Typography>
+          <Typography level='h2'>3</Typography>
         </div>
         <div>
-          <Typography level='h3'>Overdue</Typography>
-          <Typography level='h1'>1</Typography>
+          <Typography level='body-sm'>Overdue</Typography>
+          <Typography level='h2'>1</Typography>
         </div>
       </div>
     </Card>

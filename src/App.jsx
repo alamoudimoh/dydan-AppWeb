@@ -92,7 +92,7 @@ const AppContent = () => {
                 updateServiceWorker(true)
                 setNeedRefresh(false)
               }}
-              sx={{ ml: 2 }}
+              sx={{ marginInlineStart: 2 }}
             >
               Refresh
             </Button>
@@ -111,15 +111,21 @@ const AppContent = () => {
   return (
     <RequireAuth>
       <div>
+        <a href='#main-content' className='skip-link'>
+          Skip to content
+        </a>
         <ImpersonateUserProvider>
           <NavBar />
           <Box
+            id='main-content'
             component='main'
+            tabIndex={-1}
             sx={{
               minWidth: 0,
               marginInlineStart: shellVisible
                 ? { xs: 0, md: `${NAV_DRAWER_WIDTH}px` }
                 : 0,
+              outline: 'none',
             }}
           >
             <PageTransition>

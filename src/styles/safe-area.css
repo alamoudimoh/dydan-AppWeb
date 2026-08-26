@@ -18,7 +18,7 @@
 }
 
 .safe-area-right {
-  padding-right: var(--safe-area-inset-right);
+  padding-inline-end: var(--safe-area-inset-right);
 }
 
 .safe-area-bottom {
@@ -26,12 +26,12 @@
 }
 
 .safe-area-left {
-  padding-left: var(--safe-area-inset-left);
+  padding-inline-start: var(--safe-area-inset-left);
 }
 
 .safe-area-x {
-  padding-left: var(--safe-area-inset-left);
-  padding-right: var(--safe-area-inset-right);
+  padding-inline-start: var(--safe-area-inset-left);
+  padding-inline-end: var(--safe-area-inset-right);
 }
 
 .safe-area-y {
@@ -41,9 +41,9 @@
 
 .safe-area-all {
   padding-top: var(--safe-area-inset-top);
-  padding-right: var(--safe-area-inset-right);
+  padding-inline-end: var(--safe-area-inset-right);
   padding-bottom: var(--safe-area-inset-bottom);
-  padding-left: var(--safe-area-inset-left);
+  padding-inline-start: var(--safe-area-inset-left);
 }
 
 /* Margin variants */
@@ -52,7 +52,7 @@
 }
 
 .safe-margin-right {
-  margin-right: var(--safe-area-inset-right);
+  margin-inline-end: var(--safe-area-inset-right);
 }
 
 .safe-margin-bottom {
@@ -60,12 +60,12 @@
 }
 
 .safe-margin-left {
-  margin-left: var(--safe-area-inset-left);
+  margin-inline-start: var(--safe-area-inset-left);
 }
 
 .safe-margin-x {
-  margin-left: var(--safe-area-inset-left);
-  margin-right: var(--safe-area-inset-right);
+  margin-inline-start: var(--safe-area-inset-left);
+  margin-inline-end: var(--safe-area-inset-right);
 }
 
 .safe-margin-y {
@@ -75,9 +75,9 @@
 
 .safe-margin-all {
   margin-top: var(--safe-area-inset-top);
-  margin-right: var(--safe-area-inset-right);
+  margin-inline-end: var(--safe-area-inset-right);
   margin-bottom: var(--safe-area-inset-bottom);
-  margin-left: var(--safe-area-inset-left);
+  margin-inline-start: var(--safe-area-inset-left);
 }
 
 /* Height utilities that account for safe areas */
@@ -103,25 +103,25 @@
 .fixed-top-safe {
   position: fixed;
   top: var(--safe-area-inset-top);
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   z-index: 1030;
 }
 
 .fixed-bottom-safe {
   position: fixed;
   bottom: var(--safe-area-inset-bottom);
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   z-index: 1030;
 }
 
 /* Container that provides full safe area coverage */
 .container-safe {
   padding-top: var(--safe-area-inset-top);
-  padding-right: var(--safe-area-inset-right);
+  padding-inline-end: var(--safe-area-inset-right);
   padding-bottom: var(--safe-area-inset-bottom);
-  padding-left: var(--safe-area-inset-left);
+  padding-inline-start: var(--safe-area-inset-left);
   min-height: 100vh;
   box-sizing: border-box;
 }
