@@ -10,25 +10,16 @@ import {
   ViewAgenda,
   ViewModule,
 } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Container,
-  IconButton,
-  Input,
-  List,
-  Typography,
-} from '@mui/joy'
+import { Box, Container, IconButton, Input, List, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import Fuse from 'fuse.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import EmptyState from '../../components/common/EmptyState'
 import FilterBar from '../../components/common/FilterBar'
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
 import PageHeader from '../../components/common/PageHeader'
-import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useFilter } from '../../hooks/useFilter'
 import { useUnArchiveChore } from '../../queries/ChoreQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
@@ -93,14 +84,13 @@ const ArchivedTasks = () => {
   const { data: userProfile, isLoading: isUserProfileLoading } =
     useUserProfile()
   const { showError, showSuccess } = useNotification()
-  const { impersonatedUser } = useImpersonateUser()
+  const { t } = useTranslation('chores')
   const queryClient = useQueryClient()
   const unArchiveChore = useUnArchiveChore()
   const [archivedChores, setArchivedChores] = useState([])
   const [filteredChores, setFilteredChores] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [performers, setPerformers] = useState([])
-  const navigate = useNavigate()
   const [viewMode, setViewMode] = useState(
     localStorage.getItem('archivedChoreCardViewMode') || 'default',
   )
@@ -130,7 +120,7 @@ const ArchivedTasks = () => {
     () => [
       {
         id: 'assignee',
-        label: 'Assignee',
+        label: t('filters.assignee'),
         type: 'multi-select',
         icon: <Person />,
         options: performers.map(p => ({
@@ -142,7 +132,7 @@ const ArchivedTasks = () => {
       },
       {
         id: 'priority',
-        label: 'Priority',
+        label: t('filters.priority'),
         type: 'multi-select',
         icon: <PriorityHigh />,
         options: Priorities.map(p => ({
@@ -157,7 +147,7 @@ const ArchivedTasks = () => {
         ? [
             {
               id: 'label',
-              label: 'Labels',
+              label: t('filters.labels'),
               type: 'multi-select',
               icon: <Label />,
               options: availableLabels.map(l => ({
@@ -184,7 +174,7 @@ const ArchivedTasks = () => {
         : []),
       {
         id: 'archivedAt',
-        label: 'Archived Date',
+        label: t('archived.filterArchivedDate'),
         type: 'date-range',
         icon: <Archive />,
         filterFn: (item, value) => {
@@ -195,7 +185,7 @@ const ArchivedTasks = () => {
         },
       },
     ],
-    [performers, availableLabels],
+    [performers, availableLabels, t],
   )
 
   const {
@@ -231,8 +221,8 @@ const ArchivedTasks = () => {
             setFilteredChores(sortedChores)
           } catch {
             showError({
-              title: 'Failed to load archived tasks',
-              message: 'Please try again later.',
+              title: t('archived.loadErrorTitle'),
+              message: t('archived.loadErrorMessage'),
             })
           }
         } finally {
@@ -241,7 +231,7 @@ const ArchivedTasks = () => {
       }
     }
     loadArchivedChores()
-  }, [membersLoading, userProfile, membersData])
+  }, [membersLoading, userProfile, membersData, showError, t])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -384,8 +374,8 @@ const ArchivedTasks = () => {
       setFilteredChores(newFilteredChores)
 
       showSuccess({
-        title: 'Task Restored',
-        message: 'The task has been restored and is now active.',
+        title: t('archived.taskRestoredTitle'),
+        message: t('archived.taskRestoredMessage'),
       })
     }
   }
@@ -401,8 +391,8 @@ const ArchivedTasks = () => {
     setFilteredChores(newFilteredChores)
 
     showSuccess({
-      title: 'Task Deleted',
-      message: 'The archived task has been permanently deleted.',
+      title: t('archived.taskDeletedTitle'),
+      message: t('archived.taskDeletedMessage'),
     })
   }
 
@@ -463,10 +453,12 @@ const ArchivedTasks = () => {
 
     setConfirmModelConfig({
       isOpen: true,
-      title: 'Restore Tasks',
-      confirmText: 'Restore',
-      cancelText: 'Cancel',
-      message: `Restore ${selectedData.length} task${selectedData.length > 1 ? 's' : ''} to active list?`,
+      title: t('archived.restoreDialogTitle'),
+      confirmText: t('multiselect.restore'),
+      cancelText: t('toolbar.cancel'),
+      message: t('archived.restoreDialogMessage', {
+        count: selectedData.length,
+      }),
       onClose: async isConfirmed => {
         if (isConfirmed === true) {
           try {
@@ -513,10 +505,6 @@ const ArchivedTasks = () => {
 
             const allRestored = [...restoredTasks, ...queuedTasks]
             if (allRestored.length > 0) {
-              const offlineNote =
-                queuedTasks.length > 0
-                  ? ' (queued — will sync when back online)'
-                  : ''
               // Remove from archived view optimistically for both online and queued
               const restoredIds = new Set(allRestored.map(c => c.id))
               const newArchivedChores = archivedChores.filter(
@@ -531,23 +519,30 @@ const ArchivedTasks = () => {
                 queryClient.invalidateQueries({ queryKey: ['pendingCommands'] })
               }
               showSuccess({
-                title: '📤 Tasks Restored',
-                message: `Restored ${allRestored.length} task${allRestored.length > 1 ? 's' : ''}${offlineNote}.`,
+                title: t('archived.restoreSuccessTitle'),
+                message: t(
+                  queuedTasks.length > 0
+                    ? 'archived.restoreQueuedSuccess'
+                    : 'archived.restoreSuccess',
+                  { count: allRestored.length },
+                ),
               })
             }
 
             if (failedTasks.length > 0) {
               showError({
-                title: 'Some Tasks Failed',
-                message: `${failedTasks.length} task${failedTasks.length > 1 ? 's' : ''} could not be restored.`,
+                title: t('archived.someTasksFailedTitle'),
+                message: t('archived.restoreFailed', {
+                  count: failedTasks.length,
+                }),
               })
             }
 
             clearSelection()
           } catch (error) {
             showError({
-              title: 'Bulk Restore Failed',
-              message: 'An unexpected error occurred. Please try again.',
+              title: t('archived.bulkRestoreFailedTitle'),
+              message: t('archived.unexpectedError'),
             })
           }
         }
@@ -562,10 +557,12 @@ const ArchivedTasks = () => {
 
     setConfirmModelConfig({
       isOpen: true,
-      title: 'Delete Archived Tasks',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      message: `Permanently delete ${selectedData.length} archived task${selectedData.length > 1 ? 's' : ''}?\n\nThis action cannot be undone.`,
+      title: t('archived.deleteDialogTitle'),
+      confirmText: t('multiselect.delete'),
+      cancelText: t('toolbar.cancel'),
+      message: t('archived.deleteDialogMessage', {
+        count: selectedData.length,
+      }),
       onClose: async isConfirmed => {
         if (isConfirmed === true) {
           try {
@@ -583,8 +580,10 @@ const ArchivedTasks = () => {
 
             if (deletedTasks.length > 0) {
               showSuccess({
-                title: '🗑️ Tasks Deleted',
-                message: `Successfully deleted ${deletedTasks.length} task${deletedTasks.length > 1 ? 's' : ''}.`,
+                title: t('archived.deleteSuccessTitle'),
+                message: t('archived.deleteSuccess', {
+                  count: deletedTasks.length,
+                }),
               })
 
               const deletedIds = new Set(deletedTasks.map(c => c.id))
@@ -600,16 +599,18 @@ const ArchivedTasks = () => {
 
             if (failedTasks.length > 0) {
               showError({
-                title: 'Some Tasks Failed',
-                message: `${failedTasks.length} task${failedTasks.length > 1 ? 's' : ''} could not be deleted.`,
+                title: t('archived.someTasksFailedTitle'),
+                message: t('archived.deleteFailed', {
+                  count: failedTasks.length,
+                }),
               })
             }
 
             clearSelection()
           } catch (error) {
             showError({
-              title: 'Bulk Delete Failed',
-              message: 'An unexpected error occurred. Please try again.',
+              title: t('archived.bulkDeleteFailedTitle'),
+              message: t('archived.unexpectedError'),
             })
           }
         }
@@ -645,8 +646,8 @@ const ArchivedTasks = () => {
   return (
     <Container maxWidth='md'>
       <PageHeader
-        title='Archived Tasks'
-        subtitle='View and manage tasks that have been archived or completed.'
+        title={t('archived.title')}
+        subtitle={t('archived.subtitle')}
       />
       {/* Header */}
       {/* <Box
@@ -689,7 +690,7 @@ const ArchivedTasks = () => {
       >
         <Input
           slotProps={{ input: { ref: searchInputRef } }}
-          placeholder='Search archived tasks'
+          placeholder={t('archived.searchPlaceholder')}
           value={searchTerm}
           fullWidth
           sx={{
@@ -713,6 +714,7 @@ const ArchivedTasks = () => {
                   variant='plain'
                   size='sm'
                   onClick={handleSearchClose}
+                  aria-label={t('list.clearSearch')}
                   sx={{ borderRadius: '50%' }}
                 >
                   <Close />
@@ -735,8 +737,8 @@ const ArchivedTasks = () => {
           onClick={toggleViewMode}
           title={
             viewMode === 'default'
-              ? 'Switch to Compact View'
-              : 'Switch to Card View'
+              ? t('archived.switchToCompactView')
+              : t('archived.switchToCardView')
           }
         >
           {viewMode === 'default' ? <ViewAgenda /> : <ViewModule />}
@@ -756,8 +758,8 @@ const ArchivedTasks = () => {
             onClick={toggleMultiSelectMode}
             title={
               isMultiSelectMode
-                ? 'Exit Multi-select Mode (Ctrl+S)'
-                : 'Enable Multi-select Mode (Ctrl+S)'
+                ? t('archived.exitMultiSelectMode')
+                : t('archived.enableMultiSelectMode')
             }
           >
             {isMultiSelectMode ? <CheckBox /> : <CheckBoxOutlineBlank />}
@@ -802,20 +804,20 @@ const ArchivedTasks = () => {
             variant='no-results'
             fullHeight
             icon={<SearchOff />}
-            title='No archived tasks match'
+            title={t('archived.noMatchesTitle')}
             description={
               searchTerm
-                ? `Nothing in the archive matches "${searchTerm}".`
-                : 'There are archived tasks, but none fit the filters that are currently on.'
+                ? t('archived.noSearchMatches', { term: searchTerm })
+                : t('archived.noFilterMatches')
             }
             primaryAction={
               searchTerm
-                ? { label: 'Clear search', onClick: handleSearchClose }
-                : { label: 'Clear filters', onClick: clearAll }
+                ? { label: t('list.clearSearch'), onClick: handleSearchClose }
+                : { label: t('list.clearFilters'), onClick: clearAll }
             }
             secondaryAction={
               searchTerm && hasActiveFilters
-                ? { label: 'Clear filters', onClick: clearAll }
+                ? { label: t('list.clearFilters'), onClick: clearAll }
                 : undefined
             }
           />
@@ -823,17 +825,23 @@ const ArchivedTasks = () => {
           <EmptyState
             fullHeight
             icon={<Archive />}
-            title='Nothing archived'
-            description='Archiving hides a task without deleting it. Anything you archive from your task list shows up here, ready to restore.'
-            primaryAction={{ label: 'Back to tasks', to: '/chores' }}
+            title={t('archived.emptyTitle')}
+            description={t('archived.emptyDescription')}
+            primaryAction={{
+              label: t('choreLoadState.backToTasks'),
+              to: '/chores',
+            }}
           />
         )
       ) : (
         <Box>
           <Typography level='body-sm' color='text.secondary' sx={{ mb: 2 }}>
-            {finalChores.length} archived task
-            {finalChores.length !== 1 ? 's' : ''}
-            {searchTerm && ` matching "${searchTerm}"`}
+            {searchTerm
+              ? t('archived.resultCountMatching', {
+                  count: finalChores.length,
+                  term: searchTerm,
+                })
+              : t('archived.resultCount', { count: finalChores.length })}
           </Typography>
 
           <List sx={{ gap: viewMode === 'compact' ? 0 : 1 }}>

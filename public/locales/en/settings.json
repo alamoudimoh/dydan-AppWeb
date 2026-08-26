@@ -230,6 +230,97 @@
     "errorDescription": "Something went wrong while loading settings. Check your connection and try again.",
     "retry": "Try again"
   },
+  "notificationSettings": {
+    "title": "Notification Settings",
+    "on": "On",
+    "off": "Off",
+    "mobileOnly": "This feature is only available on mobile devices",
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS"
+    },
+    "alerts": {
+      "targetUpdated": "Notification target updated",
+      "updateTargetError": "Error while updating notification target: {{statusText}}"
+    },
+    "toasts": {
+      "successTitle": "Success",
+      "errorTitle": "Error",
+      "deviceRegistered": "Device registered successfully for push notifications.",
+      "deviceLimitReachedTitle": "Device Limit Reached",
+      "deviceLimitReachedMessage": "You have reached the maximum limit of 5 registered devices. Please remove a device before registering this one.",
+      "registrationFailedTitle": "Registration Failed",
+      "automaticRegistrationFailed": "Failed to register device automatically. Please try again.",
+      "permissionRequiredTitle": "Permission Required",
+      "pushPermissionRequired": "Push notification permission is required to register this device.",
+      "registrationInitiatedTitle": "Registration Initiated",
+      "registrationInitiatedMessage": "Push notification registration has been initiated. The device will be registered automatically.",
+      "deviceRegistrationFailed": "Failed to register device. Please try again.",
+      "deviceUnregisterFailed": "Failed to unregister device",
+      "notificationPermissionDeniedTitle": "Notification Permission Denied",
+      "notificationPermissionDeniedMessage": "You have denied notification permissions. You can enable them later in your device settings.",
+      "pushPermissionDeniedTitle": "Push Notification Permission Denied",
+      "pushPermissionDeniedMessage": "Push notifications have been disabled. You can enable them in your device settings if needed."
+    },
+    "device": {
+      "heading": "Device Notification",
+      "description": "Manage your Device Notification",
+      "label": "Device Notification",
+      "helperText": "Receive notification on your device when a task is due",
+      "testButton": "Test Notification",
+      "testNotificationTitle": "Test Notification",
+      "testNotificationBody": "You have a task due soon",
+      "dueDateTitle": "Due Date Notification",
+      "dueDateLabel": "Notification when the task is due",
+      "preDueDateTitle": "Pre-Due Date Notification",
+      "preDueDateLabel": "Notification a few hours before the task is due",
+      "overdueTitle": "Overdue Notification",
+      "overdueLabel": "Notification when the task is overdue"
+    },
+    "push": {
+      "label": "Push Notifications",
+      "helperText": "Receive Nudges, Announcements, and Chore Assignments via Push Notifications"
+    },
+    "devices": {
+      "heading": "Registered Devices ({{count}}/5)",
+      "description": "Devices registered to receive push notifications for your account",
+      "empty": "No devices registered for push notifications",
+      "unknownDevice": "Unknown Device",
+      "currentDevice": "Current Device:",
+      "createdAt": "Created At:",
+      "remove": "Remove",
+      "limitReached": "Limit Reached",
+      "currentDeviceNotRegistered": "This device is not registered for push notifications",
+      "registerDevice": "Register Device"
+    },
+    "custom": {
+      "heading": "Custom Notification",
+      "description": "Notification through other platform like Telegram or Pushover",
+      "label": "Custom Notification",
+      "helperText": "Receive notification on other platform",
+      "chatIdLabel": "Chat ID",
+      "chatIdPlaceholder": "User ID / Chat ID",
+      "userIdPlaceholder": "User ID",
+      "userKeyLabel": "User key",
+      "save": "Save",
+      "clickHere": "Click here",
+      "startChatSuffix": "to start a chat",
+      "startUserInfoBotChatSuffix": "to start chat with userinfobot",
+      "telegramBotInstructions": "You need to initiate a message to the bot in order for the Telegram notification to work",
+      "userInfoBotInstructions": "If you don't know your Chat ID, start chat with userinfobot and it will send you your Chat ID.",
+      "options": {
+        "none": "None",
+        "telegram": "Telegram",
+        "pushover": "Pushover",
+        "webhooks": "Webhooks"
+      }
+    },
+    "validation": {
+      "chatIdRequired": "Chat ID is required",
+      "invalidChatId": "Invalid Chat ID",
+      "userKeyRequired": "User key is required"
+    }
+  },
   "overview": {
     "title": "Settings",
     "subtitle": "Customize your experience and manage your account preferences",

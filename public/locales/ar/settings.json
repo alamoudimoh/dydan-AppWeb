@@ -230,6 +230,97 @@
     "errorDescription": "حدث خطأ ما أثناء تحميل الإعدادات. تحقق من اتصالك وحاول مرة أخرى.",
     "retry": "حاول مرة أخرى"
   },
+  "notificationSettings": {
+    "title": "إعدادات الإشعارات",
+    "on": "مفعّل",
+    "off": "متوقف",
+    "mobileOnly": "هذه الميزة متاحة فقط على الأجهزة المحمولة",
+    "platforms": {
+      "android": "أندرويد",
+      "ios": "آي أو إس"
+    },
+    "alerts": {
+      "targetUpdated": "تم تحديث وجهة الإشعار",
+      "updateTargetError": "حدث خطأ أثناء تحديث وجهة الإشعار: {{statusText}}"
+    },
+    "toasts": {
+      "successTitle": "نجاح",
+      "errorTitle": "خطأ",
+      "deviceRegistered": "تم تسجيل الجهاز لإشعارات الدفع بنجاح.",
+      "deviceLimitReachedTitle": "تم بلوغ حد الأجهزة",
+      "deviceLimitReachedMessage": "بلغت الحد الأقصى وهو 5 أجهزة مسجلة. أزل جهازاً قبل تسجيل هذا الجهاز.",
+      "registrationFailedTitle": "فشل التسجيل",
+      "automaticRegistrationFailed": "فشل تسجيل الجهاز تلقائياً. حاول مرة أخرى.",
+      "permissionRequiredTitle": "الإذن مطلوب",
+      "pushPermissionRequired": "يلزم منح إذن إشعارات الدفع لتسجيل هذا الجهاز.",
+      "registrationInitiatedTitle": "بدأ التسجيل",
+      "registrationInitiatedMessage": "بدأ تسجيل إشعارات الدفع. سيتم تسجيل الجهاز تلقائياً.",
+      "deviceRegistrationFailed": "فشل تسجيل الجهاز. حاول مرة أخرى.",
+      "deviceUnregisterFailed": "فشل إلغاء تسجيل الجهاز",
+      "notificationPermissionDeniedTitle": "تم رفض إذن الإشعارات",
+      "notificationPermissionDeniedMessage": "لقد رفضت إذن الإشعارات. يمكنك تفعيله لاحقاً من إعدادات جهازك.",
+      "pushPermissionDeniedTitle": "تم رفض إذن إشعارات الدفع",
+      "pushPermissionDeniedMessage": "تم تعطيل إشعارات الدفع. يمكنك تفعيلها من إعدادات جهازك عند الحاجة."
+    },
+    "device": {
+      "heading": "إشعارات الجهاز",
+      "description": "إدارة إشعارات جهازك",
+      "label": "إشعارات الجهاز",
+      "helperText": "تلقي إشعار على جهازك عند استحقاق مهمة",
+      "testButton": "اختبار الإشعار",
+      "testNotificationTitle": "إشعار تجريبي",
+      "testNotificationBody": "لديك مهمة يقترب موعد استحقاقها",
+      "dueDateTitle": "إشعار تاريخ الاستحقاق",
+      "dueDateLabel": "إشعار عند استحقاق المهمة",
+      "preDueDateTitle": "إشعار قبل تاريخ الاستحقاق",
+      "preDueDateLabel": "إشعار قبل استحقاق المهمة ببضع ساعات",
+      "overdueTitle": "إشعار التأخر",
+      "overdueLabel": "إشعار عند تأخر المهمة"
+    },
+    "push": {
+      "label": "إشعارات الدفع",
+      "helperText": "تلقي التنبيهات والإعلانات وتكليفات المهام عبر إشعارات الدفع"
+    },
+    "devices": {
+      "heading": "الأجهزة المسجلة ({{count}}/5)",
+      "description": "الأجهزة المسجلة لتلقي إشعارات الدفع لحسابك",
+      "empty": "لا توجد أجهزة مسجلة لإشعارات الدفع",
+      "unknownDevice": "جهاز غير معروف",
+      "currentDevice": "الجهاز الحالي:",
+      "createdAt": "تاريخ الإنشاء:",
+      "remove": "إزالة",
+      "limitReached": "تم بلوغ الحد",
+      "currentDeviceNotRegistered": "هذا الجهاز غير مسجل لإشعارات الدفع",
+      "registerDevice": "تسجيل الجهاز"
+    },
+    "custom": {
+      "heading": "إشعار مخصص",
+      "description": "إشعارات عبر منصة أخرى مثل تيليجرام أو Pushover",
+      "label": "إشعار مخصص",
+      "helperText": "تلقي إشعارات عبر منصة أخرى",
+      "chatIdLabel": "معرّف المحادثة",
+      "chatIdPlaceholder": "معرّف المستخدم أو المحادثة",
+      "userIdPlaceholder": "معرّف المستخدم",
+      "userKeyLabel": "مفتاح المستخدم",
+      "save": "حفظ",
+      "clickHere": "اضغط هنا",
+      "startChatSuffix": "لبدء محادثة",
+      "startUserInfoBotChatSuffix": "لبدء محادثة مع userinfobot",
+      "telegramBotInstructions": "يجب أن تبدأ محادثة مع البوت لكي تعمل إشعارات تيليجرام",
+      "userInfoBotInstructions": "إذا لم تعرف معرّف المحادثة، ابدأ محادثة مع userinfobot وسيُرسل إليك المعرّف.",
+      "options": {
+        "none": "لا شيء",
+        "telegram": "تيليجرام",
+        "pushover": "بوش أوفر",
+        "webhooks": "خطافات الويب"
+      }
+    },
+    "validation": {
+      "chatIdRequired": "معرّف المحادثة مطلوب",
+      "invalidChatId": "معرّف المحادثة غير صالح",
+      "userKeyRequired": "مفتاح المستخدم مطلوب"
+    }
+  },
   "overview": {
     "title": "الإعدادات",
     "subtitle": "خصّص تجربتك وأدر تفضيلات حسابك",
