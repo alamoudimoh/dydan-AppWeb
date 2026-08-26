@@ -88,7 +88,7 @@ const MultiSelectToolbar = ({
           p: 2,
           border: '1px solid',
           borderColor: 'divider',
-          boxShadow: 'm',
+          boxShadow: 'md',
           gap: 2,
           display: 'flex',
           flexDirection: {

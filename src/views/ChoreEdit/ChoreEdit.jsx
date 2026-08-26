@@ -56,7 +56,10 @@ import {
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
 import { settingsPageSx } from '../../theme/appLayout'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import {
+  DEFAULT_PROJECT_COLOR,
+  getTextColorFromBackgroundColor,
+} from '../../utils/Colors'
 import {
   DeleteChoreAttachment,
   DeleteDraftAttachment,
@@ -960,7 +963,7 @@ const ChoreEdit = () => {
                     sx={{
                       width: 24,
                       height: 24,
-                      bgcolor: '#1976d2',
+                      bgcolor: DEFAULT_PROJECT_COLOR,
                     }}
                   >
                     {(() => {
@@ -969,7 +972,9 @@ const ChoreEdit = () => {
                         <IconComponent
                           sx={{
                             fontSize: 14,
-                            color: getTextColorFromBackgroundColor('#1976d2'),
+                            color: getTextColorFromBackgroundColor(
+                              DEFAULT_PROJECT_COLOR,
+                            ),
                           }}
                         />
                       )
@@ -986,7 +991,7 @@ const ChoreEdit = () => {
                       sx={{
                         width: 24,
                         height: 24,
-                        bgcolor: project.color || '#1976d2',
+                        bgcolor: project.color || DEFAULT_PROJECT_COLOR,
                       }}
                     >
                       {project.icon ? (
@@ -997,7 +1002,7 @@ const ChoreEdit = () => {
                               sx={{
                                 fontSize: 14,
                                 color: getTextColorFromBackgroundColor(
-                                  project.color || '#1976d2',
+                                  project.color || DEFAULT_PROJECT_COLOR,
                                 ),
                               }}
                             />

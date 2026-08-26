@@ -1,3 +1,13 @@
+import '@meauxt/react-swipeable-list/dist/styles.css'
+
+import {
+  SwipeableList,
+  SwipeableListItem,
+  SwipeAction,
+  TrailingActions,
+  Type as ListType,
+} from '@meauxt/react-swipeable-list'
+import { Add, MoreVert, Task } from '@mui/icons-material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import {
@@ -9,40 +19,33 @@ import {
   Stack,
   Typography,
 } from '@mui/joy'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import ProjectModal from '../Modals/Inputs/ProjectModal'
 
-import {
-  Type as ListType,
-  SwipeableList,
-  SwipeableListItem,
-  SwipeAction,
-  TrailingActions,
-} from '@meauxt/react-swipeable-list'
-import '@meauxt/react-swipeable-list/dist/styles.css'
-import { Add, MoreVert, Task } from '@mui/icons-material'
 import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
-import { listPageContainerSx } from '../../theme/appLayout'
-import { useQueryClient } from '@tanstack/react-query'
+import { Z_INDEX } from '../../constants/zIndex'
 import { useChores } from '../../queries/ChoreQueries'
 import { useUserProfile } from '../../queries/UserQueries'
+import { listPageContainerSx } from '../../theme/appLayout'
+import { DEFAULT_PROJECT_COLOR } from '../../utils/Colors'
 import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import { DeleteProject } from '../../utils/Fetcher'
 import { getIconComponent } from '../../utils/ProjectIcons'
 import { getSafeBottomStyles } from '../../utils/SafeAreaUtils'
 import { useProjectFilter } from '../Chores/hooks/useProjectFilter'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
+import ProjectModal from '../Modals/Inputs/ProjectModal'
 import { useProjects } from './ProjectQueries'
 const ProjectCardContent = ({
-  project,
   currentUserId,
-  taskCounts = {},
   onCardClick,
   onToggleActions,
+  project,
+  taskCounts = {},
 }) => {
   // Check if current user owns this project
   const isOwnedByCurrentUser = project.created_by === currentUserId
@@ -101,7 +104,7 @@ const ProjectCardContent = ({
                   sx={{
                     fontSize: 16,
                     color: getTextColorFromBackgroundColor(
-                      project.color || '#1976d2',
+                      project.color || DEFAULT_PROJECT_COLOR,
                     ),
                   }}
                 />
@@ -223,8 +226,12 @@ const ProjectCardContent = ({
 
 const ProjectView = () => {
   const { t } = useTranslation('common')
-  const { data: projectsData = [], isLoading: projectsLoading, isError, refetch } =
-    useProjects()
+  const {
+    data: projectsData = [],
+    isError,
+    isLoading: projectsLoading,
+    refetch,
+  } = useProjects()
   const { data: userProfile } = useUserProfile()
   const { data: chores = { res: [] } } = useChores(false)
   const { setSelectedProjectWithCache } = useProjectFilter(
@@ -372,7 +379,7 @@ const ProjectView = () => {
             name: 'Default Project',
             description: 'All tasks without a specific project',
             icon: 'FolderOpen',
-            color: '#1976d2',
+            color: DEFAULT_PROJECT_COLOR,
             created_by: userProfile?.id,
           }}
           currentUserId={userProfile?.id}
@@ -382,7 +389,7 @@ const ProjectView = () => {
               id: 'default',
               name: 'Default Project',
               icon: 'FolderOpen',
-              color: '#1976d2',
+              color: DEFAULT_PROJECT_COLOR,
             })
           }
         />
@@ -482,7 +489,7 @@ const ProjectView = () => {
           display: 'flex',
           justifyContent: 'flex-end',
           gap: 2,
-          'z-index': 1000,
+          zIndex: Z_INDEX.FLOATING,
         }}
       >
         <IconButton

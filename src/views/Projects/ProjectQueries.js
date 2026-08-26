@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { DEFAULT_PROJECT_COLOR } from '../../utils/Colors'
 import {
   CreateProject,
   DeleteProject,
@@ -79,7 +81,7 @@ export const useUpdateProject = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ projectId, projectData }) => {
+    mutationFn: async ({ projectData, projectId }) => {
       try {
         const response = await UpdateProject(projectId, projectData)
         if (response.ok) {
@@ -172,7 +174,7 @@ export const useProject = projectId => {
             id: 'default',
             name: 'Default Project',
             description: 'Your default project workspace',
-            color: '#1976d2',
+            color: DEFAULT_PROJECT_COLOR,
             created_by: 'system',
             created_at: new Date().toISOString(),
           }

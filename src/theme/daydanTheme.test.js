@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { neutralPaletteFor } from './neutralPalette.js'
 import {
   daydanCssVariables,
   daydanTokens,
@@ -49,4 +50,20 @@ test('product themes keep DayDan and Sovereign semantics independent', () => {
     productCssVariables('sovereign', 'light')['--product-primary'],
     '#0F766E',
   )
+})
+
+test('neutral chrome stays legible in dark mode for both brands', () => {
+  for (const brandId of ['daydan', 'sovereign']) {
+    const muted = productTokens[brandId].dark.textMuted
+    const dark = neutralPaletteFor(
+      brandId,
+      'dark',
+      { 100: '#100', 700: '#700' },
+      muted,
+    )
+    assert.equal(dark.plainColor, muted)
+    assert.equal(dark.outlinedColor, muted)
+    const light = neutralPaletteFor(brandId, 'light', { 100: '#100' }, muted)
+    assert.equal(light.plainColor, undefined)
+  }
 })

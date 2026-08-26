@@ -4,7 +4,6 @@ import {
   Button,
   Checkbox,
   Chip,
-  Container,
   FormControl,
   IconButton,
   Input,
@@ -22,7 +21,7 @@ import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
-import { listPageContainerSx, sectionCardSx } from '../../theme/appLayout'
+import { pageShellSx, sectionCardSx } from '../../theme/appLayout'
 import { resolveEffectiveRole } from '../../utils/PermissionModel'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import {
@@ -44,7 +43,7 @@ const ShoppingListDetail = () => {
   const { t } = useTranslation(['shoppingLists', 'common'])
   const { data: profile } = useUserProfile()
   const { data: members = [] } = useCircleMembers()
-  const { data, isLoading, isError, refetch } = useShoppingList(id)
+  const { data, isError, isLoading, refetch } = useShoppingList(id)
   const createItem = useCreateShoppingListItem(id)
   const updateItem = useUpdateShoppingListItem(id)
   const deleteItem = useDeleteShoppingListItem(id)
@@ -93,7 +92,7 @@ const ShoppingListDetail = () => {
 
   if (isError || !data) {
     return (
-      <Container maxWidth='md' sx={listPageContainerSx}>
+      <Box sx={pageShellSx}>
         <EmptyState
           variant='error'
           size='sm'
@@ -108,12 +107,12 @@ const ShoppingListDetail = () => {
             to: '/shopping',
           }}
         />
-      </Container>
+      </Box>
     )
   }
 
   return (
-    <Container maxWidth='md' sx={listPageContainerSx}>
+    <Box sx={pageShellSx}>
       <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 2 }}>
         <IconButton
           component={RouterLink}
@@ -124,15 +123,25 @@ const ShoppingListDetail = () => {
         >
           <ArrowBack />
         </IconButton>
-        <Chip size='sm' variant='soft' color={isCircleList(data) ? 'primary' : 'neutral'}>
-          {isCircleList(data) ? t('shoppingLists:scopeFamily') : t('shoppingLists:scopePersonal')}
+        <Chip
+          size='sm'
+          variant='soft'
+          color={isCircleList(data) ? 'primary' : 'neutral'}
+        >
+          {isCircleList(data)
+            ? t('shoppingLists:scopeFamily')
+            : t('shoppingLists:scopePersonal')}
         </Chip>
       </Stack>
 
       <PageHeader title={data.name} subtitle={t('shoppingLists:subtitle')} />
 
       {canEdit && (
-        <Box component='form' onSubmit={handleAddItem} sx={{ ...sectionCardSx, mb: 2 }}>
+        <Box
+          component='form'
+          onSubmit={handleAddItem}
+          sx={{ ...sectionCardSx, mb: 2 }}
+        >
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
             <FormControl sx={{ flex: 1 }}>
               <Input
@@ -177,7 +186,10 @@ const ShoppingListDetail = () => {
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography level='body-md'>{item.name}</Typography>
                   {item.quantity && (
-                    <Typography level='body-xs' sx={{ color: 'text.secondary' }}>
+                    <Typography
+                      level='body-xs'
+                      sx={{ color: 'text.secondary' }}
+                    >
                       {item.quantity}
                     </Typography>
                   )}
@@ -206,7 +218,9 @@ const ShoppingListDetail = () => {
                 sx={{ mb: 1 }}
               >
                 <Typography level='title-sm'>
-                  {t('shoppingLists:itemsChecked', { count: completedItems.length })}
+                  {t('shoppingLists:itemsChecked', {
+                    count: completedItems.length,
+                  })}
                 </Typography>
                 {canEdit && (
                   <Button
@@ -242,7 +256,10 @@ const ShoppingListDetail = () => {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography
                         level='body-md'
-                        sx={{ textDecoration: 'line-through', color: 'text.secondary' }}
+                        sx={{
+                          textDecoration: 'line-through',
+                          color: 'text.secondary',
+                        }}
                       >
                         {item.name}
                       </Typography>
@@ -275,7 +292,7 @@ const ShoppingListDetail = () => {
       )}
 
       <ConfirmationModal config={confirmationModel} />
-    </Container>
+    </Box>
   )
 }
 

@@ -113,6 +113,14 @@ body {
   direction: rtl;
 }
 
+/* Joy positions its hidden checkbox input via static positioning, which RTL
+   static-placement rules push outside the checkbox bounds (off-screen), so the
+   page gains horizontal overflow. Pinning it inside its positioned parent is
+   identical to the LTR behavior and keeps label/box clicks toggling. */
+.MuiCheckbox-input {
+  inset: 0;
+}
+
 /* Ensure cards and containers align properly in RTL */
 [dir='rtl'] .MuiCard-root,
 [dir='rtl'] .MuiBox-root,

@@ -1,5 +1,3 @@
-import { Cell, Pie, PieChart, Tooltip } from 'recharts'
-
 import {
   AccessTime,
   CalendarMonth,
@@ -29,27 +27,28 @@ import {
   Typography,
 } from '@mui/joy'
 import React, { useEffect, useMemo, useState } from 'react'
+import { Cell, Pie, PieChart, Tooltip } from 'recharts'
+
 import EmptyState from '../../components/common/EmptyState'
 import FilterBar from '../../components/common/FilterBar'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
-import { listPageContainerSx } from '../../theme/appLayout'
-import { useFilter } from '../../hooks/useFilter'
-
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { useFilter } from '../../hooks/useFilter'
 import {
   useChores,
   useChoresHistory,
   useDeleteChoreHistory,
   useUpdateChoreHistory,
 } from '../../queries/ChoreQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
+import { listPageContainerSx } from '../../theme/appLayout'
+import { ChoresGrouper } from '../../utils/Chores'
+import { COLORS, TASK_COLOR } from '../../utils/Colors'
+import { useLabels } from '../Labels/LabelQueries'
 import EditHistoryModal from '../Modals/EditHistoryModal'
 import HistoryDetailModal from '../Modals/HistoryDetailModal'
 import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
-import { useLabels } from '../Labels/LabelQueries'
-import { ChoresGrouper } from '../../utils/Chores'
-import { COLORS, TASK_COLOR } from '../../utils/Colors.jsx'
 
 const groupByDate = history => {
   const aggregated = {}
@@ -77,13 +76,13 @@ const statusConfig = {
 }
 
 const ChoreHistoryItem = ({
-  time,
   name,
+  notes,
+  onViewDetails,
+  onViewNote,
   points,
   status,
-  notes,
-  onViewNote,
-  onViewDetails,
+  time,
 }) => {
   const cfg = statusConfig[status] ?? statusConfig[1]
 
@@ -163,9 +162,9 @@ const ChoreHistoryItem = ({
 
 const ChoreHistoryTimeline = ({
   history,
-  performers,
-  onViewNote,
   onViewDetails,
+  onViewNote,
+  performers,
 }) => {
   const { fmt } = useLocalization()
 
@@ -432,8 +431,8 @@ const UserActivites = () => {
   const { data: choresData, isLoading: isChoresLoading } = useChores(true)
   const {
     data: choresHistory,
-    isChoresHistoryLoading,
     handleLimitChange: refetchHistory,
+    isChoresHistoryLoading,
   } = useChoresHistory(tabValue ? tabValue : 30, true)
   const { data: circleMembersData } = useCircleMembers()
   const [selectedUser, setSelectedUser] = React.useState('all')
@@ -454,12 +453,42 @@ const UserActivites = () => {
         type: 'multi-select',
         icon: <Checklist />,
         options: [
-          { value: 1, label: 'Completed', color: 'success', icon: <Check sx={{ fontSize: 14 }} /> },
-          { value: 2, label: 'Skipped', color: 'warning', icon: <Redo sx={{ fontSize: 14 }} /> },
-          { value: 3, label: 'Pending', color: 'neutral', icon: <HourglassEmpty sx={{ fontSize: 14 }} /> },
-          { value: 4, label: 'Rejected', color: 'danger', icon: <ThumbDown sx={{ fontSize: 14 }} /> },
-          { value: 5, label: 'Missed', color: 'danger', icon: <RunningWithErrors sx={{ fontSize: 14 }} /> },
-          { value: 6, label: 'Rescheduled', color: 'warning', icon: <Schedule sx={{ fontSize: 14 }} /> },
+          {
+            value: 1,
+            label: 'Completed',
+            color: 'success',
+            icon: <Check sx={{ fontSize: 14 }} />,
+          },
+          {
+            value: 2,
+            label: 'Skipped',
+            color: 'warning',
+            icon: <Redo sx={{ fontSize: 14 }} />,
+          },
+          {
+            value: 3,
+            label: 'Pending',
+            color: 'neutral',
+            icon: <HourglassEmpty sx={{ fontSize: 14 }} />,
+          },
+          {
+            value: 4,
+            label: 'Rejected',
+            color: 'danger',
+            icon: <ThumbDown sx={{ fontSize: 14 }} />,
+          },
+          {
+            value: 5,
+            label: 'Missed',
+            color: 'danger',
+            icon: <RunningWithErrors sx={{ fontSize: 14 }} />,
+          },
+          {
+            value: 6,
+            label: 'Rescheduled',
+            color: 'warning',
+            icon: <Schedule sx={{ fontSize: 14 }} />,
+          },
         ],
         filterFn: (item, values) => values.includes(item.status),
       },
@@ -511,10 +540,10 @@ const UserActivites = () => {
   )
 
   const {
-    filteredData: filteredTimeline,
     activeFilters: clientActiveFilters,
-    setFilter: setClientFilter,
     clearAll: clearClientFilters,
+    filteredData: filteredTimeline,
+    setFilter: setClientFilter,
   } = useFilter(selectedHistory, clientFilterDefs)
 
   // All filter defs merged for FilterBar display

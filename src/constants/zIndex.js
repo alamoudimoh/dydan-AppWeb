@@ -16,6 +16,7 @@ export const Z_INDEX = {
 
   // Navigation (1000-1999)
   NAVBAR: 1000,
+  FLOATING_ACTION: 1000,
   DRAWER: 999,
 
   // Modals and Overlays (2000-8999)

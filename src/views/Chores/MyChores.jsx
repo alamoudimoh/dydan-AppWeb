@@ -39,6 +39,7 @@ import {
   ChoreSorter,
   filterByProject,
 } from '../../utils/Chores'
+import { ENTITY_COLOR_FALLBACK } from '../../utils/Colors'
 import Priorities from '../../utils/Priorities'
 import { getSafeBottom } from '../../utils/SafeAreaUtils.js'
 import TaskInput from '../components/AddTaskModal'
@@ -283,7 +284,7 @@ const MyChores = () => {
                       width: 10,
                       height: 10,
                       borderRadius: '50%',
-                      bgcolor: l.color || '#90a4ae',
+                      bgcolor: l.color || ENTITY_COLOR_FALLBACK,
                       flexShrink: 0,
                     }}
                   />
@@ -971,12 +972,7 @@ const MyChores = () => {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
       <Container maxWidth='md'>
         <MyChoreHeader
           activeFilterId={activeFilterId}
@@ -1631,7 +1627,7 @@ const MyChores = () => {
         userProfile={userProfile}
         editingFilter={editingFilter}
       />
-    </div>
+    </Box>
   )
 }
 

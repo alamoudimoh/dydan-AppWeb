@@ -32,7 +32,7 @@ import {
   getRecurrentChipText,
 } from '../../utils/ChoreCardHelpers.jsx'
 import { notInCompletionWindow } from '../../utils/Chores.jsx'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import Priorities from '../../utils/Priorities'
 import ChoreActionMenu from '../components/ChoreActionMenu'
 import PendingBadge from '../components/PendingBadge'
