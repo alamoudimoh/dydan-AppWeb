@@ -118,8 +118,6 @@ export const useSSE = () => {
           case 'chore.completed':
           case 'chore.status':
           case 'chore.skipped': {
-            console.log('userProfile: ', userProfile, eventData.data.user)
-
             if (eventData?.data?.user?.id !== userProfile?.id) {
               showNotification({
                 type: 'info',
