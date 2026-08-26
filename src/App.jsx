@@ -65,11 +65,15 @@ const AppContent = () => {
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(r) {
-      console.log('SW Registered: ' + r)
-      r &&
-        setInterval(() => {
+      if (r) {
+        const id = setInterval(() => {
           r.update()
         }, intervalMS)
+        // Store interval ID for potential cleanup if needed
+        if (typeof window !== 'undefined') {
+          window.__swUpdateInterval = id
+        }
+      }
     },
     onRegisterError(error) {
       console.log('SW registration error', error)
@@ -150,7 +154,12 @@ function App() {
   // startOpenReplay()
 
   const setThemeClass = useCallback(() => {
-    const value = JSON.parse(localStorage.getItem('themeMode')) || mode
+    let value
+    try {
+      value = JSON.parse(localStorage.getItem('themeMode')) || mode
+    } catch {
+      value = mode
+    }
 
     if (value === 'system') {
       if (systemMode === 'dark') {

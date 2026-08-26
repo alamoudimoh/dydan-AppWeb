@@ -110,7 +110,12 @@ const ChoresOverview = () => {
       .then(data => {
         setPerformers(data.res)
       })
-    const user = JSON.parse(localStorage.getItem('user'))
+    let user
+    try {
+      user = JSON.parse(localStorage.getItem('user'))
+    } catch {
+      user = null
+    }
     if (user != null && user.id > 0) {
       setActiveUserId(user.id)
     }
