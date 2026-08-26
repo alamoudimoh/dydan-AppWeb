@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import Logo from '../../Logo'
 import { useResource } from '../../queries/ResourceQueries'
+import { productTypeScale } from '../../theme/typography'
 import { haptic, isNativeApp, markOnboardingSeen } from '../../utils/Onboarding'
 import { LegalLinks } from '../Authorization/AuthFields'
 import { authButtonSx } from '../Authorization/authStyles'
@@ -20,11 +21,6 @@ const enter = (delay = 0) => ({
   '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
 })
 
-/**
- * The fork at the end of onboarding: create an account or sign in. Kept
- * deliberately thin — one decision, no form — so the actual auth screens stay
- * the only place credentials are handled.
- */
 const GetStartedView = () => {
   const navigate = useNavigate()
   const { t } = useTranslation('common')
@@ -32,8 +28,6 @@ const GetStartedView = () => {
   const signupDisabled = Boolean(resource?.is_user_creation_disabled)
 
   const go = path => {
-    // Reaching this screen means onboarding is done, even if the user came
-    // here from a deep link rather than the carousel.
     markOnboardingSeen()
     haptic()
     navigate(path)
@@ -77,7 +71,6 @@ const GetStartedView = () => {
               position: 'relative',
               display: 'grid',
               placeItems: 'center',
-              // Same primary wash the onboarding vignettes sit on.
               '&::before': {
                 content: '""',
                 position: 'absolute',
@@ -96,9 +89,7 @@ const GetStartedView = () => {
           <Typography
             level='h1'
             sx={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
+              ...productTypeScale.display,
               textWrap: 'balance',
             }}
           >
@@ -116,8 +107,8 @@ const GetStartedView = () => {
             }}
           >
             {signupDisabled
-              ? t('auth.getStartedSignInSubtitle')
-              : t('auth.getStartedSubtitle')}
+              ? t('onboarding.getStarted.signInSubtitle')
+              : t('onboarding.getStarted.subtitle')}
           </Typography>
         </Box>
 

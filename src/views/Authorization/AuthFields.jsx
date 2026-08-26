@@ -15,9 +15,14 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 
+import { productTypeScale } from '../../theme/typography.js'
 import { authButtonSx, authInputSx } from './authStyles'
 
-const labelSx = { fontSize: '0.875rem', fontWeight: 600, mb: 0.75 }
+const labelSx = {
+  fontSize: productTypeScale.button.fontSize,
+  fontWeight: 600,
+  mb: 0.75,
+}
 
 export const AuthField = ({ children, error, helper, label, ...formProps }) => (
   <FormControl error={Boolean(error)} {...formProps}>
@@ -26,7 +31,7 @@ export const AuthField = ({ children, error, helper, label, ...formProps }) => (
     {(error || helper) && (
       <FormHelperText
         sx={{
-          fontSize: '0.8125rem',
+          fontSize: productTypeScale.bodySmall.fontSize,
           color: error ? 'danger.plainColor' : 'text.secondary',
         }}
       >
@@ -45,14 +50,19 @@ export const AuthTextField = ({ error, helper, label, sx, ...inputProps }) => (
 export const AuthPasswordField = ({
   error,
   helper,
-  label = 'Password',
+  label,
   sx,
   ...inputProps
 }) => {
+  const { t } = useTranslation('common')
   const [visible, setVisible] = useState(false)
 
   return (
-    <AuthField label={label} error={error} helper={helper}>
+    <AuthField
+      label={label ?? t('auth.password')}
+      error={error}
+      helper={helper}
+    >
       <Input
         size='lg'
         type={visible ? 'text' : 'password'}
@@ -63,9 +73,11 @@ export const AuthPasswordField = ({
             color='neutral'
             size='sm'
             tabIndex={-1}
-            aria-label={visible ? 'Hide password' : 'Show password'}
+            aria-label={
+              visible ? t('auth.hidePassword') : t('auth.showPassword')
+            }
             onClick={() => setVisible(v => !v)}
-            sx={{ borderRadius: '8px' }}
+            sx={{ borderRadius: 'var(--product-radius-control)' }}
           >
             {visible ? (
               <VisibilityOffOutlined fontSize='small' />
@@ -113,27 +125,30 @@ export const SocialButton = ({ children, icon, sx, ...props }) => (
   </Button>
 )
 
-export const AuthDivider = ({ children = 'or' }) => (
-  <Box
-    role='separator'
-    sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 1.5,
-      my: 2.5,
-      '&::before, &::after': {
-        content: '""',
-        flex: 1,
-        height: '1px',
-        bgcolor: 'divider',
-      },
-    }}
-  >
-    <Typography level='body-xs' sx={{ color: 'text.secondary' }}>
-      {children}
-    </Typography>
-  </Box>
-)
+export const AuthDivider = ({ children }) => {
+  const { t } = useTranslation('common')
+  return (
+    <Box
+      role='separator'
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        my: 2.5,
+        '&::before, &::after': {
+          content: '""',
+          flex: 1,
+          height: '1px',
+          bgcolor: 'divider',
+        },
+      }}
+    >
+      <Typography level='body-xs' sx={{ color: 'text.secondary' }}>
+        {children ?? t('auth.or')}
+      </Typography>
+    </Box>
+  )
+}
 
 export const LegalLinks = () => {
   const { t } = useTranslation('common')

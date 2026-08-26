@@ -1,5 +1,6 @@
 import { Box, Button } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useNotification } from '../../service/NotificationProvider'
@@ -10,6 +11,7 @@ import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
 
 const UpdatePasswordView = () => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -39,12 +41,12 @@ const UpdatePasswordView = () => {
     let isValid = true
 
     if (password.length < 8 || password.length > 64) {
-      setPasswordError('Password must be between 8 and 64 characters')
+      setPasswordError(t('auth.validation.passwordLength'))
       isValid = false
     }
 
     if (passwordConfirm !== password) {
-      setPasswordConfirmationError('Passwords do not match')
+      setPasswordConfirmationError(t('auth.passwordsDoNotMatch'))
       isValid = false
     }
 
@@ -67,23 +69,22 @@ const UpdatePasswordView = () => {
       if (response.ok) {
         showNotification({
           type: 'success',
-          title: 'Password Updated',
-          message:
-            'Your password has been updated successfully. Redirecting to login...',
+          title: t('auth.passwordUpdated'),
+          message: t('auth.passwordUpdatedRedirect'),
         })
         setTimeout(() => {
           navigate('/login')
         }, 3000)
       } else {
         showError({
-          title: 'Password Update Failed',
-          message: 'Failed to update password, please try again later',
+          title: t('auth.passwordUpdateFailed'),
+          message: t('auth.passwordUpdateFailedMessage'),
         })
       }
     } catch (error) {
       showError({
-        title: 'Password Update Failed',
-        message: 'Failed to update password, please try again later',
+        title: t('auth.passwordUpdateFailed'),
+        message: t('auth.passwordUpdateFailedMessage'),
       })
     } finally {
       setIsSubmitting(false)
@@ -93,8 +94,8 @@ const UpdatePasswordView = () => {
   if (!verificationCode) {
     return (
       <AuthShell
-        title='This link is not valid'
-        subtitle='The password reset link is incomplete or has already been used. Request a new one to continue.'
+        title={t('auth.linkInvalidTitle')}
+        subtitle={t('auth.linkInvalidSubtitle')}
         footer={<LegalLinks />}
         showLogo
       >
@@ -106,7 +107,7 @@ const UpdatePasswordView = () => {
             sx={authButtonSx}
             onClick={() => navigate('/forgot-password')}
           >
-            Request a new link
+            {t('auth.requestNewLink')}
           </Button>
           <Button
             fullWidth
@@ -116,7 +117,7 @@ const UpdatePasswordView = () => {
             sx={authButtonSx}
             onClick={() => navigate('/login')}
           >
-            Back to sign in
+            {t('auth.backToSignIn')}
           </Button>
         </Box>
       </AuthShell>
@@ -125,8 +126,8 @@ const UpdatePasswordView = () => {
 
   return (
     <AuthShell
-      title='Set a new password'
-      subtitle='Choose a password you have not used on this account before.'
+      title={t('auth.updatePasswordTitle')}
+      subtitle={t('auth.updatePasswordSubtitle')}
       footer={<LegalLinks />}
       // Reached from an emailed link, usually in a browser: an unbranded page
       // asking for a new password is the exact shape of a phishing screen.
@@ -138,31 +139,31 @@ const UpdatePasswordView = () => {
         sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
       >
         <AuthPasswordField
-          label='New password'
+          label={t('auth.newPassword')}
           id='password'
           name='password'
           autoComplete='new-password'
-          placeholder='At least 8 characters'
+          placeholder={t('auth.passwordPlaceholder')}
           autoFocus
           value={password}
           error={passwordError}
-          helper='Use 8 to 64 characters.'
+          helper={t('auth.validation.passwordLength')}
           onChange={handlePasswordChange}
         />
 
         <AuthPasswordField
-          label='Confirm new password'
+          label={t('auth.confirmNewPassword')}
           id='passwordConfirm'
           name='passwordConfirm'
           autoComplete='new-password'
-          placeholder='Re-enter your password'
+          placeholder={t('auth.reenterPassword')}
           value={passwordConfirm}
           error={passwordConfirmationError}
           onChange={handlePasswordConfirmChange}
         />
 
         <AuthSubmitButton loading={isSubmitting} sx={{ mt: 1 }}>
-          Save password
+          {t('auth.savePassword')}
         </AuthSubmitButton>
 
         <Button
@@ -174,7 +175,7 @@ const UpdatePasswordView = () => {
           sx={authButtonSx}
           onClick={() => navigate('/login')}
         >
-          Cancel
+          {t('cancel')}
         </Button>
       </Box>
     </AuthShell>

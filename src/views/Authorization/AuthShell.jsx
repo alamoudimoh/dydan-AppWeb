@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { Box, Sheet, Typography } from '@mui/joy'
+
 import Logo from '../../Logo'
 
 /**
@@ -8,18 +9,18 @@ import Logo from '../../Logo'
  * its own safe-area padding (the top inset is already reserved by NavBar).
  */
 const AuthShell = ({
-  title,
-  subtitle,
   action,
   children,
   footer,
   logoSize = 48,
+  showLogo = !Capacitor.isNativePlatform(),
+  subtitle,
   // In the app the user already came through the app icon and the Get Started
   // mark, so repeating it here is noise. On the web these routes are the first
   // thing a visitor sees — often on a self-hosted domain, and with no navbar —
   // so the mark is the only thing identifying the app. Views reached from an
   // emailed link override this to always show it.
-  showLogo = !Capacitor.isNativePlatform(),
+  title,
 }) => {
   return (
     <Box
@@ -40,9 +41,9 @@ const AuthShell = ({
       <Box sx={{ width: '100%', maxWidth: 420, my: 'auto' }}>
         <Sheet
           variant='plain'
-          sx={{
+          sx={theme => ({
             position: 'relative',
-            borderRadius: { xs: 0, sm: '20px' },
+            borderRadius: { xs: 0, sm: theme.radius.xl },
             bgcolor: { xs: 'transparent', sm: 'background.surface' },
             border: { xs: 'none', sm: '1px solid' },
             borderColor: { sm: 'divider' },
@@ -56,10 +57,18 @@ const AuthShell = ({
             '@media (prefers-reduced-motion: reduce)': {
               animation: 'none',
             },
-          }}
+          })}
         >
           {action && (
-            <Box sx={{ position: 'absolute', top: 0, right: 0 }}>{action}</Box>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                insetInlineEnd: 0,
+              }}
+            >
+              {action}
+            </Box>
           )}
 
           {/* Mark only: the wordmark sat at nearly the same size and weight as
@@ -81,7 +90,6 @@ const AuthShell = ({
             <Typography
               level='h2'
               sx={{
-                fontSize: '1.75rem',
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 textAlign: 'center',

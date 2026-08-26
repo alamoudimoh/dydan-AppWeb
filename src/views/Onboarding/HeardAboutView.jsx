@@ -1,14 +1,18 @@
 import { CheckRounded } from '@mui/icons-material'
 import { Box, Button, Input, Link, Switch, Typography } from '@mui/joy'
+import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
+import { productTypeScale } from '../../theme/typography'
 import { isOfficialDayDanInstance } from '../../utils/FeatureToggle'
 import {
   haptic,
   recordAcquisitionSource,
   recordPrivacyPreferences,
 } from '../../utils/Onboarding'
-import { authButtonSx } from '../Authorization/authStyles'
+import { authButtonSx, authInputSx } from '../Authorization/authStyles'
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
@@ -21,16 +25,12 @@ const enter = (delay = 0) => ({
   '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
 })
 
-const SOURCES = [
-  'App Store / Google Play',
-  'Reddit or a forum',
-  'Friend or family',
-  'YouTube or TikTok',
-  'Search engine',
-  'Something else',
-]
-
-const OTHER = 'Something else'
+const cardSx = {
+  bgcolor: 'background.surface',
+  border: '1px solid',
+  borderColor: 'divider',
+  borderRadius: 'var(--daydan-radius-card)',
+}
 
 const Shell = ({ children }) => (
   <Box
@@ -59,15 +59,22 @@ const Shell = ({ children }) => (
   </Box>
 )
 
-/**
- * A one-question attribution survey dropped right after account creation,
- * while the "why did I click install" is still fresh. Answering is optional 
- * blocking a brand-new user on a marketing question would cost more than the
- * data is worth so Continue is always enabled. Shown only on the official
- * donetick.com instance: a self-hosted server has no marketing funnel to
- * attribute, so it gets the privacy prompt below instead.
- */
-const AcquisitionSurvey = ({ onDone }) => {
+Shell.propTypes = {
+  children: PropTypes.node,
+}
+
+const AcquisitionSurvey = ({ onDone, t }) => {
+  const SOURCES = [
+    t('onboarding.heardAbout.sources.appStore'),
+    t('onboarding.heardAbout.sources.reddit'),
+    t('onboarding.heardAbout.sources.friend'),
+    t('onboarding.heardAbout.sources.video'),
+    t('onboarding.heardAbout.sources.search'),
+    t('onboarding.heardAbout.sources.other'),
+  ]
+
+  const OTHER = t('onboarding.heardAbout.other')
+
   const [selected, setSelected] = useState(null)
   const [detail, setDetail] = useState('')
 
@@ -88,55 +95,58 @@ const AcquisitionSurvey = ({ onDone }) => {
         <Typography
           level='h1'
           sx={{
-            fontSize: '1.75rem',
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
+            ...productTypeScale.display,
             textWrap: 'balance',
           }}
         >
-          Where&apos;d you hear about DayDan?
+          {t('onboarding.heardAbout.title')}
         </Typography>
         <Typography
           level='body-md'
           sx={{ mt: 1, color: 'text.secondary', textWrap: 'pretty' }}
         >
-          Helps us know what&apos;s working. Totally optional.
+          {t('onboarding.heardAbout.subtitle')}
         </Typography>
       </Box>
 
       <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...enter(60) }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          ...enter(60),
+        }}
       >
         {SOURCES.map(source => {
           const active = selected === source
           return (
-            <Box
+            <Button
               key={source}
-              component='button'
               type='button'
+              variant='outlined'
+              color={active ? 'primary' : 'neutral'}
               onClick={() => select(source)}
               sx={{
-                display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 1,
                 px: 2,
                 py: 1.25,
-                borderRadius: '14px',
-                border: '1px solid',
-                borderColor: active ? 'primary.500' : 'divider',
+                borderRadius: 'var(--product-radius-row)',
                 bgcolor: active ? 'primary.softBg' : 'background.surface',
-                color: 'text.primary',
-                font: 'inherit',
                 fontWeight: 600,
-                fontSize: '0.9rem',
-                textAlign: 'left',
-                cursor: 'pointer',
+                fontSize: productTypeScale.body.fontSize,
+                textAlign: 'start',
                 transition: `border-color 200ms ${EASE}, background-color 200ms ${EASE}`,
+                '&:focus-visible': {
+                  outline: '2px solid',
+                  outlineColor: 'primary.500',
+                  outlineOffset: '2px',
+                },
               }}
             >
               {source}
               <Box
+                aria-hidden={active ? undefined : 'true'}
                 sx={{
                   flex: '0 0 auto',
                   width: 22,
@@ -155,19 +165,20 @@ const AcquisitionSurvey = ({ onDone }) => {
               >
                 {active && <CheckRounded />}
               </Box>
-            </Box>
+            </Button>
           )
         })}
 
         {selected === OTHER && (
           <Box sx={{ mt: 0.5, ...enter(0) }}>
             <Input
-              placeholder='Tell us where'
+              placeholder={t('onboarding.heardAbout.otherPlaceholder')}
               value={detail}
               onChange={e => setDetail(e.target.value)}
               size='lg'
               fullWidth
               autoFocus
+              sx={authInputSx}
             />
           </Box>
         )}
@@ -175,7 +186,7 @@ const AcquisitionSurvey = ({ onDone }) => {
 
       <Box sx={{ mt: 3, ...enter(120) }}>
         <Button size='lg' fullWidth onClick={finish} sx={authButtonSx}>
-          Continue
+          {t('onboarding.heardAbout.continue')}
         </Button>
       </Box>
 
@@ -188,35 +199,32 @@ const AcquisitionSurvey = ({ onDone }) => {
           underline='hover'
           onClick={finish}
         >
-          Skip
+          {t('onboarding.heardAbout.skip')}
         </Link>
       </Box>
     </>
   )
 }
 
-const PRIVACY_TOGGLES = [
-  {
-    key: 'crashReports',
-    label: 'Share crash reports',
-    description:
-      "When DayDan crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster.",
-  },
-  {
-    key: 'analytics',
-    label: 'Share anonymous usage analytics',
-    description:
-      'Send anonymous usage events which features get used, which get ignored so we know what to build next instead of guessing. No task content, no personal data, nothing tied back to you.',
-  },
-]
+AcquisitionSurvey.propTypes = {
+  onDone: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
+}
 
-/**
- * The self-hosted counterpart to the attribution survey: since a self-hosted
- * server is its own data boundary, what to share back to us is a consent
- * question, not a marketing one. Both toggles default off this screen is
- * an opt-in, not an opt-out.
- */
-const PrivacyPreferences = ({ onDone }) => {
+const PrivacyPreferences = ({ onDone, t }) => {
+  const PRIVACY_TOGGLES = [
+    {
+      key: 'crashReports',
+      label: t('onboarding.privacy.crashReports.label'),
+      description: t('onboarding.privacy.crashReports.description'),
+    },
+    {
+      key: 'analytics',
+      label: t('onboarding.privacy.analytics.label'),
+      description: t('onboarding.privacy.analytics.description'),
+    },
+  ]
+
   const [crashReports, setCrashReports] = useState(false)
   const [analytics, setAnalytics] = useState(false)
 
@@ -239,20 +247,17 @@ const PrivacyPreferences = ({ onDone }) => {
         <Typography
           level='h1'
           sx={{
-            fontSize: '1.75rem',
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
+            ...productTypeScale.display,
             textWrap: 'balance',
           }}
         >
-          Help us improve DayDan
+          {t('onboarding.privacy.title')}
         </Typography>
         <Typography
           level='body-md'
           sx={{ mt: 1, color: 'text.secondary', textWrap: 'pretty' }}
         >
-          Your server, your data. Both of these are off from this point unless
-          you turn them on.
+          {t('onboarding.privacy.subtitle')}
         </Typography>
       </Box>
 
@@ -264,20 +269,17 @@ const PrivacyPreferences = ({ onDone }) => {
           ...enter(60),
         }}
       >
-        {PRIVACY_TOGGLES.map(({ key, label, description }) => (
+        {PRIVACY_TOGGLES.map(({ description, key, label }) => (
           <Box
             key={key}
             sx={{
+              ...cardSx,
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'space-between',
               gap: 1.5,
               px: 2,
               py: 1.5,
-              borderRadius: '14px',
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.surface',
             }}
           >
             <Box sx={{ minWidth: 0 }}>
@@ -302,15 +304,21 @@ const PrivacyPreferences = ({ onDone }) => {
 
       <Box sx={{ mt: 3, ...enter(120) }}>
         <Button size='lg' fullWidth onClick={finish} sx={authButtonSx}>
-          Continue
+          {t('onboarding.privacy.continue')}
         </Button>
       </Box>
     </>
   )
 }
 
+PrivacyPreferences.propTypes = {
+  onDone: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
+}
+
 const HeardAboutView = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const [isOfficial, setIsOfficial] = useState(null)
 
   useEffect(() => {
@@ -325,16 +333,14 @@ const HeardAboutView = () => {
 
   const onDone = () => navigate('/circle-setup', { replace: true })
 
-  // Nothing to render mid-check: the read is a local preferences lookup, so
-  // this resolves before the entrance animation would even be noticed.
   if (isOfficial === null) return <Shell />
 
   return (
     <Shell>
       {isOfficial ? (
-        <AcquisitionSurvey onDone={onDone} />
+        <AcquisitionSurvey onDone={onDone} t={t} />
       ) : (
-        <PrivacyPreferences onDone={onDone} />
+        <PrivacyPreferences onDone={onDone} t={t} />
       )}
     </Shell>
   )

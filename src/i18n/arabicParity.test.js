@@ -23,6 +23,11 @@ const ALLOWED_IDENTICAL = new Set([
   'toolbar.chipValue',
   'toolbar.chipCount',
   'toolbar.chipPoints',
+  // Auth placeholders are example values, not translatable copy.
+  'auth.emailPlaceholder',
+  'auth.serverURLPlaceholder',
+  // App store brand names remain in Latin script across locales.
+  'onboarding.heardAbout.sources.appStore',
 ])
 
 const flatten = (obj, prefix = '') =>

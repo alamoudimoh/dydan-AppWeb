@@ -5,6 +5,7 @@ import WifiIcon from '@mui/icons-material/Wifi'
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { API_URL } from '../../Config'
@@ -22,6 +23,7 @@ import { authButtonSx } from './authStyles'
 const CONNECTION_TIMEOUT_MS = 8000
 
 const LoginSettings = () => {
+  const { t } = useTranslation('common')
   const Navigate = useNavigate()
   const queryClient = useQueryClient()
   const { stopImpersonation } = useImpersonateUser()
@@ -62,13 +64,14 @@ const LoginSettings = () => {
       if (response.status === 503) {
         return {
           ok: false,
-          message:
-            'Server is starting up or temporarily unavailable (503). Try again in a moment.',
+          message: t('auth.connectionErrors.startingUp'),
         }
       }
       return {
         ok: false,
-        message: `Server responded with error ${response.status}. Please check your DayDan server.`,
+        message: t('auth.connectionErrors.serverError', {
+          status: response.status,
+        }),
       }
     } catch (err) {
       clearTimeout(timeoutId)
@@ -76,7 +79,9 @@ const LoginSettings = () => {
       if (err.name === 'AbortError') {
         return {
           ok: false,
-          message: `Connection timed out after ${CONNECTION_TIMEOUT_MS / 1000}s. The host may be unreachable or behind a firewall — check the IP/hostname and network.`,
+          message: t('auth.connectionErrors.timeout', {
+            seconds: CONNECTION_TIMEOUT_MS / 1000,
+          }),
         }
       }
 
@@ -84,7 +89,6 @@ const LoginSettings = () => {
       const noCorsController = new AbortController()
       const noCorsTimeout = setTimeout(() => noCorsController.abort(), 3000)
       try {
-        const probeStart = Date.now()
         const probe = await fetch(testURL, {
           method: 'GET',
           mode: 'no-cors',
@@ -95,12 +99,10 @@ const LoginSettings = () => {
           // Server responded but CORS headers blocked the real request
           return {
             ok: false,
-            message:
-              'Server is reachable but blocked the request (CORS). Ensure your DayDan server allows requests from this origin, or check the server CORS config.',
+            message: t('auth.connectionErrors.cors'),
           }
         }
         // Opaque is the only expected type for no-cors success; anything else is odd
-        void probeStart
       } catch (probeErr) {
         clearTimeout(noCorsTimeout)
         if (probeErr.name !== 'AbortError') {
@@ -113,29 +115,25 @@ const LoginSettings = () => {
           ) {
             return {
               ok: false,
-              message:
-                'Hostname could not be resolved. Check the URL for typos or verify DNS.',
+              message: t('auth.connectionErrors.dns'),
             }
           }
           return {
             ok: false,
-            message:
-              'Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default DayDan port is 2021).',
+            message: t('auth.connectionErrors.refused'),
           }
         }
         // no-cors also timed out → server/host truly unreachable
         return {
           ok: false,
-          message:
-            'Unable to reach the server. Check the URL, port, and network connection.',
+          message: t('auth.connectionErrors.unreachable'),
         }
       }
 
       // Fallback (should rarely hit)
       return {
         ok: false,
-        message:
-          'Unable to reach the server. Check the URL, port, and network connection.',
+        message: t('auth.connectionErrors.unreachable'),
       }
     }
   }
@@ -170,16 +168,14 @@ const LoginSettings = () => {
         Navigate('/login')
       } catch {
         setStatus('error')
-        setErrorMessage('Unable to clear local session data. Please try again.')
+        setErrorMessage(t('auth.clearSessionFailed'))
       }
       return
     }
 
     if (!isValidURL(trimmedURL)) {
       setStatus('error')
-      setErrorMessage(
-        'Invalid URL format. Include the protocol (http:// or https://) and port if needed.',
-      )
+      setErrorMessage(t('auth.invalidURL'))
       return
     }
 
@@ -200,7 +196,7 @@ const LoginSettings = () => {
       await switchServer(trimmedURL)
     } catch {
       setStatus('error')
-      setErrorMessage('Unable to clear local session data. Please try again.')
+      setErrorMessage(t('auth.clearSessionFailed'))
       return
     }
     setStatus('success')
@@ -222,8 +218,8 @@ const LoginSettings = () => {
 
   return (
     <AuthShell
-      title='Server settings'
-      subtitle='Point the app at your own self-hosted DayDan server.'
+      title={t('auth.serverSettingsTitle')}
+      subtitle={t('auth.serverSettingsSubtitle')}
     >
       <Box
         component='form'
@@ -231,14 +227,14 @@ const LoginSettings = () => {
         sx={{ display: 'flex', flexDirection: 'column' }}
       >
         <AuthTextField
-          label='Server URL'
+          label={t('auth.serverURL')}
           id='serverURL'
           name='serverURL'
           inputMode='url'
           autoCapitalize='none'
           autoCorrect='off'
           spellCheck='false'
-          placeholder='https://your-server:2021'
+          placeholder={t('auth.serverURLPlaceholder')}
           autoFocus
           value={serverURL}
           onChange={handleURLChange}
@@ -257,7 +253,7 @@ const LoginSettings = () => {
               <ErrorOutlineIcon color='error' fontSize='small' />
             ) : null
           }
-          helper='Include the protocol (http:// or https://) and the port if needed. DayDan defaults to port 2021.'
+          helper={t('auth.serverURLHelper')}
         />
 
         {status === 'error' && (
@@ -265,7 +261,11 @@ const LoginSettings = () => {
             color='danger'
             variant='soft'
             startDecorator={<ErrorOutlineIcon />}
-            sx={{ mt: 2, borderRadius: '12px', alignItems: 'flex-start' }}
+            sx={theme => ({
+              mt: 2,
+              borderRadius: theme.radius.row,
+              alignItems: 'flex-start',
+            })}
           >
             {errorMessage}
           </Alert>
@@ -276,9 +276,9 @@ const LoginSettings = () => {
             color='success'
             variant='soft'
             startDecorator={<CheckCircleOutlineIcon />}
-            sx={{ mt: 2, borderRadius: '12px' }}
+            sx={theme => ({ mt: 2, borderRadius: theme.radius.row })}
           >
-            Connected. Taking you to sign in...
+            {t('auth.connectedRedirect')}
           </Alert>
         )}
 
@@ -287,9 +287,9 @@ const LoginSettings = () => {
             color='neutral'
             variant='soft'
             startDecorator={<WifiIcon />}
-            sx={{ mt: 2, borderRadius: '12px' }}
+            sx={theme => ({ mt: 2, borderRadius: theme.radius.row })}
           >
-            Testing connection to server...
+            {t('auth.testingConnection')}
           </Alert>
         )}
 
@@ -299,7 +299,9 @@ const LoginSettings = () => {
           startDecorator={isTesting ? <CircularProgress size='sm' /> : null}
           sx={{ mt: 3 }}
         >
-          {isTesting ? 'Testing connection' : 'Save & connect'}
+          {isTesting
+            ? t('auth.testingConnectionButton')
+            : t('auth.saveAndConnect')}
         </AuthSubmitButton>
 
         <Button
@@ -315,7 +317,7 @@ const LoginSettings = () => {
             Navigate('/login')
           }}
         >
-          Reset to default server
+          {t('auth.resetToDefaultServer')}
         </Button>
       </Box>
 
@@ -323,7 +325,7 @@ const LoginSettings = () => {
         level='body-xs'
         sx={{ mt: 2.5, textAlign: 'center', color: 'text.secondary' }}
       >
-        Changing the server clears locally cached data on this device.
+        {t('auth.serverChangeClearsData')}
       </Typography>
     </AuthShell>
   )

@@ -3,39 +3,40 @@ import { CheckRounded } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import Logo from '../../Logo'
 import { useUserProfile } from '../../queries/UserQueries'
+import { productTypeScale } from '../../theme/typography'
 import { haptic } from '../../utils/Onboarding'
 import { authButtonSx } from '../Authorization/authStyles'
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-const READY = [
-  'Shared chores for the whole house',
-  'Recurring schedules that survive real life',
-  'Capture by voice, photo or text',
-  'Reminders and home-screen widgets',
-]
+const cardSx = {
+  bgcolor: 'background.surface',
+  border: '1px solid',
+  borderColor: 'divider',
+  borderRadius: 'var(--daydan-radius-card)',
+}
 
-/**
- * The beat between signing up and landing in an empty task list: the account is
- * made, so say so. Everything listed here is already switched on for a free
- * account — the upgrade offer comes after, never in place of it.
- */
 const WorkspaceReadyView = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const { data: userProfile } = useUserProfile()
   const [busy, setBusy] = useState(false)
 
+  const READY = [
+    t('onboarding.ready.features.sharedChores'),
+    t('onboarding.ready.features.recurringSchedules'),
+    t('onboarding.ready.features.capture'),
+    t('onboarding.ready.features.reminders'),
+  ]
+
   const enterApp = () => navigate('/chores', { replace: true })
 
-  /**
-   * Shows the configured RevenueCat offering, then continues into the app
-   * whatever the outcome — dismissing the paywall is the "continue free" path,
-   * and a missing offering or a store hiccup must never trap a new user here.
-   */
   const showPaywall = async () => {
     if (!Capacitor.isNativePlatform() || !userProfile?.id) return
 
@@ -135,21 +136,21 @@ const WorkspaceReadyView = () => {
           <Typography
             level='h1'
             sx={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
+              ...productTypeScale.display,
               textWrap: 'balance',
             }}
           >
             {userProfile?.displayName
-              ? `You're all set, ${userProfile.displayName.split(' ')[0]}`
-              : "You're all set"}
+              ? t('onboarding.ready.title', {
+                  name: userProfile.displayName.split(' ')[0],
+                })
+              : t('onboarding.ready.titleFallback')}
           </Typography>
           <Typography
             level='body-md'
             sx={{ color: 'text.secondary', maxWidth: '30ch' }}
           >
-            Your workspace is ready. Here&apos;s what&apos;s waiting inside.
+            {t('onboarding.ready.subtitle')}
           </Typography>
         </Box>
 
@@ -158,17 +159,12 @@ const WorkspaceReadyView = () => {
             <Box
               key={item}
               sx={{
+                ...cardSx,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.5,
                 px: 1.75,
                 py: 1.25,
-                borderRadius: '14px',
-                bgcolor: 'background.surface',
-                border: '1px solid',
-                borderColor: 'divider',
-                // Each line checks itself off in turn: the small "it's done"
-                // beat this screen exists for.
                 animation: `readyTick 460ms ${EASE} ${180 + index * 120}ms both`,
                 '@keyframes readyTick': {
                   from: { opacity: 0, transform: 'translateY(10px)' },
@@ -210,7 +206,7 @@ const WorkspaceReadyView = () => {
           onClick={handleContinue}
           sx={authButtonSx}
         >
-          Continue
+          {t('onboarding.ready.continue')}
         </Button>
       </Box>
     </Box>

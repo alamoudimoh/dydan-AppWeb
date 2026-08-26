@@ -1,7 +1,9 @@
 import MarkEmailReadOutlined from '@mui/icons-material/MarkEmailReadOutlined'
 import { Box, Button, Link, Typography } from '@mui/joy'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import { useNotification } from '../../service/NotificationProvider'
 import { ResetPassword } from '../../utils/Fetcher'
 import { AuthSubmitButton, AuthTextField, LegalLinks } from './AuthFields'
@@ -12,6 +14,7 @@ const isInvalidEmail = email =>
   !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
 
 const ForgotPasswordView = () => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [resetStatusOk, setResetStatusOk] = useState(null)
   const [email, setEmail] = useState('')
@@ -23,12 +26,12 @@ const ForgotPasswordView = () => {
     e?.preventDefault()
 
     if (!email) {
-      setEmailError('Email is required')
+      setEmailError(t('auth.emailRequired'))
       return
     }
 
     if (isInvalidEmail(email)) {
-      setEmailError('Please enter a valid email address')
+      setEmailError(t('auth.emailInvalid'))
       return
     }
 
@@ -40,21 +43,21 @@ const ForgotPasswordView = () => {
         setResetStatusOk(true)
         showNotification({
           type: 'success',
-          title: 'Reset Email Sent',
-          message: 'Check your email for password reset instructions',
+          title: t('auth.resetEmailSent'),
+          message: t('auth.resetEmailInstructions'),
         })
       } else {
         setResetStatusOk(false)
         showError({
-          title: 'Reset Failed',
-          message: 'Failed to send reset email, please try again later',
+          title: t('auth.resetFailed'),
+          message: t('auth.resetFailedMessage'),
         })
       }
     } catch (error) {
       setResetStatusOk(false)
       showError({
-        title: 'Reset Failed',
-        message: 'Failed to send reset email, please try again later',
+        title: t('auth.resetFailed'),
+        message: t('auth.resetFailedMessage'),
       })
     } finally {
       setIsSubmitting(false)
@@ -72,15 +75,15 @@ const ForgotPasswordView = () => {
 
   const handleEmailBlur = () => {
     if (email && isInvalidEmail(email)) {
-      setEmailError('Please enter a valid email address')
+      setEmailError(t('auth.emailInvalid'))
     }
   }
 
   if (resetStatusOk !== null) {
     return (
       <AuthShell
-        title='Check your email'
-        subtitle={`If an account exists for ${email}, we've sent instructions for resetting your password.`}
+        title={t('auth.checkEmailTitle')}
+        subtitle={t('auth.checkEmailSubtitle', { email })}
         footer={<LegalLinks />}
         logoSize={0}
       >
@@ -92,7 +95,8 @@ const ForgotPasswordView = () => {
           }}
         >
           <MarkEmailReadOutlined
-            sx={{ fontSize: 40, color: 'primary.plainColor', mb: 2 }}
+            fontSize='large'
+            sx={{ color: 'primary.plainColor', mb: 2 }}
           />
           <Button
             fullWidth
@@ -101,7 +105,7 @@ const ForgotPasswordView = () => {
             sx={authButtonSx}
             onClick={() => navigate('/login')}
           >
-            Back to sign in
+            {t('auth.backToSignIn')}
           </Button>
         </Box>
       </AuthShell>
@@ -110,8 +114,8 @@ const ForgotPasswordView = () => {
 
   return (
     <AuthShell
-      title='Reset your password'
-      subtitle="Enter your email and we'll send you a link to get back into your account."
+      title={t('auth.forgotPasswordTitle')}
+      subtitle={t('auth.forgotPasswordSubtitle')}
       footer={<LegalLinks />}
       logoSize={0}
     >
@@ -121,12 +125,12 @@ const ForgotPasswordView = () => {
         sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
       >
         <AuthTextField
-          label='Email address'
+          label={t('auth.emailAddress')}
           id='email'
           name='email'
           type='email'
           autoComplete='email'
-          placeholder='you@example.com'
+          placeholder={t('auth.emailPlaceholder')}
           autoFocus
           value={email}
           error={emailError}
@@ -135,7 +139,7 @@ const ForgotPasswordView = () => {
         />
 
         <AuthSubmitButton loading={isSubmitting} sx={{ mt: 1 }}>
-          Send reset link
+          {t('auth.sendResetLink')}
         </AuthSubmitButton>
       </Box>
 
@@ -143,7 +147,7 @@ const ForgotPasswordView = () => {
         level='body-sm'
         sx={{ mt: 3, textAlign: 'center', color: 'text.secondary' }}
       >
-        Remembered it?{' '}
+        {t('auth.rememberedPassword')}{' '}
         <Link
           component='button'
           type='button'
@@ -152,7 +156,7 @@ const ForgotPasswordView = () => {
           underline='hover'
           onClick={() => navigate('/login')}
         >
-          Back to sign in
+          {t('auth.backToSignIn')}
         </Link>
       </Typography>
     </AuthShell>

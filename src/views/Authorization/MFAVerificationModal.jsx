@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../components/common/ModalActions'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
+import { productTypeScale } from '../../theme/typography.js'
 import { VerifyMFA } from '../../utils/Fetcher'
 import { authInputSx } from './authStyles'
 
@@ -129,7 +130,7 @@ const MFAVerificationModal = ({
                 textAlign: 'center',
                 letterSpacing: isBackupCode ? 'normal' : '0.4em',
                 fontVariantNumeric: 'tabular-nums',
-                fontSize: '1.125rem',
+                fontSize: productTypeScale.metric.fontSize,
               },
             }}
             slotProps={{
@@ -144,7 +145,11 @@ const MFAVerificationModal = ({
         </Box>
 
         {error && (
-          <Alert color='danger' variant='soft' sx={{ borderRadius: '12px' }}>
+          <Alert
+            color='danger'
+            variant='soft'
+            sx={theme => ({ borderRadius: theme.radius.row })}
+          >
             {error}
           </Alert>
         )}

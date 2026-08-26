@@ -24,7 +24,11 @@ import { commandQueue } from '../../utils/CommandQueue'
 import { RefreshToken } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
 import { syncEngine } from '../../utils/SyncEngine'
-import { getRefreshTokenExpiry, isNative } from '../../utils/TokenStorage'
+import {
+  getAccessTokenExpiry,
+  getRefreshTokenExpiry,
+  isNative,
+} from '../../utils/TokenStorage'
 import FeedbackModal from '../Modals/FeedbackModal'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'

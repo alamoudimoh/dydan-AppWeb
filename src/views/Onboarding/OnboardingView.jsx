@@ -4,8 +4,11 @@ import {
 } from '@mui/icons-material'
 import { Box, Button, Typography } from '@mui/joy'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import Logo from '../../Logo'
+import { productTypeScale } from '../../theme/typography'
 import {
   haptic,
   markOnboardingSeen,
@@ -16,94 +19,48 @@ import {
   CaptureVignette,
   ProblemVignette,
   RemindersVignette,
-  ScheduleVignette,
   TakesTurnsVignette,
 } from './OnboardingVignettes'
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
 const SWIPE_THRESHOLD = 56
 
-/**
- * Five messages, in the order that sells: the problem first, then the two
- * things DayDan does better than a reminders app, then the reasons to come
- * back. Every title is an outcome — nobody buys "reschedule from completion
- * date", they buy never arguing about trash day again.
- */
-const SLIDES = [
-  {
-    key: 'problem',
-    title: 'Stop forgetting the little things',
-    body: "DayDan remembers the last time it happened, and when it's due next. So nobody else has to.",
-    Visual: ProblemVignette,
-  },
-  {
-    key: 'capture',
-    title: 'Add it before you forget it',
-    body: "Type it, say it out loud, or snap a photo. DayDan fills in the due date, priority, labels, and who's on it.",
-    Visual: CaptureVignette,
-  },
-  // {
-  //   key: 'schedule',
-  //   title: 'It comes back exactly when it should',
-  //   body: "Every week, every 3 months, or a month after you actually did it. Finishing late doesn't throw the rest of the year off.",
-  //   Visual: ScheduleVignette,
-  // },
-  {
-    key: 'circle',
-    title: 'Everyone gets a turn, No more arguing',
-    body: 'Rotate in the order you pick, or at random. DayDan remembers who went last, so turns stay fair.',
-    Visual: TakesTurnsVignette,
-  },
-  {
-    key: 'reminders',
-    title: 'A nudge right when it matters & Widgets!',
-    body: "Get a reminder before something's due, or send  a heads-up when someone forgets theirs. Today's list sits on your home screen too.",
-    Visual: RemindersVignette,
-    permission: true,
-  },
-]
-
-const Dots = ({ count, activeIndex, onSelect }) => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-    {Array.from({ length: count }, (_, index) => {
-      const active = index === activeIndex
-      return (
-        <Box
-          key={index}
-          component='button'
-          type='button'
-          aria-label={`Go to step ${index + 1}`}
-          aria-current={active ? 'step' : undefined}
-          onClick={() => onSelect(index)}
-          sx={{
-            border: 'none',
-            p: 0,
-            cursor: 'pointer',
-            height: 6,
-            width: active ? 22 : 6,
-            borderRadius: '999px',
-            bgcolor: active ? 'primary.500' : 'neutral.softBg',
-            transition: `width 280ms ${EASE}, background-color 280ms ease`,
-            '&:focus-visible': {
-              outline: '2px solid',
-              outlineColor: 'primary.500',
-              outlineOffset: '3px',
-            },
-            '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-          }}
-        />
-      )
-    })}
-  </Box>
-)
-
 const OnboardingView = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
   const [activeIndex, setActiveIndex] = useState(0)
   const [drag, setDrag] = useState(0)
   const [asking, setAsking] = useState(false)
   const pointerRef = useRef(null)
   const viewportRef = useRef(null)
+
+  const SLIDES = [
+    {
+      key: 'problem',
+      title: t('onboarding.slides.problem.title'),
+      body: t('onboarding.slides.problem.body'),
+      Visual: ProblemVignette,
+    },
+    {
+      key: 'capture',
+      title: t('onboarding.slides.capture.title'),
+      body: t('onboarding.slides.capture.body'),
+      Visual: CaptureVignette,
+    },
+    {
+      key: 'circle',
+      title: t('onboarding.slides.circle.title'),
+      body: t('onboarding.slides.circle.body'),
+      Visual: TakesTurnsVignette,
+    },
+    {
+      key: 'reminders',
+      title: t('onboarding.slides.reminders.title'),
+      body: t('onboarding.slides.reminders.body'),
+      Visual: RemindersVignette,
+      permission: true,
+    },
+  ]
 
   const isLast = activeIndex === SLIDES.length - 1
   const asksPermission = Boolean(SLIDES[activeIndex].permission)
@@ -113,13 +70,16 @@ const OnboardingView = () => {
     navigate('/get-started', { replace: true })
   }, [navigate])
 
-  const goTo = useCallback(index => {
-    setActiveIndex(current => {
-      const next = Math.min(Math.max(index, 0), SLIDES.length - 1)
-      if (next !== current) haptic()
-      return next
-    })
-  }, [])
+  const goTo = useCallback(
+    index => {
+      setActiveIndex(current => {
+        const next = Math.min(Math.max(index, 0), SLIDES.length - 1)
+        if (next !== current) haptic()
+        return next
+      })
+    },
+    [SLIDES.length],
+  )
 
   const enableNotifications = async () => {
     setAsking(true)
@@ -141,7 +101,6 @@ const OnboardingView = () => {
     goTo(activeIndex + 1)
   }
 
-  // Arrow keys for keyboard/desktop parity with swiping.
   useEffect(() => {
     const onKeyDown = event => {
       if (event.key === 'ArrowRight') goTo(activeIndex + 1)
@@ -162,7 +121,6 @@ const OnboardingView = () => {
 
     const delta = event.clientX - pointer.startX
     const atEdge = (activeIndex === 0 && delta > 0) || (isLast && delta < 0)
-    // Rubber-band past the first and last slide instead of hard-stopping.
     setDrag(atEdge ? delta * 0.35 : delta)
   }
 
@@ -205,7 +163,11 @@ const OnboardingView = () => {
           <Logo size='26px' />
           <Typography
             level='title-md'
-            sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}
+            sx={{
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              fontSize: productTypeScale.cardTitle.fontSize,
+            }}
           >
             Done
             <Box component='span' sx={{ color: 'primary.500' }}>
@@ -221,7 +183,7 @@ const OnboardingView = () => {
           onClick={finish}
           sx={{ fontWeight: 600, borderRadius: '999px' }}
         >
-          Skip
+          {t('onboarding.carousel.skip')}
         </Button>
       </Box>
 
@@ -229,7 +191,7 @@ const OnboardingView = () => {
         ref={viewportRef}
         role='group'
         aria-roledescription='carousel'
-        aria-label='What you can do with DayDan'
+        aria-label={t('onboarding.carousel.ariaLabel')}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
@@ -247,8 +209,6 @@ const OnboardingView = () => {
           sx={{
             flex: 1,
             display: 'flex',
-            // Without an explicit min-width the 300%-wide track would size to
-            // its content and push the slides past the viewport.
             minWidth: 0,
             minHeight: 0,
             transform: `translate3d(calc(${-activeIndex * 100}% + ${dragPercent}%), 0, 0)`,
@@ -264,15 +224,16 @@ const OnboardingView = () => {
                 key={slide.key}
                 role='group'
                 aria-roledescription='slide'
-                aria-label={`${index + 1} of ${SLIDES.length}`}
+                aria-label={t('onboarding.carousel.slideLabel', {
+                  index: index + 1,
+                  count: SLIDES.length,
+                })}
                 aria-hidden={!active}
                 sx={{
                   flex: '0 0 100%',
                   minWidth: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  // Visual and copy travel together as one centred group;
-                  // pinning the copy to the bottom leaves them disconnected.
                   justifyContent: 'center',
                   gap: 4,
                   px: 3,
@@ -286,13 +247,13 @@ const OnboardingView = () => {
                     justifyContent: 'center',
                   }}
                 >
-                  {/* Remounting on activation replays the vignette's
-                      entrance instead of it playing off-screen once. */}
                   <Visual key={active ? 'active' : 'idle'} />
                 </Box>
 
                 <Box
                   key={active ? 'copy-active' : 'copy-idle'}
+                  aria-live='polite'
+                  aria-atomic='true'
                   sx={{
                     textAlign: 'center',
                     '@media (prefers-reduced-motion: reduce)': {
@@ -303,9 +264,7 @@ const OnboardingView = () => {
                   <Typography
                     level='h2'
                     sx={{
-                      fontSize: '1.75rem',
-                      fontWeight: 700,
-                      letterSpacing: '-0.02em',
+                      ...productTypeScale.display,
                       textWrap: 'balance',
                       animation: `slideCopyIn 460ms ${EASE} 60ms both`,
                       '@keyframes slideCopyIn': {
@@ -346,11 +305,14 @@ const OnboardingView = () => {
           gap: 2.5,
         }}
       >
-        <Dots count={SLIDES.length} activeIndex={activeIndex} onSelect={goTo} />
+        <Dots
+          count={SLIDES.length}
+          activeIndex={activeIndex}
+          onSelect={goTo}
+          t={t}
+        />
 
         {asksPermission ? (
-          // The permission ask gets its own pair of choices: a system prompt
-          // is a decision, not a "Next".
           <>
             <Button
               size='lg'
@@ -360,7 +322,7 @@ const OnboardingView = () => {
               startDecorator={<NotificationsActiveRounded />}
               sx={authButtonSx}
             >
-              Turn on reminders
+              {t('onboarding.carousel.turnOnReminders')}
             </Button>
             <Button
               variant='plain'
@@ -368,12 +330,10 @@ const OnboardingView = () => {
               size='lg'
               fullWidth
               disabled={asking}
-              // Deliberately not recorded as an opt-out: the in-app prompt can
-              // still ask once the user has tasks that would benefit from it.
               onClick={finish}
               sx={{ ...authButtonSx, mt: -1.5 }}
             >
-              Not now
+              {t('onboarding.carousel.notNow')}
             </Button>
           </>
         ) : (
@@ -384,12 +344,60 @@ const OnboardingView = () => {
             endDecorator={!isLast ? <ArrowForwardRounded /> : null}
             sx={authButtonSx}
           >
-            {isLast ? 'Get started' : 'Next'}
+            {isLast
+              ? t('onboarding.carousel.getStarted')
+              : t('onboarding.carousel.next')}
           </Button>
         )}
       </Box>
     </Box>
   )
 }
+
+const Dots = ({ activeIndex, count, onSelect, t }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+    {Array.from({ length: count }, (_, index) => {
+      const active = index === activeIndex
+      return (
+        <Box
+          key={index}
+          component='button'
+          type='button'
+          aria-label={t('onboarding.carousel.goToStep', { step: index + 1 })}
+          aria-current={active ? 'step' : undefined}
+          onClick={() => onSelect(index)}
+          sx={{
+            border: 'none',
+            p: 0,
+            cursor: 'pointer',
+            minWidth: 44,
+            minHeight: 44,
+            display: 'grid',
+            placeItems: 'center',
+            background: 'none',
+            '&::after': {
+              content: '""',
+              display: 'block',
+              height: 6,
+              width: active ? 22 : 6,
+              borderRadius: '999px',
+              bgcolor: active ? 'primary.500' : 'neutral.softBg',
+              transition: `width 280ms ${EASE}, background-color 280ms ease`,
+            },
+            '&:focus-visible': {
+              outline: '2px solid',
+              outlineColor: 'primary.500',
+              outlineOffset: '2px',
+              borderRadius: '8px',
+            },
+            '@media (prefers-reduced-motion: reduce)': {
+              '&, &::after': { transition: 'none' },
+            },
+          }}
+        />
+      )
+    })}
+  </Box>
+)
 
 export default OnboardingView

@@ -1,17 +1,14 @@
-import { Button, Snackbar } from '@mui/joy'
+import { Button, Snackbar, Stack, Typography } from '@mui/joy'
 import Cookies from 'js-cookie'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const CookiePermissionSnackbar = () => {
-  useEffect(() => {
-    const cookiePermission = Cookies.get('cookies_permission')
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(
+    () => Cookies.get('cookies_permission') !== 'true',
+  )
 
-    if (cookiePermission !== 'true') {
-      setOpen(true)
-    }
-  }, [])
-
-  const [open, setOpen] = useState(false)
   const handleClose = () => {
     Cookies.set('cookies_permission', 'true')
     setOpen(false)
@@ -25,14 +22,35 @@ const CookiePermissionSnackbar = () => {
         if (reason === 'clickaway') {
           return
         }
-        // Cookies.set('cookies_permission', 'true')
         handleClose()
       }}
+      sx={{
+        gap: 2,
+        bgcolor: 'background.surface',
+        color: 'text.primary',
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: 'md',
+      }}
     >
-      We use cookies to ensure you get the best experience on our website.
-      <Button variant='soft' onClick={handleClose}>
-        Accept
-      </Button>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        justifyContent='space-between'
+        sx={{ width: '100%', gap: 2 }}
+      >
+        <Typography level='body-md' sx={{ color: 'text.primary' }}>
+          {t('legal.cookieNotice')}
+        </Typography>
+        <Button
+          variant='soft'
+          onClick={handleClose}
+          sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+        >
+          {t('legal.accept')}
+        </Button>
+      </Stack>
     </Snackbar>
   )
 }
