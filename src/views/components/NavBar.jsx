@@ -22,22 +22,25 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { version } from '../../../package.json'
 import UserProfileAvatar from '../../components/UserProfileAvatar'
+import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import Z_INDEX from '../../constants/zIndex'
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { resolveAppShellMode } from '../../navigation/appShellModel'
 import NavBarSections from '../../navigation/NavBarSections'
 import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
-import { APP_DISPLAY_NAME } from '../../config/AppBranding'
+import {
+  buildNavSectionPlan,
+  hasActiveFamilyCircle,
+} from '../../navigation/navModel'
 import {
   navBrandSx,
   navDrawerContentSx,
   navDrawerFooterSx,
   navDrawerScrollSx,
+  navHeaderSx,
   navItemButtonSx,
+  navSidebarSx,
 } from '../../navigation/navStyles'
-import {
-  buildNavSectionPlan,
-  hasActiveFamilyCircle,
-} from '../../navigation/navModel'
 import { useNotificationCount } from '../../queries/NotificationQueries'
 import { useResource } from '../../queries/ResourceQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
@@ -46,8 +49,6 @@ import { apiClient } from '../../utils/ApiClient'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 import SyncStatusIndicator from './SyncStatusIndicator'
-
-const publicPages = ['/landing', '/privacy', '/terms']
 
 const NavBar = () => {
   const { t } = useTranslation('common')
@@ -112,7 +113,7 @@ const NavBar = () => {
           aria-label='Back from search'
           title={t('back')}
         >
-          <ArrowBack />
+          <ArrowBack className='rtl-flip' />
         </IconButton>
       )
     }
@@ -142,26 +143,13 @@ const NavBar = () => {
             : t('back')
         }
       >
-        <ArrowBack />
+        <ArrowBack className='rtl-flip' />
       </IconButton>
     )
   }
 
-  if (
-    [
-      '/signup',
-      '/login',
-      '/auth/oauth2',
-      '/forgot-password',
-      '/password/update',
-      '/login/settings',
-      '/welcome',
-      '/onboarding',
-      '/get-started',
-      '/ready',
-      '/circle/join',
-    ].includes(location.pathname)
-  ) {
+  const shellMode = resolveAppShellMode(location.pathname)
+  if (shellMode === 'spacer') {
     return (
       <div
         style={{
@@ -171,7 +159,7 @@ const NavBar = () => {
       />
     )
   }
-  if (publicPages.includes(location.pathname)) {
+  if (shellMode === 'none') {
     return null
   }
   if (
@@ -181,43 +169,73 @@ const NavBar = () => {
     return null
   }
 
-  return (
-    <nav
-      className='flex gap-2'
-      style={{
-        padding: '12px 16px',
-        paddingTop:
-          Capacitor.getPlatform() === 'android'
-            ? `calc(12px + var(--safe-area-inset-top, 0px))`
-            : '12px',
-        position: 'sticky',
-        zIndex: Z_INDEX.NAVBAR,
-        top: 0,
-        minHeight: '35px',
-        backgroundColor: 'var(--joy-palette-background-body)',
-        borderBottom: '1px solid var(--daydan-boundary)',
-      }}
-    >
-      {getMenuIcon()}
-      <Box className='flex-1' />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <SyncStatusIndicator />
-        <IconButton
-          aria-label={t('navigation.notifications')}
-          title={t('navigation.notifications')}
-          variant='plain'
-          onClick={() => navigate('/notifications')}
-        >
-          <Badge
-            badgeContent={notificationCount?.unreadCount || 0}
-            color='danger'
-            invisible={!notificationCount?.unreadCount}
-            size='sm'
+  const renderNavigationContent = onActivate => (
+    <>
+      <Box sx={navDrawerScrollSx}>
+        <Typography component='p' sx={navBrandSx}>
+          {APP_DISPLAY_NAME}
+        </Typography>
+        <NavBarSections sections={navSections} onItemActivate={onActivate} />
+      </Box>
+      <Box sx={navDrawerFooterSx}>
+        <List size='md' sx={{ p: 0, gap: 0 }}>
+          <ListItemButton
+            onClick={() => apiClient.handleLogout()}
+            variant='plain'
+            color='neutral'
+            sx={navItemButtonSx(false)}
           >
-            <Notifications />
-          </Badge>
-        </IconButton>
-        <UserProfileAvatar />
+            <ListItemDecorator>
+              <Logout />
+            </ListItemDecorator>
+            <ListItemContent sx={{ fontSize: 'sm' }}>
+              {t('logout')}
+            </ListItemContent>
+          </ListItemButton>
+        </List>
+        <Typography
+          onClick={() => window.location.reload(true)}
+          level='body-xs'
+          sx={{
+            py: 0.75,
+            color: 'text.tertiary',
+            textAlign: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          V{version} (API: {resource?.api_version || 'unavailable'})
+        </Typography>
+      </Box>
+    </>
+  )
+
+  return (
+    <>
+      <Box component='aside' sx={navSidebarSx}>
+        {renderNavigationContent(undefined)}
+      </Box>
+      <Box component='header' sx={{ ...navHeaderSx, zIndex: Z_INDEX.NAVBAR }}>
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>{getMenuIcon()}</Box>
+        <Box className='flex-1' />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SyncStatusIndicator />
+          <IconButton
+            aria-label={t('navigation.notifications')}
+            title={t('navigation.notifications')}
+            variant='plain'
+            onClick={() => navigate('/notifications')}
+          >
+            <Badge
+              badgeContent={notificationCount?.unreadCount || 0}
+              color='danger'
+              invisible={!notificationCount?.unreadCount}
+              size='sm'
+            >
+              <Notifications />
+            </Badge>
+          </IconButton>
+          <UserProfileAvatar />
+        </Box>
       </Box>
       <Drawer
         open={drawerOpen}
@@ -236,44 +254,7 @@ const NavBar = () => {
           },
         }}
       >
-        <Box sx={navDrawerScrollSx}>
-          <Typography component='p' sx={navBrandSx}>
-            {APP_DISPLAY_NAME}
-          </Typography>
-          <NavBarSections
-            sections={navSections}
-            onItemActivate={closeDrawer}
-          />
-        </Box>
-        <Box sx={navDrawerFooterSx}>
-          <List size='md' sx={{ p: 0, gap: 0 }}>
-            <ListItemButton
-              onClick={() => apiClient.handleLogout()}
-              variant='plain'
-              color='neutral'
-              sx={navItemButtonSx(false)}
-            >
-              <ListItemDecorator>
-                <Logout />
-              </ListItemDecorator>
-              <ListItemContent sx={{ fontSize: 'sm' }}>
-                {t('logout')}
-              </ListItemContent>
-            </ListItemButton>
-          </List>
-          <Typography
-            onClick={() => window.location.reload(true)}
-            level='body-xs'
-            sx={{
-              py: 0.75,
-              color: 'text.tertiary',
-              textAlign: 'center',
-              cursor: 'pointer',
-            }}
-          >
-            V{version} (API: {resource?.api_version || 'unavailable'})
-          </Typography>
-        </Box>
+        {renderNavigationContent(closeDrawer)}
       </Drawer>
       <FeedbackModal
         open={feedbackOpen}
@@ -283,7 +264,7 @@ const NavBar = () => {
         open={bugReportOpen}
         onClose={() => setBugReportOpen(false)}
       />
-    </nav>
+    </>
   )
 }
 

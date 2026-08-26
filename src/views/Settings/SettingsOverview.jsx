@@ -24,7 +24,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Container,
   List,
   ListItem,
   ListItemButton,
@@ -37,8 +36,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import PageHeader from '../../components/common/PageHeader'
+import SectionCard from '../../components/common/SectionCard'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useCircleMembers } from '../../queries/UserQueries'
+import { pageShellSx } from '../../theme/appLayout'
 import { isPlusAccount } from '../../utils/Helpers'
 import {
   hasPermission,
@@ -47,8 +49,6 @@ import {
 } from '../../utils/PermissionModel'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
-import PageHeader from '../../components/common/PageHeader'
-import { settingsPageSx } from '../../theme/appLayout'
 
 const SettingsOverview = () => {
   const { t } = useTranslation('settings')
@@ -174,7 +174,7 @@ const SettingsOverview = () => {
   }
 
   return (
-    <Container maxWidth='lg' sx={settingsPageSx}>
+    <Box sx={pageShellSx}>
       <PageHeader
         title={t('overview.title')}
         subtitle={t('overview.subtitle')}
@@ -190,9 +190,9 @@ const SettingsOverview = () => {
               sx={{
                 cursor: 'pointer',
                 transition: 'all 0.2s ease-in-out',
-                backgroundColor: 'var(--daydan-ink)',
+                backgroundColor: 'primary.solidBg',
                 border: 'none',
-                color: 'white',
+                color: 'primary.solidColor',
                 '&:hover': {
                   boxShadow: 'xl',
                   transform: 'translateY(-3px)',
@@ -228,14 +228,17 @@ const SettingsOverview = () => {
                       }}
                     >
                       <Star
-                        sx={{ fontSize: { xs: 18, md: 30 }, color: 'white' }}
+                        sx={{
+                          fontSize: { xs: 18, md: 30 },
+                          color: 'primary.solidColor',
+                        }}
                       />
                     </Avatar>
                     <Box>
                       <Typography
                         level='title-lg'
                         sx={{
-                          color: 'white',
+                          color: 'primary.solidColor',
                           mb: { xs: 0.25, md: 0.5 },
                           fontWeight: 'bold',
                           fontSize: { xs: '0.95rem', md: '1.25rem' },
@@ -308,7 +311,7 @@ const SettingsOverview = () => {
           </Box>
         )}
 
-      <Box sx={{ mx: 'auto' }}>
+      <SectionCard sx={{ p: { xs: 1, sm: 1.5 } }}>
         <List
           sx={{
             '--List-gap': '0px',
@@ -382,7 +385,7 @@ const SettingsOverview = () => {
             </ListItem>
           ))}
         </List>
-      </Box>
+      </SectionCard>
 
       <FeedbackModal
         open={feedbackOpen}
@@ -395,7 +398,7 @@ const SettingsOverview = () => {
         open={bugReportOpen}
         onClose={() => setBugReportOpen(false)}
       />
-    </Container>
+    </Box>
   )
 }
 

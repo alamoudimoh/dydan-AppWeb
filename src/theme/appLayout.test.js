@@ -6,8 +6,8 @@ import {
   detailPageContainerSx,
   formStackSpacing,
   listPageContainerSx,
-  pageStackSpacing,
   pageShellSx,
+  pageStackSpacing,
   sectionCardSx,
   settingsPageSx,
   widePageContainerSx,
@@ -19,8 +19,8 @@ test('APP_PAGE_MAX_WIDTH defines wide and narrow content rails', () => {
 })
 
 test('pageShellSx aligns mobile and desktop padding', () => {
-  assert.deepEqual(pageShellSx.px, { xs: 1.5, sm: 4 })
-  assert.deepEqual(pageShellSx.py, { xs: 2, sm: 4 })
+  assert.deepEqual(pageShellSx.px, { xs: 1.5, sm: 4, lg: 5 })
+  assert.deepEqual(pageShellSx.py, { xs: 2.5, sm: 4 })
   assert.equal(pageShellSx.maxWidth, APP_PAGE_MAX_WIDTH.wide)
 })
 

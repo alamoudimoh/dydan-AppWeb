@@ -1,10 +1,18 @@
 import './styles/safe-area.css'
 
-import { Button, LinearProgress, Typography, useColorScheme } from '@mui/joy'
+import {
+  Box,
+  Button,
+  LinearProgress,
+  Typography,
+  useColorScheme,
+} from '@mui/joy'
 import { Suspense, useCallback, useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
+import { hasAppShell } from '@/navigation/appShellModel'
+import { NAV_DRAWER_WIDTH } from '@/navigation/navStyles'
 import NavBar from '@/views/components/NavBar'
 
 import { registerCapacitorListeners } from './CapacitorListener'
@@ -36,6 +44,7 @@ const intervalMS = 5 * 60 * 1000 // 5 minutes
 const AppContent = () => {
   const { showNotification } = useNotification()
   const location = useLocation()
+  const shellVisible = hasAppShell(location.pathname)
   useSyncOnReconnect()
 
   // Every route renders through this Outlet, so one listener here gives crash
@@ -104,13 +113,23 @@ const AppContent = () => {
       <div>
         <ImpersonateUserProvider>
           <NavBar />
-          <PageTransition>
-            {/* Route components are React.lazy chunks; Suspense keeps the shell
+          <Box
+            component='main'
+            sx={{
+              minWidth: 0,
+              marginInlineStart: shellVisible
+                ? { xs: 0, md: `${NAV_DRAWER_WIDTH}px` }
+                : 0,
+            }}
+          >
+            <PageTransition>
+              {/* Route components are React.lazy chunks; Suspense keeps the shell
                 mounted while a page bundle loads. */}
-            <Suspense fallback={<LinearProgress />}>
-              <Outlet />
-            </Suspense>
-          </PageTransition>
+              <Suspense fallback={<LinearProgress />}>
+                <Outlet />
+              </Suspense>
+            </PageTransition>
+          </Box>
         </ImpersonateUserProvider>
       </div>
     </RequireAuth>

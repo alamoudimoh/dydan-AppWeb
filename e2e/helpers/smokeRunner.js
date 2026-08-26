@@ -24,7 +24,11 @@ export const assertPageShell = async (
   }
 
   if (nav) {
-    await expect(page.getByRole('button', { name: /open menu/i })).toBeVisible()
+    const desktopNavigation = page.getByRole('complementary')
+    const mobileNavigationTrigger = page.getByRole('button', {
+      name: /open menu/i,
+    })
+    await expect(desktopNavigation.or(mobileNavigationTrigger)).toBeVisible()
   } else if (auth && !fullscreen) {
     throw new Error(
       'Authenticated smoke routes must assert the navigation shell',
