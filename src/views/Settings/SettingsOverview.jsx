@@ -342,7 +342,7 @@ const SettingsOverview = () => {
                     {setting.icon}
                   </Avatar>
                 </ListItemDecorator>
-                <ListItemContent sx={{ ml: 2 }}>
+                <ListItemContent sx={{ ms: 2 }}>
                   <Box
                     sx={{
                       display: 'flex',

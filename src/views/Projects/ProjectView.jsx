@@ -73,7 +73,7 @@ const ProjectCardContent = ({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          mr: 2,
+          me: 2,
           flexShrink: 0,
         }}
       >
@@ -147,7 +147,7 @@ const ProjectCardContent = ({
                 fontSize: 9,
                 height: 16,
                 px: 0.5,
-                ml: 1,
+                ms: 1,
                 fontWeight: 'md',
               }}
             >

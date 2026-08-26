@@ -249,7 +249,7 @@ const HistoryCard = ({
           commands={pendingCommands}
           size='s'
           sx={{
-            mr: 0.5,
+            me: 0.5,
             position: 'absolute',
             right: -3,
             top: -3,

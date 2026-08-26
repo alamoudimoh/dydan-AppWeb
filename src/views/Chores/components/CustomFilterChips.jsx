@@ -177,7 +177,7 @@ const CustomFilterChips = ({
                     }}
                     sx={{
                       '--IconButton-size': '20px',
-                      ml: 0.25,
+                      ms: 0.25,
                       opacity: 0.6,
                       '&:hover': { opacity: 1, backgroundColor: 'transparent' },
                     }}
@@ -225,7 +225,7 @@ const CustomFilterChips = ({
           pointerEvents: 'none',
           position: 'absolute',
           top: 0,
-          right: 0,
+          insetInlineEnd: 0,
           bottom: 0,
           width: 24,
           background:
@@ -244,24 +244,24 @@ const CustomFilterChips = ({
             <MenuItem onClick={handlePin}>
               {selectedFilter.isPinned ? (
                 <>
-                  <StarBorder sx={{ mr: 1 }} />
+                  <StarBorder sx={{ me: 1 }} />
                   {t('filters.unpinFilter')}
                 </>
               ) : (
                 <>
-                  <Star sx={{ mr: 1 }} />
+                  <Star sx={{ me: 1 }} />
                   {t('filters.pinFilter')}
                 </>
               )}
             </MenuItem>
             {onFilterEdit && (
               <MenuItem onClick={handleEdit}>
-                <Edit sx={{ mr: 1 }} />
+                <Edit sx={{ me: 1 }} />
                 {t('filters.editFilter')}
               </MenuItem>
             )}
             <MenuItem onClick={handleDelete} color='danger'>
-              <Delete sx={{ mr: 1 }} />
+              <Delete sx={{ me: 1 }} />
               {t('filters.deleteFilter')}
             </MenuItem>
           </>

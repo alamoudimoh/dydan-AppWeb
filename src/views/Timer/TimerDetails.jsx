@@ -449,7 +449,7 @@ const TimerDetails = () => {
                       <PlayArrow
                         sx={{
                           fontSize: 16,
-                          mr: 1,
+                          me: 1,
                         }}
                       />
                       <Typography
@@ -504,7 +504,7 @@ const TimerDetails = () => {
                       <PauseCircle
                         sx={{
                           fontSize: 16,
-                          mr: 1,
+                          me: 1,
                         }}
                       />
                       <Typography
@@ -559,7 +559,7 @@ const TimerDetails = () => {
                       <BrowseGallery
                         sx={{
                           fontSize: 16,
-                          mr: 1,
+                          me: 1,
                         }}
                       />
                       <Typography
@@ -614,7 +614,7 @@ const TimerDetails = () => {
                       <AccessTime
                         sx={{
                           fontSize: 16,
-                          mr: 1,
+                          me: 1,
                         }}
                       />
                       <Typography

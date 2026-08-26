@@ -148,12 +148,12 @@ const SubscriptionModal = ({ open, onClose }) => {
                 value={key}
                 name='subscription-plan'
                 color='primary'
-                sx={{ mr: 1 }}
+                sx={{ me: 1 }}
               />
               <Typography level='body-md' sx={{ fontWeight: 600 }}>
                 {key.charAt(0).toUpperCase() + key.slice(1)}
               </Typography>
-              <Typography level='body-sm' sx={{ fontWeight: 500, ml: 1 }}>
+                <Typography level='body-sm' sx={{ fontWeight: 500, ms: 1 }}>
                 {plan.price}
                 <span style={{ color: '#888', fontWeight: 400 }}>
                   {' '}

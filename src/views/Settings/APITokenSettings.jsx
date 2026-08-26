@@ -140,7 +140,7 @@ const APITokenSettings = () => {
                     <Button
                       variant='outlined'
                       color='primary'
-                      sx={{ mr: 1 }}
+                      sx={{ me: 1 }}
                       onClick={() => {
                         if (showTokenId === token.id) {
                           setShowTokenId(null)

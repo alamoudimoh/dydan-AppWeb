@@ -1599,7 +1599,7 @@ const ChoreEdit = () => {
               </FormControl>
 
               {useCustomTime && (
-                <Box sx={{ mt: 2, ml: 4 }}>
+                <Box sx={{ mt: 2, ms: 4 }}>
                   <Typography level='body-sm' mb={1}>
                     Time:
                   </Typography>
@@ -1646,7 +1646,7 @@ const ChoreEdit = () => {
                 <Box
                   sx={{
                     mt: 0,
-                    ml: 4,
+                    ms: 4,
                   }}
                 >
                   <Typography level='body-sm'>Hours:</Typography>
@@ -1695,7 +1695,7 @@ const ChoreEdit = () => {
               <Box
                 sx={{
                   mt: 1,
-                  ml: 4,
+                  ms: 4,
                   display: 'flex',
                   gap: 1,
                   alignItems: 'center',
@@ -1852,7 +1852,7 @@ const ChoreEdit = () => {
                 <Box
                   sx={{
                     mt: 0,
-                    ml: 4,
+                    ms: 4,
                   }}
                 >
                   <Typography level='body-sm'>Telegram Group ID:</Typography>
@@ -1912,7 +1912,7 @@ const ChoreEdit = () => {
               <Box
                 sx={{
                   mt: 0,
-                  ml: 4,
+                  ms: 4,
                 }}
               >
                 <Typography level='body-sm'>Points:</Typography>
@@ -2119,7 +2119,7 @@ const ChoreEdit = () => {
         >
           Cancel
           {showKeyboardShortcuts && (
-            <KeyboardShortcutHint shortcut='Esc' sx={{ ml: 1 }} />
+            <KeyboardShortcutHint shortcut='Esc' sx={{ ms: 1 }} />
           )}
         </Button>
         <Button
@@ -2135,7 +2135,7 @@ const ChoreEdit = () => {
         >
           {choreId > 0 ? 'Save' : 'Create'}
           {showKeyboardShortcuts && (
-            <KeyboardShortcutHint shortcut='Enter' sx={{ ml: 1 }} />
+            <KeyboardShortcutHint shortcut='Enter' sx={{ ms: 1 }} />
           )}
         </Button>
       </Sheet>

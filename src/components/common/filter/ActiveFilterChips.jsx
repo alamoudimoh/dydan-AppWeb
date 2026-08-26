@@ -76,7 +76,7 @@ const ActiveFilterChips = ({
             '& .MuiChip-endDecorator': {
               display: 'flex',
               alignItems: 'center',
-              ml: 0.5,
+              ms: 0.5,
             },
             '& .MuiChip-label': {
               lineHeight: 1.2,
@@ -139,7 +139,7 @@ const ActiveFilterChips = ({
           level='body-xs'
           sx={{
             color: 'text.tertiary',
-            ml: 'auto',
+            ms: 'auto',
             flexShrink: 0,
             ...resultSx,
           }}

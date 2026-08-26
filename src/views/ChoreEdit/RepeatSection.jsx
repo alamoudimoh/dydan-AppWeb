@@ -182,7 +182,7 @@ export const RepeatOnSections = ({
             <Select
               placeholder='Unit'
               value={frequencyMetadata?.unit || 'days'}
-              sx={{ ml: 1 }}
+              sx={{ ms: 1 }}
             >
               {['hours', 'days', 'weeks', 'months', 'years'].map(item => (
                 <Option

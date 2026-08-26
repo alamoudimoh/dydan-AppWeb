@@ -393,7 +393,7 @@ const TimerEditModal = ({ isOpen, onClose, choreId, onTimerUpdate }) => {
                         height: 8,
                         borderRadius: '50%',
                         backgroundColor: 'success.500',
-                        mr: 1,
+                        me: 1,
                       }}
                     />
                     <Typography
@@ -447,7 +447,7 @@ const TimerEditModal = ({ isOpen, onClose, choreId, onTimerUpdate }) => {
                         height: 8,
                         borderRadius: '50%',
                         backgroundColor: 'warning.500',
-                        mr: 1,
+                        me: 1,
                       }}
                     />
                     <Typography
@@ -501,7 +501,7 @@ const TimerEditModal = ({ isOpen, onClose, choreId, onTimerUpdate }) => {
                         height: 8,
                         borderRadius: '50%',
                         backgroundColor: 'primary.500',
-                        mr: 1,
+                        me: 1,
                       }}
                     />
                     <Typography
@@ -555,7 +555,7 @@ const TimerEditModal = ({ isOpen, onClose, choreId, onTimerUpdate }) => {
                         height: 8,
                         borderRadius: '50%',
                         backgroundColor: 'neutral.500',
-                        mr: 1,
+                        me: 1,
                       }}
                     />
                     <Typography

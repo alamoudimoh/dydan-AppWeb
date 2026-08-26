@@ -180,7 +180,7 @@ const FilterBar = ({
     '& .MuiChip-startDecorator': {
       display: 'flex',
       alignItems: 'center',
-      mr: 0.5,
+      me: 0.5,
     },
     '& .MuiChip-label': {
       lineHeight: 1.2,
@@ -189,7 +189,7 @@ const FilterBar = ({
   }
 
   const sectionBadgeChipSx = {
-    ml: 'auto',
+    ms: 'auto',
     fontSize: '0.7rem',
     minHeight: 22,
     py: 0.25,
@@ -202,7 +202,7 @@ const FilterBar = ({
   }
 
   const modalCountChipSx = {
-    ml: 0.5,
+    ms: 0.5,
     minHeight: 22,
     py: 0.25,
     px: 0.75,
@@ -333,7 +333,7 @@ const FilterBar = ({
               '& .MuiButton-startDecorator': {
                 display: 'flex',
                 alignItems: 'center',
-                mr: 0.5,
+                me: 0.5,
               },
             }}
           >

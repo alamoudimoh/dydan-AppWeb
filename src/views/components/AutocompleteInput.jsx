@@ -96,7 +96,7 @@ const AutocompleteInput = ({ options, ref, value, onChange, ...props }) => {
                   <Chip
                     style={{
                       backgroundColor: option.color,
-                      marginRight: '0.5rem',
+                      marginInlineEnd: '0.5rem',
                       color: '#fff',
                     }}
                     size='sm'

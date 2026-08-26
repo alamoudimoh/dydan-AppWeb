@@ -330,7 +330,7 @@ const CircleSettings = () => {
                 {member.userId !== userProfile.id && canManageCircle && (
                   <Select
                     size='sm'
-                    sx={{ mr: 1 }}
+                    sx={{ me: 1 }}
                     value={member.role}
                     renderValue={() => (
                       <Typography>

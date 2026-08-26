@@ -84,7 +84,7 @@ const StorageSettings = () => {
           <Typography level='title-md' sx={{ mb: 1 }}>
             Server Storage Usage
             {!isPlusAccount(userProfile) && (
-              <Chip variant='soft' color='warning' sx={{ ml: 1 }}>
+              <Chip variant='soft' color='warning' sx={{ ms: 1 }}>
                 Plus Feature
               </Chip>
             )}
@@ -165,7 +165,7 @@ const StorageSettings = () => {
           <Card sx={{ ...sectionCardSx, maxWidth: 500 }}>
             <Typography level='title-md' sx={{ mb: 1 }}>
               App Preferences
-              <Chip variant='soft' color='info' sx={{ ml: 1 }}>
+              <Chip variant='soft' color='info' sx={{ ms: 1 }}>
                 Device Only
               </Chip>
             </Typography>

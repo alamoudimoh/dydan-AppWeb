@@ -316,7 +316,7 @@ const GettingStarted = () => {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 }}
               >
-                <Apple sx={{ color: 'white', fontSize: 40, mr: 2 }} />
+                <Apple sx={{ color: 'white', fontSize: 40, me: 2 }} />
                 <Box>
                   <Typography
                     level='body-xs'
@@ -374,7 +374,7 @@ const GettingStarted = () => {
               >
                 <Box
                   sx={{
-                    mr: 2,
+                    me: 2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

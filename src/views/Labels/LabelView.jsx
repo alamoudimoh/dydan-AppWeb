@@ -57,7 +57,7 @@ const LabelCardContent = ({ label, currentUserId, onToggleActions }) => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          mr: 2,
+          me: 2,
           flexShrink: 0,
         }}
       >

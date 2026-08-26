@@ -319,7 +319,7 @@ function BackupRestoreModal({ isOpen, onClose, showNotification }) {
           minHeight={200}
         >
           <CircularProgress />
-          <Typography level='body-md' sx={{ ml: 2 }}>
+          <Typography level='body-md' sx={{ ms: 2 }}>
             {activeTab === 0 ? 'Creating backup...' : 'Restoring backup...'}
           </Typography>
         </Box>

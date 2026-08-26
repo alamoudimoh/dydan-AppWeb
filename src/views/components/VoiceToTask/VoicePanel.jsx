@@ -536,7 +536,7 @@ const VoicePanel = ({
             variant='soft'
             color='success'
             startDecorator={<Lock sx={{ fontSize: 12 }} />}
-            sx={{ ml: 'auto' }}
+            sx={{ ms: 'auto' }}
           >
             On-device
           </Chip>

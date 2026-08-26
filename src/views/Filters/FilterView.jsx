@@ -86,7 +86,7 @@ const FilterCardContent = ({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          mr: 2,
+          me: 2,
           flexShrink: 0,
         }}
       >

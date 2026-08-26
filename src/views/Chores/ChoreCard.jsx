@@ -102,7 +102,7 @@ const ChoreCard = ({
           position: 'relative',
           top: 10,
           zIndex: 3,
-          left: 10,
+          insetInlineStart: 10,
         }}
         color={getDueDateChipColor(chore.nextDueDate, chore)}
       >
@@ -116,8 +116,8 @@ const ChoreCard = ({
             position: 'relative',
             top: 10,
             zIndex: 3,
-            ml: 0.4,
-            left: 10,
+            ms: 0.4,
+            insetInlineStart: 10,
           }}
         >
           <div
@@ -183,7 +183,7 @@ const ChoreCard = ({
               sx={{
                 position: 'absolute',
                 top: '50%',
-                left: 12,
+                insetInlineStart: 12,
                 transform: 'translateY(-50%)',
                 zIndex: 2,
                 bgcolor: 'background.surface',
@@ -220,7 +220,7 @@ const ChoreCard = ({
             >
               {/* Box in top right with Chip showing next due date  */}
               <Box display='flex' justifyContent='start' alignItems='center'>
-                <Avatar sx={{ mr: 1, fontSize: 22 }}>
+                <Avatar sx={{ me: 1, fontSize: 22 }}>
                   {Array.from(chore.name)[0]}
                 </Avatar>
                 <Box display='flex' flexDirection='column'>
@@ -260,7 +260,7 @@ const ChoreCard = ({
                       <Chip
                         sx={{
                           position: 'relative',
-                          mr: 0.5,
+                          me: 0.5,
                           top: 2,
                           zIndex: 1,
                         }}
@@ -287,7 +287,7 @@ const ChoreCard = ({
                       <Chip
                         sx={{
                           position: 'relative',
-                          mr: 0.5,
+                          me: 0.5,
                           top: 2,
                           zIndex: 1,
                         }}
@@ -320,7 +320,7 @@ const ChoreCard = ({
                             color='primary'
                             sx={{
                               position: 'relative',
-                              ml: index === 0 ? 0 : 0.5,
+                              ms: index === 0 ? 0 : 0.5,
                               top: 2,
                               zIndex: 1,
                               backgroundColor: `${l?.color} !important`,

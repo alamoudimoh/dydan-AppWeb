@@ -743,7 +743,7 @@ const DeveloperSettings = () => {
                   {feedbackEligibility?.eligible ? 'Yes' : 'No'}
                 </Chip>
                 {feedbackEligibility?.forced && (
-                  <Chip size='sm' variant='soft' color='warning' sx={{ ml: 1 }}>
+                  <Chip size='sm' variant='soft' color='warning' sx={{ ms: 1 }}>
                     Forced
                   </Chip>
                 )}

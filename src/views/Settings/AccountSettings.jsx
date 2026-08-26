@@ -220,7 +220,7 @@ const AccountSettings = () => {
               sx={{
                 width: '110px',
                 mb: 1,
-                ml: 1,
+                ms: 1,
               }}
               variant='outlined'
               color='danger'

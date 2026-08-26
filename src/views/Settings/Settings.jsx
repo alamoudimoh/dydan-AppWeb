@@ -276,7 +276,7 @@ const Settings = () => {
           </Button>
           <Button
             variant='soft'
-            sx={{ ml: 1 }}
+            sx={{ ms: 1 }}
             onClick={() => {
               navigator.clipboard.writeText(
                 window.location.protocol +
@@ -296,7 +296,7 @@ const Settings = () => {
             <Button
               color='danger'
               variant='outlined'
-              sx={{ ml: 1 }}
+              sx={{ ms: 1 }}
               onClick={() => {
                 showConfirmation(
                   'Are you sure you want to leave your circle?',
@@ -356,7 +356,7 @@ const Settings = () => {
                 {member.userId !== userProfile.id && canManageCircle && (
                   <Select
                     size='sm'
-                    sx={{ mr: 1 }}
+                    sx={{ me: 1 }}
                     value={member.role}
                     renderValue={() => (
                       <Typography>
@@ -824,7 +824,7 @@ const Settings = () => {
               sx={{
                 width: '110px',
                 mb: 1,
-                ml: 1,
+                ms: 1,
               }}
               variant='outlined'
               color='danger'

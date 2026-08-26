@@ -670,7 +670,7 @@ const ArchivedTasks = () => {
           color='neutral'
           startDecorator={<Close />}
           onClick={() => navigate('/chores')}
-          sx={{ ml: 'auto' }}
+          sx={{ ms: 'auto' }}
         >
           Close
         </Button>

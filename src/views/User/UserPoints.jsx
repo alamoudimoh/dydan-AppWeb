@@ -534,14 +534,14 @@ const UserPoints = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       minWidth: 40,
-                      mr: 2,
+                      me: 2,
                     }}
                   >
                     {getTrophyIcon(user.rank)}
                     <Typography
                       level='body-sm'
                       sx={{
-                        ml: 0.5,
+                        ms: 0.5,
                         fontWeight: user.rank <= 3 ? 'bold' : 'normal',
                         color:
                           user.rank <= 3 ? 'text.primary' : 'text.secondary',
@@ -555,7 +555,7 @@ const UserPoints = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                     <Avatar
                       src={user.image ? resolvePhotoURL(user.image) : undefined}
-                      sx={{ width: 40, height: 40, mr: 2 }}
+                      sx={{ width: 40, height: 40, me: 2 }}
                     >
                       {user.displayName?.charAt(0)}
                     </Avatar>
@@ -574,7 +574,7 @@ const UserPoints = () => {
                             size='sm'
                             variant='soft'
                             color='primary'
-                            sx={{ ml: 1 }}
+                            sx={{ ms: 1 }}
                           >
                             You
                           </Chip>
@@ -919,7 +919,7 @@ const UserPoints = () => {
                     <Typography
                       level='body-md'
                       sx={{
-                        ml: 1,
+                        ms: 1,
                         fontWeight: '500',
                         color: 'text.primary',
                       }}

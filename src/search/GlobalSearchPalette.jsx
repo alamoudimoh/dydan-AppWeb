@@ -440,7 +440,7 @@ const GlobalSearchPalette = ({
       >
         <Typography level='body-xs'>↑↓ Navigate</Typography>
         <Typography level='body-xs'>↵ Open</Typography>
-        <Typography level='body-xs' sx={{ ml: 'auto' }}>
+        <Typography level='body-xs' sx={{ ms: 'auto' }}>
           {query.trim()
             ? `${Math.max(0, results.length - 1)} results`
             : 'Type to search'}

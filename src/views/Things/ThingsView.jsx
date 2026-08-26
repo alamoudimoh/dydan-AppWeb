@@ -107,7 +107,7 @@ const ThingCardContent = ({ thing, onCardClick, onToggleActions }) => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          mr: 2,
+          me: 2,
           flexShrink: 0,
         }}
       >
@@ -140,7 +140,7 @@ const ThingCardContent = ({ thing, onCardClick, onToggleActions }) => {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              mr: 1,
+              me: 1,
               flex: 1,
               minWidth: 0,
             }}
@@ -162,7 +162,7 @@ const ThingCardContent = ({ thing, onCardClick, onToggleActions }) => {
               px: 1,
               fontWeight: 'md',
               flexShrink: 0,
-              ml: 1,
+              ms: 1,
             }}
           >
             {thing?.state}

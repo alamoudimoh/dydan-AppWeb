@@ -134,7 +134,7 @@ const MiniChoreCard = ({
   title,
 }) => (
   <Box>
-    <Box sx={{ display: 'flex', gap: 0.5, ml: 1.25, mb: -1.25, zIndex: 2 }}>
+    <Box sx={{ display: 'flex', gap: 0.5, ms: 1.25, mb: -1.25, zIndex: 2 }}>
       <Chip color={dueColor}>{due}</Chip>
       {repeat && (
         <Chip color='neutral' icon={<Repeat />}>
@@ -481,7 +481,7 @@ const TypingField = ({ delay = 0, typedText }) => (
         sx={{
           width: '2px',
           height: '1.1em',
-          marginInlineStart: 0.25,
+          ms: 0.25,
           bgcolor: 'primary.500',
           animation: 'caretBlink 500ms step-end infinite',
           '@keyframes caretBlink': {

@@ -89,7 +89,7 @@ const SectionHeader = ({ badge, icon, label }) => (
         size='sm'
         variant='solid'
         color='primary'
-        sx={{ ml: 'auto', fontSize: '0.7rem', height: 20 }}
+        sx={{ ms: 'auto', fontSize: '0.7rem', height: 20 }}
       >
         {badge}
       </Chip>
@@ -718,7 +718,7 @@ const ChoreToolbar = ({
             <Tune sx={{ fontSize: 20 }} />
             {t('toolbar.filters')}
             {hasAnyActive && (
-              <Chip size='sm' variant='solid' color='primary' sx={{ ml: 0.5 }}>
+              <Chip size='sm' variant='solid' color='primary' sx={{ ms: 0.5 }}>
                 {totalActiveCount}
               </Chip>
             )}
@@ -817,7 +817,7 @@ const ChoreToolbar = ({
                       onClick={handleUpdateFilter}
                       disabled={!editingSavedFilter}
                     >
-                      <Save sx={{ fontSize: 16, mr: 1 }} />
+                      <Save sx={{ fontSize: 16, me: 1 }} />
                       {t('toolbar.saveFilter')}
                     </MenuItem>
                     <MenuItem
@@ -833,7 +833,7 @@ const ChoreToolbar = ({
                         setSavingFilter(true)
                       }}
                     >
-                      <Save sx={{ fontSize: 16, mr: 1 }} />
+                      <Save sx={{ fontSize: 16, me: 1 }} />
                       {t('toolbar.saveAsNewFilter')}
                     </MenuItem>
                   </Menu>

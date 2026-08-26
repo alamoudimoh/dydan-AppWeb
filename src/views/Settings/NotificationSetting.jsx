@@ -327,7 +327,7 @@ const NotificationSetting = () => {
                 },
               },
             }}
-            sx={{ mr: 2 }}
+            sx={{ me: 2 }}
           />
           <div>
             <FormLabel>Device Notification</FormLabel>
@@ -673,7 +673,7 @@ const NotificationSetting = () => {
                 },
               },
             }}
-            sx={{ mr: 2 }}
+            sx={{ me: 2 }}
           />
           <div>
             <FormLabel>Custom Notification</FormLabel>

@@ -167,7 +167,7 @@ const CompactChoreCard = ({
           justifyContent: 'center',
           width: 40,
           height: 40,
-          mr: 1.5,
+          me: 1.5,
           flexShrink: 0,
         }}
       >
@@ -365,7 +365,7 @@ const CompactChoreCard = ({
         sx={{
           flex: 1,
           minWidth: 0,
-          mr: 1.5,
+          me: 1.5,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -388,7 +388,7 @@ const CompactChoreCard = ({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              mr: 1,
+              me: 1,
               flex: 1,
               minWidth: 0,
             }}
@@ -396,7 +396,7 @@ const CompactChoreCard = ({
             {chore.name}
           </Typography>
           {(chore._pending || (pendingCmds && pendingCmds.length > 0)) && (
-            <PendingBadge commands={pendingCmds} size='xs' sx={{ mr: -0.5 }} />
+            <PendingBadge commands={pendingCmds} size='xs' sx={{ me: -0.5 }} />
           )}
           {/* Due Date - Inline with name */}
           <Chip
@@ -408,7 +408,7 @@ const CompactChoreCard = ({
               height: 18,
               px: 0.75,
               flexShrink: 0,
-              ml: 1,
+              ms: 1,
             }}
           >
             {getDueDateChipText(chore.nextDueDate, chore, timeFormat)}
@@ -461,7 +461,7 @@ const CompactChoreCard = ({
                 color='primary'
                 size='sm'
                 sx={{
-                  ml: 0.5,
+                  ms: 0.5,
                   // height: 16,
                   // fontSize: 9,
                   // px: 0.5,
@@ -486,7 +486,7 @@ const CompactChoreCard = ({
             ? 'translateX(20px) scale(0.8)'
             : 'translateX(0) scale(1)',
           width: isMultiSelectMode ? 0 : 32,
-          marginRight: isMultiSelectMode ? 0 : undefined,
+          marginInlineEnd: isMultiSelectMode ? 0 : undefined,
           overflow: 'hidden',
           pointerEvents: isMultiSelectMode ? 'none' : 'auto',
         }}

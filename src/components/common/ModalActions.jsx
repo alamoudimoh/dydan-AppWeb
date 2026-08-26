@@ -44,7 +44,7 @@ const ModalActions = ({
       <ActionButton
         action={tertiary}
         defaults={{ color: 'neutral', variant: 'plain' }}
-        sx={{ mr: { sm: 'auto' } }}
+        sx={{ me: { sm: 'auto' } }}
       />
       <ActionButton
         action={secondary}

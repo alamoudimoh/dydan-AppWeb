@@ -131,15 +131,15 @@ const TimerSplitButton = ({
         }}
       >
         <MenuItem onClick={handleShowDetails}>
-          <Info sx={{ mr: 1 }} />
+          <Info sx={{ me: 1 }} />
           Timer Details
         </MenuItem>
         {/* <MenuItem onClick={handleResetTimer}>
-          <RestartAlt sx={{ mr: 1 }} />
+          <RestartAlt sx={{ me: 1 }} />
           Restart timer
         </MenuItem> */}
         <MenuItem onClick={handleClearAllTime} color='danger'>
-          <DeleteSweep sx={{ mr: 1 }} />
+          <DeleteSweep sx={{ me: 1 }} />
           Clear & Reset
         </MenuItem>
       </Menu>

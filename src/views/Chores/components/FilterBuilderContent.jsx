@@ -124,7 +124,7 @@ const IncludeExcludeToggle = ({ labels, onChange, value }) => {
   const { t } = useTranslation('chores')
   const resolvedLabels = labels || [t('filters.include'), t('filters.exclude')]
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
+    <Box sx={{ display: 'flex', gap: 0.5, ms: 'auto' }}>
       {[
         { op: 'is', label: resolvedLabels[0] },
         { op: 'isNot', label: resolvedLabels[1] },

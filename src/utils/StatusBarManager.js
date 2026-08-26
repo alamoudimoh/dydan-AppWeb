@@ -118,9 +118,9 @@ class StatusBarManager {
       // removing the top padding on android as it is handled by the navbar
       // and adding it causes double padding
       // document.body.style.paddingTop = `${insets.top}px`
-      document.body.style.paddingRight = `${insets.right}px`
+      document.body.style.paddingInlineEnd = `${insets.right}px`
       document.body.style.paddingBottom = `${insets.bottom}px`
-      document.body.style.paddingLeft = `${insets.left}px`
+      document.body.style.paddingInlineStart = `${insets.left}px`
     }
   }
 

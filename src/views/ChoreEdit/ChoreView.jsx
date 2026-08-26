@@ -855,7 +855,7 @@ const ChoreView = () => {
                     <Typography
                       level='body-md'
                       sx={{
-                        ml: 1,
+                        ms: 1,
                         fontWeight: '500',
                         color: 'text.primary',
                       }}

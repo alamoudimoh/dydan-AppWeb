@@ -1128,7 +1128,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
               {showKeyboardShortcuts && (
                 <KeyboardShortcutHint
                   shortcut='Esc'
-                  sx={{ ml: 1 }}
+                  sx={{ ms: 1 }}
                   withCtrl={false}
                 />
               )}
@@ -1175,7 +1175,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
               >
                 Create
                 {showKeyboardShortcuts && (
-                  <KeyboardShortcutHint shortcut='Enter' sx={{ ml: 1 }} />
+                  <KeyboardShortcutHint shortcut='Enter' sx={{ ms: 1 }} />
                 )}
               </Button>
             )}

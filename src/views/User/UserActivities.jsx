@@ -1123,7 +1123,7 @@ const UserActivites = () => {
                   boxShadow: 'sm',
                   borderRadius: 20,
                   width: { xs: '100%', lg: '315px' },
-                  mr: { xs: 0, lg: 10 },
+                   me: { xs: 0, lg: 10 },
                   mb: 1,
                 }}
               >

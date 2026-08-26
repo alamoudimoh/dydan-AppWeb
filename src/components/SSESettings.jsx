@@ -77,7 +77,7 @@ const SSESettings = () => {
           <Typography level='title-md'>
             Real-time Updates (SSE)
             {!isPlusAccount(userProfile) && (
-              <Chip variant='soft' color='warning' sx={{ ml: 1 }}>
+              <Chip variant='soft' color='warning' sx={{ ms: 1 }}>
                 Plus Feature
               </Chip>
             )}
