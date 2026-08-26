@@ -27,6 +27,9 @@
     "test:visual": "playwright test --project=visual",
     "test:visual:update": "playwright test --project=visual --update-snapshots",
     "build:smoke": "vite build --mode smoke",
+    "reference:build": "vite build --config design-reference/vite.config.mjs",
+    "reference:dev": "vite --config design-reference/vite.config.mjs",
+    "reference:test": "node --test design-reference/src/*.test.js",
     "build-cf": "rm -rf  package-lock.json && npm install && npm install --force @rollup/rollup-linux-x64-gnu@4.34.9 @swc/core-linux-x64-gnu && vite build",
     "lint": "eslint && prettier -c .",
     "lint:ci": "eslint && prettier -c .",
@@ -129,6 +132,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "8.4.2",
+    "@fontsource-variable/comfortaa": "^5.3.0",
     "@playwright/test": "^1.62.1",
     "@sentry/vite-plugin": "^5.4.0",
     "@tanstack/eslint-plugin-query": "^5.101.4",
