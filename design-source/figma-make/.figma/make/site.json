@@ -1,0 +1,10 @@
+{
+  "description": "Manage personal and household tasks with dual views for children and adults, enabling shared responsibilities, progress tracking, and family coordination.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
