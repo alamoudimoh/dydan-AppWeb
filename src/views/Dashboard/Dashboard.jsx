@@ -3,6 +3,7 @@ import {
   ArrowForwardRounded,
   CardGiftcardRounded,
   CheckCircleRounded,
+  ChecklistRounded,
   ErrorOutlineRounded,
   RadioButtonUncheckedRounded,
 } from '@mui/icons-material'
@@ -12,7 +13,6 @@ import {
   Button,
   Card,
   Chip,
-  Container,
   IconButton,
   LinearProgress,
   Option,
@@ -27,11 +27,13 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
+import MetricCard from '../../components/common/MetricCard'
+import PageHeader from '../../components/common/PageHeader'
 import SectionCard from '../../components/common/SectionCard'
 import { useChoresHistory, usePersonalChores } from '../../queries/ChoreQueries'
 import { useMyRewardRequests, useRewards } from '../../queries/RewardQueries'
 import { useUserProfile } from '../../queries/UserQueries'
-import { pageStackSpacing, settingsPageSx } from '../../theme/appLayout'
+import { pageShellSx, pageStackSpacing } from '../../theme/appLayout'
 import { MarkChoreComplete } from '../../utils/Fetcher'
 import { STORAGE_KEYS } from '../../utils/storageKeys'
 import {
@@ -154,6 +156,9 @@ const TaskRow = ({ chore, locale, onComplete, overdue, pending, timeZone }) => {
 }
 TaskRow.propTypes = {
   chore: PropTypes.shape({
+    category: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+    }),
     id: PropTypes.number.isRequired,
     meterSchedule: PropTypes.object,
     meterUpdateReminder: PropTypes.object,
@@ -258,35 +263,56 @@ export default function Dashboard() {
   )
 
   return (
-    <Container maxWidth='lg' sx={{ ...settingsPageSx, pb: 10 }}>
+    <Box sx={pageShellSx}>
       <Stack spacing={pageStackSpacing}>
-        <Box>
-          <Typography level='h1'>
-            {profile.data?.displayName
+        <PageHeader
+          title={
+            profile.data?.displayName
               ? t('dashboard.hello', { name: profile.data.displayName })
-              : t('dashboard.home')}
-          </Typography>
-          <Typography color='neutral'>
-            {new Intl.DateTimeFormat(locale, {
-              timeZone,
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-            }).format(new Date())}
-          </Typography>
-          {!chores.isLoading && !chores.isError && (
-            <Typography level='title-md' sx={{ mt: 1 }}>
-              {t('dashboard.tasksToday', {
-                count: buckets.today.length,
-              })}
-              {attention.length
-                ? ` · ${t('dashboard.needAttention', {
-                    count: attention.length,
-                  })}`
-                : ''}
-            </Typography>
-          )}
-        </Box>
+              : t('dashboard.home')
+          }
+          subtitle={new Intl.DateTimeFormat(locale, {
+            timeZone,
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+          }).format(new Date())}
+          titleLevel='h1'
+        />
+
+        {!chores.isLoading && !chores.isError && (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                sm: 'repeat(4, minmax(0, 1fr))',
+              },
+              gap: 1.75,
+            }}
+          >
+            <MetricCard
+              icon={<ChecklistRounded />}
+              label={t('dates.today')}
+              value={buckets.today.length}
+            />
+            <MetricCard
+              icon={<CheckCircleRounded />}
+              label={t('dashboard.tasksCompletedToday')}
+              value={completedToday}
+            />
+            <MetricCard
+              icon={<ErrorOutlineRounded />}
+              label={t('dashboard.needsAttention')}
+              value={attention.length}
+            />
+            <MetricCard
+              icon={<CardGiftcardRounded />}
+              label={t('dashboard.spendable')}
+              value={balance?.spendableBalance || 0}
+            />
+          </Box>
+        )}
 
         {chores.isLoading && (
           <Stack aria-label={t('dashboard.loadingHome')}>
@@ -541,6 +567,6 @@ export default function Dashboard() {
             )}
         </Section>
       </Stack>
-    </Container>
+    </Box>
   )
 }

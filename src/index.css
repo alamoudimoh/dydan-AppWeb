@@ -60,10 +60,15 @@ html {
   font-family: var(--daydan-font-arabic);
 }
 
+body {
+  min-width: 320px;
+  font-family: var(--product-font-ui);
+}
+
 .daydan-metric,
 [data-daydan-metric='true'] {
   direction: ltr;
-  font-family: var(--daydan-font-data);
+  font-family: var(--product-font-data);
   font-variant-numeric: tabular-nums;
   unicode-bidi: isolate;
 }

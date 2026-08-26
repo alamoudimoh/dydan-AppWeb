@@ -1,7 +1,9 @@
 import { Close } from '@mui/icons-material'
 import { Box, Divider, IconButton, Modal, Sheet, Typography } from '@mui/joy'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import PropTypes from 'prop-types'
 import { forwardRef, useId } from 'react'
+
 import { Z_INDEX } from '../../constants/zIndex'
 
 const WIDTH_BY_SIZE = {
@@ -18,38 +20,39 @@ const WIDTH_BY_SIZE = {
 const AppModal = forwardRef(
   (
     {
-      open,
-      onClose,
+      backdropBlur = true,
       children,
-      title,
+      closeOnBackdrop = true,
+      closeOnEscape = true,
+      contentSx,
       description,
       footer,
-      size = 'md',
+      footerSx,
       fullWidth = true,
       isMobile: isMobileProp,
+      maxHeight = '90dvh',
       mobilePresentation = 'sheet',
+      onClose,
+      open,
       role = 'dialog',
       showCloseButton = true,
       showHandle = false,
-      closeOnBackdrop = true,
-      closeOnEscape = true,
-      backdropBlur = true,
-      maxHeight = '90dvh',
-      contentSx,
-      footerSx,
+      size = 'md',
       sx,
+      title,
       unmountDelay = 180,
       ...modalProps
     },
     ref,
   ) => {
     const generatedId = useId()
-    const detectedMobile = useMediaQuery('(max-width:768px)')
+    const detectedMobile = useMediaQuery('(max-width:599.95px)')
     const isMobile = isMobileProp ?? detectedMobile
     const titleId = title ? `${generatedId}-title` : undefined
     const descriptionId = description ? `${generatedId}-description` : undefined
     const isSheet = isMobile && mobilePresentation === 'sheet'
     const isFullscreen = isMobile && mobilePresentation === 'fullscreen'
+    const enterAnimation = isSheet ? 'appSheetEnter' : 'appModalEnter'
 
     const handleClose = (event, reason) => {
       if (reason === 'backdropClick' && !closeOnBackdrop) return
@@ -71,7 +74,7 @@ const AppModal = forwardRef(
           justifyContent: 'center',
           p: isMobile ? 0 : 2,
           '& .MuiModal-backdrop': {
-            backgroundColor: 'rgba(8, 15, 24, 0.52)',
+            backgroundColor: 'var(--joy-palette-background-backdrop)',
             backdropFilter: backdropBlur ? 'blur(4px)' : 'none',
           },
         }}
@@ -101,13 +104,20 @@ const AppModal = forwardRef(
             height: isFullscreen ? '100dvh' : 'auto',
             maxHeight: isFullscreen ? '100dvh' : maxHeight,
             overflow: 'hidden',
-            borderRadius: isFullscreen ? 0 : isSheet ? '16px 16px 0 0' : '16px',
+            borderRadius: isFullscreen
+              ? 0
+              : isSheet
+                ? 'var(--product-radius-card) var(--product-radius-card) 0 0'
+                : 'var(--product-radius-card)',
             borderBottom: isSheet ? 0 : undefined,
             boxShadow: 'lg',
             outline: 0,
             pb: isMobile ? 'env(safe-area-inset-bottom)' : 0,
             animation: open
-              ? `${isSheet ? 'appSheetEnter' : 'appModalEnter'} ${Math.min(unmountDelay, 300)}ms cubic-bezier(0.2, 0.8, 0.2, 1)`
+              ? `${enterAnimation} ${Math.min(
+                  unmountDelay,
+                  300,
+                )}ms cubic-bezier(0.2, 0.8, 0.2, 1)`
               : undefined,
             '@keyframes appModalEnter': {
               from: { opacity: 0, transform: 'translateY(8px) scale(0.99)' },
@@ -148,7 +158,9 @@ const AppModal = forwardRef(
                 px: { xs: 2, sm: 3 },
                 pt: isSheet && showHandle ? 1.25 : { xs: 2, sm: 2.5 },
                 pb: description ? 1.5 : 2,
-                pr: showCloseButton ? { xs: 7, sm: 8 } : { xs: 2, sm: 3 },
+                paddingInlineEnd: showCloseButton
+                  ? { xs: 7, sm: 8 }
+                  : { xs: 2, sm: 3 },
               }}
             >
               {title && (
@@ -178,7 +190,7 @@ const AppModal = forwardRef(
                   sx={{
                     position: 'absolute',
                     top: isSheet && showHandle ? 6 : 12,
-                    right: { xs: 10, sm: 16 },
+                    insetInlineEnd: { xs: 10, sm: 16 },
                     borderRadius: '50%',
                   }}
                 >
@@ -226,5 +238,29 @@ const AppModal = forwardRef(
 )
 
 AppModal.displayName = 'AppModal'
+
+AppModal.propTypes = {
+  backdropBlur: PropTypes.bool,
+  children: PropTypes.node,
+  closeOnBackdrop: PropTypes.bool,
+  closeOnEscape: PropTypes.bool,
+  contentSx: PropTypes.object,
+  description: PropTypes.node,
+  footer: PropTypes.node,
+  footerSx: PropTypes.object,
+  fullWidth: PropTypes.bool,
+  isMobile: PropTypes.bool,
+  maxHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mobilePresentation: PropTypes.oneOf(['sheet', 'fullscreen', 'dialog']),
+  onClose: PropTypes.func,
+  open: PropTypes.bool.isRequired,
+  role: PropTypes.string,
+  showCloseButton: PropTypes.bool,
+  showHandle: PropTypes.bool,
+  size: PropTypes.oneOf(Object.keys(WIDTH_BY_SIZE)),
+  sx: PropTypes.object,
+  title: PropTypes.node,
+  unmountDelay: PropTypes.number,
+}
 
 export default AppModal

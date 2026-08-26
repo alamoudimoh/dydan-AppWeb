@@ -9,21 +9,23 @@ export const APP_PAGE_MAX_WIDTH = Object.freeze({
 export const pageStackSpacing = 3
 
 export const settingsPageSx = {
-  py: { xs: 2, sm: 4 },
+  py: { xs: 2.5, sm: 4 },
 }
 
 export const pageShellSx = {
   maxWidth: APP_PAGE_MAX_WIDTH.wide,
   mx: 'auto',
-  px: { xs: 1.5, sm: 4 },
-  py: { xs: 2, sm: 4 },
+  px: { xs: 1.5, sm: 4, lg: 5 },
+  py: { xs: 2.5, sm: 4 },
+  pb: { xs: 12, sm: 13 },
 }
 
 export const narrowPageShellSx = {
   maxWidth: APP_PAGE_MAX_WIDTH.narrow,
   mx: 'auto',
-  px: { xs: 1.5, sm: 4 },
-  py: { xs: 2, sm: 4 },
+  px: { xs: 1.5, sm: 4, lg: 5 },
+  py: { xs: 2.5, sm: 4 },
+  pb: { xs: 12, sm: 13 },
 }
 
 /** List screens with edge-to-edge rows inside a padded page shell. */
@@ -48,17 +50,17 @@ export const listPageHeaderSx = {
 }
 
 export const pageHeaderTitleSx = {
-  fontWeight: 600,
-  fontSize: '1.75rem',
-  lineHeight: 1.45,
-  letterSpacing: '-0.01em',
+  fontWeight: 700,
+  fontSize: '1.5rem',
+  lineHeight: 1.35,
+  letterSpacing: '-0.005em',
   color: 'text.primary',
 }
 
 export const pageHeaderSubtitleSx = {
   color: 'text.secondary',
-  fontSize: '0.875rem',
-  lineHeight: 1.45,
+  fontSize: '0.8125rem',
+  lineHeight: 1.5,
   mt: 0.375,
 }
 
