@@ -14,6 +14,8 @@
     "leave": "مغادرة الدائرة",
     "leaveConfirmTitle": "مغادرة الدائرة",
     "leaveConfirmMessage": "هل أنت متأكد من رغبتك في مغادرة هذه الدائرة؟",
+    "youPartOf": "أنت عضو في {{name}}",
+    "yourCircleCode": "رمز دائرتك هو:",
     "circleMembers": "أعضاء الدائرة",
     "circleMemberRequests": "طلبات انضمام الأعضاء",
     "admin": "مشرف",
@@ -24,6 +26,8 @@
     "makeAdmin": "تعيين مشرفًا",
     "makeMember": "تعيين عضوًا",
     "remove": "إزالة",
+    "removeMemberTitle": "إزالة عضو",
+    "removeMemberConfirm": "هل أنت متأكد من إزالة {{name}} من دائرتك؟",
     "you": "(أنت)",
     "pendingApproval": "بانتظار الموافقة",
     "joinedOn": "انضم في {{date}}",
@@ -32,6 +36,8 @@
     "refreshing": "جارٍ التحديث...",
     "refresh": "تحديث",
     "requestWantsToJoin": "يريد {{name}} الانضمام إلى دائرتك.",
+    "acceptConfirmTitle": "قبول طلب العضوية",
+    "acceptConfirmMessage": "هل أنت متأكد من قبول {{name}} (اسم المستخدم: {{username}}) في دائرتك؟",
     "joinSomeoneElse": "هل تريد الانضمام إلى دائرة شخص آخر؟ اطلب منه رمز الدائرة الفريد أو رابط الانضمام. أدخل الرمز أدناه للانضمام إلى دائرته.",
     "enterCircleCode": "أدخل رمز الدائرة:",
     "enterCodePlaceholder": "أدخل الرمز",
@@ -42,12 +48,33 @@
     "roleMemberDescription": "عضو عادي في الدائرة",
     "roleManagerDescription": "يمكنه التصرف نيابة عن المستخدمين وتنفيذ إجراءات باسمهم",
     "roleAdminDescription": "وصول كامل إلى الدائرة",
+    "webhookTitle": "تكامل Webhook",
+    "webhookDescriptionFull": "ترسل Webhooks إشعارات فورية إلى الخدمات الأخرى عند وقوع أحداث في دائرتك. أضف رابط Webhook لتلقي التحديثات.",
+    "webhookPlusRequired": "إشعارات Webhook غير متوفرة في الخطة الأساسية. قم بالترقية إلى Plus لتلقي التحديثات الفورية.",
+    "enableWebhook": "تفعيل Webhook",
+    "webhookHelper": "فعّل إشعارات Webhook لتحديثات المهام والأشياء.",
+    "plusFeature": "ميزة Plus",
     "webhookURL": "رابط Webhook",
     "webhookDescription": "أدخل رابط Webhook لتلقي إشعارات أحداث الدائرة",
-    "webhookPlaceholder": "https://your-webhook-url.com"
+    "webhookPlaceholder": "https://your-webhook-url.com",
+    "notifications": {
+      "refreshFailed": "فشل تحديث طلبات الأعضاء",
+      "leaveSuccess": "تمت مغادرة الدائرة بنجاح",
+      "leaveFailed": "فشلت مغادرة الدائرة",
+      "roleUpdateFailed": "فشل تحديث الدور",
+      "removeMemberSuccess": "تمت إزالة العضو بنجاح",
+      "acceptSuccess": "تم قبول الطلب بنجاح",
+      "joinSuccess": "تم طلب الانضمام إلى الدائرة بنجاح. انتظر موافقة مالك الدائرة.",
+      "alreadyMember": "أنت عضو بالفعل في هذه الدائرة",
+      "joinFailed": "فشل الانضمام إلى الدائرة",
+      "webhookUpdated": "تم تحديث رابط Webhook بنجاح",
+      "webhookUpdateFailed": "فشل تحديث رابط Webhook"
+    }
   },
   "accountSettings": {
     "title": "إعدادات الحساب",
+    "description": "غيّر إعدادات حسابك أو خطتك أو كلمة المرور.",
+    "accountType": "نوع الحساب",
     "subscription": "الاشتراك",
     "subscriptionStatus": "الخطة الحالية",
     "free": "مجاني",
@@ -58,7 +85,13 @@
     "password": "كلمة المرور",
     "dangerZone": "منطقة الخطر",
     "dangerZoneDescription": "حذف حسابك نهائي ولا يمكن التراجع عنه. يرجى التأكد قبل المتابعة.",
-    "deleteAccount": "حذف الحساب"
+    "deleteAccount": "حذف الحساب",
+    "subscriptionStatusPlusUntil": "Plus (حتى {{date}})",
+    "subscriptionDetails": {
+      "active": "أنت مشترك حالياً في خطة Plus. سيتجدد اشتراكك في {{date}}.",
+      "cancelled": "لقد ألغيت اشتراكك. سيتم تحويل حسابك إلى الخطة المجانية في {{date}}.",
+      "free": "أنت تستخدم الخطة المجانية حالياً. قم بالترقية إلى Plus لفتح المزيد من الميزات."
+    }
   },
   "accountSessions": {
     "title": "الجلسات",

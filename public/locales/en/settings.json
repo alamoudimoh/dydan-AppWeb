@@ -14,6 +14,8 @@
     "leave": "Leave Circle",
     "leaveConfirmTitle": "Leave Circle",
     "leaveConfirmMessage": "Are you sure you want to leave this circle?",
+    "youPartOf": "You are part of {{name}}",
+    "yourCircleCode": "Your circle code is:",
     "circleMembers": "Circle Members",
     "circleMemberRequests": "Circle Member Requests",
     "admin": "Admin",
@@ -24,6 +26,8 @@
     "makeAdmin": "Make Admin",
     "makeMember": "Make Member",
     "remove": "Remove",
+    "removeMemberTitle": "Remove Member",
+    "removeMemberConfirm": "Are you sure you want to remove {{name}} from your circle?",
     "you": "(You)",
     "pendingApproval": "Pending approval",
     "joinedOn": "Joined on {{date}}",
@@ -32,6 +36,8 @@
     "refreshing": "Refreshing...",
     "refresh": "Refresh",
     "requestWantsToJoin": "{{name}} wants to join your circle.",
+    "acceptConfirmTitle": "Accept Member Request",
+    "acceptConfirmMessage": "Are you sure you want to accept {{name}} (username: {{username}}) into your circle?",
     "joinSomeoneElse": "Want to join someone else's Circle? Ask them for their unique Circle code or join link. Enter the code below to join their Circle.",
     "enterCircleCode": "Enter Circle code:",
     "enterCodePlaceholder": "Enter code",
@@ -42,12 +48,33 @@
     "roleMemberDescription": "Just a regular member of the circle",
     "roleManagerDescription": "Can impersonate users and perform actions on their behalf",
     "roleAdminDescription": "Full access to the circle",
+    "webhookTitle": "Webhook",
+    "webhookDescriptionFull": "Webhooks send real-time notifications to other services when events happen in your Circle. Configure a webhook URL to receive updates.",
+    "webhookPlusRequired": "Webhook notifications are not available in the Basic plan. Upgrade to Plus to receive real-time updates via webhooks.",
+    "enableWebhook": "Enable Webhook",
+    "webhookHelper": "Enable webhook notifications for task and thing updates.",
+    "plusFeature": "Plus Feature",
     "webhookURL": "Webhook URL",
     "webhookDescription": "Enter a webhook URL to receive notifications for circle events",
-    "webhookPlaceholder": "https://your-webhook-url.com"
+    "webhookPlaceholder": "https://your-webhook-url.com",
+    "notifications": {
+      "refreshFailed": "Failed to refresh member requests",
+      "leaveSuccess": "Left circle successfully",
+      "leaveFailed": "Failed to leave circle",
+      "roleUpdateFailed": "Failed to update role",
+      "removeMemberSuccess": "Removed member successfully",
+      "acceptSuccess": "Accepted request successfully",
+      "joinSuccess": "Joined circle successfully. Wait for the circle owner to accept your request.",
+      "alreadyMember": "You are already a member of this circle",
+      "joinFailed": "Failed to join circle",
+      "webhookUpdated": "Webhook URL updated successfully",
+      "webhookUpdateFailed": "Failed to update webhook URL"
+    }
   },
   "accountSettings": {
     "title": "Account Settings",
+    "description": "Change your account settings, plan, or password.",
+    "accountType": "Account Type",
     "subscription": "Subscription",
     "subscriptionStatus": "Current Plan",
     "free": "Free",
@@ -58,7 +85,13 @@
     "password": "Password",
     "dangerZone": "Danger Zone",
     "dangerZoneDescription": "Once you delete your account, there is no going back. Please be certain.",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "subscriptionStatusPlusUntil": "Plus (until {{date}})",
+    "subscriptionDetails": {
+      "active": "You are currently subscribed to the Plus plan. Your subscription will renew on {{date}}.",
+      "cancelled": "You cancelled your subscription. Your account will be downgraded to the Free plan on {{date}}.",
+      "free": "You are currently on the Free plan. Upgrade to Plus to unlock more features."
+    }
   },
   "accountSessions": {
     "title": "Sessions",
