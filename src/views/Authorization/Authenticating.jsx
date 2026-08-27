@@ -98,6 +98,7 @@ const AuthenticationLoading = () => {
       try {
         const response = await fetch(`${baseURL}/auth/oauth2/callback`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },

@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
@@ -16,6 +17,7 @@ import { clearWidgetData } from '../../service/WidgetService'
 import { apiClient } from '../../utils/ApiClient'
 import { logout } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
+import { isAllowedServerURL } from '../../utils/ServerUrlValidation'
 import { AuthSubmitButton, AuthTextField } from './AuthFields'
 import AuthShell from './AuthShell'
 import { authButtonSx } from './authStyles'
@@ -40,7 +42,7 @@ const LoginSettings = () => {
   }, [])
 
   const isValidURL = url => {
-    return /^(http|https):\/\/[^ "]+$/.test(url.trim())
+    return isAllowedServerURL(url, Capacitor.isNativePlatform())
   }
 
   const testConnection = async url => {
@@ -175,7 +177,13 @@ const LoginSettings = () => {
 
     if (!isValidURL(trimmedURL)) {
       setStatus('error')
-      setErrorMessage(t('auth.invalidURL'))
+      setErrorMessage(
+        t(
+          Capacitor.isNativePlatform()
+            ? 'auth.httpsRequiredNative'
+            : 'auth.invalidURL',
+        ),
+      )
       return
     }
 
