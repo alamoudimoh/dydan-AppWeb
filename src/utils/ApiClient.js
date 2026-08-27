@@ -25,6 +25,7 @@ import {
   clearAllTokens,
   getAccessToken,
   getAccessTokenExpiry,
+  isNative,
   isRefreshTokenExpired,
   saveTokens,
 } from './TokenStorage'
@@ -301,10 +302,12 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), 10_000)
 
     const config = {
-      // credentials: 'include',
       ...options,
       headers: this.getHeaders(options.headers),
       signal: options.signal ?? controller.signal,
+    }
+    if (!isNative() && config.credentials === undefined) {
+      config.credentials = 'include'
     }
 
     try {

@@ -6,7 +6,7 @@
         certificates work once the user installs their CA on the device, without
         having to modify/repackage the APK. See donetick/donetick#727.
     -->
-    <base-config cleartextTrafficPermitted="true">
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />

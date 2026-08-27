@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'DayDan',
   webDir: 'dist',
   android: {
-    allowMixedContent: true,
+    allowMixedContent: false,
   },
   plugins: {
     PushNotifications: {

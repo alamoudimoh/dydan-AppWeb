@@ -1,4 +1,8 @@
 import { apiClient } from './ApiClient'
+import {
+  chorePriorityEndpoint,
+  completeChoreRequest,
+} from './ChoreCompletionRequest'
 import { createSingleFlight, ensureOperationId } from './SubmissionGuards'
 import { getRefreshToken, isNative } from './TokenStorage'
 
@@ -176,29 +180,13 @@ const GetChoreDetailById = id => {
 }
 const MarkChoreComplete = (id, body, completedDate, performer) => {
   const payload = ensureOperationId(body)
-  var markChoreURL = `/chores/${id}/do`
-
-  let completedDateFormated = ''
-  if (completedDate) {
-    completedDateFormated = `?completedDate=${new Date(
-      completedDate,
-    ).toISOString()}`
-    markChoreURL += completedDateFormated
-  }
-  if (performer) {
-    payload.performer = Number(performer)
-    if (completedDateFormated === '') {
-      markChoreURL += `&performer=${performer}`
-    } else {
-      markChoreURL += `?performer=${performer}`
-    }
-  }
+  const request = completeChoreRequest(id, payload, completedDate, performer)
 
   return runCompletion(id, () =>
-    Fetch(markChoreURL, {
+    Fetch(request.endpoint, {
       method: 'POST',
       headers: HEADERS(),
-      body: JSON.stringify(payload),
+      body: JSON.stringify(request.payload),
     }).then(response => {
       if (response?.ok) {
         // Single choke point for completions, so queued offline completions are
@@ -315,7 +303,7 @@ const SaveChore = chore => {
 }
 
 const UpdateChorePriority = (id, priority) => {
-  return Fetch(`/chores/${id}/priority `, {
+  return Fetch(chorePriorityEndpoint(id), {
     method: 'PUT',
     headers: HEADERS(),
     body: JSON.stringify({ priority: priority }),
@@ -724,6 +712,7 @@ const VerifyMFA = async (sessionToken, code) => {
   const baseURL = apiManager.getApiURL()
   return fetch(`${baseURL}/auth/mfa/verify`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
