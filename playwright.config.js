@@ -26,7 +26,16 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/smoke.cross-browser.spec.js', '**/visual.spec.js'],
+      testIgnore: [
+        '**/smoke.cross-browser.spec.js',
+        '**/visual.spec.js',
+        '**/production-ui-phase2-sovereign.spec.js',
+      ],
+    },
+    {
+      name: 'sovereign',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: ['**/production-ui-phase2-sovereign.spec.js'],
     },
     // Lightweight cross-browser coverage: the original 10 critical routes on
     // Chromium, Firefox, and WebKit via a single shared spec + manifest.
