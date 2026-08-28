@@ -28,9 +28,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
-import { formatSearchPlaceholder } from '../config/AppBranding'
 import EmptyState from '../components/common/EmptyState'
 import QueryLoadingView from '../components/common/QueryLoadingView'
+import { formatSearchPlaceholder } from '../config/AppBranding'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import {
   readMigratedLocalStorageJSON,
@@ -98,8 +98,7 @@ const QUICK_ACTIONS = [
   },
 ]
 
-const readRecents = () =>
-  readMigratedLocalStorageJSON(RECENTS_KEY, [])
+const readRecents = () => readMigratedLocalStorageJSON(RECENTS_KEY, [])
 
 const saveRecent = result => {
   if (result.provider === 'actions') return
@@ -348,9 +347,7 @@ const GlobalSearchPalette = ({
           pb: 'var(--safe-area-inset-bottom, 0px)',
         }}
       >
-        {isLoading && !query.trim() && (
-          <QueryLoadingView size='sm' />
-        )}
+        {isLoading && !query.trim() && <QueryLoadingView size='sm' />}
         {!isLoading && query.trim() && results.length === 1 && (
           <EmptyState
             variant='no-results'

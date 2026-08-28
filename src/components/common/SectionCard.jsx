@@ -1,10 +1,7 @@
 import { Box, Card, Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 
-import {
-  sectionCardHeaderSx,
-  sectionCardSx,
-} from '../../theme/appLayout'
+import { sectionCardHeaderSx, sectionCardSx } from '../../theme/appLayout'
 
 const SectionCard = ({
   action,

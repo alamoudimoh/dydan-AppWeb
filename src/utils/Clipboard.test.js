@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test, { afterEach, beforeEach } from 'node:test'
 
-import { copyToClipboard, COPY_ERRORS } from './Clipboard.js'
+import { COPY_ERRORS, copyToClipboard } from './Clipboard.js'
 
 const originalClipboard = global.navigator?.clipboard
 const originalDocument = global.document

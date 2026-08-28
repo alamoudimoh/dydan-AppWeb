@@ -5,7 +5,13 @@ import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
 // Phase 2 workflow surfaces: dense lists, dialogs, filters, and side cards.
-const ROUTES = ['/chores', '/routines', '/projects/', '/shopping', '/shopping/7']
+const ROUTES = [
+  '/chores',
+  '/routines',
+  '/projects/',
+  '/shopping',
+  '/shopping/7',
+]
 
 const CASES = [
   { width: 390, mode: 'light', language: 'en' },

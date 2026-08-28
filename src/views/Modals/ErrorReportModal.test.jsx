@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('../../hooks/useResponsiveModal', () => ({
   useResponsiveModal: () => ({
-    ResponsiveModal: ({ open, children }) =>
+    ResponsiveModal: ({ children, open }) =>
       open ? <div role='dialog'>{children}</div> : null,
   }),
 }))
@@ -67,9 +67,11 @@ const installInsecureClipboard = () => {
     configurable: true,
     writable: true,
     value: {
-      writeText: vi.fn().mockRejectedValue(
-        Object.assign(new Error('denied'), { name: 'NotAllowedError' }),
-      ),
+      writeText: vi
+        .fn()
+        .mockRejectedValue(
+          Object.assign(new Error('denied'), { name: 'NotAllowedError' }),
+        ),
     },
   })
   Object.defineProperty(window, 'isSecureContext', {
@@ -103,7 +105,9 @@ describe('ErrorReportModal copy diagnostics', () => {
       expect(screen.getByText('Report this problem')).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /show what gets sent/i }))
+    await user.click(
+      screen.getByRole('button', { name: /show what gets sent/i }),
+    )
 
     await waitFor(() => {
       expect(screen.getByText(/Report-ID: RPT-TEST-1234/)).toBeInTheDocument()
@@ -129,7 +133,8 @@ describe('ErrorReportModal copy diagnostics', () => {
 
   it('shows copy failure when diagnostics are not ready', async () => {
     const user = userEvent.setup()
-    const { collectErrorReport } = await import('../../service/ErrorReportService')
+    const { collectErrorReport } =
+      await import('../../service/ErrorReportService')
     collectErrorReport.mockImplementationOnce(() => new Promise(() => {}))
 
     renderModal()
@@ -138,7 +143,9 @@ describe('ErrorReportModal copy diagnostics', () => {
       expect(screen.getByText('Report this problem')).toBeInTheDocument()
     })
 
-    await user.click(screen.getByRole('button', { name: /show what gets sent/i }))
+    await user.click(
+      screen.getByRole('button', { name: /show what gets sent/i }),
+    )
 
     const copyButton = screen.getByLabelText('Copy diagnostics')
     expect(copyButton).toBeDisabled()

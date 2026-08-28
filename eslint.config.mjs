@@ -15,7 +15,12 @@ import globals from 'globals'
 
 export default [
   {
-    ignores: ['**/dist/**', 'design-source/figma-make/**'],
+    ignores: [
+      '**/dist/**',
+      'design-source/figma-make/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+    ],
   },
   js.configs.recommended,
   react.configs.flat.recommended,
@@ -51,7 +56,7 @@ export default [
   eslintConfigPrettier, // Disable any rules that conflict with prettier
   eslintPluginPrettierRecommended,
   {
-    files: ['*.{js,ts}'],
+    files: ['*.{js,mjs,ts}'],
     languageOptions: {
       globals: globals.node,
     },

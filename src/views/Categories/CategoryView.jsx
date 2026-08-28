@@ -21,14 +21,14 @@ import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
 import {
+  useCategories,
+  useCategoryActions,
+} from '../../queries/CategoryQueries'
+import {
   inlineErrorAlertSx,
   listPageContainerSx,
   pageStackSpacing,
 } from '../../theme/appLayout'
-import {
-  useCategories,
-  useCategoryActions,
-} from '../../queries/CategoryQueries'
 
 const CategoryView = () => {
   const { data: categories = [], isError, isLoading } = useCategories(true)
@@ -68,7 +68,9 @@ const CategoryView = () => {
           title='Categories'
           subtitle='Organize your Circle’s tasks and Assets in your own language.'
         />
-        <SectionCard title={editing?.id ? 'Rename category' : 'Create category'}>
+        <SectionCard
+          title={editing?.id ? 'Rename category' : 'Create category'}
+        >
           <FormControl>
             <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
               <Input
@@ -144,7 +146,11 @@ const CategoryView = () => {
                     })
                   }
                 >
-                  {category.archivedAt ? <UnarchiveRounded /> : <ArchiveRounded />}
+                  {category.archivedAt ? (
+                    <UnarchiveRounded />
+                  ) : (
+                    <ArchiveRounded />
+                  )}
                 </IconButton>
               </Stack>
             </Stack>

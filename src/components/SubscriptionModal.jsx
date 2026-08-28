@@ -1,12 +1,13 @@
 import { Check, Star } from '@mui/icons-material'
 import { Box, Card, Chip, Divider, Radio, Typography } from '@mui/joy'
 import { useState } from 'react'
-import AppModal from './common/AppModal'
-import ModalActions from './common/ModalActions'
+
 import { useNotification } from '../service/NotificationProvider'
 import { GetSubscriptionSession } from '../utils/Fetcher'
+import AppModal from './common/AppModal'
+import ModalActions from './common/ModalActions'
 
-const SubscriptionModal = ({ open, onClose }) => {
+const SubscriptionModal = ({ onClose, open }) => {
   const [selectedPlan, setSelectedPlan] = useState('yearly')
   const [isLoading, setIsLoading] = useState(false)
   const { showError } = useNotification()
@@ -153,7 +154,7 @@ const SubscriptionModal = ({ open, onClose }) => {
               <Typography level='body-md' sx={{ fontWeight: 600 }}>
                 {key.charAt(0).toUpperCase() + key.slice(1)}
               </Typography>
-                <Typography level='body-sm' sx={{ fontWeight: 500, ms: 1 }}>
+              <Typography level='body-sm' sx={{ fontWeight: 500, ms: 1 }}>
                 {plan.price}
                 <span style={{ color: '#888', fontWeight: 400 }}>
                   {' '}

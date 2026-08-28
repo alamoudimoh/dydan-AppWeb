@@ -1,18 +1,15 @@
 import { Box, Stack, Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 
-import {
-  pageHeaderSubtitleSx,
-  pageHeaderTitleSx,
-} from '../../theme/appLayout'
+import { pageHeaderSubtitleSx, pageHeaderTitleSx } from '../../theme/appLayout'
 
 const PageHeader = ({
   action,
   icon,
   subtitle,
+  sx,
   title,
   titleLevel = 'h2',
-  sx,
 }) => (
   <Stack
     direction={{ xs: 'column', sm: 'row' }}

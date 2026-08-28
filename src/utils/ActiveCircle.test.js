@@ -8,11 +8,8 @@ globalThis.localStorage = {
   removeItem: key => localStore.delete(key),
 }
 
-const {
-  profileCircleId,
-  resolveActiveCircle,
-  syncActiveCircleId,
-} = await import('./ActiveCircle.js')
+const { profileCircleId, resolveActiveCircle, syncActiveCircleId } =
+  await import('./ActiveCircle.js')
 
 test('resolveActiveCircle prefers the profile active circle id', () => {
   const circles = [

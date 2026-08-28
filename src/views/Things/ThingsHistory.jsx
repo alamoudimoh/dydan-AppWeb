@@ -28,7 +28,6 @@ import { useTheme } from '@mui/joy/styles'
 import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
-import { useLocalization } from '../../contexts/LocalizationContext'
 import {
   Line,
   LineChart,
@@ -37,7 +36,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
 import EmptyState from '../../components/common/EmptyState'
+import { useLocalization } from '../../contexts/LocalizationContext'
 import { useThingHistory } from '../../queries/ThingQueries'
 import LoadingComponent from '../components/Loading'
 
@@ -49,10 +50,10 @@ const ThingsHistory = () => {
   const {
     data,
     error,
-    isLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading,
     refetch,
   } = useThingHistory(id)
 
@@ -298,9 +299,7 @@ const ThingsHistory = () => {
                   tickLine='true'
                   axisLine='false'
                 />
-                <Tooltip
-                  labelFormatter={label => fmt.dateTime(label)}
-                />
+                <Tooltip labelFormatter={label => fmt.dateTime(label)} />
 
                 <Line
                   type='monotone'

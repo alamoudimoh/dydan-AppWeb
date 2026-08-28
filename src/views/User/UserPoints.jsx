@@ -40,10 +40,10 @@ import {
   YAxis,
 } from 'recharts'
 
+import PageHeader from '../../components/common/PageHeader'
 import { useChoresHistory } from '../../queries/ChoreQueries.jsx'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider.jsx'
-import PageHeader from '../../components/common/PageHeader'
 import { detailPageContainerSx } from '../../theme/appLayout'
 import {
   GetPointsHistory,
@@ -378,117 +378,113 @@ const UserPoints = () => {
           icon={<EmojiEvents sx={{ fontSize: '2rem', color: 'primary.500' }} />}
           title={`${leaderboardMode === 'points' ? 'Points' : 'Tasks'} Leaderboard`}
           subtitle={`Rankings based on ${
-            leaderboardMode === 'points'
-              ? 'points earned'
-              : 'tasks completed'
+            leaderboardMode === 'points' ? 'points earned' : 'tasks completed'
           } during the selected time period`}
         />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            alignItems: { xs: 'stretch', sm: 'center' },
+            justifyContent: { xs: 'flex-start', sm: 'space-between' },
+          }}
+        >
+          {/* Time Period Filter */}
           <Box
             sx={{
               display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: 2,
-              alignItems: { xs: 'stretch', sm: 'center' },
-              justifyContent: { xs: 'flex-start', sm: 'space-between' },
+              justifyContent: { xs: 'center', sm: 'flex-start' },
             }}
           >
-            {/* Time Period Filter */}
-            <Box
+            <Tabs
+              onChange={(e, tabValue) => {
+                setTabValue(tabValue)
+                handleChoresHistoryLimitChange(tabValue)
+              }}
+              value={tabValue}
+              size='sm'
               sx={{
-                display: 'flex',
-                justifyContent: { xs: 'center', sm: 'flex-start' },
+                borderRadius: 6,
+                backgroundColor: 'background.surface',
+                border: '1px solid',
+                borderColor: 'divider',
               }}
             >
-              <Tabs
-                onChange={(e, tabValue) => {
-                  setTabValue(tabValue)
-                  handleChoresHistoryLimitChange(tabValue)
-                }}
-                value={tabValue}
-                size='sm'
+              <TabList
+                disableUnderline
                 sx={{
                   borderRadius: 6,
-                  backgroundColor: 'background.surface',
-                  border: '1px solid',
-                  borderColor: 'divider',
+                  backgroundColor: 'transparent',
+                  p: 0.3,
+                  gap: 0.3,
                 }}
               >
-                <TabList
-                  disableUnderline
-                  sx={{
-                    borderRadius: 6,
-                    backgroundColor: 'transparent',
-                    p: 0.3,
-                    gap: 0.3,
-                  }}
-                >
-                  {[
-                    { label: '7D', value: 7 },
-                    { label: '6M', value: 6 * 30 },
-                    { label: 'All', value: 24 * 30 },
-                  ].map((tab, index) => (
-                    <Tab
-                      key={index}
-                      sx={{
-                        borderRadius: 4,
-                        minWidth: 'auto',
-                        px: 1.5,
-                        py: 0.5,
-                        fontSize: 'xs',
-                        fontWeight: 500,
-                        color: 'text.secondary',
-                        '&.Mui-selected': {
-                          color: 'primary.plainColor',
-                          backgroundColor: 'primary.softBg',
-                          fontWeight: 600,
-                        },
-                        '&:hover': {
-                          backgroundColor: 'neutral.softHoverBg',
-                        },
-                      }}
-                      disableIndicator
-                      value={tab.value}
-                    >
-                      {tab.label}
-                    </Tab>
-                  ))}
-                </TabList>
-              </Tabs>
-            </Box>
-
-            {/* Toggle between points and tasks */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: { xs: 'center', sm: 'flex-end' },
-                gap: 1,
-                mb: 1,
-              }}
-            >
-              <Chip
-                variant={leaderboardMode === 'points' ? 'solid' : 'outlined'}
-                color='primary'
-                size='sm'
-                sx={{ cursor: 'pointer' }}
-                onClick={() => setLeaderboardMode('points')}
-              >
-                Points
-              </Chip>
-              <SwapHoriz
-                sx={{ fontSize: '0.875rem', color: 'text.tertiary' }}
-              />
-              <Chip
-                variant={leaderboardMode === 'tasks' ? 'solid' : 'outlined'}
-                color='primary'
-                size='sm'
-                sx={{ cursor: 'pointer' }}
-                onClick={() => setLeaderboardMode('tasks')}
-              >
-                Tasks
-              </Chip>
-            </Box>
+                {[
+                  { label: '7D', value: 7 },
+                  { label: '6M', value: 6 * 30 },
+                  { label: 'All', value: 24 * 30 },
+                ].map((tab, index) => (
+                  <Tab
+                    key={index}
+                    sx={{
+                      borderRadius: 4,
+                      minWidth: 'auto',
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: 'xs',
+                      fontWeight: 500,
+                      color: 'text.secondary',
+                      '&.Mui-selected': {
+                        color: 'primary.plainColor',
+                        backgroundColor: 'primary.softBg',
+                        fontWeight: 600,
+                      },
+                      '&:hover': {
+                        backgroundColor: 'neutral.softHoverBg',
+                      },
+                    }}
+                    disableIndicator
+                    value={tab.value}
+                  >
+                    {tab.label}
+                  </Tab>
+                ))}
+              </TabList>
+            </Tabs>
           </Box>
+
+          {/* Toggle between points and tasks */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: { xs: 'center', sm: 'flex-end' },
+              gap: 1,
+              mb: 1,
+            }}
+          >
+            <Chip
+              variant={leaderboardMode === 'points' ? 'solid' : 'outlined'}
+              color='primary'
+              size='sm'
+              sx={{ cursor: 'pointer' }}
+              onClick={() => setLeaderboardMode('points')}
+            >
+              Points
+            </Chip>
+            <SwapHoriz sx={{ fontSize: '0.875rem', color: 'text.tertiary' }} />
+            <Chip
+              variant={leaderboardMode === 'tasks' ? 'solid' : 'outlined'}
+              color='primary'
+              size='sm'
+              sx={{ cursor: 'pointer' }}
+              onClick={() => setLeaderboardMode('tasks')}
+            >
+              Tasks
+            </Chip>
+          </Box>
+        </Box>
 
         {/* Leaderboard Cards */}
         <Card

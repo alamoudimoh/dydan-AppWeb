@@ -43,7 +43,9 @@ class ErrorBoundary extends Component {
               'An unexpected error occurred. Please try refreshing the page.',
             )}
           </p>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+          <div
+            style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}
+          >
             <button
               onClick={this.handleGoHome}
               style={{

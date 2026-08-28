@@ -20,9 +20,7 @@ export const setOfflineFeatureEnabled = enabled => {
   if (typeof window === 'undefined' || !window.localStorage) return
   window.localStorage.setItem(OFFLINE_FEATURE_KEY, JSON.stringify(!!enabled))
   const detail = { enabled: !!enabled }
-  window.dispatchEvent(
-    new CustomEvent(OFFLINE_FEATURE_EVENT, { detail }),
-  )
+  window.dispatchEvent(new CustomEvent(OFFLINE_FEATURE_EVENT, { detail }))
   window.dispatchEvent(
     new CustomEvent(LEGACY_OFFLINE_FEATURE_EVENT, { detail }),
   )

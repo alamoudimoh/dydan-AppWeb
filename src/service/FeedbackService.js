@@ -5,8 +5,8 @@ import { InAppReview } from '@capacitor-community/in-app-review'
 
 import {
   APP_REPORT_SOURCE,
-  FEEDBACK_ISSUES_NEW_URL,
   DAYDAN_APP_REPO,
+  FEEDBACK_ISSUES_NEW_URL,
 } from '../config/ReportDestinations.js'
 import { isOfficialDayDanInstance } from '../utils/FeatureToggle'
 

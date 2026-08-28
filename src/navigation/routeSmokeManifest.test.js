@@ -1,7 +1,10 @@
-import test from 'node:test'
 import assert from 'node:assert/strict'
+import test from 'node:test'
 
-import { ROUTE_SMOKE_ENTRIES, ROUTE_SMOKE_GROUPS } from './routeSmokeManifest.js'
+import {
+  ROUTE_SMOKE_ENTRIES,
+  ROUTE_SMOKE_GROUPS,
+} from './routeSmokeManifest.js'
 
 test('route smoke manifest lists every settings entry', () => {
   for (const path of ROUTE_SMOKE_GROUPS.settings) {
@@ -17,7 +20,10 @@ test('route smoke groups cover every registered route once', () => {
   const registered = new Set(ROUTE_SMOKE_ENTRIES.map(entry => entry.path))
 
   for (const path of registered) {
-    assert.ok(grouped.has(path), `route ${path} is not assigned to a smoke group`)
+    assert.ok(
+      grouped.has(path),
+      `route ${path} is not assigned to a smoke group`,
+    )
   }
 
   for (const path of grouped) {
