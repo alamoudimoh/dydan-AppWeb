@@ -37,6 +37,7 @@ import {
 } from '@mui/joy'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import EmptyState from '../../components/common/EmptyState'
 import { useLocalization } from '../../contexts/LocalizationContext'
@@ -63,6 +64,7 @@ const isNetworkError = err =>
 
 const TimerDetails = () => {
   const { choreId } = useParams()
+  const { t } = useTranslation('chores')
   const { fmt } = useLocalization()
   const [timerData, setTimerData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -231,23 +233,23 @@ const TimerDetails = () => {
         {
           onSuccess: () => {
             showSuccess({
-              title: 'Session updated',
-              message: 'Timer session has been updated successfully.',
+              title: t('choreView.timerDetail.sessionUpdated'),
+              message: t('choreView.timerDetail.sessionUpdatedMessage'),
             })
             refetchTimer()
             cancelEditingSession(sessionId)
           },
           onError: () => {
             showError({
-              title: 'Failed to update session',
-              message: 'Please try again.',
+              title: t('choreView.timerDetail.sessionUpdateFailed'),
+              message: t('choreView.timerDetail.tryAgain'),
             })
           },
         },
       )
     } catch (error) {
       showError({
-        title: 'Error updating session',
+        title: t('choreView.timerDetail.sessionUpdateError'),
         message: error.message,
       })
     } finally {
@@ -261,8 +263,8 @@ const TimerDetails = () => {
     startChore.mutate(choreId, {
       onSuccess: () => {
         showSuccess({
-          title: 'Timer Started',
-          message: 'Work session has been started successfully.',
+          title: t('choreView.timerDetail.timerStarted'),
+          message: t('choreView.timerDetail.timerStartedMessage'),
         })
         refetchTimer()
       },
@@ -274,8 +276,8 @@ const TimerDetails = () => {
             { id: choreId },
           )
           showSuccess({
-            title: 'Start queued',
-            message: "You're offline — start will sync when back online",
+            title: t('choreView.timerDetail.startQueued'),
+            message: t('choreView.timerDetail.startQueuedMessage'),
             undoAction: async () => {
               await commandQueue.cancel(cmdId)
             },
@@ -284,7 +286,7 @@ const TimerDetails = () => {
         }
 
         showError({
-          title: 'Failed to start timer',
+          title: t('choreView.timerDetail.startFailed'),
           message: 'Please try again.',
         })
       },
@@ -299,8 +301,8 @@ const TimerDetails = () => {
     pauseChore.mutate(choreId, {
       onSuccess: () => {
         showSuccess({
-          title: 'Timer Paused',
-          message: 'Work session has been paused.',
+          title: t('choreView.timerDetail.timerPaused'),
+          message: t('choreView.timerDetail.timerPausedMessage'),
         })
         refetchTimer()
       },
@@ -312,8 +314,8 @@ const TimerDetails = () => {
             { id: choreId },
           )
           showSuccess({
-            title: 'Pause queued',
-            message: "You're offline — pause will sync when back online",
+            title: t('choreView.timerDetail.pauseQueued'),
+            message: t('choreView.timerDetail.pauseQueuedMessage'),
             undoAction: async () => {
               await commandQueue.cancel(cmdId)
             },
@@ -322,7 +324,7 @@ const TimerDetails = () => {
         }
 
         showError({
-          title: 'Failed to pause timer',
+          title: t('choreView.timerDetail.pauseFailed'),
           message: 'Please try again.',
         })
       },
@@ -387,8 +389,8 @@ const TimerDetails = () => {
   const handleDeleteSession = sessionIndex => {
     // For now, just show an alert since we'd need to implement session deletion API
     showError({
-      title: 'Delete Session',
-      message: `Session #${sessionIndex + 1} deletion would be implemented here`,
+      title: t('choreView.timerDetail.deleteSessionTitle'),
+      message: t('choreView.timerDetail.deleteSessionMessage', { number: sessionIndex + 1 }),
     })
   }
 
@@ -402,13 +404,13 @@ const TimerDetails = () => {
 
       {loading && (
         <Alert color='neutral' sx={{ mb: 2 }}>
-          Loading timer data...
+          t('choreView.timerDetail.loadingData')
         </Alert>
       )}
 
       {!loading && !timerData && (
         <Alert color='warning' sx={{ mb: 2 }}>
-          No timer data found for this chore.
+          t('choreView.timerDetail.noDataFound')
         </Alert>
       )}
 
@@ -459,7 +461,7 @@ const TimerDetails = () => {
                           color: 'text.primary',
                         }}
                       >
-                        Active Work
+                        t('choreView.timerDetail.activeWork')
                       </Typography>
                     </Box>
                     <Box>
@@ -514,7 +516,7 @@ const TimerDetails = () => {
                           color: 'text.primary',
                         }}
                       >
-                        Break Time
+                        t('choreView.timerDetail.breakTime')
                       </Typography>
                     </Box>
                     <Box>
@@ -569,7 +571,7 @@ const TimerDetails = () => {
                           color: 'text.primary',
                         }}
                       >
-                        Sessions
+                        {t('choreView.timerDetail.sessions')}
                       </Typography>
                     </Box>
                     <Box>
@@ -624,7 +626,7 @@ const TimerDetails = () => {
                           color: 'text.primary',
                         }}
                       >
-                        Total Time
+                        t('choreView.timerDetail.totalTime')
                       </Typography>
                     </Box>
                     <Box>
@@ -658,12 +660,12 @@ const TimerDetails = () => {
                   level='body-sm'
                   sx={{ color: 'text.secondary', fontWeight: 'medium' }}
                 >
-                  Work vs Break Distribution
+                  {t('choreView.timerDetail.workVsBreak')}
                 </Typography>
                 <Typography level='body-sm' sx={{ color: 'text.tertiary' }}>
                   {calculateCurrentActiveDuration() > 0
-                    ? `${Math.round((calculateCurrentActiveDuration() / calculateTotalDuration()) * 100)}% active`
-                    : 'No active time yet'}
+                    ? `${Math.round((calculateCurrentActiveDuration() / calculateTotalDuration()) * 100)}%`
+                    : t('choreView.timerDetail.noActiveTime')}
                 </Typography>
               </Box>
               <Box
@@ -692,7 +694,7 @@ const TimerDetails = () => {
                   level='body-sm'
                   sx={{ color: 'text.secondary', fontWeight: 'medium', mb: 2 }}
                 >
-                  Activity Timeline
+                  t('choreView.timerDetail.activityTimeline')
                 </Typography>
 
                 {timerData &&
@@ -760,7 +762,7 @@ const TimerDetails = () => {
                                   zIndex: 1,
                                 },
                               }}
-                              title={`Session ${index + 1}: ${formatDuration(sessionDuration)} ${isOngoing ? '(ongoing)' : ''}`}
+                              title={t('choreView.timerDetail.sessionTooltip', { index: index + 1, duration: formatDuration(sessionDuration), status: isOngoing ? t('choreView.timerDetail.live') : '' })}
                             />
                           )
                         })
@@ -849,7 +851,7 @@ const TimerDetails = () => {
                               level='body-xs'
                               sx={{ color: 'text.tertiary' }}
                             >
-                              Live Session
+                              t('choreView.timerDetail.liveSession')
                             </Typography>
                           </Box>
                         )}
@@ -863,14 +865,14 @@ const TimerDetails = () => {
                           level='body-xs'
                           sx={{ color: 'text.tertiary' }}
                         >
-                          Started: {fmt.time(timerData.startTime)}
+                          {t('choreView.timerDetail.startedAt', { time: fmt.time(timerData.startTime) })}
                         </Typography>
                         {timerData.endTime && (
                           <Typography
                             level='body-xs'
                             sx={{ color: 'text.tertiary' }}
                           >
-                            Ended: {fmt.time(timerData.endTime)}
+                            {t('choreView.timerDetail.endedAt', { time: fmt.time(timerData.endTime) })}
                           </Typography>
                         )}
                         {!timerData.endTime && (
@@ -878,17 +880,16 @@ const TimerDetails = () => {
                             level='body-xs'
                             sx={{ color: 'success.500' }}
                           >
-                            Now: {fmt.time(currentTime)}
+                            {t('choreView.timerDetail.nowAt', { time: fmt.time(currentTime) })}
                           </Typography>
                         )}
                         <Typography
                           level='body-xs'
                           sx={{ color: 'text.tertiary' }}
                         >
-                          Active:{' '}
-                          {calculateCurrentActiveDuration() > 0
+                          {t('choreView.timerDetail.activePercentLabel', { percent: calculateCurrentActiveDuration() > 0
                             ? `${Math.round((calculateCurrentActiveDuration() / calculateTotalDuration()) * 100)}%`
-                            : '0%'}
+                            : '0%' })}
                         </Typography>
                       </Box>
                     </Box>
@@ -896,8 +897,7 @@ const TimerDetails = () => {
                 ) : (
                   <Alert color='neutral' variant='soft' sx={{ py: 2 }}>
                     <Typography level='body-sm'>
-                      No activity timeline available. Start working to see your
-                      activity pattern.
+                      t('choreView.timerDetail.noTimeline')
                     </Typography>
                   </Alert>
                 )}
@@ -905,7 +905,7 @@ const TimerDetails = () => {
             </Box>
           </Card>
 
-          {/* Session Breakdown */}
+          {/* t('choreView.timerDetail.sessionBreakdown') */}
           <Box sx={{ mt: 2 }}>
             <Box
               sx={{
@@ -924,7 +924,7 @@ const TimerDetails = () => {
                   onClick={() => startEditingSession()}
                   size='sm'
                 >
-                  Edit
+                  {t('choreView.timerDetail.edit')}
                 </Button>
               )}
               {editingSessions[timerData.id] && (
@@ -934,7 +934,7 @@ const TimerDetails = () => {
                     onClick={() => cancelEditingSession(timerData.id)}
                     size='sm'
                   >
-                    Cancel
+                    {t('choreView.timerDetail.cancel')}
                   </Button>
                   <Button
                     variant='solid'
@@ -943,7 +943,7 @@ const TimerDetails = () => {
                     loading={loading}
                     size='sm'
                   >
-                    Save Changes
+                    {t('choreView.timerDetail.saveChanges')}
                   </Button>
                 </Box>
               )}
@@ -1019,7 +1019,7 @@ const TimerDetails = () => {
                                           level='body-xs'
                                           sx={{ mt: 0.5 }}
                                         >
-                                          Edit
+                                          {t('choreView.timerDetail.edit')}
                                         </Typography>
                                       </Box>
                                     </SwipeAction>
@@ -1045,7 +1045,7 @@ const TimerDetails = () => {
                                           level='body-xs'
                                           sx={{ mt: 0.5 }}
                                         >
-                                          Delete
+                                          {t('choreView.timerDetail.deleteSessionTitle')}
                                         </Typography>
                                       </Box>
                                     </SwipeAction>
@@ -1109,7 +1109,7 @@ const TimerDetails = () => {
                                         variant='soft'
                                         sx={{ fontSize: '0.7rem' }}
                                       >
-                                        Live
+                                        {t('choreView.timerDetail.live')}
                                       </Chip>
                                     )}
                                     {/* User chip showing who started the session */}
@@ -1167,7 +1167,7 @@ const TimerDetails = () => {
                                       mb: 0.2,
                                     }}
                                   >
-                                    Session #{pauseIndex + 1} • {sessionDate}
+                                    {t('choreView.timerDetail.sessionNumberDate', { number: pauseIndex + 1, date: sessionDate })}
                                   </Typography>
                                   <Typography
                                     level='body-xs'
@@ -1177,7 +1177,7 @@ const TimerDetails = () => {
                                     }}
                                   >
                                     {startTime}{' '}
-                                    {endTime ? `→ ${endTime}` : '→ ongoing'}
+                                    {endTime ? `→ ${endTime}` : t('choreView.timerDetail.sessionOngoing')}
                                   </Typography>
                                 </Box>
 
@@ -1185,6 +1185,7 @@ const TimerDetails = () => {
                                   color='neutral'
                                   variant='plain'
                                   size='sm'
+                                  aria-label={t('choreView.timerDetail.moreOptions')}
                                   onClick={e => {
                                     e.stopPropagation()
                                     if (showMoreInfoId === pauseIndex) {
@@ -1208,8 +1209,8 @@ const TimerDetails = () => {
                   <EmptyState
                     size='sm'
                     icon={<AccessTime />}
-                    title='No work sessions yet'
-                    description='Start the timer on this task and each session lands here.'
+                    title={t('choreView.timerDetail.noWorkSessions')}
+                    description={t('choreView.timerDetail.noWorkSessionsDesc')}
                   />
                 )}
               </Box>
@@ -1242,7 +1243,7 @@ const TimerDetails = () => {
                         startDecorator={<Add />}
                         onClick={() => addPauseLogEntry(timerData.id)}
                       >
-                        Add Session
+                        {t('choreView.timerDetail.addSession')}
                       </Button>
                     </Box>
 
@@ -1265,7 +1266,7 @@ const TimerDetails = () => {
                               level='body-md'
                               sx={{ fontWeight: 'bold' }}
                             >
-                              Session #{pauseIndex + 1}
+                              {t('choreView.timerDetail.sessionNumber', { number: pauseIndex + 1 })}
                             </Typography>
                             <Button
                               size='sm'
@@ -1292,7 +1293,7 @@ const TimerDetails = () => {
                                 level='body-sm'
                                 sx={{ fontWeight: 'bold', mb: 1 }}
                               >
-                                Start Time
+                                {t('choreView.timerDetail.startTime')}
                               </Typography>
                               <Input
                                 type='datetime-local'
@@ -1315,7 +1316,7 @@ const TimerDetails = () => {
                                 level='body-sm'
                                 sx={{ fontWeight: 'bold', mb: 1 }}
                               >
-                                End Time
+                                {t('choreView.timerDetail.endTime')}
                               </Typography>
                               <Input
                                 type='datetime-local'
@@ -1338,7 +1339,7 @@ const TimerDetails = () => {
                                 }
                               />
                               <FormHelperText>
-                                Leave empty if session is ongoing
+                                t('choreView.timerDetail.leaveEmptyOngoing')
                               </FormHelperText>
                             </FormControl>
 
@@ -1347,7 +1348,7 @@ const TimerDetails = () => {
                                 level='body-sm'
                                 sx={{ fontWeight: 'bold', mb: 1 }}
                               >
-                                Duration (Auto-calculated)
+                                t('choreView.timerDetail.durationAutoCalc')
                               </Typography>
                               <Typography
                                 level='body-sm'
@@ -1433,7 +1434,8 @@ const TimerDetails = () => {
               },
             },
           }}
-          title={isTimerRunning() ? 'Pause Timer' : 'Start Timer'}
+          aria-label={isTimerRunning() ? t('choreView.timerDetail.pauseTimer') : t('choreView.timerDetail.startTimer')}
+          title={isTimerRunning() ? t('choreView.timerDetail.pauseTimer') : t('choreView.timerDetail.startTimer')}
         >
           {isTimerRunning() ? (
             <PauseCircle sx={{ fontSize: 24 }} />

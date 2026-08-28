@@ -828,21 +828,23 @@ const RoutinesView = () => {
                   <TaskSummary item={item} members={members} />
                 </Box>
                 <Stack direction='row'>
-                  <IconButton
-                    size='sm'
-                    disabled={index === 0}
+					<IconButton
+						size='sm'
+						disabled={index === 0}
+						aria-label={t('routines.moveTaskUp', { name: item.name })}
                     onClick={() => move(index, -1)}
                   >
                     <ArrowUpward />
                   </IconButton>
-                  <IconButton
-                    size='sm'
-                    disabled={index === selected.items.length - 1}
+					<IconButton
+						size='sm'
+						disabled={index === selected.items.length - 1}
+						aria-label={t('routines.moveTaskDown', { name: item.name })}
                     onClick={() => move(index, 1)}
                   >
                     <ArrowDownward />
                   </IconButton>
-                  <IconButton size='sm' onClick={() => setTaskEditor(item)}>
+					<IconButton size='sm' aria-label={t('routines.editTask', { name: item.name })} onClick={() => setTaskEditor(item)}>
                     <Edit />
                   </IconButton>
                   <Button

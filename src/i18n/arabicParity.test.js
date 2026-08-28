@@ -30,6 +30,8 @@ const ALLOWED_IDENTICAL = new Set([
   'auth.serverURLPlaceholder',
   // App store brand names remain in Latin script across locales.
   'onboarding.heardAbout.sources.appStore',
+  // Format templates with only interpolation placeholders; real copy is in child keys.
+  'realtime.taskActionMessage',
 ])
 
 const flatten = (obj, prefix = '') =>
