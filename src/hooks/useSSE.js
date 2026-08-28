@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useUserProfile } from '../queries/UserQueries'
 import { useAlerts } from '../service/AlertsProvider'
@@ -21,6 +22,7 @@ const MAX_RECONNECT_ATTEMPTS = 10 // Circuit breaker limit
 const CIRCUIT_BREAKER_RESET_TIME = 600000 // 10 minutes
 
 export const useSSE = () => {
+  const { t } = useTranslation('common')
   const { isAuthenticated, token } = useAuth()
   // Only fetch user profile if authenticated - prevents unnecessary API calls on landing page
   const { data: userProfile } = useUserProfile()
@@ -95,8 +97,8 @@ export const useSSE = () => {
           case 'chore.created':
             showNotification({
               type: 'info',
-              title: 'New Task Created',
-              message: `${eventData.data.user.displayName} created "${eventData.data.chore.name}"`,
+              title: t('realtime.newTaskCreated'),
+              message: t('realtime.taskActionMessage', { user: eventData.data.user.displayName, action: t('realtime.actionCreated'), chore: eventData.data.chore.name }),
               duration: 5000,
             })
             const newChore = eventData.data.chore
@@ -121,8 +123,8 @@ export const useSSE = () => {
             if (eventData?.data?.user?.id !== userProfile?.id) {
               showNotification({
                 type: 'info',
-                title: `Task ${eventData.type.replace('chore.', '')}`,
-                message: `${eventData.data.user.displayName}  ${eventData.type.replace('chore.', '')} "${eventData.data.chore.name}"`,
+                title: (() => { const a = eventData.type.replace('chore.', ''); return t('realtime.action' + a.charAt(0).toUpperCase() + a.slice(1)); })(),
+                message: t('realtime.taskActionMessage', { user: eventData.data.user.displayName, action: (() => { const a = eventData.type.replace('chore.', ''); return t('realtime.action' + a.charAt(0).toUpperCase() + a.slice(1)); })(), chore: eventData.data.chore.name }),
                 duration: 5000,
               })
             }
@@ -238,17 +240,17 @@ export const useSSE = () => {
             showAlert({
               type: 'success',
               color: 'success',
-              message: 'You are now receiving real-time as they happen.',
+              message: t('realtime.realtimeSuccessMessage'),
             })
             break
 
           case 'error':
             console.error('SSE error event:', eventData.data)
             showError({
-              title: 'Real-time Error',
+              title: t('realtime.realtimeError'),
               message:
                 eventData.data.message ||
-                'An error occurred with real-time updates',
+                t('realtime.realtimeErrorMessage'),
             })
             break
 
@@ -258,13 +260,13 @@ export const useSSE = () => {
       } catch (err) {
         console.error('Failed to parse SSE message:', err)
         showError({
-          title: 'Message Error',
-          message: 'Failed to parse server message',
+          title: t('realtime.messageError'),
+          message: t('realtime.messageErrorMessage'),
         })
         return // Stop processing if JSON parsing fails
       }
     },
-    [queryClient, showNotification, showError, userProfile, showAlert],
+    [queryClient, showNotification, showError, userProfile, showAlert, t],
   )
 
   const stopHeartbeatMonitor = useCallback(() => {
@@ -309,9 +311,9 @@ export const useSSE = () => {
     if (isCircuitBreakerOpen) {
       console.log('SSE: Circuit breaker is open, preventing connection attempt')
       showError({
-        title: 'Connection Temporarily Disabled',
+        title: t('realtime.connectionTempDisabled'),
         message:
-          'Connection blocked due to repeated failures. Please try again later.',
+          t('realtime.connectionTempDisabledMessage'),
       })
       return
     }
@@ -322,9 +324,9 @@ export const useSSE = () => {
       )
       setIsCircuitBreakerOpen(true)
       showError({
-        title: 'Connection Failed',
+        title: t('realtime.connectionFailed'),
         message:
-          'Maximum connection attempts reached. SSE disabled for 10 minutes.',
+          t('realtime.connectionFailedMessage'),
       })
 
       // Reset circuit breaker after timeout
@@ -367,7 +369,7 @@ export const useSSE = () => {
         const ticket = await fetchSSETicket()
         if (!ticket) {
           console.error('SSE: Failed to obtain connection ticket')
-          setError('Connection error occurred')
+          setError(t('realtime.connectionError'))
           setConnectionState(SSE_STATES.CLOSED)
           scheduleReconnect(
             RECONNECT_INTERVALS[
@@ -500,7 +502,7 @@ export const useSSE = () => {
 
         if (is401Error) {
           console.log('SSE 401 error detected, attempting token refresh...')
-          setError('Authentication expired - refreshing token...')
+          setError(t('realtime.authExpired'))
 
           try {
             const refreshResult = await apiClient.refreshToken()
@@ -509,7 +511,7 @@ export const useSSE = () => {
               console.log(
                 'Token refreshed successfully, retrying SSE connection...',
               )
-              setError('Token refreshed - reconnecting...')
+              setError(t('realtime.tokenRefreshed'))
 
               if (apiClient.failedQueue && apiClient.failedQueue.length > 0) {
                 console.log(
@@ -542,7 +544,7 @@ export const useSSE = () => {
               console.log(
                 'SSE: Token refresh in progress by another request, waiting...',
               )
-              setError('Token refresh in progress - reconnecting soon...')
+              setError(t('realtime.tokenRefreshInProgress'))
 
               reconnectAttemptsRef.current = 0
 
@@ -561,21 +563,21 @@ export const useSSE = () => {
               return
             } else if (refreshResult.error === 'Refresh token expired') {
               console.error('Refresh token expired, user must login again')
-              setError('Session expired - please log in again')
+              setError(t('realtime.sessionExpired'))
               return
             } else {
               console.error('Token refresh failed:', refreshResult.error)
-              setError('Authentication failed - please log in again')
+              setError(t('realtime.authFailed'))
               return
             }
           } catch (refreshError) {
             console.error('Token refresh error:', refreshError)
-            setError('Authentication error - please log in again')
+            setError(t('realtime.authError'))
             return
           }
         } else if (isTimeoutError) {
           console.log('SSE timeout detected, attempting reconnection...')
-          setError('Connection timeout - reconnecting...')
+          setError(t('realtime.connectionTimeout'))
         } else {
           setError('Connection error occurred')
         }
@@ -607,8 +609,8 @@ export const useSSE = () => {
     } catch (err) {
       console.error('Failed to create SSE connection:', err)
       showError({
-        title: 'Connection Error',
-        message: 'Failed to establish real-time connection. Please try again.',
+        title: t('realtime.connectionErrorTitle'),
+        message: t('realtime.connectionErrorMessage'),
       })
       setConnectionState(SSE_STATES.CLOSED)
     }
@@ -620,6 +622,7 @@ export const useSSE = () => {
     scheduleReconnect,
     isCircuitBreakerOpen,
     showError,
+    t,
   ])
 
   connectRef.current = connect
