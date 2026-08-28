@@ -18,15 +18,44 @@ const IGNORED_CONSOLE_PATTERNS = [
 
 export const attachRuntimeErrorGuard = page => {
   const errors = []
+  const expectedPublicStatusErrors = []
 
   page.on('pageerror', error => {
     errors.push(`pageerror: ${error.message}`)
+  })
+
+  // Browser resource errors omit the URL. The strict API mock adds this header
+  // so a route/query/method regression is actionable in the smoke output.
+  page.on('response', response => {
+    const contractError = response.headers()['x-daydan-mock-contract-error']
+    if (contractError) {
+      errors.push(`API contract: ${contractError}`)
+    }
+    const request = response.request()
+    if (
+      response.url().includes('/api/v1/auth/refresh') &&
+      !request.headers().authorization &&
+      response.status() === 400
+    ) {
+      expectedPublicStatusErrors.push(400)
+    }
   })
 
   page.on('console', message => {
     if (message.type() !== 'error') return
     const text = message.text()
     if (IGNORED_CONSOLE_PATTERNS.some(pattern => pattern.test(text))) return
+    const statusMatch = text.match(/status of (\d+)/)
+    if (
+      statusMatch &&
+      expectedPublicStatusErrors.indexOf(Number(statusMatch[1])) !== -1
+    ) {
+      expectedPublicStatusErrors.splice(
+        expectedPublicStatusErrors.indexOf(Number(statusMatch[1])),
+        1,
+      )
+      return
+    }
     errors.push(`console.error: ${text}`)
   })
 

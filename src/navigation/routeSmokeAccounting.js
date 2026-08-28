@@ -284,7 +284,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'chores',
     auth: true,
     nav: true,
-    text: /no timer data/i,
+    text: /no work sessions yet/i,
   },
 
   // family
