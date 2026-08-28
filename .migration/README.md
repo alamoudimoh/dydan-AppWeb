@@ -89,3 +89,14 @@ When the owner says `Execute Phase 6`, this README is the complete execution con
 7. Do not ask routine implementation questions. For category C, continue and finish every independent executable task first. Only after exhausting Figma/repository evidence and all A/B work may unresolved C items become a terminal owner-design blocker; return them once as a consolidated exact list with source/route evidence and the minimum design decision required.
 8. Earlier wording such as `stop`, `request owner input`, or `report owner-input blocker` means terminal handling only after all independent executable work is finished, never an early progress response.
 9. Return exactly one terminal report: `PHASE 6 COMPLETE` with evidence when no unresolved C blocker prevents completion, or `NOT COMPLETE` only for concrete unresolved owner-design/external blockers after all other work and remediation are exhausted. Do not start Phase 7.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, classification, planning, or listing remaining work are PREPARATION ONLY and never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform all executable code migration in `Required Implementation`. If implementation has not yet happened, START AND COMPLETE IT instead of returning status.
+3. A terminal response saying `implementation has not yet been performed`, `phase has not started`, `migration remains outstanding`, `not migrated`, `not verified`, or equivalent is INVALID.
+4. `NOT COMPLETE` may not be used because A/B implementation, tests, parity verification, PR, or merge are pending. Those are mandatory work items.
+5. Complete all A/B surfaces and all other repository work before any Category C item can become a terminal owner-design blocker. Do not use Category C as an excuse to stop the executable portion early.
+6. Continue until Figma-covered Search/Settings/Error work is implemented literally, all A/B work is completed, in-repo regressions are fixed, local gates pass, PR is merged, and clean post-merge verification passes.
+7. Only a genuinely external blocker or unresolved Category C owner-design decision that cannot be derived from authoritative Figma/repository evidence may terminate as `NOT COMPLETE`, after every independent executable item is finished.
+8. Literal Figma fidelity is mandatory for all covered presentation: no reinterpretation, simplification, approximation, substitution, or postponement.
