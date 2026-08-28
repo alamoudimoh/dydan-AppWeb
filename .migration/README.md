@@ -29,7 +29,7 @@ Login/signup/social auth/MFA/password reset/session restoration, onboarding and 
 # Required Implementation
 
 1. Inventory all remaining production surfaces and classify A shared Figma-shell treatment sufficient, B exact reusable Figma primitive composition possible, C `no authoritative Figma design — OWNER DESIGN INPUT REQUIRED`.
-2. Apply A/B only using copied Figma primitives/classes; retain content/behavior. For every C, stop implementation and request owner design input; do not approximate or “modernize.”
+2. Apply A/B only using copied Figma primitives/classes; retain content/behavior. For every C, do not approximate or “modernize”; complete all other executable work before treating it as an owner-design blocker.
 3. Audit imports/build output to identify every remaining `@mui/joy`, `@mui/material`, `@emotion/react`, `@emotion/styled` consumer. Remove packages only when zero legitimate consumers remain; otherwise report exact consumers and defer removal.
 
 # Forbidden Substitutions
@@ -46,7 +46,7 @@ Auth/MFA/reset/session/onboarding/legal/payment/deep-link tests; accessiblity an
 
 # Visual Acceptance
 
-For A/B surfaces, compare exact shared Figma primitives at 1440×900/390×844 × DayDan/Sovereign × LTR/RTL. For C, provide no claimed visual parity and obtain owner input.
+For A/B surfaces, compare exact shared Figma primitives at 1440×900/390×844 × DayDan/Sovereign × LTR/RTL. For C, provide no claimed visual parity and obtain owner input only as a terminal blocker after all other work is complete.
 
 # RTL / Arabic
 
@@ -67,3 +67,17 @@ Report full A/B/C inventory, owner-input requests, consumer audit, removed/defer
 # GitHub Actions / Merge Policy
 
 GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
+
+# Autonomous End-to-End Execution Contract
+
+When the owner says `Execute Phase 7`, this README is the complete execution contract. Work autonomously from start to terminal completion.
+
+1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work in isolated worktrees without touching the dirty primary checkout or `daydan-server`.
+2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. Wait/poll for running commands and continue.
+3. Any test/build/lint/typecheck/visual failure must be reproduced, root-caused, fixed in scope, covered where appropriate, and rerun. Continue until the full applicable gate is green or a genuinely external blocker remains after reasonable remediation is exhausted.
+4. Complete missing prior-phase post-merge verification first if necessary; fix any concrete regression through a narrow closure PR, merge, reverify, then continue without asking the owner.
+5. Complete every A/B surface, behavior preservation task, dependency consumer audit, local verification, visual checks, review passes, commit, push, PR, diff review, merge, and fresh detached post-merge verification before considering the phase terminal.
+6. GitHub Actions is informational/non-gating. Never wait for it or ask for an override.
+7. Do not ask routine implementation questions. For category C, exhaust Figma shared primitives and repository evidence first, finish all A/B and independent work, then return unresolved C surfaces only once as a consolidated terminal owner-design blocker with exact route/source evidence and minimum required design decisions. Never invent UI.
+8. Earlier wording such as `stop`, `request owner input`, `obtain owner input`, or `report blocker` means terminal handling only after all independent executable work is complete, never an early progress response.
+9. Return exactly one terminal report: `PHASE 7 COMPLETE` with evidence when completion criteria are satisfied, or `NOT COMPLETE` only for concrete unresolved owner-design/external blockers after all other work/remediation is exhausted. Do not start Phase 8.
