@@ -80,3 +80,13 @@ When the owner says `Execute Phase 8`, this README is the complete execution con
 7. Do not ask routine implementation questions. Resolve repository/tooling/test/UI decisions from authoritative Figma and code. Any owner-design classification inherited from prior phases may block only after every executable migration/cleanup/verification item is finished; return one consolidated exact blocker if unavoidable. Never invent UI.
 8. Earlier wording such as `report unavailable infrastructure`, `NOT COMPLETE`, `owner-input classification`, or `report constraint` never authorizes an early progress response; finish all independent executable work first.
 9. Return exactly one terminal report: `PHASE 8 COMPLETE — EXACT FIGMA PARITY ACHIEVED` with evidence, or `NOT COMPLETE` only for concrete unresolved external/owner-design blockers after all remediation and independent work are exhausted. Do not create a Phase 9.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, planning, dependency scanning, or listing remaining work are PREPARATION ONLY and never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform the actual migration/cleanup/verification work in `Required Work`. If implementation has not yet happened, START AND COMPLETE IT instead of returning status.
+3. A terminal response saying `implementation has not yet been performed`, `phase has not started`, `migration remains outstanding`, `not migrated`, `not verified`, or equivalent is INVALID.
+4. `NOT COMPLETE` may not be used because residual migration, dependency cleanup, parity work, tests, verification, PR, merge, or post-merge verification are pending. Those are mandatory work items.
+5. Continue until every Figma-covered residual is migrated literally, legacy presentation dependencies are removed where consumer evidence permits, every active tooling path is Figma-runtime-compatible, the complete parity matrix is executed, all in-repo regressions are fixed, local gates pass, PR is merged, and clean post-merge verification passes.
+6. Only a genuinely external or unresolved owner-design blocker that cannot be resolved through repository changes, normal branch/PR operations, available tooling, or authoritative Figma/repository evidence may terminate as `NOT COMPLETE`, after all independent executable work is finished.
+7. Literal Figma fidelity is mandatory across the final product: no reinterpretation, simplification, approximation, substitution, hidden compatibility shim, or postponement of Figma-defined presentation.
