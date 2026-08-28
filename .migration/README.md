@@ -68,3 +68,17 @@ Report adapters, preserved hooks/mutations, tests, fixture definitions, screensh
 # GitHub Actions / Merge Policy
 
 GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
+
+# Autonomous End-to-End Execution Contract
+
+When the owner says `Execute Phase 3`, this README is the complete execution contract. Work autonomously from start to terminal completion.
+
+1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work in isolated worktrees without touching the dirty primary checkout or `daydan-server`.
+2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. Wait/poll for running commands and continue.
+3. Any test/build/lint/typecheck/visual failure must be reproduced, root-caused, fixed in scope, covered where appropriate, and rerun. Continue through all failures until the full applicable gate is green or a genuinely external blocker remains after reasonable remediation is exhausted.
+4. Complete missing prior-phase post-merge verification first if necessary; fix any concrete regression through a narrow closure PR, merge, reverify, then continue without asking the owner.
+5. Complete implementation, local verification, exact Figma parity matrix, review passes, commit, push, PR, full diff review, merge, fetch final `origin/develop`, fresh detached worktree, and complete post-merge verification. No phase completion before the merged SHA passes.
+6. GitHub Actions is informational/non-gating. Never wait for it or ask for an override.
+7. Do not ask routine implementation questions. Derive decisions from repository code and authoritative Figma. Only a truly external dependency or explicit owner-design decision not derivable from those sources may block terminal completion; finish every other executable item first and return one consolidated blocker with evidence.
+8. Earlier wording such as `execution stops`, `stop`, `request owner input`, or `report constraint` means terminal handling only after all independent executable work is finished, never an early response.
+9. Return exactly one terminal report: `PHASE 3 COMPLETE` with evidence, or `NOT COMPLETE` only for a concrete unresolved external blocker after remediation is exhausted. Do not start Phase 4.
