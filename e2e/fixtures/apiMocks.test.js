@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { hasAuthorization, installApiMocks } from './apiMocks.js'
+import {
+  createApiMockHandler,
+  hasAuthorization,
+  installApiMocks,
+} from './apiMocks.js'
 
 test('hasAuthorization detects bearer tokens case-insensitively', () => {
   const withLowercase = {
@@ -17,9 +21,8 @@ test('hasAuthorization detects bearer tokens case-insensitively', () => {
   assert.equal(hasAuthorization(without), false)
 })
 
-test('installApiMocks registers auth/session mocks that require Authorization', async () => {
+test('installApiMocks registers one strict API dispatcher', async () => {
   const routes = []
-  const fulfillCalls = []
   const page = {
     route: async (pattern, handler) => {
       routes.push({ pattern, handler })
@@ -28,48 +31,85 @@ test('installApiMocks registers auth/session mocks that require Authorization', 
 
   await installApiMocks(page)
 
-  const profileRoute = routes.find(r => r.pattern === '**/api/v1/users/profile')
-  const refreshRoute = routes.find(
-    r => r.pattern === '**/api/v1/auth/refresh**',
-  )
+  assert.equal(routes.length, 1)
+  assert.equal(routes[0].pattern, '**/api/v1/**')
+  assert.equal(typeof routes[0].handler, 'function')
+})
 
-  assert.ok(profileRoute, 'profile mock should be registered')
-  assert.ok(refreshRoute, 'refresh mock should be registered')
+const callMock = async ({ body, headers = {}, method = 'GET', path }) => {
+  const fulfillCalls = []
+  const handler = createApiMockHandler()
+  const route = {
+    request: () => ({
+      headers: () => headers,
+      method: () => method,
+      postData: () => body,
+      url: () => `http://daydan.test${path}`,
+    }),
+    fulfill: response => fulfillCalls.push(response),
+  }
 
-  const makeRoute = request => ({
-    request: () => request,
-    fulfill: response => {
-      fulfillCalls.push(response)
-    },
+  await handler(route)
+  return fulfillCalls[0]
+}
+
+test('strict mock rejects unknown API routes instead of returning a success', async () => {
+  const response = await callMock({ path: '/api/v1/chores/not-a-route' })
+
+  assert.equal(response.status, 404)
+  assert.match(JSON.parse(response.body).error, /unregistered api request/i)
+})
+
+test('strict mock rejects wrong methods and malformed route parameters', async () => {
+  const wrongMethod = await callMock({
+    method: 'POST',
+    path: '/api/v1/chores/42/details',
+  })
+  const malformedParameter = await callMock({ path: '/api/v1/chores/not-a-id' })
+
+  assert.equal(wrongMethod.status, 405)
+  assert.equal(malformedParameter.status, 404)
+})
+
+test('specific routes retain their server envelopes without collection shadowing', async () => {
+  const profile = await callMock({
+    path: '/api/v1/users/profile',
+    headers: { authorization: 'Bearer smoke-test-token' },
+  })
+  const ticket = await callMock({
+    path: '/api/v1/realtime/sse/ticket',
+    headers: { authorization: 'Bearer smoke-test-token' },
+  })
+  const workload = await callMock({
+    path: '/api/v1/progress/workload?range=week',
   })
 
-  // Without Authorization, both endpoints should return a clean 200 with an
-  // empty body so the runtime-error guard does not flag a 401 console error,
-  // while still leaving the client unauthenticated.
-  fulfillCalls.length = 0
-  await profileRoute.handler(makeRoute({ headers: () => ({}) }))
-  assert.equal(fulfillCalls[0].status, 200)
-  assert.equal(JSON.parse(fulfillCalls[0].body).res, null)
+  assert.equal(JSON.parse(profile.body).res.id, 1)
+  assert.equal(JSON.parse(ticket.body).expiresIn, 60)
+  assert.equal(ticket.headers['Cache-Control'], 'no-store')
+  assert.equal(JSON.parse(workload.body).res, undefined)
+  assert.ok(Array.isArray(JSON.parse(workload.body).members))
+})
 
-  fulfillCalls.length = 0
-  await refreshRoute.handler(makeRoute({ headers: () => ({}) }))
-  assert.equal(fulfillCalls[0].status, 200)
-  assert.equal(JSON.parse(fulfillCalls[0].body).res, null)
-
-  // With Authorization, both endpoints should succeed.
-  fulfillCalls.length = 0
-  await profileRoute.handler(
-    makeRoute({
-      headers: () => ({ authorization: 'Bearer smoke-test-token' }),
+test('strict mock validates mutation payloads and supported public auth flows', async () => {
+  const invalidMutation = await callMock({
+    method: 'POST',
+    path: '/api/v1/chores/42/do',
+    body: JSON.stringify({ operationId: 'not-a-uuid' }),
+  })
+  const validMutation = await callMock({
+    method: 'POST',
+    path: '/api/v1/chores/42/do',
+    body: JSON.stringify({
+      operationId: '00000000-0000-4000-8000-000000000001',
     }),
-  )
-  assert.equal(fulfillCalls[0].status, 200)
+  })
+  const publicRefresh = await callMock({
+    method: 'POST',
+    path: '/api/v1/auth/refresh',
+  })
 
-  fulfillCalls.length = 0
-  await refreshRoute.handler(
-    makeRoute({
-      headers: () => ({ authorization: 'Bearer smoke-test-token' }),
-    }),
-  )
-  assert.equal(fulfillCalls[0].status, 200)
+  assert.equal(invalidMutation.status, 400)
+  assert.equal(validMutation.status, 200)
+  assert.equal(publicRefresh.status, 400)
 })
