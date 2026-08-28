@@ -91,3 +91,14 @@ When the owner says `Execute Phase 7`, this README is the complete execution con
 7. Do not ask routine implementation questions. For category C, exhaust Figma shared primitives and repository evidence first, finish all A/B and independent work, then return unresolved C surfaces only once as a consolidated terminal owner-design blocker with exact route/source evidence and minimum required design decisions. Never invent UI.
 8. Earlier wording such as `stop`, `request owner input`, `obtain owner input`, or `report blocker` means terminal handling only after all independent executable work is complete, never an early progress response.
 9. Return exactly one terminal report: `PHASE 7 COMPLETE` with evidence when completion criteria are satisfied, or `NOT COMPLETE` only for concrete unresolved owner-design/external blockers after all other work/remediation is exhausted. Do not start Phase 8.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, classification, planning, or listing remaining work are PREPARATION ONLY and never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform every executable implementation task. If implementation has not yet happened, START AND COMPLETE IT instead of returning status.
+3. A terminal response saying `implementation has not yet been performed`, `phase has not started`, `migration remains outstanding`, `not migrated`, `not verified`, or equivalent is INVALID.
+4. `NOT COMPLETE` may not be used because A/B implementation, dependency cleanup, tests, visual verification, PR, or merge are pending. Those are mandatory work items.
+5. Finish every A/B and other executable surface before any Category C surface may become a terminal owner-design blocker. Category C is never permission to stop the phase early.
+6. Continue until all executable work is implemented, in-repo regressions are fixed, required checks pass, PR is merged, and clean post-merge verification passes.
+7. Only a genuinely external blocker or unresolved Category C owner-design decision that cannot be derived from authoritative Figma/repository evidence may terminate as `NOT COMPLETE`, after all independent executable work is finished.
+8. Where Figma defines presentation, literal fidelity is mandatory: no reinterpretation, simplification, approximation, substitution, or postponement.
