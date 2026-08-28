@@ -1,67 +1,63 @@
 # Phase
 
-Phase 4 — `migration/figma-p04-tasks-calendar`: exact task workflow, All Tasks and Calendar.
+Phase 5 — `migration/figma-p05-organize-household`: exact Figma organize/household screens.
 
 # Prerequisites
 
-Fetch/prune; verify Phases 1–3 merged; rebase to latest `origin/develop` resolving only planning/base drift. Figma wins over `design-reference/` and legacy UI.
+Fetch/prune; verify Phases 1–4 merged; rebase latest `origin/develop`, resolving planning/base drift only. Figma overrides `design-reference/` and current production presentation.
 
 # Authoritative Figma Baseline
 
-`design-source/figma-make/` at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, matching dedicated repo `7131b76979e49351db8ecbc33db6648a75139572`.
+Imported `design-source/figma-make/` at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, identical to `DayDanProductExperience` `7131b76979e49351db8ecbc33db6648a75139572`.
 
 # Exact Figma Stack
 
-React 19, Vite 8, plugin-react 6, Tailwind 4/@tailwindcss-vite 4, TS 5.7, oxfmt.
+React 19, Vite 8, plugin-react 6, Tailwind 4/@tailwindcss-vite 4, TS 5.7, oxfmt; reuse actual JSX/classes.
 
 # Figma Source Files
 
-`src/screens/{TodayScreen,AllTasksScreen,CalendarScreen}.tsx`, `src/components/{CreateTaskModal,TaskDetailModal}.tsx`, `src/App.tsx`, `src/index.css`.
+`src/screens/{ProjectsScreen,RoutinesScreen,ShoppingScreen,GoalsScreen,MaintenanceScreen,ActivityScreen}.tsx`, `src/App.tsx`, `src/data.ts`, `src/index.css`.
 
 # Production Targets
 
-`src/views/Chores/{MyChores,ChoreListView,ChoreCard,ArchivedTasks,SortAndGrouping,Sidepanel}/**`, `src/views/ChoreEdit/{ChoreEdit,ChoreView,RepeatSection,ThingTriggerSection}/**`, `src/views/Calendar/CalendarView.jsx`, `src/views/components/{AddTaskModal,DueDatePicker*,AssigneePickerField,ProjectPickerField,LabelsPickerField,RepeatPickerField,ChoreActionMenu}.jsx`, `src/queries/{ChoreQueries,TimeQueries}*`.
+`src/views/Projects/{ProjectView,ProjectQueries}.js*`, `Routines/{RoutinesView,RoutineQueries}.js*`, `ShoppingLists/{ShoppingListsView,ShoppingListDetail,ShoppingListQueries}.js*`, `Maintenance/**`, `User/UserActivities.jsx`, `FamilyProgress/FamilyProgress.jsx`, `History/**`, `Rewards/**`, `src/queries/**`, `src/contexts/RouterContext.jsx`.
 
 # Existing Behavior That Must Be Preserved
 
-Create/edit/detail/clone/archive, recurrence, subtasks, assignment, approval, permissions, timer, categories/projects/labels, filters/sorting, offline optimistic mutations, SSE invalidation, calendar semantics and routes.
+Project/routine/shopping CRUD, list item mutations, archival, chores linkage, maintenance assets/history/meters, household permissions, activity history, React Query cache/invalidation, SSE, offline, auth, i18n and existing routes.
 
 # Required Implementation
 
-Port each Figma component DOM/classes directly; wire live query models and handlers. Keep routes `/chores`, `/chores/create`, `/chores/:choreId`, `/chores/:choreId/edit`, history/timer and `/calendar`. Map Figma filters/grouping/search/calendar controls to existing behavior; preserve unsupported product controls through exact reusable Figma primitive composition, not a new design.
+Port each listed Figma screen structure/classes and wire real models/mutations. Map Projects `/projects`, Routines `/routines`, Shopping `/shopping` and detail, Maintenance `/maintenance`/assets, Activity `/activities`; evaluate Goals against existing FamilyProgress/points/rewards semantics. If a Figma screen covers only part of a product route, preserve remaining behavior using exact Figma shared primitives, not invented layout.
 
 # Forbidden Substitutions
 
-No Joy/MUI date picker/card/dialog equivalents, no `sx`, no stripped recurrence/approval/offline behavior, no mock task data, no altered Figma responsive layout.
+No MUI Joy equivalents, `sx`, mock data, removal of detail/CRUD/permission/offline flows, design-reference override or approximate layouts.
 
 # Dependency Changes
 
-None expected; retain legacy UI dependencies only while a genuine unmigrated consumer exists.
+None expected.
 
 # Tests
 
-Mutation/query/offline/reconnect tests; task lifecycle and recurrence integration; Playwright create/detail/filter/calendar tests; `npm test`, build, smoke, `./scripts/verify.sh`.
+Add query/mutation and permission tests; Playwright CRUD/list/detail/activity fixtures; run `npm test`, build, smoke and `./scripts/verify.sh`.
 
 # Visual Acceptance
 
-Figma vs production at 1440×900/1024×768/390×844, DayDan/Sovereign × LTR/RTL, with overdue/todo/done/recurring/assigned/filter/calendar and modal states. Compare DOM composition, controls, spacing, typography, shadows, borders, navigation and density.
+For all six Figma screens, compare 1440×900/390×844 × DayDan/Sovereign × LTR/RTL with populated, empty, error and permission states. Match cards, rows, typography, icons, controls, responsive density and shell.
 
 # RTL / Arabic
 
-Verify Arabic creation/detail/forms/calendar direction and localized date content without breaking behavior.
+Use Figma logical layout and Arabic content for every screen/detail form.
 
 # Capacitor / Native
 
-Verify keyboard, modal, touch calendar/task actions, offline mutation queue and Android sync.
+Check touch CRUD, scrolling, file/asset pathways, offline/reconnect and Android sync.
 
 # Completion Criteria
 
-All named routes render actual Figma UI while every listed contract works and screenshot matrix passes.
+Every authoritative screen is direct Figma implementation with real behavior and visual matrix pass.
 
 # Final Evidence
 
-Report source/route mapping, preserved mutation list, tests/build/sync, screenshot pairs and any proven blocked parity.
-
-# GitHub Actions / Merge Policy
-
-GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
+Report source/route mapping, behavior inventory, tests, screenshots and constraints.
