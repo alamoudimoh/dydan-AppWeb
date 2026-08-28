@@ -23,10 +23,7 @@ export const canManageShoppingList = (list, userId, effectiveRole) => {
   if (!isCircleList(list)) {
     return Number(list.createdBy) === Number(userId)
   }
-  return (
-    Number(list.createdBy) === Number(userId) ||
-    effectiveRole === 'owner'
-  )
+  return Number(list.createdBy) === Number(userId) || effectiveRole === 'owner'
 }
 
 export const canEditShoppingItems = list => Boolean(list)

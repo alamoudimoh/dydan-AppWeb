@@ -43,10 +43,7 @@ const createMemoryIndexedDb = () => {
       const db = ensureDb(dbName, OFFLINE_DB.version)
       const store = db.stores.get(storeName)
       for (const record of records) {
-        const key =
-          record.id ??
-          record.key ??
-          `${storeName}-${store.size + 1}`
+        const key = record.id ?? record.key ?? `${storeName}-${store.size + 1}`
         store.set(key, structuredClone(record))
       }
     },
@@ -136,10 +133,7 @@ test('fresh DayDan localStorage reads canonical key only', () => {
   resetLocalStorage()
   writeLocalStorageItem(STORAGE_KEYS.calendarView, 'month')
 
-  assert.equal(
-    readMigratedLocalStorageItem(STORAGE_KEYS.calendarView),
-    'month',
-  )
+  assert.equal(readMigratedLocalStorageItem(STORAGE_KEYS.calendarView), 'month')
   assert.equal(
     localStorage.getItem(STORAGE_KEYS.calendarView.canonical),
     'month',
@@ -164,10 +158,7 @@ test('legacy-only localStorage value migrates to DayDan key', () => {
 test('DayDan localStorage value wins when legacy also exists', () => {
   resetLocalStorage()
   localStorage.setItem('taskier.dashboard.upcomingRange', '14')
-  localStorage.setItem(
-    STORAGE_KEYS.dashboardUpcomingRange.canonical,
-    '30',
-  )
+  localStorage.setItem(STORAGE_KEYS.dashboardUpcomingRange.canonical, '30')
 
   assert.equal(
     readMigratedLocalStorageItem(STORAGE_KEYS.dashboardUpcomingRange),
@@ -179,12 +170,14 @@ test('localStorage migration is idempotent', () => {
   resetLocalStorage()
   localStorage.setItem('donetick.globalSearch.recents', JSON.stringify(['a']))
 
-  assert.deepEqual(readMigratedLocalStorageJSON(STORAGE_KEYS.globalSearchRecents, []), [
-    'a',
-  ])
-  assert.deepEqual(readMigratedLocalStorageJSON(STORAGE_KEYS.globalSearchRecents, []), [
-    'a',
-  ])
+  assert.deepEqual(
+    readMigratedLocalStorageJSON(STORAGE_KEYS.globalSearchRecents, []),
+    ['a'],
+  )
+  assert.deepEqual(
+    readMigratedLocalStorageJSON(STORAGE_KEYS.globalSearchRecents, []),
+    ['a'],
+  )
   assert.equal(
     localStorage.getItem(STORAGE_KEYS.globalSearchRecents.canonical),
     JSON.stringify(['a']),
@@ -224,7 +217,10 @@ test('IndexedDB migration copies legacy offline data once', async () => {
   assert.equal(copiedChores[0].data.name, 'Dishes')
   assert.equal(copiedMeta.length, 1)
   assert.equal(copiedMeta[0].value, '123')
-  assert.equal(memoryDb.storeRecords(OFFLINE_DB.legacy, 'cached_chores').length, 1)
+  assert.equal(
+    memoryDb.storeRecords(OFFLINE_DB.legacy, 'cached_chores').length,
+    1,
+  )
 })
 
 test('IndexedDB migration prefers existing DayDan database', async () => {

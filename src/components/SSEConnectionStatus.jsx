@@ -1,15 +1,16 @@
 import { Circle, SignalWifi4Bar, SignalWifiOff } from '@mui/icons-material'
 import { Box, Chip, Tooltip, Typography } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
+
 import { useSSEContext } from '../hooks/useSSEContext'
 
 const SSEConnectionStatus = ({
-  variant = 'minimal',
   showError = false,
   sx = {},
+  variant = 'minimal',
 }) => {
-	const { t } = useTranslation('common')
-  const { isConnected, isConnecting, error, getConnectionStatus } =
+  const { t } = useTranslation('common')
+  const { error, getConnectionStatus, isConnected, isConnecting } =
     useSSEContext()
 
   const getStatusColor = () => {
@@ -25,18 +26,18 @@ const SSEConnectionStatus = ({
   }
 
   const getStatusText = () => {
-	if (isConnected) return t('realtime.connected')
-	if (isConnecting) return t('realtime.connecting')
-	return t('realtime.disconnected')
+    if (isConnected) return t('realtime.connected')
+    if (isConnecting) return t('realtime.connecting')
+    return t('realtime.disconnected')
   }
 
   const getTooltipText = () => {
     const status = getConnectionStatus()
-	if (error) return t('realtime.statusWithError', { status, error })
-	if (!isConnected && !isConnecting) {
-		return t('realtime.statusJoinCircle', { status })
-	}
-	return t('realtime.status', { status })
+    if (error) return t('realtime.statusWithError', { status, error })
+    if (!isConnected && !isConnecting) {
+      return t('realtime.statusJoinCircle', { status })
+    }
+    return t('realtime.status', { status })
   }
 
   if (variant === 'minimal') {

@@ -1,20 +1,20 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { resolveEffectiveRole } from '../../utils/PermissionModel.js'
 import {
   canManageShoppingList,
   isCircleList,
   partitionShoppingLists,
   SHOPPING_LIST_SCOPES,
 } from './shoppingListModel.js'
-import { resolveEffectiveRole } from '../../utils/PermissionModel.js'
 
 test('partitionShoppingLists splits personal and family lists', () => {
   const lists = [
     { id: 1, name: 'Mine', circleId: null },
     { id: 2, name: 'Family', circleId: 3 },
   ]
-  const { personal, family } = partitionShoppingLists(lists)
+  const { family, personal } = partitionShoppingLists(lists)
   assert.equal(personal.length, 1)
   assert.equal(family.length, 1)
   assert.equal(isCircleList(family[0]), true)

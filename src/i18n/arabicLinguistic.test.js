@@ -97,7 +97,13 @@ const SINGULAR_PLURAL_PAIRS = [
 test('_one forms use singular noun, _other forms use plural noun', () => {
   for (const ns of NAMESPACES) {
     const ar = new Map(loadNamespace('ar', ns))
-    for (const [oneKey, otherKey, singularPat, pluralPat, desc] of SINGULAR_PLURAL_PAIRS) {
+    for (const [
+      oneKey,
+      otherKey,
+      singularPat,
+      pluralPat,
+      desc,
+    ] of SINGULAR_PLURAL_PAIRS) {
       const oneVal = ar.get(oneKey)
       const otherVal = ar.get(otherKey)
       if (!oneVal || !otherVal) continue // key not in this namespace
@@ -172,7 +178,15 @@ test('familyProgress.days uses noun-first order withbroken plural', () => {
 test('no Arabic text ends with dangling preposition without noun', () => {
   // Prepositions that should not end a string: لـ, إلى, من, في, على, عن, بين, تحت, فوق
   // Exclude legitimate label patterns where the preposition is completed by UI context
-  const DANGLING_PREPS = [/ لـ$/, / إلى$/, / من$/, / في$/, / على$/, / عن$/, / بين$/]
+  const DANGLING_PREPS = [
+    / لـ$/,
+    / إلى$/,
+    / من$/,
+    / في$/,
+    / على$/,
+    / عن$/,
+    / بين$/,
+  ]
   const LABEL_EXEMPTIONS = new Set([
     'assignedTo', // "Assigned to" — name follows in UI
     'choreView.createdBy', // "Created by" — name follows in UI

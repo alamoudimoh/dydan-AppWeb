@@ -1,4 +1,3 @@
-import useStickyState from '@/hooks/useStickyState'
 import {
   BrightnessAuto,
   DarkModeOutlined,
@@ -6,6 +5,8 @@ import {
 } from '@mui/icons-material'
 import { FormControl, IconButton, useColorScheme } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
+
+import useStickyState from '@/hooks/useStickyState'
 
 const ELEMENTID = 'select-theme-mode'
 

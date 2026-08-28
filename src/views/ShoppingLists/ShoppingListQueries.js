@@ -100,7 +100,9 @@ export const useCreateShoppingListItem = listId => {
       return parseListResponse(response)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: shoppingListKeys.detail(listId) })
+      queryClient.invalidateQueries({
+        queryKey: shoppingListKeys.detail(listId),
+      })
       queryClient.invalidateQueries({ queryKey: shoppingListKeys.all })
     },
   })
@@ -114,7 +116,9 @@ export const useUpdateShoppingListItem = listId => {
       return parseListResponse(response)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: shoppingListKeys.detail(listId) })
+      queryClient.invalidateQueries({
+        queryKey: shoppingListKeys.detail(listId),
+      })
       queryClient.invalidateQueries({ queryKey: shoppingListKeys.all })
     },
   })
@@ -128,7 +132,9 @@ export const useDeleteShoppingListItem = listId => {
       return parseListResponse(response)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: shoppingListKeys.detail(listId) })
+      queryClient.invalidateQueries({
+        queryKey: shoppingListKeys.detail(listId),
+      })
       queryClient.invalidateQueries({ queryKey: shoppingListKeys.all })
     },
   })
@@ -137,9 +143,12 @@ export const useDeleteShoppingListItem = listId => {
 export const useClearCompletedShoppingItems = listId => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async () => parseListResponse(await ClearCompletedShoppingItems(listId)),
+    mutationFn: async () =>
+      parseListResponse(await ClearCompletedShoppingItems(listId)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: shoppingListKeys.detail(listId) })
+      queryClient.invalidateQueries({
+        queryKey: shoppingListKeys.detail(listId),
+      })
       queryClient.invalidateQueries({ queryKey: shoppingListKeys.all })
     },
   })

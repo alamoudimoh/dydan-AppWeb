@@ -6,11 +6,11 @@ import { useNavigate } from 'react-router-dom'
 
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useUserProfile } from '../../queries/UserQueries'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 import { GetStorageUsage } from '../../utils/Fetcher'
 import { isPlusAccount } from '../../utils/Helpers'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import SettingsLayout from './SettingsLayout'
-import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 
 const StorageSettings = () => {
   const { t } = useTranslation('common')

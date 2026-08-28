@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
+import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useActiveCircle } from '../../queries/CircleQueries'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -41,7 +42,6 @@ import {
 } from '../../utils/PermissionModel'
 import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
-import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import SettingsLayout from './SettingsLayout'
 
 const CircleSettings = () => {

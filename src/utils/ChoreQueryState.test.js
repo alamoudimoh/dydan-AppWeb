@@ -8,10 +8,7 @@ import {
 } from './ChoreQueryState.js'
 
 test('resolveChoreQueryState distinguishes missing, forbidden, and network failures', () => {
-  assert.equal(
-    resolveChoreQueryState({ hasData: true }),
-    CHORE_QUERY_STATE.OK,
-  )
+  assert.equal(resolveChoreQueryState({ hasData: true }), CHORE_QUERY_STATE.OK)
   assert.equal(
     resolveChoreQueryState({ error: { status: 404 } }),
     CHORE_QUERY_STATE.NOT_FOUND,

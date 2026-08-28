@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { parseAllowedHosts, resolveAllowedHostsEnv } from './vite.allowed-hosts.mjs'
+import {
+  parseAllowedHosts,
+  resolveAllowedHostsEnv,
+} from './vite.allowed-hosts.mjs'
 
 test('resolveAllowedHostsEnv prefers DAYDAN_ALLOWED_HOSTS over legacy Taskier env', () => {
   assert.equal(

@@ -8,10 +8,10 @@ import {
   DEFAULT_PROJECT_COLOR,
   ENTITY_COLOR_FALLBACK,
   FILTER_COLORS,
-  LABEL_COLORS,
-  PROJECT_COLORS,
   getPriorityColor,
   getTextColorFromBackgroundColor,
+  LABEL_COLORS,
+  PROJECT_COLORS,
 } from './Colors.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

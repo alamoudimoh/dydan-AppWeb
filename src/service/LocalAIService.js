@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core'
+
 import { getCached, hashContent, setCached } from './AIPromptCache'
 
 export const LOCAL_AI_SESSION_ID = 'daydan-summary'
@@ -76,14 +77,19 @@ class LocalAIService {
     await this.warmup()
     try {
       const { LocalLLM } = await import('@capacitor/local-llm')
-      const { text: out } = await LocalLLM.prompt({ prompt: text, sessionId: this._sessionId })
+      const { text: out } = await LocalLLM.prompt({
+        prompt: text,
+        sessionId: this._sessionId,
+      })
       return out?.trim() || null
     } finally {
       try {
         const { LocalLLM } = await import('@capacitor/local-llm')
         await LocalLLM.endSession({ sessionId: this._sessionId })
         this._warmedUp = false
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -101,7 +107,9 @@ class LocalAIService {
     try {
       const systemMsg = messages.find(m => m.role === 'system')?.content || ''
       const userMsg = messages.find(m => m.role === 'user')?.content || ''
-      const result = await this._nativePrompt(`${systemMsg}\n\nUser: ${userMsg}\nAssistant:`)
+      const result = await this._nativePrompt(
+        `${systemMsg}\n\nUser: ${userMsg}\nAssistant:`,
+      )
       if (result) setCached(cacheHash, result)
       return result
     } catch (e) {
@@ -124,7 +132,10 @@ class LocalAIService {
     try {
       await this.warmup()
       const { LocalLLM } = await import('@capacitor/local-llm')
-      const { text } = await LocalLLM.prompt({ prompt, sessionId: this._sessionId })
+      const { text } = await LocalLLM.prompt({
+        prompt,
+        sessionId: this._sessionId,
+      })
       const result = text?.trim() || null
       if (result) setCached(cacheHash, result)
       return result
@@ -135,7 +146,9 @@ class LocalAIService {
         const { LocalLLM } = await import('@capacitor/local-llm')
         await LocalLLM.endSession({ sessionId: this._sessionId })
         this._warmedUp = false
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 }

@@ -14,11 +14,11 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useRouteError } from 'react-router-dom'
 
+import { useClipboardCopy } from '../hooks/useClipboardCopy.js'
 import {
   collectErrorReport,
   formatErrorReport,
 } from '../service/ErrorReportService'
-import { useClipboardCopy } from '../hooks/useClipboardCopy.js'
 import ErrorReportModal from './Modals/ErrorReportModal'
 
 const getErrorKind = error => {
@@ -63,8 +63,8 @@ const Error = () => {
   const [reportOpen, setReportOpen] = useState(false)
   const [reportText, setReportText] = useState('')
   const {
-    copy: handleCopy,
     copied,
+    copy: handleCopy,
     copyFailed,
   } = useClipboardCopy(() => reportText, 2500)
 

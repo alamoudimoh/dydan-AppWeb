@@ -16,6 +16,7 @@ import SettingsQueryStateView from '../../components/settings/SettingsQueryState
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
+import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 import {
   CreateLongLiveToken,
   DeleteLongLiveToken,
@@ -26,7 +27,6 @@ import LoadingComponent from '../components/Loading'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import TextModal from '../Modals/Inputs/TextModal'
 import SettingsLayout from './SettingsLayout'
-import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 
 const APITokenSettings = () => {
   const { data: userProfile } = useUserProfile()

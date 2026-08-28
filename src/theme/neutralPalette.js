@@ -6,7 +6,12 @@
  * unreadable. In dark schemes we pin those variants to the designed
  * muted-text token instead. Pure data so it stays unit-testable in Node.
  */
-export const neutralPaletteFor = (brandId, scheme, neutralPalette, textMuted) => ({
+export const neutralPaletteFor = (
+  brandId,
+  scheme,
+  neutralPalette,
+  textMuted,
+) => ({
   ...neutralPalette,
   ...(scheme === 'dark' && {
     plainColor: textMuted,

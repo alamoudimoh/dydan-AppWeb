@@ -12,13 +12,13 @@ import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
+import { SHOPPING_LIST_SCOPES } from '../../ShoppingLists/shoppingListModel'
 import {
   useCreateShoppingList,
   useUpdateShoppingList,
 } from '../../ShoppingLists/ShoppingListQueries'
-import { SHOPPING_LIST_SCOPES } from '../../ShoppingLists/shoppingListModel'
 
-const ShoppingListModal = ({ open, onClose, scope, list }) => {
+const ShoppingListModal = ({ list, onClose, open, scope }) => {
   const { t } = useTranslation(['shoppingLists', 'common'])
   const { ResponsiveModal } = useResponsiveModal()
   const [name, setName] = useState('')
@@ -77,7 +77,10 @@ const ShoppingListModal = ({ open, onClose, scope, list }) => {
             <Button variant='plain' color='neutral' onClick={onClose}>
               {t('common:cancel')}
             </Button>
-            <Button type='submit' loading={createList.isPending || updateList.isPending}>
+            <Button
+              type='submit'
+              loading={createList.isPending || updateList.isPending}
+            >
               {list ? t('renameList') : t('createList')}
             </Button>
           </ModalActions>

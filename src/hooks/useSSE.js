@@ -98,7 +98,11 @@ export const useSSE = () => {
             showNotification({
               type: 'info',
               title: t('realtime.newTaskCreated'),
-              message: t('realtime.taskActionMessage', { user: eventData.data.user.displayName, action: t('realtime.actionCreated'), chore: eventData.data.chore.name }),
+              message: t('realtime.taskActionMessage', {
+                user: eventData.data.user.displayName,
+                action: t('realtime.actionCreated'),
+                chore: eventData.data.chore.name,
+              }),
               duration: 5000,
             })
             const newChore = eventData.data.chore
@@ -123,8 +127,24 @@ export const useSSE = () => {
             if (eventData?.data?.user?.id !== userProfile?.id) {
               showNotification({
                 type: 'info',
-                title: (() => { const a = eventData.type.replace('chore.', ''); return t('realtime.action' + a.charAt(0).toUpperCase() + a.slice(1)); })(),
-                message: t('realtime.taskActionMessage', { user: eventData.data.user.displayName, action: (() => { const a = eventData.type.replace('chore.', ''); return t('realtime.action' + a.charAt(0).toUpperCase() + a.slice(1)); })(), chore: eventData.data.chore.name }),
+                title: (() => {
+                  const a = eventData.type.replace('chore.', '')
+                  return t(
+                    'realtime.action' + a.charAt(0).toUpperCase() + a.slice(1),
+                  )
+                })(),
+                message: t('realtime.taskActionMessage', {
+                  user: eventData.data.user.displayName,
+                  action: (() => {
+                    const a = eventData.type.replace('chore.', '')
+                    return t(
+                      'realtime.action' +
+                        a.charAt(0).toUpperCase() +
+                        a.slice(1),
+                    )
+                  })(),
+                  chore: eventData.data.chore.name,
+                }),
                 duration: 5000,
               })
             }
@@ -249,8 +269,7 @@ export const useSSE = () => {
             showError({
               title: t('realtime.realtimeError'),
               message:
-                eventData.data.message ||
-                t('realtime.realtimeErrorMessage'),
+                eventData.data.message || t('realtime.realtimeErrorMessage'),
             })
             break
 
@@ -312,8 +331,7 @@ export const useSSE = () => {
       console.log('SSE: Circuit breaker is open, preventing connection attempt')
       showError({
         title: t('realtime.connectionTempDisabled'),
-        message:
-          t('realtime.connectionTempDisabledMessage'),
+        message: t('realtime.connectionTempDisabledMessage'),
       })
       return
     }
@@ -325,8 +343,7 @@ export const useSSE = () => {
       setIsCircuitBreakerOpen(true)
       showError({
         title: t('realtime.connectionFailed'),
-        message:
-          t('realtime.connectionFailedMessage'),
+        message: t('realtime.connectionFailedMessage'),
       })
 
       // Reset circuit breaker after timeout
@@ -675,7 +692,7 @@ export const useSSE = () => {
     return () => {
       disconnect()
     }
-  }, [isAuthenticated, connect, disconnect]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, connect, disconnect])
 
   // Cleanup timeouts on unmount
   useEffect(() => {

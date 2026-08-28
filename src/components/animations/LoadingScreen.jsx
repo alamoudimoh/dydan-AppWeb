@@ -64,11 +64,7 @@ const LogoContainer = styled(Box)({
   marginBottom: '24px',
 })
 
-const LoadingScreen = ({
-  message,
-  showLogo = true,
-  size = 'lg',
-}) => {
+const LoadingScreen = ({ message, showLogo = true, size = 'lg' }) => {
   const { t } = useTranslation('common')
   const loadingMessage = message ?? t('loading')
 

@@ -63,7 +63,9 @@ test('subscribeToOfflineFeature handles DayDan and legacy events', () => {
     new CustomEvent(OFFLINE_FEATURE_EVENT, { detail: { enabled: true } }),
   )
   window.dispatchEvent(
-    new CustomEvent(LEGACY_OFFLINE_FEATURE_EVENT, { detail: { enabled: false } }),
+    new CustomEvent(LEGACY_OFFLINE_FEATURE_EVENT, {
+      detail: { enabled: false },
+    }),
   )
 
   unsubscribe()

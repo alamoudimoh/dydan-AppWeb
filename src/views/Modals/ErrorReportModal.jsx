@@ -20,8 +20,8 @@ import {
 } from '@mui/joy'
 import { useEffect, useState } from 'react'
 
-import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
 import { useClipboardCopy } from '../../hooks/useClipboardCopy.js'
+import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
 import {
   collectErrorReport,
   formatErrorReport,
@@ -387,11 +387,7 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
               sx={{ minWidth: 0 }}
               aria-label='Copy reference'
             >
-              {referenceCopy.copied ? (
-                <CheckRounded />
-              ) : (
-                <ContentCopyRounded />
-              )}
+              {referenceCopy.copied ? <CheckRounded /> : <ContentCopyRounded />}
             </Button>
           </Box>
 
@@ -435,11 +431,7 @@ const ErrorReportModal = ({ error, errorInfo, onClose, open }) => {
               variant='plain'
               color='neutral'
               startDecorator={
-                fallbackCopy.copied ? (
-                  <CheckRounded />
-                ) : (
-                  <ContentCopyRounded />
-                )
+                fallbackCopy.copied ? <CheckRounded /> : <ContentCopyRounded />
               }
               onClick={fallbackCopy.copy}
               disabled={!report}

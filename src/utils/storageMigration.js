@@ -151,10 +151,7 @@ export const migrateOfflineIndexedDbIfNeeded = async () => {
   const legacyExists =
     knownNames.length === 0 || knownNames.includes(OFFLINE_DB.legacy)
 
-  const targetDb = await openIndexedDb(
-    OFFLINE_DB.canonical,
-    OFFLINE_DB.version,
-  )
+  const targetDb = await openIndexedDb(OFFLINE_DB.canonical, OFFLINE_DB.version)
   const targetHasRecords = await idbDatabaseHasRecords(
     targetDb,
     OFFLINE_DB.objectStores,
@@ -232,12 +229,7 @@ const openSqliteDatabase = async (CapacitorSQLite, database) => {
   await CapacitorSQLite.open({ database })
 }
 
-const copySqliteTable = async (
-  CapacitorSQLite,
-  sourceDb,
-  targetDb,
-  table,
-) => {
+const copySqliteTable = async (CapacitorSQLite, sourceDb, targetDb, table) => {
   const result = await CapacitorSQLite.query({
     database: sourceDb,
     statement: `SELECT * FROM ${table}`,

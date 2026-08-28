@@ -82,8 +82,9 @@ describe('FamilyCircleGuard', () => {
         'Family Progress is available after you join or create a family circle.',
       ),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Go to circle settings' }))
-      .toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Go to circle settings' }),
+    ).toBeInTheDocument()
   })
 
   it('blocks family content when the only other member is pending', () => {

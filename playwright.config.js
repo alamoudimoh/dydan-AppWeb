@@ -70,7 +70,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run build:smoke && npm run preview -- --host ${smokeHost} --port ${smokePort} --strictPort`,
+    command: `VITE_APP_BRAND=${process.env.VITE_APP_BRAND || ''} npm run build:smoke && npm run preview -- --host ${smokeHost} --port ${smokePort} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,

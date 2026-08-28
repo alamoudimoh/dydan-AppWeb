@@ -106,9 +106,7 @@ const MFASettings = () => {
       } else {
         // Handle different error status codes
         if (response.status === 404) {
-          setError(
-            t('mfa.setupEndpointNotFound'),
-          )
+          setError(t('mfa.setupEndpointNotFound'))
         } else if (response.status === 401) {
           setError(t('mfa.unauthorized'))
         } else if (response.status === 500) {
@@ -196,9 +194,7 @@ const MFASettings = () => {
   return (
     <SettingsLayout title={t('mfa.title')}>
       <div className='grid gap-4 py-4' id='mfa'>
-        <Typography level='body-md'>
-          {t('mfa.description')}
-        </Typography>
+        <Typography level='body-md'>{t('mfa.description')}</Typography>
 
         {success && (
           <Alert color='success' onClose={() => setSuccess('')}>
@@ -217,9 +213,7 @@ const MFASettings = () => {
             <Box className='flex items-center gap-3'>
               <Security color='primary' />
               <Box>
-                <Typography level='title-md'>
-                  {t('mfa.cardTitle')}
-                </Typography>
+                <Typography level='title-md'>{t('mfa.cardTitle')}</Typography>
                 <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
                   {mfaEnabled
                     ? t('mfa.enabledDescription')
@@ -292,7 +286,10 @@ const MFASettings = () => {
               />
             ) : setupStep === 2 ? (
               <ModalActions
-                secondary={{ label: t('mfa.back'), onClick: () => setSetupStep(1) }}
+                secondary={{
+                  label: t('mfa.back'),
+                  onClick: () => setSetupStep(1),
+                }}
                 primary={{
                   label: t('mfa.verifyAndEnable'),
                   onClick: handleConfirmMFA,
@@ -312,7 +309,8 @@ const MFASettings = () => {
           {setupStep === 1 && setupData && (
             <Stack spacing={3}>
               <Typography level='body-md'>
-                <strong>{t('mfa.step1Label')}</strong> {t('mfa.step1Instruction')}
+                <strong>{t('mfa.step1Label')}</strong>{' '}
+                {t('mfa.step1Instruction')}
               </Typography>
 
               <Box className='flex justify-center rounded bg-white p-4'>
@@ -357,7 +355,8 @@ const MFASettings = () => {
           {setupStep === 2 && (
             <Stack spacing={3}>
               <Typography level='body-md'>
-                <strong>{t('mfa.step2Label')}</strong> {t('mfa.step2Instruction')}
+                <strong>{t('mfa.step2Label')}</strong>{' '}
+                {t('mfa.step2Instruction')}
               </Typography>
 
               <Input
@@ -448,9 +447,7 @@ const MFASettings = () => {
         >
           <Stack spacing={3}>
             <Alert color='warning'>
-              <Typography level='body-sm'>
-                {t('mfa.disableWarning')}
-              </Typography>
+              <Typography level='body-sm'>{t('mfa.disableWarning')}</Typography>
             </Alert>
 
             <Typography level='body-md'>

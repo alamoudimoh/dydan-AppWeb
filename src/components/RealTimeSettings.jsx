@@ -2,6 +2,7 @@ import { Sync, SyncDisabled } from '@mui/icons-material'
 import { Box, Card, Chip, FormHelperText, Switch, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { useSSEContext } from '../hooks/useSSEContext'
 import { useUserProfile } from '../queries/UserQueries'
 import { isPlusAccount } from '../utils/Helpers'

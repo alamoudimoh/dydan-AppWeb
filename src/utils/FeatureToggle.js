@@ -2,8 +2,7 @@
 export const OFFICIAL_HOSTED_DOMAIN = 'donetick.com'
 
 export const isOfficialHostedUrl = url =>
-  typeof url === 'string' &&
-  url.toLowerCase().includes(OFFICIAL_HOSTED_DOMAIN)
+  typeof url === 'string' && url.toLowerCase().includes(OFFICIAL_HOSTED_DOMAIN)
 
 /**
  * Detect whether the app is pointed at the official DayDan hosted cloud.
