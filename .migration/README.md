@@ -92,3 +92,13 @@ When the owner says `Execute Phase 3`, this README is the complete execution con
 7. Do not ask routine implementation questions. Derive decisions from repository code and authoritative Figma. Only a truly external dependency or explicit owner-design decision not derivable from those sources may block terminal completion; finish every other executable item first and return one consolidated blocker with evidence.
 8. Earlier wording such as `execution stops`, `stop`, `request owner input`, or `report constraint` means terminal handling only after all independent executable work is finished, never an early response.
 9. Return exactly one terminal report: `PHASE 3 COMPLETE` with evidence, or `NOT COMPLETE` only for a concrete unresolved external blocker after remediation is exhausted. Do not start Phase 4.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, planning, or stating what remains are PREPARATION ONLY and never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform the actual code migration in `Required Implementation`. If implementation has not yet been performed, START AND COMPLETE IT instead of returning status.
+3. A terminal response saying `implementation has not yet been performed`, `phase has not started`, `migration remains outstanding`, `not migrated`, `not verified`, or equivalent is explicitly INVALID.
+4. `NOT COMPLETE` may not be used because work remains, implementation is large, tests are pending, verification is pending, PR is missing, or merge is pending. Those are mandatory work items.
+5. Continue until the Figma implementation exists in production, real DayDan behavior is wired into it, parity is executed, all in-repo regressions are fixed, local gates pass, PR is created/reviewed/merged, and clean post-merge verification passes.
+6. Only a genuinely external blocker that cannot be resolved through repository changes, normal branch/PR operations, available tooling, or authoritative Figma/repository evidence may terminate as `NOT COMPLETE`, and only after all independent executable work is finished.
+7. Literal Figma fidelity is mandatory: do not reinterpret, simplify, approximate, substitute, or postpone any Figma-defined presentation.
