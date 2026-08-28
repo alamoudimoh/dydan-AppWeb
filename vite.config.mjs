@@ -80,11 +80,6 @@ export default defineConfig(({ command }) => ({
             type: 'image/png',
           },
           {
-            sizes: '64x64',
-            src: 'pwa-64x64.png',
-            type: 'image/png',
-          },
-          {
             sizes: '192x192',
             src: 'pwa-192x192.png',
             type: 'image/png',

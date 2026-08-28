@@ -1016,13 +1016,6 @@ const GetProjects = () => {
   })
 }
 
-const GetProjectById = id => {
-  return Fetch(`/projects/${id}`, {
-    method: 'GET',
-    headers: HEADERS(),
-  })
-}
-
 const CreateProject = project => {
   return Fetch(`/projects`, {
     method: 'POST',
@@ -1100,13 +1093,6 @@ const DeleteFilter = id => {
 
 const ToggleFilterPin = id => {
   return Fetch(`/filters/${id}/toggle-pin`, {
-    method: 'POST',
-    headers: HEADERS(),
-  })
-}
-
-const TrackFilterUsage = id => {
-  return Fetch(`/filters/${id}/track-usage`, {
     method: 'POST',
     headers: HEADERS(),
   })
@@ -1262,7 +1248,6 @@ export {
   GetPersonalChores,
   GetPinnedFilters,
   GetPointsHistory,
-  GetProjectById,
   GetProjects,
   GetResource,
   GetShoppingList,
@@ -1304,7 +1289,6 @@ export {
   SkipChore,
   StartChore,
   ToggleFilterPin,
-  TrackFilterUsage,
   UnArchiveChore,
   UndoChoreAction,
   UnregisterDeviceToken,

@@ -40,20 +40,20 @@ for (const scenario of CASES) {
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(scenario.width)
 
-    // No DayDan violet anywhere in the computed chrome of the sidebar brand.
-    const wordmarkColor = await page.evaluate(() => {
+    const wordmark = await page.evaluate(() => {
       const nodes = document.querySelectorAll('p, span, div')
       for (const node of nodes) {
         const label = node.textContent.trim()
-        if (label === 'DayDan' || label === 'Sovereign') {
-          return getComputedStyle(node).color
+        if (label === 'Sovereign') {
+          return { color: getComputedStyle(node).color, label }
         }
       }
       return null
     })
-    expect(wordmarkColor).toBeTruthy()
-    expect(wordmarkColor).not.toContain('77, 64, 219') // #4D40DB
-    expect(wordmarkColor).not.toContain('#4D40DB')
+    expect(wordmark).toBeTruthy()
+    expect(wordmark.label).toBe('Sovereign')
+    expect(wordmark.color).not.toContain('77, 64, 219') // #4D40DB
+    expect(wordmark.color).not.toContain('#4D40DB')
 
     runtimeGuard.assertClean()
   })
