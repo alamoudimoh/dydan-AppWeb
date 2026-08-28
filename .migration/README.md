@@ -69,6 +69,18 @@ Report source-to-target mapping, screenshots, viewport matrix, tests/build/sync,
 
 GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
 
+# Binding Authority, Closure PR Authorization, and Figma Consistency Invariant
+
+This section overrides any older phase wording that could be read as forbidding necessary remediation branches/PRs.
+
+1. The owner explicitly pre-authorizes creation, push, review, merge, and post-merge verification of narrowly scoped closure branches/PRs for any concrete in-scope regression found before, during, or after this phase. Do not ask for authorization again.
+2. Any prior instruction such as `do not create another branch/PR` only forbids unnecessary duplicate implementation work. It never forbids a necessary closure branch/PR after a main phase merge or when a regression cannot be published on the existing branch.
+3. If a repository-action guard, prior prompt, or stale planning sentence conflicts with this explicit closure authorization, this latest owner-approved README controls the phase execution. Re-read it and proceed; do not return an authority-conflict blocker.
+4. A failing active build/test/reference/verification config becomes in-scope automatically if it is required to execute the authoritative local gate. Fix stale executable configuration narrowly instead of skipping the gate. `design-reference/` is not visual authority, but any active reference build/test tooling must remain compatible with the exact Figma runtime established in Phase 1.
+5. Maintain the Phase 1 runtime invariant repo-wide: active executable paths must not regress to React 18 assumptions, `@vitejs/plugin-react-swc`, Tailwind 3/PostCSS integration, or another substituted runtime. Before completion, scan active configs/scripts/tests for stale migrated-tooling references and remediate them.
+6. Figma is exact presentation authority: when Figma provides markup/classes/assets/tokens/layout, use them directly. Do not substitute an equivalent library, component, icon, spacing system, or workaround.
+7. A need for a closure PR is work, not a blocker. `NOT COMPLETE` is allowed only after all in-repository remediation possible with normal branch/PR operations is exhausted.
+
 # Autonomous End-to-End Execution Contract
 
 When the owner says `Execute Phase 2`, this README is the complete execution contract. Work autonomously from start to terminal completion.
@@ -76,7 +88,7 @@ When the owner says `Execute Phase 2`, this README is the complete execution con
 1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work. Use isolated worktrees; never reset/stash/clean/touch the dirty primary checkout; do not modify `daydan-server`.
 2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. If a command/process/test suite is running, wait/poll for completion and continue.
 3. Test/build/lint/typecheck/visual failures are work items, not stopping points. Reproduce, root-cause, fix in scope, add regression coverage where appropriate, rerun the affected gate, then rerun the complete applicable gate. Continue until green or a genuinely external blocker remains after all reasonable remediation is exhausted.
-4. If prior-phase post-merge verification is missing, complete it first; if it exposes a real regression, fix it through a narrow closure PR, merge, reverify, then continue this phase without asking the owner.
+4. If prior-phase post-merge verification is missing, complete it first; if it exposes a real regression, create a narrow closure branch/PR, fix it, merge it, reverify, then continue this phase without asking the owner.
 5. Complete implementation, local verification, exact Figma visual acceptance, review passes, commit, push, PR creation/update, full diff review, merge, then fresh detached post-merge verification. The phase is not complete before the merged SHA passes the complete applicable verification and required Figma comparison.
 6. GitHub Actions is informational/non-gating per policy above. Never wait for it or ask for an override.
 7. Do not ask routine implementation questions. Resolve repository/tooling/test/integration choices from code plus authoritative Figma. Only an unavoidable external dependency or explicit owner-design decision not derivable from Figma/repository evidence may block terminal completion; finish every other executable item first and return one consolidated blocker report with exact evidence.
