@@ -94,3 +94,15 @@ When the owner says `Execute Phase 2`, this README is the complete execution con
 7. Do not ask routine implementation questions. Resolve repository/tooling/test/integration choices from code plus authoritative Figma. Only an unavoidable external dependency or explicit owner-design decision not derivable from Figma/repository evidence may block terminal completion; finish every other executable item first and return one consolidated blocker report with exact evidence.
 8. Any earlier `stop`, `request owner input`, or `report constraint` wording means terminal handling after all independent work is exhausted, never an early progress response.
 9. Return exactly one terminal report: `PHASE 2 COMPLETE` with evidence, or `NOT COMPLETE` only for a concrete unresolved external blocker after remediation is exhausted. Do not start Phase 3.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+This section is binding and overrides any interpretation that allows preparation to substitute for implementation.
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, planning, or stating what remains are PREPARATION ONLY. They are never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform the actual code migration described in `Required Implementation`. If implementation has not yet been performed, the required next action is to START AND COMPLETE IT — not to return a status message.
+3. A response such as `implementation has not yet been performed`, `Phase 2 has not started`, `required migration remains outstanding`, `not migrated`, `not verified`, or equivalent is explicitly INVALID as a terminal response. Those statements describe unfinished work inside the repository and therefore require continued execution.
+4. `NOT COMPLETE` may not be used merely because work remains to be done, implementation is large, tests are pending, verification has not run, a PR has not been opened, or a merge has not happened. Those are mandatory work items in this phase.
+5. Continue autonomously until the implementation exists, the exact Figma parity work is executed, all in-repo failures are remediated, local gates pass, PR is created/reviewed/merged, and clean post-merge verification finishes.
+6. The only valid terminal `NOT COMPLETE` condition is a genuinely external blocker that cannot be resolved by repository changes, normal branch/PR operations, available tooling, or authoritative Figma/repository evidence after all independent executable work has been completed.
+7. For every Figma-covered element, fidelity is literal: use the actual Figma implementation, classes, assets, structure, dimensions, spacing, tokens and responsive behavior. Do not reinterpret, simplify, approximate, substitute, or postpone Figma-defined UI.
