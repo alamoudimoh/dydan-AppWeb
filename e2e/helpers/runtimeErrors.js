@@ -16,11 +16,22 @@ const IGNORED_CONSOLE_PATTERNS = [
   /Failed to load resource: net::ERR_NETWORK_CHANGED/,
 ]
 
+const IGNORED_PAGE_ERROR_PATTERNS = [
+  // WebKit reports this non-fatal notification while it settles responsive
+  // layouts; it has no application stack or user-visible failure.
+  /^ResizeObserver loop completed with undelivered notifications\.$/,
+]
+
 export const attachRuntimeErrorGuard = page => {
   const errors = []
   const expectedPublicStatusErrors = []
 
   page.on('pageerror', error => {
+    if (
+      IGNORED_PAGE_ERROR_PATTERNS.some(pattern => pattern.test(error.message))
+    ) {
+      return
+    }
     errors.push(`pageerror: ${error.message}`)
   })
 

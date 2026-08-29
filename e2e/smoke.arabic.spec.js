@@ -13,10 +13,11 @@ import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 // previously hardcoded English surfaces, so all routes assert Arabic content.
 const AR_ROUTES = [
   { path: '/login', auth: false, arabic: /نسيت كلمة المرور؟/ },
-  { path: '/', auth: true, arabic: /لا مهام لك اليوم/ },
+  { path: '/', auth: true, arabic: /كل مهام اليوم مكتملة!/ },
   { path: '/family', auth: true, arabic: /تقدم العائلة/ },
   { path: '/shopping', auth: true, arabic: /قوائم التسوق/ },
-  { path: '/chores', auth: true, arabic: /لا توجد مهام بعد/ },
+  { path: '/chores', auth: true, arabic: /لا توجد مهام تطابق هذا العرض/ },
+  { path: '/calendar', auth: true, arabic: /التقويم/ },
   { path: '/routines', auth: true, arabic: /الروتينات/ },
   { path: '/settings', auth: true, arabic: /الإعدادات/ },
   { path: '/settings/profile', auth: true, arabic: /الملف الشخصي/ },

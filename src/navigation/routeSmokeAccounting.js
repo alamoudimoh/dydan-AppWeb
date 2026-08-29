@@ -31,14 +31,14 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'daily',
     auth: true,
     nav: true,
-    text: /no tasks yet/i,
+    text: /no tasks match this view/i,
   },
   '/my/chores': {
     status: 'covered',
     group: 'daily',
     auth: true,
     nav: true,
-    text: /no tasks yet/i,
+    text: /no tasks match this view/i,
   },
   '/calendar': {
     status: 'covered',
