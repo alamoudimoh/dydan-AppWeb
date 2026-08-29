@@ -80,9 +80,7 @@ export default function FigmaShoppingScreen({
       </div>
 
       <div className='px-4 md:px-7'>
-        <div
-          className='figma-shopping-grid grid gap-5'
-        >
+        <div className='figma-shopping-grid grid gap-5'>
           {/* List sidebar */}
           <div className='flex flex-col gap-2'>
             {visibleLists.map(list => {
