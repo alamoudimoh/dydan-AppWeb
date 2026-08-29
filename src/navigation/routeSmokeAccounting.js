@@ -77,7 +77,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'organize',
     auth: true,
     nav: true,
-    heading: /shopping lists/i,
+    heading: /^shopping$/i,
   },
   '/shopping/7': {
     status: 'covered',
@@ -307,7 +307,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'family',
     auth: true,
     nav: true,
-    heading: /^activities$/i,
+    heading: /^activity$/i,
   },
   '/points': {
     status: 'covered',

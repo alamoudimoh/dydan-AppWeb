@@ -112,6 +112,29 @@ vi.mock('../../queries/ProgressQueries', () => ({
   }),
 }))
 
+vi.mock('../../queries/UserQueries', () => ({
+  useUserProfile: () => ({ data: { id: 1, name: 'Mohammed' } }),
+  useCircleMembers: () => ({
+    data: { res: [{ userId: 1, role: 'admin', displayName: 'Mohammed' }] },
+  }),
+}))
+
+vi.mock('../../queries/ChoreQueries', () => ({
+  useChores: () => ({ data: { res: [] } }),
+}))
+
+vi.mock('../../queries/RewardQueries', () => ({
+  useMyRewardRequests: () => ({
+    data: { balance: { currentBalance: 0, spendableBalance: 0 } },
+  }),
+  useRewardMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }),
+  useRewards: () => ({ data: { res: [] } }),
+}))
+
+vi.mock('../Rewards/RewardsView', () => ({
+  RewardEditor: () => null,
+}))
+
 import FamilyProgress from './FamilyProgress'
 
 Object.defineProperty(window, 'matchMedia', {

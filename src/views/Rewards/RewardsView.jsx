@@ -41,7 +41,7 @@ const statusColor = {
   cancelled: 'neutral',
 }
 
-function RewardEditor({ mutation, onClose, reward }) {
+export function RewardEditor({ mutation, onClose, reward }) {
   const { t } = useTranslation('common')
   const [name, setName] = useState(reward?.name || '')
   const [description, setDescription] = useState(reward?.description || '')

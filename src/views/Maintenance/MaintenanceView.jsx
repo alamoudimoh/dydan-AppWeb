@@ -18,7 +18,7 @@ import {
   Textarea,
   Typography,
 } from '@mui/joy'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -42,7 +42,9 @@ import {
   MarkChoreComplete,
   SaveAsset,
 } from '../../utils/Fetcher'
+import FigmaMaintenanceScreen from './FigmaMaintenanceScreen'
 import { dueReason, meterRemaining, timeRemaining } from './maintenanceFormat'
+import { flattenMaintenance } from './maintenanceViewModel'
 
 const categories = [
   'Vehicle',
@@ -501,12 +503,13 @@ const emptyMaintenance = {
 }
 
 const MaintenanceView = () => {
-  const { t } = useTranslation('common')
+  const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const [data, setData] = useState(emptyMaintenance)
   const [creating, setCreating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const [legacyMode] = useState(false)
   const load = useCallback(async () => {
     setLoadError(false)
     const response = await GetMaintenance()
@@ -526,6 +529,48 @@ const MaintenanceView = () => {
   }
   const archive = async id => {
     if ((await ArchiveAsset(id)).ok) await load()
+  }
+
+  const maintenanceItems = useMemo(
+    () => flattenMaintenance(data, i18n.resolvedLanguage || i18n.language),
+    [data, i18n.language, i18n.resolvedLanguage],
+  )
+
+  const schedule = item => {
+    if (item.assetId) {
+      navigate(`/maintenance/assets/${item.assetId}`)
+      return
+    }
+    setCreating(true)
+  }
+
+  if (!legacyMode) {
+    return (
+      <Box sx={pageShellSx}>
+        {isLoading && <QueryLoadingView label={t('maintenance.loading')} />}
+        {!isLoading && loadError && (
+          <EmptyState
+            variant='error'
+            icon={<Build />}
+            title={t('maintenance.loadError')}
+            primaryAction={{ label: t('retry'), onClick: load }}
+          />
+        )}
+        {!isLoading && !loadError && (
+          <FigmaMaintenanceScreen
+            items={maintenanceItems}
+            onAddItem={() => setCreating(true)}
+            onMarkDone={complete}
+            onSchedule={schedule}
+            subtitle={t('maintenance.subtitle')}
+            title={t('maintenance.title')}
+          />
+        )}
+        {creating && (
+          <AssetForm onClose={() => setCreating(false)} onSaved={load} />
+        )}
+      </Box>
+    )
   }
 
   return (

@@ -15,7 +15,7 @@ const AR_ROUTES = [
   { path: '/login', auth: false, arabic: /نسيت كلمة المرور؟/ },
   { path: '/', auth: true, arabic: /كل مهام اليوم مكتملة!/ },
   { path: '/family', auth: true, arabic: /تقدم العائلة/ },
-  { path: '/shopping', auth: true, arabic: /قوائم التسوق/ },
+  { path: '/shopping', auth: true, arabic: /التسوق/ },
   { path: '/chores', auth: true, arabic: /لا توجد مهام تطابق هذا العرض/ },
   { path: '/calendar', auth: true, arabic: /التقويم/ },
   { path: '/routines', auth: true, arabic: /الروتينات/ },
