@@ -60,6 +60,7 @@ import {
 } from './components/FilterBuilderContent'
 import MultiSelectToolbar from './components/MultiSelectToolbar'
 import MyChoreHeader from './components/MyChoreHeader'
+import FigmaAllTasksScreen from './FigmaAllTasksScreen'
 import { useChoreActions } from './hooks/useChoreActions'
 import { useChoreFilters } from './hooks/useChoreFilters'
 import { useChoreModals } from './hooks/useChoreModals'
@@ -693,6 +694,97 @@ const MyChores = () => {
     },
   })
 
+  const figmaTaskChores = useMemo(() => {
+    if (activeFilterId || tempFilter) return customFilteredChores
+    if (searchTerm?.length > 0) return searchFilteredChores
+    if (hasQuickFilters) return quickFilteredChores
+    if (selectedProject && selectedProject.id !== 'default') {
+      return projectFilteredChores
+    }
+    return nonProjectFilteredChores
+  }, [
+    activeFilterId,
+    customFilteredChores,
+    hasQuickFilters,
+    nonProjectFilteredChores,
+    projectFilteredChores,
+    quickFilteredChores,
+    searchFilteredChores,
+    searchTerm,
+    selectedProject,
+    tempFilter,
+  ])
+
+  const figmaToolbar = (
+    <ChoreToolbar
+      activeFilterId={activeFilterId}
+      applyTempFilter={applyTempFilter}
+      clearTempFilter={() => clearTempFilterAndUrl()}
+      hideSearch
+      isMultiSelectMode={isMultiSelectMode}
+      labels={userLabels || []}
+      members={membersData?.res || []}
+      onAssigneeFilterChange={setSelectedChoreFilterWithCache}
+      onClearAllFilters={() => {
+        clearQuickFilters()
+        clearActiveFilter()
+        setSelectedChoreFilterWithCache('anyone')
+        setSelectedProjectWithCache(null)
+        updateFilterUrl(null, null)
+      }}
+      onFilterSaved={name =>
+        showSuccess({
+          title: t('list.filterSaved'),
+          message: t('list.filterSavedMessage', { name }),
+        })
+      }
+      onGroupBySelect={value => setSelectedChoreSectionWithCache(value)}
+      onProjectSelect={project => {
+        setSelectedProjectWithCache(project)
+        clearActiveFilter()
+      }}
+      onSavedFilterClick={filterId => {
+        if (activeFilterId === filterId) {
+          clearActiveFilter()
+          updateFilterUrl(null, null)
+          return
+        }
+        clearQuickFilters()
+        setSearchTerm('')
+        setFilteredChores([])
+        applyCustomFilter(filterId)
+        updateFilterUrl('filterId', filterId)
+      }}
+      onSavedFilterDelete={deleteFilter}
+      onSavedFilterEdit={filter => {
+        setEditingFilter(filter)
+        setShowAdvancedFilterBuilder(true)
+      }}
+      onSavedFilterPin={pinFilter}
+      onSearchChange={event => handleSearchChange(event)}
+      onSearchClose={() => handleSearchClose()}
+      onToggleMultiSelect={toggleMultiSelectMode}
+      onToggleViewMode={value =>
+        value === 'calendar' ? Navigate('/calendar') : toggleViewMode(value)
+      }
+      projects={projectsWithDefault}
+      resultCount={figmaTaskChores.length}
+      saveFilter={saveFilter}
+      savedFilters={savedFilters}
+      searchInputRef={searchInputRef}
+      searchTerm={searchTerm}
+      selectedAssigneeFilter={selectedChoreFilter}
+      selectedGroupBy={selectedChoreSection}
+      selectedProject={selectedProject}
+      showKeyboardShortcuts={showKeyboardShortcuts}
+      tempFilter={tempFilter}
+      tempFilterMeta={tempFilterMeta}
+      totalCount={nonProjectFilteredChores.length}
+      updateFilter={updateFilter}
+      viewMode={viewMode}
+    />
+  )
+
   const handleMenuOutsideClick = event => {
     if (
       anchorEl &&
@@ -754,7 +846,7 @@ const MyChores = () => {
   }
 
   // Helper to update URL with filter parameters
-  const updateFilterUrl = (filterType, filterValue) => {
+  function updateFilterUrl(filterType, filterValue) {
     const params = new URLSearchParams(searchParams)
 
     // Clear existing filter params
@@ -774,12 +866,12 @@ const MyChores = () => {
     )
   }
 
-  const clearTempFilterAndUrl = () => {
+  function clearTempFilterAndUrl() {
     clearTempFilter()
     updateFilterUrl(null, null)
   }
 
-  const handleSearchChange = e => {
+  function handleSearchChange(e) {
     clearActiveFilter()
     if (hasQuickFilters) {
       clearQuickFilters()
@@ -797,7 +889,7 @@ const MyChores = () => {
     // Clear selected calendar date when search changes
     setSelectedCalendarDate(null)
   }
-  const handleSearchClose = () => {
+  function handleSearchClose() {
     setSearchTerm('')
     setFilteredChores(selectedProject ? projectFilteredChores : chores)
     setSearchInputFocus(0)
@@ -809,7 +901,7 @@ const MyChores = () => {
     }
   }
 
-  const setSelectedChoreSectionWithCache = value => {
+  function setSelectedChoreSectionWithCache(value) {
     setSelectedChoreSection(value)
     localStorage.setItem('selectedChoreSection', value)
   }
@@ -819,7 +911,7 @@ const MyChores = () => {
     localStorage.setItem('openChoreSections', JSON.stringify(value))
   }
 
-  const toggleViewMode = value => {
+  function toggleViewMode(value) {
     const newMode =
       value ??
       (() => {
@@ -976,230 +1068,309 @@ const MyChores = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-      <Container maxWidth='md'>
-        <MyChoreHeader
-          activeFilterId={activeFilterId}
-          activeFilter={activeFilter}
-          selectedProject={selectedProject}
-          tempFilter={tempFilter}
-          tempFilterMeta={tempFilterMeta}
+    <>
+      <FigmaAllTasksScreen
+        chores={figmaTaskChores}
+        members={membersData?.res || []}
+        onComplete={chore => handleChoreAction('complete', chore)}
+        onCreate={() => setAddTaskModalOpen(true)}
+        onOpen={chore => Navigate(`/chores/${chore.id}`)}
+        toolbar={figmaToolbar}
+      />
+      {addTaskModalOpen && (
+        <TaskInput
+          autoFocus={taskInputFocus}
+          onChoreUpdate={updateChores}
+          isModalOpen={addTaskModalOpen}
+          initialMode={addTaskInitialMode}
+          onClose={forceRefresh => {
+            setAddTaskModalOpen(false)
+            setAddTaskInitialMode(null)
+            if (forceRefresh) refetchChores()
+          }}
         />
-        <ChoreToolbar
+      )}
+      {confirmModelConfig?.isOpen && (
+        <ConfirmationModal config={confirmModelConfig} />
+      )}
+      {activeModal && (
+        <ChoreModals
+          activeModal={activeModal}
+          modalChore={modalChore}
+          membersData={membersData}
+          onChangeDueDate={handleChangeDueDate}
+          onCompleteWithPastDate={handleCompleteWithPastDate}
+          onAssigneeChange={handleAssigneeChange}
+          onCompleteWithNote={handleCompleteWithNote}
+          onNudge={handleNudge}
+          onClose={closeModal}
+        />
+      )}
+      {showAdvancedFilterBuilder && (
+        <AdvancedFilterBuilder
+          isOpen
+          onClose={() => {
+            setShowAdvancedFilterBuilder(false)
+            setEditingFilter(null)
+          }}
+          onSave={filter => {
+            if (filter.id) {
+              updateFilter(filter.id, {
+                name: filter.name,
+                description: filter.description,
+                color: filter.color,
+                conditions: filter.conditions,
+                operator: filter.operator,
+              })
+              showSuccess({
+                title: t('list.filterUpdated'),
+                message: t('list.filterUpdatedMessage', { name: filter.name }),
+              })
+            } else {
+              saveFilter(filter)
+              showSuccess({
+                title: t('list.filterCreated'),
+                message: t('list.filterCreatedMessage', { name: filter.name }),
+              })
+            }
+            setShowAdvancedFilterBuilder(false)
+            setEditingFilter(null)
+          }}
           members={membersData?.res || []}
           labels={userLabels || []}
           projects={projectsWithDefault}
-          tempFilter={tempFilter}
-          tempFilterMeta={tempFilterMeta}
-          applyTempFilter={applyTempFilter}
-          clearTempFilter={clearTempFilterAndUrl}
-          saveFilter={saveFilter}
-          updateFilter={updateFilter}
-          onFilterSaved={name =>
-            showSuccess({
-              title: t('list.filterSaved'),
-              message: t('list.filterSavedMessage', { name }),
-            })
-          }
-          onClearAllFilters={() => {
-            clearQuickFilters()
-            clearActiveFilter()
-            setSelectedChoreFilterWithCache('anyone')
-            setSelectedProjectWithCache(
-              projectsWithDefault.find(p => p.id === 'default') || null,
-            )
-            updateFilterUrl(null, null)
-          }}
-          resultCount={
-            hasQuickFilters || hasFilterApplied
-              ? getFilteredChores.length
-              : undefined
-          }
-          totalCount={
-            hasQuickFilters || hasFilterApplied
-              ? projectFilteredChores.length
-              : undefined
-          }
-          selectedProject={selectedProject}
-          onProjectSelect={project => {
-            setSelectedProjectWithCache(project)
-            clearActiveFilter()
-          }}
-          selectedAssigneeFilter={selectedChoreFilter}
-          onAssigneeFilterChange={filter => {
-            setSelectedChoreFilterWithCache(filter)
-            if (activeFilterId) {
-              clearActiveFilter()
-              updateFilterUrl(null, null)
-            }
-          }}
-          savedFilters={savedFilters}
-          activeFilterId={activeFilterId}
-          onSavedFilterClick={filterId => {
-            if (activeFilterId === filterId) {
-              clearActiveFilter()
-              updateFilterUrl(null, null)
-            } else {
-              clearQuickFilters()
-              setSearchTerm('')
-              setFilteredChores([])
-              if (selectedChoreFilter !== 'anyone') {
+          allChores={searchFilteredChores}
+          userProfile={userProfile}
+          editingFilter={editingFilter}
+        />
+      )}
+      {/* The Figma screen supersedes this legacy tree. A dormant view mode keeps
+          Joy's layout observers out of the active task screen in WebKit. */}
+      {viewMode === 'legacy' && (
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <Container maxWidth='md'>
+            <MyChoreHeader
+              activeFilterId={activeFilterId}
+              activeFilter={activeFilter}
+              selectedProject={selectedProject}
+              tempFilter={tempFilter}
+              tempFilterMeta={tempFilterMeta}
+            />
+            <ChoreToolbar
+              members={membersData?.res || []}
+              labels={userLabels || []}
+              projects={projectsWithDefault}
+              tempFilter={tempFilter}
+              tempFilterMeta={tempFilterMeta}
+              applyTempFilter={applyTempFilter}
+              clearTempFilter={clearTempFilterAndUrl}
+              saveFilter={saveFilter}
+              updateFilter={updateFilter}
+              onFilterSaved={name =>
+                showSuccess({
+                  title: t('list.filterSaved'),
+                  message: t('list.filterSavedMessage', { name }),
+                })
+              }
+              onClearAllFilters={() => {
+                clearQuickFilters()
+                clearActiveFilter()
                 setSelectedChoreFilterWithCache('anyone')
+                setSelectedProjectWithCache(
+                  projectsWithDefault.find(p => p.id === 'default') || null,
+                )
+                updateFilterUrl(null, null)
+              }}
+              resultCount={
+                hasQuickFilters || hasFilterApplied
+                  ? getFilteredChores.length
+                  : undefined
               }
-              const filter = savedFilters.find(f => f.id === filterId)
-              if (filter?.conditions?.some(c => c.type === 'project')) {
-                setSelectedProjectWithCache(null)
+              totalCount={
+                hasQuickFilters || hasFilterApplied
+                  ? projectFilteredChores.length
+                  : undefined
               }
-              applyCustomFilter(filterId)
-              updateFilterUrl('filterId', filterId)
-            }
-          }}
-          onSavedFilterEdit={filter => {
-            setEditingFilter(filter)
-            setShowAdvancedFilterBuilder(true)
-          }}
-          onSavedFilterDelete={deleteFilter}
-          onSavedFilterPin={pinFilter}
-          selectedGroupBy={selectedChoreSection}
-          onGroupBySelect={value => {
-            setSelectedChoreSectionWithCache(value)
-            setFilteredChores(chores)
-            clearQuickFilters()
-          }}
-          viewMode={viewMode}
-          onToggleViewMode={toggleViewMode}
-          isMultiSelectMode={isMultiSelectMode}
-          onToggleMultiSelect={toggleMultiSelectMode}
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          onSearchClose={handleSearchClose}
-          searchInputRef={searchInputRef}
-          showKeyboardShortcuts={showKeyboardShortcuts}
-        />
+              selectedProject={selectedProject}
+              onProjectSelect={project => {
+                setSelectedProjectWithCache(project)
+                clearActiveFilter()
+              }}
+              selectedAssigneeFilter={selectedChoreFilter}
+              onAssigneeFilterChange={filter => {
+                setSelectedChoreFilterWithCache(filter)
+                if (activeFilterId) {
+                  clearActiveFilter()
+                  updateFilterUrl(null, null)
+                }
+              }}
+              savedFilters={savedFilters}
+              activeFilterId={activeFilterId}
+              onSavedFilterClick={filterId => {
+                if (activeFilterId === filterId) {
+                  clearActiveFilter()
+                  updateFilterUrl(null, null)
+                } else {
+                  clearQuickFilters()
+                  setSearchTerm('')
+                  setFilteredChores([])
+                  if (selectedChoreFilter !== 'anyone') {
+                    setSelectedChoreFilterWithCache('anyone')
+                  }
+                  const filter = savedFilters.find(f => f.id === filterId)
+                  if (filter?.conditions?.some(c => c.type === 'project')) {
+                    setSelectedProjectWithCache(null)
+                  }
+                  applyCustomFilter(filterId)
+                  updateFilterUrl('filterId', filterId)
+                }
+              }}
+              onSavedFilterEdit={filter => {
+                setEditingFilter(filter)
+                setShowAdvancedFilterBuilder(true)
+              }}
+              onSavedFilterDelete={deleteFilter}
+              onSavedFilterPin={pinFilter}
+              selectedGroupBy={selectedChoreSection}
+              onGroupBySelect={value => {
+                setSelectedChoreSectionWithCache(value)
+                setFilteredChores(chores)
+                clearQuickFilters()
+              }}
+              viewMode={viewMode}
+              onToggleViewMode={toggleViewMode}
+              isMultiSelectMode={isMultiSelectMode}
+              onToggleMultiSelect={toggleMultiSelectMode}
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              onSearchClose={handleSearchClose}
+              searchInputRef={searchInputRef}
+              showKeyboardShortcuts={showKeyboardShortcuts}
+            />
 
-        <MultiSelectToolbar
-          isVisible={isMultiSelectMode}
-          selectedCount={selectedChores.size}
-          onSelectAll={() =>
-            selectAllVisibleChores(
-              searchTerm?.length > 0 || hasQuickFilters || activeFilterId
-                ? getFilteredChores
-                : null,
-              choreSections,
-              openChoreSections,
-            )
-          }
-          onClear={clearSelection}
-          onComplete={handleBulkComplete}
-          onSkip={handleBulkSkip}
-          onArchive={handleBulkArchive}
-          onDelete={handleBulkDelete}
-          onMoveToProject={handleBulkMoveToProject}
-          projects={projects}
-          showKeyboardShortcuts={showKeyboardShortcuts}
-          selectAllDisabled={
-            searchTerm?.length > 0 || hasQuickFilters
-              ? selectedChores.size === getFilteredChores.length
-              : selectedChores.size ===
-                choreSections.flatMap(s => s.content || []).length
-          }
-        />
+            <MultiSelectToolbar
+              isVisible={isMultiSelectMode}
+              selectedCount={selectedChores.size}
+              onSelectAll={() =>
+                selectAllVisibleChores(
+                  searchTerm?.length > 0 || hasQuickFilters || activeFilterId
+                    ? getFilteredChores
+                    : null,
+                  choreSections,
+                  openChoreSections,
+                )
+              }
+              onClear={clearSelection}
+              onComplete={handleBulkComplete}
+              onSkip={handleBulkSkip}
+              onArchive={handleBulkArchive}
+              onDelete={handleBulkDelete}
+              onMoveToProject={handleBulkMoveToProject}
+              projects={projects}
+              showKeyboardShortcuts={showKeyboardShortcuts}
+              selectAllDisabled={
+                searchTerm?.length > 0 || hasQuickFilters
+                  ? selectedChores.size === getFilteredChores.length
+                  : selectedChores.size ===
+                    choreSections.flatMap(s => s.content || []).length
+              }
+            />
 
-        {/* Empty state. Three different situations, three different messages:
+            {/* Empty state. Three different situations, three different messages:
             nothing created yet, nothing left after narrowing, or an empty
             project. Only the middle one is about filters. */}
-        {(isNarrowed
-          ? getFilteredChores.length === 0
-          : projectFilteredChores.length === 0) &&
-          // only if not in calendar view:
-          viewMode !== 'calendar' &&
-          (chores.length === 0 ? (
-            <EmptyState
-              variant='empty'
-              fullHeight
-              icon={<EditCalendar />}
-              title={t('list.noTasksYet')}
-              description={t('list.noTasksYetDescription')}
-              primaryAction={{
-                label: t('list.createTask'),
-                startDecorator: <Add />,
-                onClick: () => setAddTaskModalOpen(true),
-              }}
-              secondaryAction={{
-                label: t('list.moreOptions'),
-                onClick: () => Navigate('/chores/create'),
-              }}
-            />
-          ) : isNarrowed ? (
-            <EmptyState
-              variant='no-results'
-              fullHeight
-              icon={<SearchOff />}
-              title={t('list.noTasksMatchView')}
-              description={
-                searchTerm?.length > 0
-                  ? t('list.nothingMatchesTerm', { term: searchTerm })
-                  : t('list.noTasksFitFilters')
-              }
-              primaryAction={{
-                label:
-                  searchTerm?.length > 0
-                    ? t('list.clearSearch')
-                    : t('list.clearFilters'),
-                onClick: clearNarrowing,
-              }}
-            />
-          ) : isCustomProjectSelected ? (
-            <EmptyState
-              variant='empty'
-              fullHeight
-              icon={<EditCalendar />}
-              title={t('list.nothingInProject', {
-                name: selectedProject.name,
-              })}
-              description={t('list.projectEmptyDescription')}
-              primaryAction={{
-                label: t('list.addTaskHere'),
-                startDecorator: <Add />,
-                onClick: () => setAddTaskModalOpen(true),
-              }}
-              secondaryAction={{
-                label: t('list.seeTasksOutsideProjects'),
-                onClick: () => setSelectedProjectWithCache(null),
-              }}
-            />
-          ) : (
-            <EmptyState
-              variant='empty'
-              fullHeight
-              icon={<EditCalendar />}
-              title={t('list.noTasksHere')}
-              description={t('list.noProjectDescription')}
-              primaryAction={{
-                label: t('list.createTask'),
-                startDecorator: <Add />,
-                onClick: () => setAddTaskModalOpen(true),
-              }}
-            />
-          ))}
-        {searchTerm?.length > 0 && viewMode !== 'calendar' && (
-          <ChoreListView
-            chores={getFilteredChores}
-            viewMode={viewMode}
-            membersData={membersData}
-            userLabels={userLabels}
-            handleLabelFiltering={handleLabelFiltering}
-            handleChoreAction={handleChoreAction}
-            isMultiSelectMode={isMultiSelectMode}
-            selectedChores={selectedChores}
-            toggleChoreSelection={toggleChoreSelection}
-            onLongPressChore={enterMultiSelectWithChore}
-          />
-        )}
-        {viewMode === 'calendar' && (
-          <>
-            {/* Summary Chips when no date selected */}
-            {/* <Box
+            {(isNarrowed
+              ? getFilteredChores.length === 0
+              : projectFilteredChores.length === 0) &&
+              // only if not in calendar view:
+              viewMode !== 'calendar' &&
+              (chores.length === 0 ? (
+                <EmptyState
+                  variant='empty'
+                  fullHeight
+                  icon={<EditCalendar />}
+                  title={t('list.noTasksYet')}
+                  description={t('list.noTasksYetDescription')}
+                  primaryAction={{
+                    label: t('list.createTask'),
+                    startDecorator: <Add />,
+                    onClick: () => setAddTaskModalOpen(true),
+                  }}
+                  secondaryAction={{
+                    label: t('list.moreOptions'),
+                    onClick: () => Navigate('/chores/create'),
+                  }}
+                />
+              ) : isNarrowed ? (
+                <EmptyState
+                  variant='no-results'
+                  fullHeight
+                  icon={<SearchOff />}
+                  title={t('list.noTasksMatchView')}
+                  description={
+                    searchTerm?.length > 0
+                      ? t('list.nothingMatchesTerm', { term: searchTerm })
+                      : t('list.noTasksFitFilters')
+                  }
+                  primaryAction={{
+                    label:
+                      searchTerm?.length > 0
+                        ? t('list.clearSearch')
+                        : t('list.clearFilters'),
+                    onClick: clearNarrowing,
+                  }}
+                />
+              ) : isCustomProjectSelected ? (
+                <EmptyState
+                  variant='empty'
+                  fullHeight
+                  icon={<EditCalendar />}
+                  title={t('list.nothingInProject', {
+                    name: selectedProject.name,
+                  })}
+                  description={t('list.projectEmptyDescription')}
+                  primaryAction={{
+                    label: t('list.addTaskHere'),
+                    startDecorator: <Add />,
+                    onClick: () => setAddTaskModalOpen(true),
+                  }}
+                  secondaryAction={{
+                    label: t('list.seeTasksOutsideProjects'),
+                    onClick: () => setSelectedProjectWithCache(null),
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  variant='empty'
+                  fullHeight
+                  icon={<EditCalendar />}
+                  title={t('list.noTasksHere')}
+                  description={t('list.noProjectDescription')}
+                  primaryAction={{
+                    label: t('list.createTask'),
+                    startDecorator: <Add />,
+                    onClick: () => setAddTaskModalOpen(true),
+                  }}
+                />
+              ))}
+            {searchTerm?.length > 0 && viewMode !== 'calendar' && (
+              <ChoreListView
+                chores={getFilteredChores}
+                viewMode={viewMode}
+                membersData={membersData}
+                userLabels={userLabels}
+                handleLabelFiltering={handleLabelFiltering}
+                handleChoreAction={handleChoreAction}
+                isMultiSelectMode={isMultiSelectMode}
+                selectedChores={selectedChores}
+                toggleChoreSelection={toggleChoreSelection}
+                onLongPressChore={enterMultiSelectWithChore}
+              />
+            )}
+            {viewMode === 'calendar' && (
+              <>
+                {/* Summary Chips when no date selected */}
+                {/* <Box
               sx={{
                 mt: 1,
                 mb: 1,
@@ -1313,325 +1484,329 @@ const MyChores = () => {
                 </Chip>
               )}
             </Box> */}
-            {/* Calendar Monthly View */}
-            <Box sx={{ mb: 2 }}>
-              {isLargeScreen ? (
-                <CalendarDual
-                  chores={getFilteredChores}
-                  onDateChange={date => {
-                    setSelectedCalendarDate(date)
-                  }}
-                />
-              ) : (
-                <div className='calendar-dual'>
-                  <CalendarMonthly
-                    chores={getFilteredChores}
-                    onDateChange={date => {
-                      setSelectedCalendarDate(date)
-                    }}
-                  />
-                </div>
-              )}
-            </Box>
-
-            {/* Selected Date Tasks */}
-            {selectedCalendarDate && (
-              <Box sx={{ mt: 2 }}>
-                <Typography level='title-md' gutterBottom>
-                  {t('list.tasksForDate', {
-                    date: selectedCalendarDate.toLocaleDateString(),
-                  })}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1,
-                    maxHeight: '400px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  {selectedDateChores.length === 0 ? (
-                    <EmptyState
-                      size='sm'
-                      icon={<EditCalendar />}
-                      title={t('list.nothingScheduled')}
-                      description={t('list.dayFreeDescription')}
-                      primaryAction={{
-                        label: t('list.addTask'),
-                        startDecorator: <Add />,
-                        onClick: () => setAddTaskModalOpen(true),
+                {/* Calendar Monthly View */}
+                <Box sx={{ mb: 2 }}>
+                  {isLargeScreen ? (
+                    <CalendarDual
+                      chores={getFilteredChores}
+                      onDateChange={date => {
+                        setSelectedCalendarDate(date)
                       }}
                     />
                   ) : (
-                    <ChoreListView
-                      chores={selectedDateChores}
-                      viewMode={'compact'}
-                      membersData={membersData}
-                      userLabels={userLabels}
-                      handleLabelFiltering={handleLabelFiltering}
-                      handleChoreAction={handleChoreAction}
-                      isMultiSelectMode={isMultiSelectMode}
-                      selectedChores={selectedChores}
-                      toggleChoreSelection={toggleChoreSelection}
-                      onLongPressChore={enterMultiSelectWithChore}
-                    />
+                    <div className='calendar-dual'>
+                      <CalendarMonthly
+                        chores={getFilteredChores}
+                        onDateChange={date => {
+                          setSelectedCalendarDate(date)
+                        }}
+                      />
+                    </div>
                   )}
                 </Box>
-              </Box>
-            )}
-          </>
-        )}
-        {searchTerm.length === 0 && viewMode !== 'calendar' && (
-          <AccordionGroup transition='0.2s ease' disableDivider>
-            {choreSections.map((section, index) => {
-              if (section.content.length === 0) return null
-              return (
-                <Accordion
-                  key={section.name + index}
-                  sx={{
-                    my: 0,
-                    px: 0,
-                  }}
-                  expanded={Boolean(openChoreSections[index])}
-                >
-                  <Divider orientation='horizontal'>
-                    <Chip
-                      variant='soft'
-                      color='neutral'
-                      size='md'
-                      onClick={() => {
-                        if (openChoreSections[index]) {
-                          const newOpenChoreSections = {
-                            ...openChoreSections,
-                          }
-                          delete newOpenChoreSections[index]
-                          setOpenChoreSectionsWithCache(newOpenChoreSections)
-                        } else {
-                          setOpenChoreSectionsWithCache({
-                            ...openChoreSections,
-                            [index]: true,
-                          })
-                        }
-                      }}
-                      endDecorator={
-                        openChoreSections[index] ? (
-                          <ExpandCircleDown
-                            color='primary'
-                            sx={{ transform: 'rotate(180deg)' }}
-                          />
-                        ) : (
-                          <ExpandCircleDown color='primary' />
-                        )
-                      }
-                      startDecorator={
-                        <>
-                          <Chip color='primary' size='sm' variant='soft'>
-                            {section?.content?.length}
-                          </Chip>
-                        </>
-                      }
-                    >
-                      {sectionName(section.name)}
-                    </Chip>
-                  </Divider>
-                  <AccordionDetails
-                    sx={{
-                      flexDirection: 'column',
-                      ['& > *']: {
-                        // px: 0.5,
-                        px: 0.5,
-                        // pr: 0,
-                      },
-                    }}
-                  >
-                    {openChoreSections[index] && (
-                      <ChoreListView
-                        chores={section.content}
-                        viewMode={viewMode}
-                        membersData={membersData}
-                        userLabels={userLabels}
-                        handleLabelFiltering={handleLabelFiltering}
-                        handleChoreAction={handleChoreAction}
-                        isMultiSelectMode={isMultiSelectMode}
-                        selectedChores={selectedChores}
-                        toggleChoreSelection={toggleChoreSelection}
-                        onLongPressChore={enterMultiSelectWithChore}
-                      />
-                    )}
-                  </AccordionDetails>
-                </Accordion>
-              )
-            })}
-          </AccordionGroup>
-        )}
-        <Box
-          sx={{
-            // center the button
-            justifyContent: 'center',
-            mt: 2,
-          }}
-        ></Box>
-        <Box
-          // variant='outlined'
-          sx={{
-            position: 'fixed',
-            bottom: getSafeBottom(10, 10),
-            left: 10,
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 2,
-            'z-index': 100,
-          }}
-        >
-          <IconButton
-            color='primary'
-            variant='solid'
-            sx={{
-              borderRadius: '50%',
-              width: 50,
-              height: 50,
-              zIndex: 101,
-              position: 'relative',
-            }}
-            onClick={() => {
-              Navigate(`/chores/create`)
-            }}
-            title={t('list.createNewChore')}
-          >
-            <Add />
-            <KeyboardShortcutHint
-              sx={{
-                position: 'absolute',
-                top: -8,
-                right: -8,
-                zIndex: 1000,
-              }}
-              show={showKeyboardShortcuts}
-              shortcut='J'
-            />
-          </IconButton>
-          <IconButton
-            data-testid='open-add-task-modal'
-            color='primary'
-            variant='soft'
-            sx={{
-              borderRadius: '50%',
-              width: 25,
-              height: 25,
-              position: 'relative',
-              left: -25,
-              top: 22,
-            }}
-            onClick={() => {
-              setAddTaskModalOpen(true)
-            }}
-          >
-            <Bolt
-              style={{
-                rotate: '20deg',
-              }}
-            />
-          </IconButton>
 
-          <KeyboardShortcutHint
-            sx={{ position: 'relative', left: -40, top: 30 }}
-            show={showKeyboardShortcuts}
-            shortcut='K'
+                {/* Selected Date Tasks */}
+                {selectedCalendarDate && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography level='title-md' gutterBottom>
+                      {t('list.tasksForDate', {
+                        date: selectedCalendarDate.toLocaleDateString(),
+                      })}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                        maxHeight: '400px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      {selectedDateChores.length === 0 ? (
+                        <EmptyState
+                          size='sm'
+                          icon={<EditCalendar />}
+                          title={t('list.nothingScheduled')}
+                          description={t('list.dayFreeDescription')}
+                          primaryAction={{
+                            label: t('list.addTask'),
+                            startDecorator: <Add />,
+                            onClick: () => setAddTaskModalOpen(true),
+                          }}
+                        />
+                      ) : (
+                        <ChoreListView
+                          chores={selectedDateChores}
+                          viewMode={'compact'}
+                          membersData={membersData}
+                          userLabels={userLabels}
+                          handleLabelFiltering={handleLabelFiltering}
+                          handleChoreAction={handleChoreAction}
+                          isMultiSelectMode={isMultiSelectMode}
+                          selectedChores={selectedChores}
+                          toggleChoreSelection={toggleChoreSelection}
+                          onLongPressChore={enterMultiSelectWithChore}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                )}
+              </>
+            )}
+            {searchTerm.length === 0 && viewMode !== 'calendar' && (
+              <AccordionGroup transition='0.2s ease' disableDivider>
+                {choreSections.map((section, index) => {
+                  if (section.content.length === 0) return null
+                  return (
+                    <Accordion
+                      key={section.name + index}
+                      sx={{
+                        my: 0,
+                        px: 0,
+                      }}
+                      expanded={Boolean(openChoreSections[index])}
+                    >
+                      <Divider orientation='horizontal'>
+                        <Chip
+                          variant='soft'
+                          color='neutral'
+                          size='md'
+                          onClick={() => {
+                            if (openChoreSections[index]) {
+                              const newOpenChoreSections = {
+                                ...openChoreSections,
+                              }
+                              delete newOpenChoreSections[index]
+                              setOpenChoreSectionsWithCache(
+                                newOpenChoreSections,
+                              )
+                            } else {
+                              setOpenChoreSectionsWithCache({
+                                ...openChoreSections,
+                                [index]: true,
+                              })
+                            }
+                          }}
+                          endDecorator={
+                            openChoreSections[index] ? (
+                              <ExpandCircleDown
+                                color='primary'
+                                sx={{ transform: 'rotate(180deg)' }}
+                              />
+                            ) : (
+                              <ExpandCircleDown color='primary' />
+                            )
+                          }
+                          startDecorator={
+                            <>
+                              <Chip color='primary' size='sm' variant='soft'>
+                                {section?.content?.length}
+                              </Chip>
+                            </>
+                          }
+                        >
+                          {sectionName(section.name)}
+                        </Chip>
+                      </Divider>
+                      <AccordionDetails
+                        sx={{
+                          flexDirection: 'column',
+                          ['& > *']: {
+                            // px: 0.5,
+                            px: 0.5,
+                            // pr: 0,
+                          },
+                        }}
+                      >
+                        {openChoreSections[index] && (
+                          <ChoreListView
+                            chores={section.content}
+                            viewMode={viewMode}
+                            membersData={membersData}
+                            userLabels={userLabels}
+                            handleLabelFiltering={handleLabelFiltering}
+                            handleChoreAction={handleChoreAction}
+                            isMultiSelectMode={isMultiSelectMode}
+                            selectedChores={selectedChores}
+                            toggleChoreSelection={toggleChoreSelection}
+                            onLongPressChore={enterMultiSelectWithChore}
+                          />
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
+                  )
+                })}
+              </AccordionGroup>
+            )}
+            <Box
+              sx={{
+                // center the button
+                justifyContent: 'center',
+                mt: 2,
+              }}
+            ></Box>
+            <Box
+              // variant='outlined'
+              sx={{
+                position: 'fixed',
+                bottom: getSafeBottom(10, 10),
+                left: 10,
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+                'z-index': 100,
+              }}
+            >
+              <IconButton
+                color='primary'
+                variant='solid'
+                sx={{
+                  borderRadius: '50%',
+                  width: 50,
+                  height: 50,
+                  zIndex: 101,
+                  position: 'relative',
+                }}
+                onClick={() => {
+                  Navigate(`/chores/create`)
+                }}
+                title={t('list.createNewChore')}
+              >
+                <Add />
+                <KeyboardShortcutHint
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    right: -8,
+                    zIndex: 1000,
+                  }}
+                  show={showKeyboardShortcuts}
+                  shortcut='J'
+                />
+              </IconButton>
+              <IconButton
+                data-testid='open-add-task-modal'
+                color='primary'
+                variant='soft'
+                sx={{
+                  borderRadius: '50%',
+                  width: 25,
+                  height: 25,
+                  position: 'relative',
+                  left: -25,
+                  top: 22,
+                }}
+                onClick={() => {
+                  setAddTaskModalOpen(true)
+                }}
+              >
+                <Bolt
+                  style={{
+                    rotate: '20deg',
+                  }}
+                />
+              </IconButton>
+
+              <KeyboardShortcutHint
+                sx={{ position: 'relative', left: -40, top: 30 }}
+                show={showKeyboardShortcuts}
+                shortcut='K'
+              />
+            </Box>
+            <NotificationAccessSnackbar />
+            <FeedbackPrompt />
+            {addTaskModalOpen && (
+              <TaskInput
+                autoFocus={taskInputFocus}
+                onChoreUpdate={updateChores}
+                isModalOpen={addTaskModalOpen}
+                initialMode={addTaskInitialMode}
+                onClose={forceRefresh => {
+                  setAddTaskModalOpen(false)
+                  setAddTaskInitialMode(null)
+                  if (forceRefresh) {
+                    refetchChores()
+                  }
+                }}
+              />
+            )}
+          </Container>
+
+          <Sidepanel
+            chores={customFilteredChores}
+            allChores={chores}
+            performers={membersData?.res || []}
+            applyTempFilter={applyTempFilter}
+            clearTempFilter={clearTempFilterAndUrl}
+            tempFilter={tempFilter}
+          />
+
+          {/* Multi-select Help - only show when in multi-select mode */}
+          {/* <MultiSelectHelp isVisible={isMultiSelectMode} /> */}
+
+          {/* Confirmation Modal for bulk operations */}
+          {confirmModelConfig?.isOpen && (
+            <ConfirmationModal config={confirmModelConfig} />
+          )}
+
+          <ChoreModals
+            activeModal={activeModal}
+            modalChore={modalChore}
+            membersData={membersData}
+            onChangeDueDate={handleChangeDueDate}
+            onCompleteWithPastDate={handleCompleteWithPastDate}
+            onAssigneeChange={handleAssigneeChange}
+            onCompleteWithNote={handleCompleteWithNote}
+            onNudge={handleNudge}
+            onClose={closeModal}
+          />
+
+          {/* Advanced Filter Builder */}
+          <AdvancedFilterBuilder
+            isOpen={showAdvancedFilterBuilder}
+            onClose={() => {
+              setShowAdvancedFilterBuilder(false)
+              setEditingFilter(null)
+            }}
+            onSave={filter => {
+              if (filter.id) {
+                // Update existing filter
+                updateFilter(filter.id, {
+                  name: filter.name,
+                  description: filter.description,
+                  color: filter.color,
+                  conditions: filter.conditions,
+                  operator: filter.operator,
+                })
+                showSuccess({
+                  title: t('list.filterUpdated'),
+                  message: t('list.filterUpdatedMessage', {
+                    name: filter.name,
+                  }),
+                })
+              } else {
+                // Create new filter
+                saveFilter(filter)
+                showSuccess({
+                  title: t('list.filterCreated'),
+                  message: t('list.filterCreatedMessage', {
+                    name: filter.name,
+                  }),
+                })
+              }
+              setShowAdvancedFilterBuilder(false)
+              setEditingFilter(null)
+            }}
+            members={membersData?.res || []}
+            labels={userLabels || []}
+            projects={projectsWithDefault}
+            allChores={searchFilteredChores}
+            userProfile={userProfile}
+            editingFilter={editingFilter}
           />
         </Box>
-        <NotificationAccessSnackbar />
-        <FeedbackPrompt />
-        {addTaskModalOpen && (
-          <TaskInput
-            autoFocus={taskInputFocus}
-            onChoreUpdate={updateChores}
-            isModalOpen={addTaskModalOpen}
-            initialMode={addTaskInitialMode}
-            onClose={forceRefresh => {
-              setAddTaskModalOpen(false)
-              setAddTaskInitialMode(null)
-              if (forceRefresh) {
-                refetchChores()
-              }
-            }}
-          />
-        )}
-      </Container>
-
-      <Sidepanel
-        chores={customFilteredChores}
-        allChores={chores}
-        performers={membersData?.res || []}
-        applyTempFilter={applyTempFilter}
-        clearTempFilter={clearTempFilterAndUrl}
-        tempFilter={tempFilter}
-      />
-
-      {/* Multi-select Help - only show when in multi-select mode */}
-      {/* <MultiSelectHelp isVisible={isMultiSelectMode} /> */}
-
-      {/* Confirmation Modal for bulk operations */}
-      {confirmModelConfig?.isOpen && (
-        <ConfirmationModal config={confirmModelConfig} />
       )}
-
-      <ChoreModals
-        activeModal={activeModal}
-        modalChore={modalChore}
-        membersData={membersData}
-        onChangeDueDate={handleChangeDueDate}
-        onCompleteWithPastDate={handleCompleteWithPastDate}
-        onAssigneeChange={handleAssigneeChange}
-        onCompleteWithNote={handleCompleteWithNote}
-        onNudge={handleNudge}
-        onClose={closeModal}
-      />
-
-      {/* Advanced Filter Builder */}
-      <AdvancedFilterBuilder
-        isOpen={showAdvancedFilterBuilder}
-        onClose={() => {
-          setShowAdvancedFilterBuilder(false)
-          setEditingFilter(null)
-        }}
-        onSave={filter => {
-          if (filter.id) {
-            // Update existing filter
-            updateFilter(filter.id, {
-              name: filter.name,
-              description: filter.description,
-              color: filter.color,
-              conditions: filter.conditions,
-              operator: filter.operator,
-            })
-            showSuccess({
-              title: t('list.filterUpdated'),
-              message: t('list.filterUpdatedMessage', {
-                name: filter.name,
-              }),
-            })
-          } else {
-            // Create new filter
-            saveFilter(filter)
-            showSuccess({
-              title: t('list.filterCreated'),
-              message: t('list.filterCreatedMessage', {
-                name: filter.name,
-              }),
-            })
-          }
-          setShowAdvancedFilterBuilder(false)
-          setEditingFilter(null)
-        }}
-        members={membersData?.res || []}
-        labels={userLabels || []}
-        projects={projectsWithDefault}
-        allChores={searchFilteredChores}
-        userProfile={userProfile}
-        editingFilter={editingFilter}
-      />
-    </Box>
+    </>
   )
 }
 

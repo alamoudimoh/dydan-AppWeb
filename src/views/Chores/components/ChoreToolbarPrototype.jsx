@@ -44,7 +44,7 @@ import {
   MenuItem,
   Typography,
 } from '@mui/joy'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../../components/common/AppModal'
@@ -186,6 +186,7 @@ const ChoreToolbar = ({
   activeFilterId,
   applyTempFilter,
   clearTempFilter,
+  hideSearch = false,
   isMultiSelectMode,
   labels = [],
   members = [],
@@ -447,12 +448,6 @@ const ChoreToolbar = ({
     setFilterSheetOpen(true)
   }
 
-  useEffect(() => {
-    if (!filterSheetOpen || savingFilter || activeConditions.length === 0) {
-      setSaveMenuAnchorEl(null)
-    }
-  }, [filterSheetOpen, savingFilter, activeConditions.length])
-
   // ── selection changes → apply temp filter immediately ────────────────────────
 
   const handleSelectionsChange = updater => {
@@ -580,13 +575,15 @@ const ChoreToolbar = ({
         }}
       >
         {/* Search takes available space */}
-        <SearchBar
-          value={searchTerm}
-          onChange={onSearchChange}
-          onClose={onSearchClose}
-          showKeyboardShortcuts={showKeyboardShortcuts}
-          inputRef={searchInputRef}
-        />
+        {!hideSearch && (
+          <SearchBar
+            value={searchTerm}
+            onChange={onSearchChange}
+            onClose={onSearchClose}
+            showKeyboardShortcuts={showKeyboardShortcuts}
+            inputRef={searchInputRef}
+          />
+        )}
 
         {/* Filter button */}
         <Badge

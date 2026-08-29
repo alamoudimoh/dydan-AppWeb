@@ -1037,3 +1037,82 @@ body {
     padding: 20px 16px 0;
   }
 }
+
+.figma-calendar-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+.figma-calendar-filters {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.figma-calendar-filters label {
+  display: flex;
+  flex-direction: column;
+}
+.figma-calendar-weekdays,
+.figma-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.figma-calendar-weekdays {
+  border-bottom: 1px solid var(--line);
+}
+.figma-calendar-day {
+  align-items: flex-start;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-inline-end: 1px solid var(--line);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-height: 70px;
+  padding: 6px;
+  text-align: start;
+}
+.figma-calendar-day:nth-child(7n) {
+  border-inline-end: 0;
+}
+.figma-calendar-date {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+.figma-calendar-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+  min-width: 0;
+  width: 100%;
+}
+.figma-calendar-event {
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  border-inline-start: 2px solid;
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  padding-inline: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .figma-calendar-layout,
+  .figma-calendar-filters {
+    grid-template-columns: 1fr;
+  }
+  .figma-calendar-day {
+    min-height: 58px;
+    padding: 4px;
+  }
+  .figma-calendar-event {
+    font-size: 9px;
+  }
+}

@@ -1,41 +1,14 @@
-import {
-  CalendarMonthRounded,
-  ChevronLeftRounded,
-  ChevronRightRounded,
-  EventNoteRounded,
-  RadioButtonUncheckedRounded,
-  ScheduleRounded,
-} from '@mui/icons-material'
-import {
-  Alert,
-  Box,
-  Button,
-  ButtonGroup,
-  Card,
-  Chip,
-  IconButton,
-  Option,
-  Select,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import PageHeader from '../../components/common/PageHeader'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCalendar } from '../../queries/CalendarQueries'
 import { useCategories } from '../../queries/CategoryQueries'
 import { useUserProfile } from '../../queries/UserQueries'
-import {
-  inlineErrorAlertSx,
-  pageShellSx,
-  pageStackSpacing,
-} from '../../theme/appLayout'
 import { MarkChoreComplete } from '../../utils/Fetcher'
 import { STORAGE_KEYS } from '../../utils/storageKeys'
 import {
@@ -53,98 +26,88 @@ import {
 } from './calendarModel'
 
 const preferenceKey = STORAGE_KEYS.calendarView
-const supportedViews = ['agenda', 'month']
+
 const labelDate = (key, locale, options = {}) =>
   new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...options }).format(
     new Date(`${key}T12:00:00Z`),
   )
 
-const TaskRow = ({ item, locale, onComplete, pending, timeZone }) => {
+const occurrenceColor = item => {
+  if (item.overdue) return 'var(--sig-over)'
+  if (item.meterSchedule) return 'var(--sig-due)'
+  if (item.meterUpdateReminder) return 'var(--accent)'
+  return item.category?.color || 'var(--brand)'
+}
+
+function CalendarTaskRow({ item, locale, onComplete, pending, timeZone }) {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const specialized = Boolean(item.meterUpdateReminder || item.meterSchedule)
+  const color = occurrenceColor(item)
   const time = new Intl.DateTimeFormat(locale, {
     timeZone,
     hour: 'numeric',
     minute: '2-digit',
   }).format(new Date(item.dueAt))
+
   return (
-    <Stack
-      direction='row'
-      alignItems='center'
-      gap={1}
-      sx={{ py: 1, minWidth: 0 }}
+    <div
+      className='flex items-center gap-2 rounded-lg p-2'
+      style={{
+        background: `color-mix(in srgb, ${color} 7%, transparent)`,
+        borderInlineStart: `3px solid ${color}`,
+      }}
     >
-      {item.actionable && !specialized ? (
-        <IconButton
+      {item.actionable && !item.meterSchedule && !item.meterUpdateReminder ? (
+        <button
           aria-label={t('calendar.completeTask', { name: item.name })}
-          loading={pending}
+          className='task-check'
+          disabled={pending}
           onClick={() => onComplete(item)}
-          color={item.overdue ? 'danger' : 'primary'}
-          sx={{ minWidth: 44, minHeight: 44 }}
+          style={{
+            borderColor: color,
+            cursor: pending ? 'wait' : 'pointer',
+            margin: 0,
+          }}
+          type='button'
         >
-          <RadioButtonUncheckedRounded />
-        </IconButton>
+          {pending && <span aria-hidden='true'>...</span>}
+        </button>
       ) : (
-        <Box sx={{ width: 44, textAlign: 'center' }}>
-          <ScheduleRounded color='disabled' />
-        </Box>
+        <FigmaIcon name='calendar' size={16} style={{ color }} />
       )}
-      <Button
-        variant='plain'
-        color='neutral'
+      <button
+        className='min-w-0 flex-1 text-start'
         onClick={() => navigate(`/chores/${item.choreId}`)}
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          p: 0.5,
-          justifyContent: 'flex-start',
-          textAlign: 'start',
+        style={{
+          background: 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          padding: 0,
         }}
+        type='button'
       >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography level='title-sm' sx={{ overflowWrap: 'anywhere' }}>
-            {item.name}
-          </Typography>
-          <Stack direction='row' gap={0.75} flexWrap='wrap' alignItems='center'>
-            <Typography level='body-xs' className='daydan-metric'>
-              {time}
-            </Typography>
-            {item.projected && (
-              <Chip size='sm' variant='outlined'>
-                {t('calendar.projected')}
-              </Chip>
-            )}
-            {item.category && (
-              <Chip size='sm' variant='outlined' color='neutral'>
-                {item.category.name}
-              </Chip>
-            )}
-            {item.meterUpdateReminder && (
-              <Chip size='sm' color='info'>
-                {t('calendar.meterUpdate')}
-              </Chip>
-            )}
-            {item.meterSchedule && (
-              <Chip size='sm' color='warning'>
-                {t('calendar.maintenance')}
-              </Chip>
-            )}
-            {item.requireApproval && (
-              <Chip size='sm'>{t('calendar.approvalRequired')}</Chip>
-            )}
-          </Stack>
-        </Box>
-      </Button>
+        <div
+          className='text-primary truncate font-semibold'
+          style={{ fontSize: 12 }}
+        >
+          {item.name}
+        </div>
+        <div className='text-faint' style={{ fontSize: 10 }}>
+          {time}
+          {item.projected ? ` · ${t('calendar.projected')}` : ''}
+          {item.requireApproval ? ` · ${t('calendar.approvalRequired')}` : ''}
+        </div>
+      </button>
       {Number(item.points) > 0 && (
-        <Typography level='body-xs' className='daydan-metric'>
+        <span className='text-faint font-mono' style={{ fontSize: 10 }}>
           +{item.points}
-        </Typography>
+        </span>
       )}
-    </Stack>
+    </div>
   )
 }
-TaskRow.propTypes = {
+
+CalendarTaskRow.propTypes = {
   item: PropTypes.object.isRequired,
   locale: PropTypes.string.isRequired,
   onComplete: PropTypes.func.isRequired,
@@ -156,9 +119,12 @@ export default function CalendarView() {
   const { i18n, t } = useTranslation('common')
   const { firstDayOfWeek, isRTL } = useLocalization()
   const profile = useUserProfile()
-  const navigate = useNavigate()
   const client = useQueryClient()
+  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
+  const [completing, setCompleting] = useState(null)
+  const [actionError, setActionError] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
   const locale =
     i18n.resolvedLanguage || document.documentElement.lang || 'en-US'
   const timeZone =
@@ -166,13 +132,7 @@ export default function CalendarView() {
     Intl.DateTimeFormat().resolvedOptions().timeZone ||
     'UTC'
   const today = dateKey(new Date(), timeZone)
-  const requestedView = params.get('view')
   const savedView = readMigratedLocalStorageItem(preferenceKey)
-  const view = supportedViews.includes(requestedView)
-    ? requestedView
-    : supportedViews.includes(savedView)
-      ? savedView
-      : 'agenda'
   const selected = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '')
     ? params.get('date')
     : today
@@ -185,21 +145,19 @@ export default function CalendarView() {
     ? params.get('type')
     : 'all'
   const categoryFilter = params.get('category') || 'all'
+  const viewMode =
+    (params.get('view') || savedView) === 'month' ? 'month' : 'week'
   const { data: categories = [] } = useCategories()
   const grid = monthGrid(selected, Number(firstDayOfWeek) || 0)
-  const fromKey = view === 'month' ? grid[0] : selected
+  const fromKey = viewMode === 'month' ? grid[0] : selected
   const toKey =
-    view === 'month' ? addDays(grid[41], 1) : addDays(selected, range)
-  const from = zonedMidnight(fromKey, timeZone)
-  const to = zonedMidnight(toKey, timeZone)
+    viewMode === 'month' ? addDays(grid[41], 1) : addDays(selected, range)
   const calendar = useCalendar({
-    from,
-    to,
+    from: zonedMidnight(fromKey, timeZone),
+    to: zonedMidnight(toKey, timeZone),
     filter: typeFilter,
     category: categoryFilter,
   })
-  const [completing, setCompleting] = useState(null)
-  const [actionError, setActionError] = useState('')
   const setState = updates => {
     const next = new URLSearchParams(params)
     Object.entries(updates).forEach(([key, value]) =>
@@ -208,8 +166,9 @@ export default function CalendarView() {
     setParams(next)
   }
   const switchView = next => {
-    writeLocalStorageItem(preferenceKey, next)
-    setState({ view: next, date: selected })
+    const stored = next === 'month' ? 'month' : 'agenda'
+    writeLocalStorageItem(preferenceKey, stored)
+    setState({ date: selected, view: stored })
   }
   const moveMonth = amount => {
     const [year, month, day] = selected.split('-').map(Number)
@@ -217,10 +176,9 @@ export default function CalendarView() {
     const max = new Date(
       Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0),
     ).getUTCDate()
-    const targetYear = target.getUTCFullYear()
-    const targetMonth = String(target.getUTCMonth() + 1).padStart(2, '0')
-    const targetDay = String(Math.min(day, max)).padStart(2, '0')
-    setState({ date: `${targetYear}-${targetMonth}-${targetDay}` })
+    setState({
+      date: `${target.getUTCFullYear()}-${String(target.getUTCMonth() + 1).padStart(2, '0')}-${String(Math.min(day, max)).padStart(2, '0')}`,
+    })
   }
   const complete = async item => {
     setCompleting(item.occurrenceId)
@@ -236,12 +194,12 @@ export default function CalendarView() {
         client.invalidateQueries({ queryKey: ['userProfile'] }),
       ])
     } catch (error) {
-      setActionError(error.message)
+      setActionError(error.message || t('calendar.completeError'))
     } finally {
       setCompleting(null)
     }
   }
-  const raw = calendar.data?.res?.occurrences || []
+  const raw = calendar.data?.res?.occurrences || calendar.data?.res || []
   const overdue = filterByCategory(
     filterOccurrences(calendar.data?.res?.overdue || [], typeFilter),
     categoryFilter,
@@ -250,285 +208,425 @@ export default function CalendarView() {
     filterOccurrences(raw, typeFilter),
     categoryFilter,
   )
-  const hasUncategorized = [
-    ...raw,
-    ...(calendar.data?.res?.overdue || []),
-  ].some(item => !item.category)
-  const groups = groupOccurrences(visible, timeZone)
+  const items = [...overdue, ...visible].filter(
+    (item, index, all) =>
+      all.findIndex(
+        candidate => candidate.occurrenceId === item.occurrenceId,
+      ) === index,
+  )
+  const groups = groupOccurrences(items, timeZone)
   const selectedItems = groups[selected] || []
-  const weekdays = Array.from({ length: 7 }, (_, index) => {
-    const key = addDays(
-      '2026-08-09',
-      ((Number(firstDayOfWeek) || 0) + index) % 7,
-    )
-    return labelDate(key, locale, { weekday: 'short' })
-  })
-  const renderRows = items =>
-    items.length ? (
-      items.map(item => (
-        <TaskRow
-          key={item.occurrenceId}
+  const days = Array.from({ length: 7 }, (_, index) =>
+    addDays('2026-08-09', ((Number(firstDayOfWeek) || 0) + index) % 7),
+  ).map(key => labelDate(key, locale, { weekday: 'short' }))
+  const week = Array.from({ length: range }, (_, index) =>
+    addDays(selected, index),
+  )
+  const upcoming = items
+    .filter(item => dateKey(item.dueAt, timeZone) >= selected)
+    .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))
+    .slice(0, 5)
+  const hasUncategorized = items.some(item => !item.category)
+
+  const renderRows = list =>
+    list.length ? (
+      list.map(item => (
+        <CalendarTaskRow
           item={item}
+          key={item.occurrenceId}
           locale={locale}
-          timeZone={timeZone}
           onComplete={complete}
           pending={completing === item.occurrenceId}
+          timeZone={timeZone}
         />
       ))
     ) : (
-      <Typography color='neutral'>{t('calendar.nothingScheduled')}</Typography>
+      <div className='py-6 text-center'>
+        <FigmaIcon
+          name='calendar'
+          size={32}
+          style={{ color: 'var(--t-faint)', marginBottom: 8 }}
+        />
+        <div className='text-muted' style={{ fontSize: 13 }}>
+          {t('calendar.nothingScheduled')}
+        </div>
+        <button
+          className='btn btn-sm btn-secondary mt-3'
+          onClick={() => navigate('/chores/create')}
+          type='button'
+        >
+          <FigmaIcon name='plus' size={12} />
+          {t('list.addTask', { ns: 'chores' })}
+        </button>
+      </div>
     )
 
   return (
-    <Box sx={pageShellSx}>
-      <Stack spacing={pageStackSpacing}>
-        <PageHeader
-          title={t('calendar.title')}
-          subtitle={t('calendar.subtitle')}
-          action={
-            <ButtonGroup aria-label={t('calendar.view')}>
-              <Button
-                variant={view === 'agenda' ? 'solid' : 'outlined'}
-                onClick={() => switchView('agenda')}
-                startDecorator={<EventNoteRounded />}
-              >
-                {t('calendar.agenda')}
-              </Button>
-              <Button
-                variant={view === 'month' ? 'solid' : 'outlined'}
-                onClick={() => switchView('month')}
-                startDecorator={<CalendarMonthRounded />}
-              >
-                {t('calendar.monthView')}
-              </Button>
-            </ButtonGroup>
-          }
-        />
-        <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
-          <Button onClick={() => setState({ date: today })}>
-            {t('dates.today')}
-          </Button>
-          {view === 'month' && (
-            <>
-              <IconButton
-                aria-label={t('calendar.previousMonth')}
-                onClick={() => moveMonth(-1)}
-              >
-                {isRTL ? <ChevronRightRounded /> : <ChevronLeftRounded />}
-              </IconButton>
-              <IconButton
-                aria-label={t('calendar.nextMonth')}
-                onClick={() => moveMonth(1)}
-              >
-                {isRTL ? <ChevronLeftRounded /> : <ChevronRightRounded />}
-              </IconButton>
-            </>
-          )}
-          {view === 'agenda' && (
-            <Select
-              aria-label={t('calendar.agendaRange')}
-              value={range}
-              onChange={(_, value) => setState({ range: value })}
+    <div style={{ margin: '0 auto', maxWidth: 960, padding: '0 0 40px' }}>
+      <div className='page-header pb-5'>
+        <div>
+          <h1
+            className='text-primary'
+            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
+          >
+            {t('calendar.title')}
+          </h1>
+          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+            {t('calendar.subtitle')}
+          </div>
+        </div>
+        <div className='flex gap-2'>
+          <div className='view-toggle' style={{ width: 'auto' }}>
+            <button
+              className={`view-toggle-btn ${viewMode === 'month' ? 'active' : ''}`}
+              onClick={() => switchView('month')}
+              type='button'
             >
-              <Option value={7}>{t('calendar.sevenDays')}</Option>
-              <Option value={14}>{t('calendar.fourteenDays')}</Option>
-              <Option value={30}>{t('calendar.thirtyDays')}</Option>
-            </Select>
-          )}
-          <Select
-            aria-label={t('calendar.categoryFilter')}
-            value={categoryFilter}
-            onChange={(_, value) => setState({ category: value })}
+              {t('calendar.monthView')}
+            </button>
+            <button
+              className={`view-toggle-btn ${viewMode === 'week' ? 'active' : ''}`}
+              onClick={() => switchView('week')}
+              type='button'
+            >
+              {t('calendar.agenda')}
+            </button>
+          </div>
+          <button
+            className='btn btn-primary'
+            onClick={() => navigate('/chores/create')}
+            type='button'
           >
-            <Option value='all'>{t('calendar.allCategories')}</Option>
-            {[...categories]
-              .sort((a, b) => new Intl.Collator(locale).compare(a.name, b.name))
-              .map(category => (
-                <Option key={category.id} value={String(category.id)}>
-                  {category.name}
-                </Option>
-              ))}
-            {hasUncategorized && (
-              <Option value='uncategorized'>
-                {t('calendar.uncategorized')}
-              </Option>
-            )}
-          </Select>
-          <Select
-            aria-label={t('calendar.systemTypeFilter')}
-            value={typeFilter}
-            onChange={(_, value) => setState({ type: value })}
-            size='sm'
-            variant='plain'
+            <FigmaIcon name='plus' size={14} />
+            {t('list.addTask', { ns: 'chores' })}
+          </button>
+        </div>
+      </div>
+
+      <div className='px-4 md:px-7'>
+        <div className='mb-4 flex flex-wrap items-center gap-2'>
+          <button
+            className='btn btn-secondary btn-sm'
+            onClick={() => setState({ date: today })}
+            type='button'
           >
-            <Option value='all'>{t('calendar.allTypes')}</Option>
-            <Option value='tasks'>{t('calendar.tasks')}</Option>
-            <Option value='maintenance'>{t('calendar.maintenance')}</Option>
-            <Option value='meter'>{t('calendar.meterUpdates')}</Option>
-          </Select>
-        </Stack>
-        {calendar.isLoading && (
-          <Stack aria-label={t('calendar.loading')}>
-            <Skeleton variant='rectangular' height={180} />
-            <Skeleton variant='rectangular' height={120} />
-          </Stack>
-        )}
-        {calendar.isError && (
-          <Alert
-            color='danger'
-            variant='soft'
-            sx={inlineErrorAlertSx}
-            endDecorator={
-              <Button size='sm' onClick={() => calendar.refetch()}>
-                {t('retry')}
-              </Button>
-            }
+            {t('dates.today')}
+          </button>
+          <button
+            className='btn btn-secondary btn-sm'
+            onClick={() => setShowFilters(value => !value)}
+            type='button'
           >
-            {t('errors.calendarLoadFailed')}
-          </Alert>
-        )}
-        {actionError && (
-          <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
-            {actionError}
-          </Alert>
-        )}
-        {!calendar.isLoading && !calendar.isError && view === 'agenda' && (
-          <>
-            {overdue.length > 0 && (
-              <Card variant='outlined' color='danger'>
-                <Typography level='h2' color='danger'>
-                  {t('calendar.overdue')}
-                </Typography>
-                {renderRows(overdue)}
-              </Card>
-            )}
-            {Array.from({ length: range }, (_, index) =>
-              addDays(selected, index),
-            ).map(key => (
-              <Card variant='outlined' key={key}>
-                <Typography level='h2'>
-                  {key === today
-                    ? t('dates.today')
-                    : key === addDays(today, 1)
-                      ? t('dates.tomorrow')
-                      : labelDate(key, locale, { weekday: 'long' })}
-                </Typography>
-                <Typography level='body-sm' color='neutral'>
-                  {labelDate(key, locale, { month: 'long', day: 'numeric' })}
-                </Typography>
-                {renderRows(groups[key] || [])}
-              </Card>
-            ))}
-          </>
-        )}
-        {!calendar.isLoading && !calendar.isError && view === 'month' && (
-          <>
-            <Card variant='outlined'>
-              <Typography level='h2' sx={{ mb: 1 }}>
-                {labelDate(`${selected.slice(0, 7)}-01`, locale, {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </Typography>
-              <Box
-                role='grid'
-                aria-label={t('calendar.monthCalendar')}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-                }}
-              >
-                {weekdays.map((day, index) => (
-                  <Typography
-                    key={`${day}-${index}`}
-                    role='columnheader'
-                    level='body-xs'
-                    textAlign='center'
-                    sx={{ py: 1 }}
+            <FigmaIcon name='bars' size={14} />
+            {t('calendar.systemTypeFilter')}
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className='card mb-4 p-4'>
+            <div className='figma-calendar-filters'>
+              <label>
+                <span className='section-label' style={{ padding: '0 0 6px' }}>
+                  {t('calendar.categoryFilter')}
+                </span>
+                <select
+                  className='input'
+                  onChange={event => setState({ category: event.target.value })}
+                  value={categoryFilter}
+                >
+                  <option value='all'>{t('calendar.allCategories')}</option>
+                  {[...categories]
+                    .sort((a, b) =>
+                      new Intl.Collator(locale).compare(a.name, b.name),
+                    )
+                    .map(category => (
+                      <option key={category.id} value={String(category.id)}>
+                        {category.name}
+                      </option>
+                    ))}
+                  {hasUncategorized && (
+                    <option value='uncategorized'>
+                      {t('calendar.uncategorized')}
+                    </option>
+                  )}
+                </select>
+              </label>
+              <label>
+                <span className='section-label' style={{ padding: '0 0 6px' }}>
+                  {t('calendar.systemTypeFilter')}
+                </span>
+                <select
+                  className='input'
+                  onChange={event => setState({ type: event.target.value })}
+                  value={typeFilter}
+                >
+                  <option value='all'>{t('calendar.allTypes')}</option>
+                  <option value='tasks'>{t('calendar.tasks')}</option>
+                  <option value='maintenance'>
+                    {t('calendar.maintenance')}
+                  </option>
+                  <option value='meter'>{t('calendar.meterUpdates')}</option>
+                </select>
+              </label>
+              {viewMode === 'week' && (
+                <label>
+                  <span
+                    className='section-label'
+                    style={{ padding: '0 0 6px' }}
                   >
-                    {day}
-                  </Typography>
-                ))}
-                {grid.map(key => {
-                  const items = groups[key] || []
-                  const currentMonth = key.slice(0, 7) === selected.slice(0, 7)
-                  const accessibleDate = labelDate(key, locale, {
+                    {t('calendar.agendaRange')}
+                  </span>
+                  <select
+                    className='input'
+                    onChange={event => setState({ range: event.target.value })}
+                    value={range}
+                  >
+                    <option value='7'>{t('calendar.sevenDays')}</option>
+                    <option value='14'>{t('calendar.fourteenDays')}</option>
+                    <option value='30'>{t('calendar.thirtyDays')}</option>
+                  </select>
+                </label>
+              )}
+            </div>
+          </div>
+        )}
+
+        {calendar.isLoading ? (
+          <div className='card p-5' aria-label={t('calendar.loading')}>
+            <div className='skeleton' style={{ height: 280 }} />
+          </div>
+        ) : calendar.isError ? (
+          <div className='card text-sig-over p-4' role='alert'>
+            {t('errors.calendarLoadFailed')}
+            <button
+              className='btn btn-secondary btn-sm ms-2'
+              onClick={() => calendar.refetch()}
+              type='button'
+            >
+              {t('retry')}
+            </button>
+          </div>
+        ) : (
+          <div className='figma-calendar-layout'>
+            <div className='card overflow-hidden'>
+              <div className='border-line flex items-center justify-between border-b px-5 py-4'>
+                <button
+                  className='btn btn-ghost btn-icon'
+                  aria-label={t('calendar.previousMonth')}
+                  onClick={() => moveMonth(-1)}
+                  type='button'
+                >
+                  <FigmaIcon
+                    name='chevron_right'
+                    size={16}
+                    style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+                  />
+                </button>
+                <div
+                  className='text-primary font-bold'
+                  style={{ fontSize: 16 }}
+                >
+                  {labelDate(`${selected.slice(0, 7)}-01`, locale, {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </div>
+                <button
+                  className='btn btn-ghost btn-icon'
+                  aria-label={t('calendar.nextMonth')}
+                  onClick={() => moveMonth(1)}
+                  type='button'
+                >
+                  <FigmaIcon
+                    name='chevron_right'
+                    size={16}
+                    style={{ transform: isRTL ? 'rotate(180deg)' : 'none' }}
+                  />
+                </button>
+              </div>
+
+              {viewMode === 'month' ? (
+                <>
+                  <div className='figma-calendar-weekdays'>
+                    {days.map(day => (
+                      <div
+                        className='text-faint py-2 text-center'
+                        key={day}
+                        style={{ fontSize: 11, fontWeight: 700 }}
+                      >
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    className='figma-calendar-days'
+                    role='grid'
+                    aria-label={t('calendar.monthCalendar')}
+                  >
+                    {grid.map(key => {
+                      const dayItems = groups[key] || []
+                      const currentMonth =
+                        key.slice(0, 7) === selected.slice(0, 7)
+                      const isToday = key === today
+                      const selectedDay = key === selected
+                      return (
+                        <button
+                          aria-label={t('calendar.scheduledCount', {
+                            date: labelDate(key, locale, {
+                              month: 'long',
+                              day: 'numeric',
+                            }),
+                            count: dayItems.length,
+                          })}
+                          aria-selected={selectedDay}
+                          className='figma-calendar-day'
+                          key={key}
+                          onClick={() => setState({ date: key })}
+                          style={{
+                            background: selectedDay
+                              ? 'var(--brand-faint)'
+                              : 'transparent',
+                            opacity: currentMonth ? 1 : 0.3,
+                          }}
+                          type='button'
+                        >
+                          <span
+                            className='figma-calendar-date'
+                            style={{
+                              background: isToday
+                                ? 'var(--brand)'
+                                : 'transparent',
+                              color: isToday
+                                ? 'var(--brand-contrast)'
+                                : selectedDay
+                                  ? 'var(--brand)'
+                                  : 'var(--t-primary)',
+                            }}
+                          >
+                            {Number(key.slice(-2))}
+                          </span>
+                          <span className='figma-calendar-event-list'>
+                            {dayItems.slice(0, 2).map(item => (
+                              <span
+                                className='figma-calendar-event'
+                                key={item.occurrenceId}
+                                style={{
+                                  borderInlineStartColor: occurrenceColor(item),
+                                  color: occurrenceColor(item),
+                                }}
+                              >
+                                {item.name}
+                              </span>
+                            ))}
+                            {dayItems.length > 2 && (
+                              <span
+                                className='text-faint'
+                                style={{ fontSize: 9 }}
+                              >
+                                +{dayItems.length - 2}{' '}
+                                {t('calendar.moreCount', {
+                                  count: dayItems.length - 2,
+                                }).replace(/^\+\d+\s*/, '')}
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className='figma-calendar-agenda'>
+                  {week.map(key => (
+                    <div className='border-line border-b p-4' key={key}>
+                      <div className='text-primary mb-2 font-bold'>
+                        {labelDate(key, locale, {
+                          weekday: 'long',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </div>
+                      {renderRows(groups[key] || [])}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className='flex flex-col gap-3'>
+              {actionError && (
+                <div className='card text-sig-over p-3' role='alert'>
+                  {actionError}
+                </div>
+              )}
+              <div className='card p-4'>
+                <div
+                  className='text-primary mb-3 font-bold'
+                  style={{ fontSize: 15 }}
+                >
+                  {labelDate(selected, locale, {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric',
-                  })
-                  return (
-                    <Button
-                      key={key}
-                      role='gridcell'
-                      aria-label={t('calendar.scheduledCount', {
-                        date: accessibleDate,
-                        count: items.length,
-                      })}
-                      aria-selected={key === selected}
-                      variant={key === selected ? 'soft' : 'plain'}
-                      color='neutral'
-                      onClick={() => setState({ date: key })}
-                      sx={{
-                        minWidth: 0,
-                        minHeight: { xs: 52, md: 92 },
-                        p: 0.5,
-                        opacity: currentMonth ? 1 : 0.55,
-                        alignItems: 'flex-start',
-                        justifyContent: 'flex-start',
-                      }}
+                  })}
+                </div>
+                {renderRows(selectedItems)}
+              </div>
+              <div className='card p-4'>
+                <div
+                  className='text-primary mb-3 font-bold'
+                  style={{ fontSize: 13 }}
+                >
+                  {t('calendar.upcomingEvents')}
+                </div>
+                {upcoming.length ? (
+                  upcoming.map(item => (
+                    <button
+                      className='border-line flex w-full items-center gap-2 border-b py-2 text-start'
+                      key={item.occurrenceId}
+                      onClick={() =>
+                        setState({ date: dateKey(item.dueAt, timeZone) })
+                      }
+                      style={{ background: 'transparent', cursor: 'pointer' }}
+                      type='button'
                     >
-                      <Stack sx={{ width: '100%', minWidth: 0 }}>
-                        <Typography className='daydan-metric'>
-                          {Number(key.slice(-2))}
-                        </Typography>
-                        {items.length > 0 && (
-                          <Chip size='sm' color='primary'>
-                            {items.length}
-                          </Chip>
-                        )}
-                        <Box
-                          sx={{
-                            display: { xs: 'none', md: 'block' },
-                            overflow: 'hidden',
-                          }}
+                      <span
+                        style={{
+                          background: occurrenceColor(item),
+                          borderRadius: '50%',
+                          height: 8,
+                          width: 8,
+                        }}
+                      />
+                      <span className='min-w-0 flex-1'>
+                        <span
+                          className='text-primary block truncate'
+                          style={{ fontSize: 12 }}
                         >
-                          {items.slice(0, 2).map(item => (
-                            <Typography
-                              key={item.occurrenceId}
-                              level='body-xs'
-                              noWrap
-                            >
-                              {item.name}
-                            </Typography>
-                          ))}
-                          {items.length > 2 && (
-                            <Typography level='body-xs'>
-                              {t('calendar.moreCount', {
-                                count: items.length - 2,
-                              })}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Stack>
-                    </Button>
-                  )
-                })}
-              </Box>
-            </Card>
-            <Card variant='outlined'>
-              <Typography level='h2'>
-                {labelDate(selected, locale, {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </Typography>
-              {renderRows(selectedItems)}
-            </Card>
-          </>
+                          {item.name}
+                        </span>
+                        <span
+                          className='text-faint block'
+                          style={{ fontSize: 10 }}
+                        >
+                          {labelDate(dateKey(item.dueAt, timeZone), locale, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <div className='text-muted' style={{ fontSize: 13 }}>
+                    {t('calendar.nothingScheduled')}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   )
 }

@@ -95,7 +95,7 @@ export const BROWSER_SMOKE_PAGES = [
     id: 'chores',
     path: '/chores',
     auth: true,
-    text: /no tasks yet/i,
+    text: /no tasks match this view/i,
     nav: true,
   },
   {
