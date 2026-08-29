@@ -63,22 +63,24 @@ export const addDaysToKey = (key, amount) => {
 /** Relative calendar label: Today / Tomorrow / Yesterday / N days overdue / weekday / day month. */
 export const formatDate = (
   dateKey,
-  { now = new Date(), timeZone = 'UTC' } = {},
+  { locale = 'en-GB', now = new Date(), t, timeZone = 'UTC' },
 ) => {
   if (!dateKey) return null
   const today = dayKeyOf(now, timeZone)
   const diff = Math.round((parseKey(dateKey) - parseKey(today)) / 86_400_000)
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Tomorrow'
-  if (diff === -1) return 'Yesterday'
-  if (diff < 0) return `${Math.abs(diff)} days overdue`
+  if (diff === 0) return t('homeToday.today')
+  if (diff === 1) return t('homeToday.tomorrow')
+  if (diff === -1) return t('homeToday.yesterday')
+  if (diff < 0) {
+    return t('homeToday.daysOverdue', { count: Math.abs(diff) })
+  }
   if (diff < 7) {
-    return new Intl.DateTimeFormat('en-GB', {
+    return new Intl.DateTimeFormat(locale, {
       timeZone: 'UTC',
       weekday: 'long',
     }).format(new Date(parseKey(dateKey)))
   }
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: 'UTC',
     day: 'numeric',
     month: 'short',
@@ -86,17 +88,18 @@ export const formatDate = (
 }
 
 /** Relative time label ("Nm ago", "Nh ago", "Nd ago") — clamps to now. */
-export const formatTimestamp = (timestamp, { now = new Date() } = {}) => {
+export const formatTimestamp = (timestamp, { now = new Date(), t }) => {
   const date = new Date(timestamp)
   if (Number.isNaN(date.getTime())) return ''
   const mins = Math.max(
     0,
     Math.floor((now.getTime() - date.getTime()) / 60_000),
   )
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 60) return t('homeToday.minutesAgo', { count: mins })
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+  if (hours < 24) return t('homeToday.hoursAgo', { count: hours })
+  const days = Math.floor(hours / 24)
+  return t('homeToday.daysAgo', { count: days })
 }
 
 const toPriority = priority => {
@@ -344,7 +347,7 @@ export const sumTaskPoints = tasks =>
   (tasks || []).reduce((total, task) => total + (task.points || 0), 0)
 
 /** Family goal card derived from /progress/goals (empty when no goal). */
-export const pickFamilyGoal = goals => {
+export const pickFamilyGoal = (goals, { fallbackName, fallbackUnit }) => {
   const list = Array.isArray(goals) ? goals : []
   if (list.length === 0) {
     return {
@@ -352,7 +355,7 @@ export const pickFamilyGoal = goals => {
       name: '',
       progress: 0,
       target: 1,
-      unit: 'chores',
+      unit: fallbackUnit,
       percent: 0,
     }
   }
@@ -362,10 +365,10 @@ export const pickFamilyGoal = goals => {
   const progress = Math.max(0, Number(goal.progress) || 0)
   return {
     id: String(goal.id ?? ''),
-    name: String(goal.name || 'Family goal'),
+    name: String(goal.name || fallbackName),
     progress,
     target,
-    unit: String(goal.unit || 'chores'),
+    unit: String(goal.unit || fallbackUnit),
     percent: Math.round((progress / target) * 100),
   }
 }
@@ -385,12 +388,12 @@ export const emojiForId = (id, offset = 0) => {
 }
 
 /** Normalised reward card: cost + emoji, filtering inactive rewards. */
-export const buildRewards = rewards =>
+export const buildRewards = (rewards, { fallbackName }) =>
   (Array.isArray(rewards) ? rewards : [])
     .filter(reward => reward?.isActive !== false)
     .map((reward, index) => ({
       id: String(reward.id ?? index),
-      name: String(reward.name || 'Reward'),
+      name: String(reward.name || fallbackName),
       pointsCost: Math.max(1, Number(reward.costPoints) || 1),
       icon: reward.icon || emojiForId(reward.id, index),
     }))
@@ -399,7 +402,7 @@ export const buildRewards = rewards =>
 export const buildActivityFeed = (
   history,
   membersById,
-  { limit = 6, now = new Date() } = {},
+  { limit = 6, now = new Date(), t },
 ) => {
   const events = (history || [])
     .filter(entry => isCompletedHistory(entry) && entry?.performedAt)
@@ -412,8 +415,13 @@ export const buildActivityFeed = (
         actorId: String(entry.completedBy ?? ''),
         actor: member,
         text: member
-          ? `${member.name} completed ${entry.choreName || 'a task'}`
-          : `Completed ${entry.choreName || 'a task'}`,
+          ? t('homeToday.memberCompletedTask', {
+              member: member.name,
+              task: entry.choreName || t('homeToday.aTask'),
+            })
+          : t('homeToday.completedTask', {
+              task: entry.choreName || t('homeToday.aTask'),
+            }),
         timestamp: String(entry.performedAt),
         timestampKey: performed,
         points: Number(entry.points) > 0 ? Number(entry.points) : null,
@@ -423,6 +431,6 @@ export const buildActivityFeed = (
     .slice(0, limit)
   return {
     events,
-    relative: event => formatTimestamp(event.timestamp, { now }),
+    relative: event => formatTimestamp(event.timestamp, { now, t }),
   }
 }

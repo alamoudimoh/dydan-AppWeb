@@ -14,6 +14,23 @@ const CASES = [
   { width: 1440, mode: 'light', language: 'en' },
 ]
 
+const localized = language =>
+  language.startsWith('ar')
+    ? {
+        family: 'العائلة',
+        familyProgress: 'تقدّم العائلة اليوم',
+        forMe: 'لي',
+        markComplete: 'وضع علامة مكتمل',
+        today: 'اليوم',
+      }
+    : {
+        family: 'Family',
+        familyProgress: 'Family progress today',
+        forMe: 'For me',
+        markComplete: 'Mark complete',
+        today: 'Today',
+      }
+
 const installPresentation = async (page, { language, mode }) => {
   await page.addInitScript(
     ({ locale, theme }) => {
@@ -59,6 +76,26 @@ const installTodayFixture = page => {
   )
 }
 
+const installChildProfile = page =>
+  page.route('**/api/v1/users/profile', route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        res: {
+          id: 1,
+          circleID: 3,
+          displayName: 'Smoke User',
+          email: 'smoke@example.test',
+          parentUserId: 2,
+          timezone: 'UTC',
+          userType: 1,
+          username: 'smoke-user',
+        },
+      }),
+    }),
+  )
+
 const preparePage = async (page, scenario) => {
   await page.setViewportSize({ width: scenario.width, height: 900 })
   await installApiMocks(page)
@@ -85,7 +122,12 @@ for (const path of HOME_ROUTES) {
         scenario.language.startsWith('ar') ? 'rtl' : 'ltr',
       )
       await expect(
-        page.getByRole('heading', { name: 'Today', exact: true }).first(),
+        page
+          .getByRole('heading', {
+            name: localized(scenario.language).today,
+            exact: true,
+          })
+          .first(),
       ).toBeVisible()
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -123,8 +165,9 @@ test('home-today: family toggle on /today surfaces household cards', async ({
   await preparePage(page, { width: 768, mode: 'light', language: 'ar-SA' })
 
   await page.goto('/today', { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: 'Family' }).click()
-  await expect(page.getByText('Family progress today')).toBeVisible()
+  const copy = localized('ar-SA')
+  await page.getByRole('button', { name: copy.family }).click()
+  await expect(page.getByText(copy.familyProgress)).toBeVisible()
   await expect(page.getByRole('button', { name: /Smoke User/ })).toBeVisible()
   await expect(
     page.getByRole('button', { name: /Family Member/ }),
@@ -132,6 +175,47 @@ test('home-today: family toggle on /today surfaces household cards', async ({
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(768)
+  runtimeGuard.assertClean()
+})
+
+test('home-today: Arabic RTL renders translated Today content', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  const copy = localized('ar-SA')
+  await preparePage(page, { width: 390, mode: 'dark', language: 'ar-SA' })
+
+  await page.goto('/today', { waitUntil: 'networkidle' })
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(
+    page.getByRole('heading', { name: copy.today, exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: copy.forMe, exact: true }),
+  ).toBeVisible()
+  await expect(page.getByText('مُسنَدة إليّ')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: copy.markComplete, exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Today', exact: true }),
+  ).toHaveCount(0)
+  runtimeGuard.assertClean()
+})
+
+test('home-today: Arabic child persona renders translated Quest content', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await preparePage(page, { width: 390, mode: 'dark', language: 'ar-SA' })
+  await installChildProfile(page)
+
+  await page.goto('/', { waitUntil: 'networkidle' })
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.getByText('مهام اليوم · تبقى 1')).toBeVisible()
+  await expect(page.getByText('لا مكافآت بعد')).toBeVisible()
+  await expect(page.getByText('أهدافي')).toBeVisible()
+  await expect(page.getByText("Today's quests")).toHaveCount(0)
   runtimeGuard.assertClean()
 })
 

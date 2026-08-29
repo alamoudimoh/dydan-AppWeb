@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
@@ -34,6 +35,7 @@ StreakPips.propTypes = {
 StreakPips.defaultProps = { total: QUEST_TOTAL }
 
 function QuestHero({ currentMember, streak }) {
+  const { t } = useTranslation('common')
   return (
     <div
       className='mb-6 flex flex-col gap-4 rounded-2xl p-5 text-white'
@@ -45,12 +47,15 @@ function QuestHero({ currentMember, streak }) {
     >
       <div>
         <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.15 }}>
-          {EMOJI[streak % EMOJI.length]} Keep it up, {currentMember?.name}!
+          {EMOJI[streak % EMOJI.length]}{' '}
+          {t('homeToday.keepItUp', {
+            member: currentMember?.name || t('homeToday.member'),
+          })}
         </div>
         <div style={{ fontSize: 13, opacity: 0.85, marginTop: 6 }}>
           {streak === 0
-            ? 'Start your streak by finishing a quest today.'
-            : `${streak}-day streak — you're doing great!`}
+            ? t('homeToday.startStreak')
+            : t('homeToday.streakEncouragement', { count: streak })}
         </div>
       </div>
       <div
@@ -58,8 +63,12 @@ function QuestHero({ currentMember, streak }) {
         style={{ background: 'rgba(255,255,255,0.12)' }}
       >
         <div className='flex flex-col'>
-          <span style={{ fontSize: 11, opacity: 0.8 }}>Daily streak</span>
-          <span style={{ fontSize: 20, fontWeight: 800 }}>{streak} days</span>
+          <span style={{ fontSize: 11, opacity: 0.8 }}>
+            {t('homeToday.dailyStreak')}
+          </span>
+          <span style={{ fontSize: 20, fontWeight: 800 }}>
+            {t('homeToday.days', { count: streak })}
+          </span>
         </div>
         <StreakPips current={streak} total={QUEST_TOTAL} />
       </div>
@@ -74,6 +83,7 @@ QuestHero.propTypes = {
 QuestHero.defaultProps = { currentMember: null }
 
 function QuestTaskCard({ onComplete, task }) {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const isDone = task.status === 'done'
   return (
@@ -106,7 +116,9 @@ function QuestTaskCard({ onComplete, task }) {
             e.stopPropagation()
             if (!isDone) onComplete(task)
           }}
-          aria-label={isDone ? 'Completed' : 'Mark complete'}
+          aria-label={
+            isDone ? t('homeToday.completed') : t('homeToday.markComplete')
+          }
         >
           {isDone && (
             <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
@@ -215,6 +227,7 @@ export default function QuestHome({
   todayKey,
   workload,
 }) {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const openCreate = () => navigate('/chores/create')
   const openTask = task => navigate(`/chores/${task.choreId}`)
@@ -246,13 +259,15 @@ export default function QuestHome({
           className='section-label mb-3'
           style={{ letterSpacing: 'var(--ls-wide)' }}
         >
-          Today&apos;s quests ·{questsRemaining} left
+          {t('homeToday.todaysQuests', { count: questsRemaining })}
         </div>
         <div className='mb-6 flex flex-col gap-2'>
           {questTasks.length === 0 ? (
             <div className='empty-state py-10'>
               <div style={{ fontSize: 32 }}>✨</div>
-              <div className='text-primary font-bold'>All quests complete!</div>
+              <div className='text-primary font-bold'>
+                {t('homeToday.allQuestsComplete')}
+              </div>
             </div>
           ) : (
             questTasks
@@ -273,7 +288,7 @@ export default function QuestHome({
             style={{ background: 'var(--brand)', borderRadius: 'var(--r-lg)' }}
             onClick={openCreate}
           >
-            ✨ New quest
+            ✨ {t('homeToday.newQuest')}
           </button>
         )}
         {questsRemaining === 0 && questTasks.length > 0 && (
@@ -285,7 +300,7 @@ export default function QuestHome({
               borderRadius: 'var(--r-lg)',
             }}
           >
-            🎉 All done! {questTasks.length} quests completed — huge day!
+            🎉 {t('homeToday.questsCompleted', { count: questTasks.length })}
           </div>
         )}
 
@@ -293,7 +308,7 @@ export default function QuestHome({
         <div className='card mb-6 p-5'>
           <div className='mb-3 flex items-center justify-between'>
             <div className='text-primary font-bold' style={{ fontSize: 14 }}>
-              Family goal
+              {t('homeToday.familyGoal')}
             </div>
             <span style={{ fontSize: 20 }}>🚀</span>
           </div>
@@ -308,7 +323,11 @@ export default function QuestHome({
             style={{ fontSize: 12 }}
           >
             <span>
-              {familyGoal.progress} of {familyGoal.target} {familyGoal.unit}
+              {t('homeToday.goalProgress', {
+                progress: familyGoal.progress,
+                target: familyGoal.target,
+                unit: familyGoal.unit,
+              })}
             </span>
             <span className='font-bold' style={{ color: 'var(--brand)' }}>
               {familyGoal.percent}%
@@ -327,7 +346,7 @@ export default function QuestHome({
           className='section-label mb-3'
           style={{ letterSpacing: 'var(--ls-wide)' }}
         >
-          Family rewards
+          {t('homeToday.familyRewards')}
         </div>
         <div className='mb-6 grid grid-cols-2 gap-2' style={{ gap: 8 }}>
           {(rewards.length > 0
@@ -335,7 +354,7 @@ export default function QuestHome({
             : [
                 {
                   id: 'empty',
-                  name: 'No rewards yet',
+                  name: t('homeToday.noRewardsYet'),
                   icon: '🎁',
                   pointsCost: '',
                 },
@@ -358,14 +377,14 @@ export default function QuestHome({
           className='btn btn-secondary btn-lg mb-6 w-full'
           onClick={() => gotoName('shopping')}
         >
-          🛒 Shop new rewards
+          🛒 {t('homeToday.shopNewRewards')}
         </button>
 
         {/* Points */}
         <div className='card mb-6 flex items-center justify-between p-5'>
           <div>
             <div className='text-faint' style={{ fontSize: 11 }}>
-              Available points
+              {t('homeToday.availablePoints')}
             </div>
             <div className='font-mono font-bold' style={{ fontSize: 22 }}>
               {pointsAvailable}
@@ -373,14 +392,16 @@ export default function QuestHome({
             </div>
             {pendingRequests.length > 0 && (
               <div className='text-faint mt-1' style={{ fontSize: 11 }}>
-                {pendingRequests.length} pending approval
+                {t('homeToday.pendingApproval', {
+                  count: pendingRequests.length,
+                })}
               </div>
             )}
           </div>
           {balance && (
             <div className='text-right'>
               <div className='text-faint' style={{ fontSize: 11 }}>
-                Balance
+                {t('homeToday.balance')}
               </div>
               <div className='font-mono font-bold' style={{ fontSize: 18 }}>
                 {balance.spendableBalance ?? balance.currentBalance ?? 0}
@@ -394,7 +415,7 @@ export default function QuestHome({
           className='section-label mb-3'
           style={{ letterSpacing: 'var(--ls-wide)' }}
         >
-          My goals
+          {t('homeToday.myGoals')}
         </div>
         <div className='mb-6 flex flex-col gap-3'>
           {/* streak goal */}
@@ -404,17 +425,19 @@ export default function QuestHome({
                 className='text-primary font-semibold'
                 style={{ fontSize: 13 }}
               >
-                🔥 Streak goal
+                🔥 {t('homeToday.streakGoal')}
               </div>
               <div className='text-faint' style={{ fontSize: 12 }}>
-                {streak} / 7 days
+                {t('homeToday.streakProgress', { count: streak, target: 7 })}
               </div>
             </div>
             <div
               className='badge'
               style={{ fontSize: 11, background: 'var(--surface-2)' }}
             >
-              {streak >= 7 ? 'Done' : `${Math.min(streak, 7)}d`}
+              {streak >= 7
+                ? t('homeToday.done')
+                : t('homeToday.daysShort', { count: Math.min(streak, 7) })}
             </div>
           </div>
           {/* parent-assigned goal */}
@@ -447,7 +470,7 @@ export default function QuestHome({
             {firstDone && (
               <div>
                 <div className='text-faint' style={{ fontSize: 11 }}>
-                  First done today
+                  {t('homeToday.firstDoneToday')}
                 </div>
                 <div
                   className='text-primary font-semibold'
@@ -479,7 +502,7 @@ export default function QuestHome({
               className='text-primary mb-2 font-bold'
               style={{ fontSize: 14 }}
             >
-              Household workload
+              {t('homeToday.householdWorkload')}
             </div>
             {workload.rows
               .filter(
@@ -509,7 +532,9 @@ export default function QuestHome({
                         className='text-faint font-mono'
                         style={{ fontSize: 10 }}
                       >
-                        {member.tasksCompleted} done today
+                        {t('homeToday.doneTodayCount', {
+                          count: member.tasksCompleted,
+                        })}
                       </span>
                     </div>
                     <div className='progress-track mt-1' style={{ height: 4 }}>

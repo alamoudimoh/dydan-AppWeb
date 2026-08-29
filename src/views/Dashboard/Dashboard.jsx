@@ -18,6 +18,7 @@ import {
  * buckets (next 7 days) derived from the full chore list.
  */
 const Overview = ({ chores, locale, now, timeZone }) => {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const buckets = useMemo(
     () =>
@@ -33,7 +34,7 @@ const Overview = ({ chores, locale, now, timeZone }) => {
     [buckets.upcoming, timeZone, locale],
   )
   const row = chore => {
-    const schedule = maintenanceLabel(chore.meterSchedule)
+    const schedule = maintenanceLabel(chore.meterSchedule, { locale, t })
     return (
       <Stack
         key={chore.id}
@@ -85,19 +86,19 @@ const Overview = ({ chores, locale, now, timeZone }) => {
       <Stack spacing={1.5}>
         <Stack direction='row' gap={2} flexWrap='wrap'>
           <Chip size='lg' color='neutral'>
-            Overdue: {buckets.overdue.length}
+            {t('homeToday.overdue')}: {buckets.overdue.length}
           </Chip>
           <Chip size='lg' color='primary'>
-            Today: {buckets.today.length}
+            {t('homeToday.today')}: {buckets.today.length}
           </Chip>
           <Chip size='lg' color='success'>
-            Upcoming: {buckets.upcoming.length}
+            {t('homeToday.upcoming')}: {buckets.upcoming.length}
           </Chip>
         </Stack>
         {upcomingGroups.length > 0 && (
           <Box>
             <Typography level='title-sm' color='neutral' sx={{ mb: 0.5 }}>
-              Upcoming (7 days)
+              {t('homeToday.upcomingDays', { count: 7 })}
             </Typography>
             {upcomingGroups.map(group => (
               <Box key={group.key} sx={{ mt: 1.5 }}>
@@ -122,14 +123,14 @@ Overview.propTypes = {
 }
 
 export default function Dashboard() {
-  const { i18n } = useTranslation('common')
+  const { i18n, t } = useTranslation('common')
   const home = useHomeData()
   const locale = i18n.resolvedLanguage || document.documentElement.lang || 'en'
 
   if (home.loading) {
     return (
       <Box sx={{ p: { xs: 2, md: 3.5 } }}>
-        <Stack aria-label='Loading home'>
+        <Stack aria-label={t('homeToday.loadingHome')}>
           <Skeleton variant='rectangular' height={160} />
           <Skeleton variant='rectangular' height={220} sx={{ mt: 2 }} />
         </Stack>
@@ -140,7 +141,9 @@ export default function Dashboard() {
   if (home.error && home.tasks.length === 0) {
     return (
       <Box sx={{ p: { xs: 2, md: 3.5 } }}>
-        <Alert onClose={() => home.refetch()}>Could not load your home.</Alert>
+        <Alert onClose={() => home.refetch()}>
+          {t('homeToday.loadHomeFailed')}
+        </Alert>
       </Box>
     )
   }
