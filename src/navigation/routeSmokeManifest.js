@@ -24,6 +24,7 @@ export const ROUTE_SMOKE_AUTH_STATES = Object.freeze({
  */
 export const ROUTE_SMOKE_ENTRIES = Object.freeze([
   { path: '/', label: 'Dashboard / Home' },
+  { path: '/today', label: 'Today' },
   { path: '/chores', label: 'All tasks' },
   { path: '/my/chores', label: 'My chores' },
   { path: '/calendar', label: 'Calendar' },
@@ -118,6 +119,7 @@ export const routesForAuthState = authState =>
 export const ROUTE_SMOKE_GROUPS = Object.freeze({
   daily: [
     '/',
+    '/today',
     '/chores',
     '/my/chores',
     '/calendar',

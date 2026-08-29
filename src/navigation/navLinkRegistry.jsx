@@ -17,6 +17,7 @@ import {
   SearchRounded,
   SettingsOutlined,
   ShoppingCart,
+  TodayRounded,
   Toll,
 } from '@mui/icons-material'
 
@@ -36,6 +37,11 @@ export const createNavLinkRegistry = ({
     to: '/',
     label: t('navigation.home'),
     icon: <HomeRounded />,
+  },
+  [NAV_LINK_IDS.TODAY]: {
+    to: '/today',
+    label: t('navigation.today'),
+    icon: <TodayRounded />,
   },
   [NAV_LINK_IDS.SEARCH]: {
     label: t('navigation.search'),

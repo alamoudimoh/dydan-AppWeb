@@ -46,6 +46,7 @@ const MyChores = lazy(() => import('../views/Chores/MyChores'))
 const JoinCircleView = lazy(() => import('../views/Circles/JoinCircle'))
 const NotFound = lazy(() => import('../views/components/NotFound'))
 const Dashboard = lazy(() => import('../views/Dashboard/Dashboard'))
+const TodayView = lazy(() => import('../views/Home/today/TodayView'))
 const FamilyProgress = lazy(
   () => import('../views/FamilyProgress/FamilyProgress'),
 )
@@ -131,6 +132,10 @@ export const appRouteConfig = [
       {
         path: '/',
         element: <Dashboard />,
+      },
+      {
+        path: '/today',
+        element: <TodayView />,
       },
       {
         path: '/settings',

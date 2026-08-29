@@ -19,6 +19,13 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     nav: true,
     heading: /today/i,
   },
+  '/today': {
+    status: 'covered',
+    group: 'daily',
+    auth: true,
+    nav: true,
+    heading: /^today$/i,
+  },
   '/chores': {
     status: 'covered',
     group: 'daily',

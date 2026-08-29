@@ -21,6 +21,7 @@ import SyncStatusIndicator from './SyncStatusIndicator'
 
 const iconByLink = {
   home: 'home',
+  today: 'calendar',
   allTasks: 'tasks',
   calendar: 'calendar',
   archived: 'tasks',
@@ -203,25 +204,30 @@ const NavBar = () => {
         </div>
       )}
       <nav className='mobile-nav' aria-label={t('navigation.mainNavigation')}>
-        {['home', 'allTasks', 'calendar', 'shoppingLists', 'settings'].map(
-          id => {
-            const link = sections
-              .flatMap(section => section.links)
-              .find(item => item.id === id)
-            return (
-              link && (
-                <button
-                  key={id}
-                  className={location.pathname === link.to ? 'active' : ''}
-                  onClick={() => activate(link)}
-                >
-                  <FigmaIcon name={iconByLink[id]} size={20} />
-                  <span>{link.label}</span>
-                </button>
-              )
+        {[
+          'home',
+          'today',
+          'allTasks',
+          'calendar',
+          'shoppingLists',
+          'settings',
+        ].map(id => {
+          const link = sections
+            .flatMap(section => section.links)
+            .find(item => item.id === id)
+          return (
+            link && (
+              <button
+                key={id}
+                className={location.pathname === link.to ? 'active' : ''}
+                onClick={() => activate(link)}
+              >
+                <FigmaIcon name={iconByLink[id]} size={20} />
+                <span>{link.label}</span>
+              </button>
             )
-          },
-        )}
+          )
+        })}
       </nav>
       <FeedbackModal
         open={feedbackOpen}

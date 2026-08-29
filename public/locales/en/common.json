@@ -53,6 +53,7 @@
   },
   "navigation": {
     "notifications": "Notifications",
+    "today": "Today",
     "search": "Search",
     "allTasks": "All Tasks",
     "archived": "Archived",

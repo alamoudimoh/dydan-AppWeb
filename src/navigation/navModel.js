@@ -11,6 +11,7 @@ export const NAV_SECTION_IDS = Object.freeze({
 /** Stable link ids used by the sidebar plan and NavBar registry. */
 export const NAV_LINK_IDS = Object.freeze({
   HOME: 'home',
+  TODAY: 'today',
   SEARCH: 'search',
   ALL_TASKS: 'allTasks',
   CALENDAR: 'calendar',
@@ -33,6 +34,7 @@ export const NAV_LINK_IDS = Object.freeze({
 
 const DAILY_LINKS = [
   NAV_LINK_IDS.HOME,
+  NAV_LINK_IDS.TODAY,
   NAV_LINK_IDS.SEARCH,
   NAV_LINK_IDS.ALL_TASKS,
   NAV_LINK_IDS.CALENDAR,
