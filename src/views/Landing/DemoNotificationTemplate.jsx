@@ -16,7 +16,7 @@ const DemoNotificationTemplate = () => {
 
   return (
     <>
-      <Grid item xs={12} sm={7} data-aos-notification-template-list>
+      <Grid xs={12} sm={7} data-aos-notification-template-list>
         <div
           data-aos-delay={100}
           data-aos-anchor='[data-aos-notification-template-list]'
@@ -30,7 +30,7 @@ const DemoNotificationTemplate = () => {
           />
         </div>
       </Grid>
-      <Grid item xs={12} sm={5} data-aos-notification-demo-section>
+      <Grid xs={12} sm={5} data-aos-notification-demo-section>
         <Card
           sx={{
             p: 4,

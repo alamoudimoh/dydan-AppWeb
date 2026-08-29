@@ -99,7 +99,7 @@ const Footer = () => {
         {/* Main Footer Content */}
         <Grid container spacing={4} mb={6}>
           {/* Brand Section */}
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 {APP_BRAND_ID === 'daydan' && (
@@ -161,9 +161,9 @@ const Footer = () => {
           </Grid>
 
           {/* Footer Links */}
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Grid container spacing={4}>
-              <Grid item xs={6} sm={3}>
+              <Grid xs={6} sm={3}>
                 <Typography
                   level='title-md'
                   sx={{
@@ -196,7 +196,7 @@ const Footer = () => {
               </Grid>
 
               {APP_BRAND_ID === 'daydan' && (
-                <Grid item xs={6} sm={3}>
+                <Grid xs={6} sm={3}>
                   <Typography
                     level='title-md'
                     sx={{
@@ -234,7 +234,7 @@ const Footer = () => {
               )}
 
               {APP_BRAND_ID === 'daydan' && (
-                <Grid item xs={6} sm={3}>
+                <Grid xs={6} sm={3}>
                   <Typography
                     level='title-md'
                     sx={{
@@ -271,7 +271,7 @@ const Footer = () => {
                 </Grid>
               )}
 
-              <Grid item xs={6} sm={3}>
+              <Grid xs={6} sm={3}>
                 <Typography
                   level='title-md'
                   sx={{

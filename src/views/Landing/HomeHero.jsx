@@ -1,9 +1,8 @@
 // import { StyledButton } from '@/components/styled-button'
 import { DarkMode, GitHub, LightMode } from '@mui/icons-material'
 import { Button, IconButton, useColorScheme } from '@mui/joy'
-import Typography from '@mui/joy/Typography'
-import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
+import { Typography } from '@mui/joy'
+import { Box, Grid } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -115,7 +114,7 @@ const HomeHero = () => {
       spacing={{ xs: 2, md: 16 }}
       sx={{ py: 12, position: 'relative' }}
     >
-      <Grid item xs={12} md={7}>
+      <Grid xs={12} md={7}>
         {title}
         <div className='flex flex-col gap-6'>
           {subtitle}
@@ -168,7 +167,7 @@ const HomeHero = () => {
         </div>
       </Grid>
       {windowWidth > windowThreshold && (
-        <Grid item xs={12} md={5}>
+        <Grid xs={12} md={5}>
           <div className='flex justify-center'>
             <img
               src={

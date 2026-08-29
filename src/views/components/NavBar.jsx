@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -53,6 +53,15 @@ const NavBar = () => {
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
   const shellMode = resolveAppShellMode(location.pathname)
+
+  useEffect(() => {
+    if (!drawerOpen) return undefined
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') setDrawerOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [drawerOpen])
   const sections = useMemo(() => {
     const registry = createNavLinkRegistry({
       t,
@@ -83,7 +92,11 @@ const NavBar = () => {
   }
   const navigation = mobile => (
     <nav
-      className={mobile ? 'figma-mobile-drawer' : 'sidebar'}
+      className={
+        mobile
+          ? `figma-mobile-drawer${isRTL ? ' figma-mobile-drawer--rtl' : ''}`
+          : `sidebar${isRTL ? ' sidebar--rtl' : ''}`
+      }
       aria-label={t('navigation.mainNavigation')}
     >
       <div className='figma-brand'>
@@ -145,15 +158,18 @@ const NavBar = () => {
           onClick={() => setDrawerOpen(true)}
           aria-label={t('navigation.openMenu')}
         >
-          <FigmaIcon name='bars' />
+          <LogoMark size={22} />
+          <span>{APP_DISPLAY_NAME}</span>
         </button>
         <button className='figma-search-button' onClick={openSearch}>
           <FigmaIcon name='search' size={14} />
-          {t('search')}
+          <span>{t('navigation.search')}</span>
           <kbd>Ctrl K</kbd>
         </button>
         <div className='figma-top-actions'>
-          <SyncStatusIndicator />
+          <div className='figma-sync-status'>
+            <SyncStatusIndicator />
+          </div>
           <button
             className='btn btn-ghost btn-icon'
             onClick={() => navigate('/notifications')}
@@ -168,7 +184,9 @@ const NavBar = () => {
           >
             <FigmaIcon name='plus' />
           </button>
-          <UserProfileAvatar />
+          <div className='figma-top-avatar'>
+            <UserProfileAvatar />
+          </div>
         </div>
       </header>
       {drawerOpen && (

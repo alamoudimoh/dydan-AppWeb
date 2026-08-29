@@ -73,7 +73,7 @@ for (const path of ROUTES) {
       ).toBeLessThanOrEqual(scenario.width)
 
       if (scenario.width >= 900) {
-        await expect(page.getByRole('complementary')).toBeVisible()
+        await expect(page.locator('.sidebar')).toBeVisible()
       } else {
         await expect(
           page.getByRole('button', { name: /open menu|فتح القائمة/i }),

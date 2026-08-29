@@ -24,7 +24,7 @@ export const assertPageShell = async (
   }
 
   if (nav) {
-    const desktopNavigation = page.getByRole('complementary')
+    const desktopNavigation = page.locator('.sidebar')
     const mobileNavigationTrigger = page.getByRole('button', {
       name: /open menu/i,
     })

@@ -13,7 +13,7 @@ const DemoScheduler = () => {
 
   return (
     <>
-      <Grid item xs={12} sm={5} data-aos-create-chore-scheduler>
+      <Grid xs={12} sm={5} data-aos-create-chore-scheduler>
         <Box
           data-aos-delay={300}
           data-aos-anchor='[data-aos-create-chore-scheduler]'
@@ -37,7 +37,7 @@ const DemoScheduler = () => {
           />
         </Box>
       </Grid>
-      <Grid item xs={12} sm={7} data-aos-create-chore-section-scheduler>
+      <Grid xs={12} sm={7} data-aos-create-chore-section-scheduler>
         <Card
           sx={{
             p: 4,

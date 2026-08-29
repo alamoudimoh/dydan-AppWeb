@@ -163,7 +163,7 @@ const DemoCalendar = () => {
 
   return (
     <>
-      <Grid item xs={12} sm={7} data-aos-calendar-demo-section>
+      <Grid xs={12} sm={7} data-aos-calendar-demo-section>
         <Card
           sx={{
             p: 5,
@@ -178,7 +178,7 @@ const DemoCalendar = () => {
           <CalendarMonthly chores={sampleChores} />
         </Card>
       </Grid>
-      <Grid item xs={12} sm={5} data-aos-calendar-description>
+      <Grid xs={12} sm={5} data-aos-calendar-description>
         <Card
           sx={{
             p: 4,

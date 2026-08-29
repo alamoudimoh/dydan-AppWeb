@@ -64,17 +64,17 @@ for (const scenario of CASES) {
     ).toBeLessThanOrEqual(scenario.width)
 
     if (scenario.width >= 900) {
-      const sidebar = page.getByRole('complementary')
+      const sidebar = page.locator('.sidebar')
       await expect(sidebar).toBeVisible()
       const bounds = await sidebar.boundingBox()
-      expect(bounds?.width).toBe(248)
-      if (direction === 'rtl') expect(bounds?.x).toBe(scenario.width - 248)
+      expect(bounds?.width).toBe(244)
+      if (direction === 'rtl') expect(bounds?.x).toBe(scenario.width - 244)
       else expect(bounds?.x).toBe(0)
     } else {
       const menu = page.getByRole('button', { name: /open menu|فتح القائمة/i })
       await expect(menu).toBeVisible()
       await menu.click()
-      const drawer = page.locator('.MuiDrawer-content')
+      const drawer = page.locator('.figma-mobile-drawer')
       await expect(drawer).toBeVisible()
       const bounds = await drawer.boundingBox()
       if (direction === 'rtl')
