@@ -34,6 +34,19 @@ with no rebuild needed when the server address changes.
 Only set `VITE_APP_API_URL` (e.g. in `.env.production.local` or your CI
 environment) if you host the API on a different origin than the frontend.
 
+## Frontend verification gates
+
+Production-UI changes must keep Playwright fixture tests green. In addition to
+`e2e/production-ui-phase3.spec.js` (calendar, archived, notifications, meters,
+maintenance, family, rewards, chore detail, shared dialogs), Phase 3 covers the
+Home and Today screens:
+
+- `e2e/production-ui-home-today.spec.js` exercises `/` (FocusHome) and `/today`
+  (TodayScreen) across the standard viewport/theme/language cases, plus a
+  live-completion round trip on a due-today chore, the family household toggle,
+  and the sidebar `Today` navigation link. Runs are gated by the runtime error
+  guard, which fails on any uncaught error, console error, or unmocked API call.
+
 ## Contributing
 
 Contributions are welcome! If you would like to contribute to DayDan, please follow these steps:
