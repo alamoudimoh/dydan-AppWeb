@@ -1,108 +1,287 @@
-# Phase
+# Phase 2 — Figma Foundation + Shell
 
-Phase 2 — `migration/figma-p02-foundation-shell`: port the Figma shell and foundation exactly.
+Branch: `migration/figma-p02-foundation-shell`
 
-# Prerequisites
+## Binding authority
 
-1. `git fetch --all --prune`; verify Phase 1 is merged. 2. Rebase onto latest `origin/develop`, resolving only planning/base drift. 3. Figma wins over `design-reference/` and current production presentation.
+This file is the complete execution contract for Phase 2. No other policy file is required. If another planning file, prior prompt, repository guard, or stale instruction conflicts with this file, this file controls Phase 2 execution.
 
-# Authoritative Figma Baseline
+When the owner says `Execute Phase 2`, the executing agent must work autonomously to terminal completion. It must not stop merely because implementation remains, a merge/rebase conflict exists, tests fail, verification is pending, a PR is open, a lockfile changed, or a repository configuration is stale. Those are in-repository work items and must be resolved.
 
-`design-source/figma-make/` at app `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, identical to `DayDanProductExperience` `7131b76979e49351db8ecbc33db6648a75139572`.
+`NOT COMPLETE` is valid only for a genuinely external blocker that cannot be resolved through repository changes, normal Git/PR operations, available tooling, or authoritative Figma/repository evidence after all independent executable work is exhausted.
 
-# Exact Figma Stack
+## Authoritative Figma source
 
-React 19, Vite 8, `@vitejs/plugin-react` 6, Tailwind 4 + `@tailwindcss/vite` 4, TypeScript 5.7, oxfmt. Use Figma DOM/classes directly.
+Presentation authority is the actual Figma Make source:
 
-# Figma Source Files
+- `design-source/figma-make/`
+- planning-time dedicated source baseline: `DayDanProductExperience` commit `7131b76979e49351db8ecbc33db6648a75139572`
 
-`src/App.tsx` (Icon, LogoMark, Sidebar, mobile nav, top/shell controls), `src/index.css` (tokens, fonts, shell, helpers, responsive/RTL), `src/main.tsx`, `src/imports/*`.
+Read the current imported source before implementation. For every Figma-defined presentation element, Figma wins over current production, `design-reference/`, MUI Joy, historical DayDan UI, agent preference, or an equivalent implementation.
 
-# Production Targets
+If Figma implements X → Y → Z, production must implement X → Y → Z for that presentation path.
 
-`src/App.jsx`, `src/Application.jsx`, `src/index.css`, `src/components/UserProfileAvatar.jsx`, `src/views/components/NavBar*.jsx`, `src/config/AppBranding.js`, `src/contexts/{Router,Theme,Localization}Context.jsx`, and route-shell tests.
+Use the actual Figma DOM/component structure, Tailwind classes, CSS, SVG/icon paths, tokens, dimensions, spacing, typography, borders, radii, shadows, responsive behavior, mobile behavior, dark behavior, and RTL behavior where present.
 
-# Existing Behavior That Must Be Preserved
+Forbidden: reinterpretation, approximation, Joy equivalents, `sx` translations, substitute icon libraries, substitute spacing systems, alternate breakpoints, “production-friendly” visual rewrites, or design-reference overrides.
 
-Router configuration and guards, auth, SSE/sync state, theme persistence, i18n direction, brand selection, global search invocation, native safe area, offline/PWA, notifications and permissions.
+## Production behavior authority
 
-# Required Implementation
+Current merged production remains authoritative for behavior only:
 
-1. Copy Figma token/font/theme/RTL/focus and responsive CSS, including DayDan/Sovereign variables, literal radii/shadows/sidebar width and mobile breakpoint (768px), into the production Tailwind foundation.
-2. Port `Icon` paths and `LogoMark`; do not substitute MUI icons.
-3. Port Figma Sidebar/mobile navigation/top composition and wire production navigation, current member, search, theme, persona/focus/quest controls only where actual product capability exists.
-4. Retain production route ownership and guards; render routes within the Figma shell. Keep legacy Joy only around unmigrated route content.
+- authentication and authorization
+- routing and route guards
+- API contracts
+- React Query and mutations
+- SSE/realtime
+- offline/PWA
+- persistence
+- notifications and permissions
+- i18n content
+- Capacitor/native behavior
+- DayDan/Sovereign product behavior
 
-# Forbidden Substitutions
+Required model: **actual Figma presentation + real DayDan behavior**.
 
-No Joy NavBar/Card approximation, `sx`, MUI icon replacement, altered breakpoint/token/spacing, invented shell, or design-reference override.
+## Phase 1 runtime invariant
 
-# Dependency Changes
+Preserve the merged Phase 1 runtime:
 
-None beyond Phase 1. Do not remove MUI/Emotion until a real consumer audit in Phase 7.
+- React 19
+- React DOM 19
+- Vite 8
+- `@vitejs/plugin-react`
+- Tailwind CSS 4
+- `@tailwindcss/vite`
 
-# Tests
+No active executable build/test/reference/config path may regress to React 18 assumptions, `@vitejs/plugin-react-swc`, Tailwind 3, obsolete PostCSS/Tailwind integration, or a substituted runtime.
 
-Add shell routing/theme/RTL/mobile-nav tests; run `npm test`, build, smoke and `./scripts/verify.sh`.
+If repository verification executes a stale config, fix that config. `design-reference/` is not visual authority, but its executable build/test tooling must remain compatible if repository verification invokes it.
 
-# Visual Acceptance
+## Safety and isolation
 
-Compare Figma and production shell at 1440×900 and 390×844, DayDan/Sovereign × LTR/RTL × Focus/Quest/child where present. Match dimensions, nav, fonts, icons, colors, borders, radii, shadows and density pixel-for-pixel; stop on a proven constraint.
+1. `git fetch --all --prune`.
+2. Record current `origin/develop` and the dirty primary checkout state.
+3. Never reset, stash, clean, switch, stage, or modify the dirty primary checkout.
+4. Use isolated worktrees under `/tmp/opencode`.
+5. Do not modify `daydan-server`.
+6. Verify Phase 1 is merged before proceeding.
 
-# RTL / Arabic
+## Mandatory conflict-resolution policy
 
-Use Figma `[dir="rtl"]`, logical borders/text alignment and Cairo; verify Arabic desktop/mobile shell.
+A merge/rebase conflict is **never a terminal blocker** in Phase 2. If the branch or PR conflicts with current `origin/develop`, resolve the conflict immediately and continue.
 
-# Capacitor / Native
+Resolution authority is deterministic:
 
-Check safe-area mobile nav, keyboard/search and Android sync.
+1. **Business/runtime/auth/API/query/native behavior:** preserve the latest legitimate `origin/develop` behavior unless Phase 2 explicitly changes presentation wiring.
+2. **Figma-covered presentation:** preserve/restore the exact Figma implementation required by this phase.
+3. **React/Vite/Tailwind runtime:** preserve the merged Phase 1 runtime invariant above.
+4. **`.migration/README.md`:** preserve this current Phase 2 execution contract; do not revert to an older planning version.
+5. **`package.json`:** combine legitimate current-develop dependency/script changes with Phase 2 requirements without regressing Phase 1 runtime.
+6. **`package-lock.json`:** never hand-merge semantic dependency state blindly. Resolve `package.json` first, then regenerate the lockfile with the repository’s canonical npm install workflow and verify the resulting dependency graph.
+7. **`src/index.css`:** retain legitimate current runtime/global requirements, but for Figma foundation/tokens/shell presentation the exact Figma source wins. Remove conflict markers and reconcile deliberately; never choose one entire side merely for convenience.
 
-# Completion Criteria
+After conflict resolution:
 
-Every shell element is direct Figma structure/classes and visual matrix passes without changing domain behavior.
+- scan for `<<<<<<<`, `=======`, `>>>>>>>` repository-wide in tracked files
+- inspect the complete resolved diff
+- rerun affected tests/builds
+- rerun the complete applicable verification before merge
 
-# Final Evidence
+Do not return `NOT COMPLETE` because conflicts remain. Resolve them.
 
-Report source-to-target mapping, screenshots, viewport matrix, tests/build/sync, and remaining legacy surface boundary.
+## Closure PR authorization
 
-# GitHub Actions / Merge Policy
+The owner explicitly pre-authorizes creation, push, review, merge, and post-merge verification of any narrowly scoped closure branch/PR needed to fix an in-repository regression discovered before, during, or after Phase 2.
 
-GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
+Do not ask for authorization again. A required closure PR is work, not a blocker.
 
-# Binding Authority, Closure PR Authorization, and Figma Consistency Invariant
+If PR #39 is the active Phase 2 PR, resume and update it rather than creating a duplicate unless Git history technically requires a replacement.
 
-This section overrides any older phase wording that could be read as forbidding necessary remediation branches/PRs.
+## Figma source files to inspect
 
-1. The owner explicitly pre-authorizes creation, push, review, merge, and post-merge verification of narrowly scoped closure branches/PRs for any concrete in-scope regression found before, during, or after this phase. Do not ask for authorization again.
-2. Any prior instruction such as `do not create another branch/PR` only forbids unnecessary duplicate implementation work. It never forbids a necessary closure branch/PR after a main phase merge or when a regression cannot be published on the existing branch.
-3. If a repository-action guard, prior prompt, or stale planning sentence conflicts with this explicit closure authorization, this latest owner-approved README controls the phase execution. Re-read it and proceed; do not return an authority-conflict blocker.
-4. A failing active build/test/reference/verification config becomes in-scope automatically if it is required to execute the authoritative local gate. Fix stale executable configuration narrowly instead of skipping the gate. `design-reference/` is not visual authority, but any active reference build/test tooling must remain compatible with the exact Figma runtime established in Phase 1.
-5. Maintain the Phase 1 runtime invariant repo-wide: active executable paths must not regress to React 18 assumptions, `@vitejs/plugin-react-swc`, Tailwind 3/PostCSS integration, or another substituted runtime. Before completion, scan active configs/scripts/tests for stale migrated-tooling references and remediate them.
-6. Figma is exact presentation authority: when Figma provides markup/classes/assets/tokens/layout, use them directly. Do not substitute an equivalent library, component, icon, spacing system, or workaround.
-7. A need for a closure PR is work, not a blocker. `NOT COMPLETE` is allowed only after all in-repository remediation possible with normal branch/PR operations is exhausted.
+At minimum inspect directly:
 
-# Autonomous End-to-End Execution Contract
+- `design-source/figma-make/src/App.tsx`
+- `design-source/figma-make/src/index.css`
+- `design-source/figma-make/src/main.tsx`
+- `design-source/figma-make/src/imports/**`
+- `design-source/figma-make/package.json`
+- `design-source/figma-make/vite.config.ts`
 
-When the owner says `Execute Phase 2`, this README is the complete execution contract. Work autonomously from start to terminal completion.
+Do not rely on screenshots or prior summaries when source code exists.
 
-1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work. Use isolated worktrees; never reset/stash/clean/touch the dirty primary checkout; do not modify `daydan-server`.
-2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. If a command/process/test suite is running, wait/poll for completion and continue.
-3. Test/build/lint/typecheck/visual failures are work items, not stopping points. Reproduce, root-cause, fix in scope, add regression coverage where appropriate, rerun the affected gate, then rerun the complete applicable gate. Continue until green or a genuinely external blocker remains after all reasonable remediation is exhausted.
-4. If prior-phase post-merge verification is missing, complete it first; if it exposes a real regression, create a narrow closure branch/PR, fix it, merge it, reverify, then continue this phase without asking the owner.
-5. Complete implementation, local verification, exact Figma visual acceptance, review passes, commit, push, PR creation/update, full diff review, merge, then fresh detached post-merge verification. The phase is not complete before the merged SHA passes the complete applicable verification and required Figma comparison.
-6. GitHub Actions is informational/non-gating per policy above. Never wait for it or ask for an override.
-7. Do not ask routine implementation questions. Resolve repository/tooling/test/integration choices from code plus authoritative Figma. Only an unavoidable external dependency or explicit owner-design decision not derivable from Figma/repository evidence may block terminal completion; finish every other executable item first and return one consolidated blocker report with exact evidence.
-8. Any earlier `stop`, `request owner input`, or `report constraint` wording means terminal handling after all independent work is exhausted, never an early progress response.
-9. Return exactly one terminal report: `PHASE 2 COMPLETE` with evidence, or `NOT COMPLETE` only for a concrete unresolved external blocker after remediation is exhausted. Do not start Phase 3.
+## Required implementation
 
-# Mandatory Execution-Start and No-Early-Termination Rule
+Port the actual Figma foundation and application shell.
 
-This section is binding and overrides any interpretation that allows preparation to substitute for implementation.
+Foundation includes every applicable Figma-defined value/pattern:
 
-1. Checkout, fetch, rebase, branch preparation, README review, inventory, planning, or stating what remains are PREPARATION ONLY. They are never a terminal outcome.
-2. After prerequisites are satisfied, immediately perform the actual code migration described in `Required Implementation`. If implementation has not yet been performed, the required next action is to START AND COMPLETE IT — not to return a status message.
-3. A response such as `implementation has not yet been performed`, `Phase 2 has not started`, `required migration remains outstanding`, `not migrated`, `not verified`, or equivalent is explicitly INVALID as a terminal response. Those statements describe unfinished work inside the repository and therefore require continued execution.
-4. `NOT COMPLETE` may not be used merely because work remains to be done, implementation is large, tests are pending, verification has not run, a PR has not been opened, or a merge has not happened. Those are mandatory work items in this phase.
-5. Continue autonomously until the implementation exists, the exact Figma parity work is executed, all in-repo failures are remediated, local gates pass, PR is created/reviewed/merged, and clean post-merge verification finishes.
-6. The only valid terminal `NOT COMPLETE` condition is a genuinely external blocker that cannot be resolved by repository changes, normal branch/PR operations, available tooling, or authoritative Figma/repository evidence after all independent executable work has been completed.
-7. For every Figma-covered element, fidelity is literal: use the actual Figma implementation, classes, assets, structure, dimensions, spacing, tokens and responsive behavior. Do not reinterpret, simplify, approximate, substitute, or postpone Figma-defined UI.
+- global CSS
+- Tailwind utilities
+- CSS variables/tokens
+- colors and backgrounds
+- fonts and typography
+- font sizes/weights/line heights
+- spacing
+- borders/radii/shadows
+- focus/hover/selected states
+- responsive rules
+- mobile breakpoint behavior
+- dark-mode behavior
+- RTL rules
+
+Shell includes every actual Figma-defined shell element, including where present:
+
+- `LogoMark` and logo presentation
+- exact SVG/custom `Icon` paths
+- Sidebar
+- desktop navigation
+- active navigation state
+- mobile navigation
+- top/header composition
+- search presentation
+- current user/member area
+- shell controls
+- persona/focus/quest presentation
+- page chrome/content offsets
+- sidebar dimensions
+- responsive/mobile transformation
+
+Do not substitute MUI/Material icons when Figma provides icon paths/assets.
+
+Legacy Joy/Emotion may remain only inside genuinely unmigrated route content. It must not implement the migrated shell/foundation.
+
+Allowed temporary boundary:
+
+`Figma Tailwind shell -> legacy unmigrated route content`
+
+Forbidden:
+
+`Joy shell styled to resemble Figma`.
+
+## DayDan / Sovereign
+
+Reproduce DayDan Figma presentation exactly first. Preserve Sovereign’s legitimate brand/functionality boundary without contaminating DayDan Figma geometry, colors, spacing, or composition.
+
+## Arabic / RTL
+
+Preserve real production translations. Use exact Figma RTL behavior where provided. Where the Figma source lacks explicit RTL treatment, apply only the minimum directional adaptation required for correct RTL while preserving the same Figma visual hierarchy/composition.
+
+Verify desktop and mobile RTL, navigation direction, search layout, text alignment, directional icons, Cairo usage where applicable, safe areas, and absence of horizontal overflow.
+
+## Visual acceptance
+
+Run the actual Figma Make source as the reference application and production separately using the same browser engine.
+
+Do not use `design-reference/` as the visual oracle.
+
+Minimum comparison viewports:
+
+- 1440×900
+- 390×844
+- inspect actual breakpoint behavior around 768px
+
+Required DayDan states:
+
+- light LTR
+- dark LTR
+- light Arabic RTL
+- dark Arabic RTL
+- any Figma-defined focus/quest/persona shell variant that changes shell presentation
+
+Compare exact shell geometry, sidebar, header, navigation, search, logo, icon paths/sizes, typography, spacing, colors, borders, radii, shadows, selected states, responsive behavior, and density.
+
+“Looks similar”, “responsive”, “no overflow”, and “tests pass” are not visual parity.
+
+Fix concrete visual differences before completion.
+
+## Product behavior verification
+
+The new shell must preserve real routing, route guards, auth/logout, deep links, navigation, current member/user state, theme persistence, locale/direction persistence, search invocation where capability exists, notifications, offline/SSE state, PWA behavior, and Capacitor/native behavior.
+
+## Tests and verification
+
+Add focused tests for the migrated shell as appropriate, including routing, active navigation, mobile navigation, theme switching, RTL, shell ownership, and migrated interactive controls.
+
+Run the complete applicable local gate from a clean isolated worktree. At minimum attempt the repository’s current canonical equivalents of:
+
+- `npm ci`
+- `npm run typecheck`
+- `npm test`
+- production build
+- DayDan build
+- Sovereign build
+- smoke tests
+- Sovereign smoke
+- visual tests
+- reference tests/build if still part of repository verification
+- lint
+- formatter check
+- `bash scripts/verify.sh`
+- applicable Capacitor sync/compatibility verification
+
+If a named historical command no longer exists, locate and run the current canonical equivalent. Do not skip validation merely because a stale executable config fails; repair the config and continue.
+
+A failed test/build/lint/typecheck/visual comparison is a work item. Reproduce it, determine root cause, fix the smallest in-scope cause, add regression coverage where appropriate, rerun the affected gate, then rerun the complete applicable gate.
+
+## GitHub Actions
+
+GitHub Actions are not an authoritative merge gate for this project when they fail before executing repository steps, record zero steps, skip downstream jobs, or fail for runner/account/infrastructure reasons. Record that as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS` and continue.
+
+If Actions actually executes repository code and exposes a concrete reproducible defect, fix the defect normally.
+
+## Mandatory delivery
+
+Do not stop after preparation, implementation, conflict resolution, local testing, or PR creation.
+
+Complete all of the following:
+
+1. synchronize Phase 2 with current legitimate `origin/develop`
+2. resolve all conflicts
+3. finish the exact Figma foundation/shell implementation
+4. pass local verification
+5. pass Figma visual acceptance
+6. complete two review passes: Figma fidelity and product integrity
+7. commit and push
+8. resume/create the Phase 2 PR
+9. inspect the entire PR diff
+10. merge when authoritative local gates are green
+11. fetch final `origin/develop`
+12. create a brand-new detached clean worktree from the merged SHA
+13. rerun complete applicable post-merge verification
+14. rerun critical Figma-vs-production shell comparisons from the merged SHA
+15. confirm the detached worktree is clean
+16. confirm the dirty primary checkout is unchanged
+17. confirm `daydan-server` is unchanged
+
+## No-progress-response rule
+
+Do not send an intermediate response such as:
+
+- `merge conflict remains`
+- `implementation is outstanding`
+- `verification remains`
+- `PR created but not merged`
+- `not yet complete`
+- `work is underway`
+
+If any of those statements are true, continue working instead of responding.
+
+## Terminal response
+
+Return exactly one terminal report.
+
+Success status:
+
+`PHASE 2 COMPLETE`
+
+Include branch SHA, PR URL, merge SHA, final `origin/develop`, Figma source-to-production mapping, exact reuse evidence, test/build results, visual parity matrix, Arabic/RTL result, Sovereign result, Capacitor result, primary-checkout isolation, and server isolation.
+
+Failure status:
+
+`NOT COMPLETE`
+
+is permitted only for a genuinely external blocker after all in-repository remediation and all independent executable work has been exhausted. A merge/rebase conflict, pending implementation, failed repository test, stale config, unmerged PR, or pending post-merge verification is never such a blocker.
+
+Do not start Phase 3.
