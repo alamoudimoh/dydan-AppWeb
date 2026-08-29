@@ -72,7 +72,9 @@ export default defineConfig({
   webServer: {
     command: `VITE_APP_BRAND=${process.env.VITE_APP_BRAND || ''} npm run build:smoke && npm run preview -- --host ${smokeHost} --port ${smokePort} --strictPort`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    // A server on this port can belong to another checkout and serve an older
+    // build. Always start this worktree's smoke build instead of reusing it.
+    reuseExistingServer: false,
     timeout: 240_000,
   },
 })

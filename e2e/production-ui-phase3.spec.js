@@ -115,7 +115,7 @@ test('phase 3: archived tasks use the shared restore toolbar', async ({
 
   await page.goto('/archived', { waitUntil: 'networkidle' })
   await page.getByTitle('Enable Multi-select Mode (Ctrl+S)').click()
-  await page.getByRole('button', { name: 'All' }).click()
+  await page.getByRole('button', { name: 'All', exact: true }).click()
 
   await expect(page.getByRole('button', { name: 'Restore' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible()

@@ -444,7 +444,7 @@ const GettingStarted = () => {
       {/* Options Grid */}
       <Grid container spacing={{ xs: 3, sm: 4, md: 4 }}>
         {information.map((info, index) => (
-          <Grid item xs={12} md={4} key={index}>
+          <Grid xs={12} md={4} key={index}>
             <StartOptionCard
               icon={info.icon}
               title={info.title}

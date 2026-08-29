@@ -1,17 +1,21 @@
-import { Save } from '@mui/icons-material'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
-import InfoIcon from '@mui/icons-material/Info'
-import NotificationsIcon from '@mui/icons-material/Notifications'
-import Alert from '@mui/joy/Alert'
-import Badge from '@mui/joy/Badge'
-import Box from '@mui/joy/Box'
-import Button from '@mui/joy/Button'
-import IconButton from '@mui/joy/IconButton'
-import Input from '@mui/joy/Input'
-import Option from '@mui/joy/Option'
-import Select from '@mui/joy/Select'
-import Typography from '@mui/joy/Typography'
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Info as InfoIcon,
+  Notifications as NotificationsIcon,
+  Save,
+} from '@mui/icons-material'
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  IconButton,
+  Input,
+  Option,
+  Select,
+  Typography,
+} from '@mui/joy'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { NOTIFICATION_TYPE, TASK_COLOR } from '../utils/Colors'

@@ -45,7 +45,7 @@ const DemoAssignee = () => {
   ]
   return (
     <>
-      <Grid item xs={12} sm={6} data-aos-create-chore-assignee>
+      <Grid xs={12} sm={6} data-aos-create-chore-assignee>
         <Box
           mt={2}
           data-aos-delay={200}
@@ -68,7 +68,7 @@ const DemoAssignee = () => {
                   <Checkbox
                     // disabled={index === 0}
                     checked={assignees.find(a => a.userId == item.id) != null}
-                    onClick={() => {
+                    onChange={() => {
                       if (assignees.find(a => a.userId == item.id)) {
                         setAssignees(
                           assignees.filter(i => i.userId !== item.id),
@@ -147,7 +147,7 @@ const DemoAssignee = () => {
                   <Checkbox
                     // disabled={index === 0}
                     checked={assignStrategy === item}
-                    onClick={() => setAssignStrategy(item)}
+                    onChange={() => setAssignStrategy(item)}
                     overlay
                     disableIcon
                     variant='soft'
@@ -162,7 +162,7 @@ const DemoAssignee = () => {
           </Card>
         </Box>
       </Grid>
-      <Grid item xs={12} sm={6} data-aos-create-chore-section-assignee>
+      <Grid xs={12} sm={6} data-aos-create-chore-section-assignee>
         <Card
           sx={{
             p: 4,

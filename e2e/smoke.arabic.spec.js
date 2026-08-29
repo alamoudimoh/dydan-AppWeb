@@ -64,7 +64,6 @@ test.describe('Arabic (ar-SA) UI smoke', () => {
         document.documentElement.getAttribute('lang'),
       )
       expect(lang).toBe('ar-SA')
-
       if (route.arabic) {
         await expect(page.locator('#root')).toContainText(route.arabic)
       }

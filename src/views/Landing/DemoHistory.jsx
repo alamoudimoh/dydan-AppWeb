@@ -49,7 +49,7 @@ const DemoHistory = () => {
 
   return (
     <>
-      <Grid item xs={12} sm={6} data-aos-history-list>
+      <Grid xs={12} sm={6} data-aos-history-list>
         <Box sx={{ borderRadius: 'sm', p: 2, boxShadow: 'md' }}>
           <List sx={{ p: 0 }}>
             {allHistory.map((historyEntry, index) => (
@@ -72,7 +72,7 @@ const DemoHistory = () => {
           </List>
         </Box>
       </Grid>
-      <Grid item xs={12} sm={6} data-aos-history-demo-section>
+      <Grid xs={12} sm={6} data-aos-history-demo-section>
         <Card
           sx={{
             p: 4,

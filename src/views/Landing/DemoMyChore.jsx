@@ -114,7 +114,7 @@ const DemoMyChore = () => {
 
   return (
     <>
-      <Grid item xs={12} sm={5} data-aos-first-tasks-list>
+      <Grid xs={12} sm={5} data-aos-first-tasks-list>
         {cards.map((card, index) => (
           <div
             key={index}
@@ -131,7 +131,7 @@ const DemoMyChore = () => {
           </div>
         ))}
       </Grid>
-      <Grid item xs={12} sm={7} data-aos-my-chore-demo-section>
+      <Grid xs={12} sm={7} data-aos-my-chore-demo-section>
         <Card
           sx={{
             p: 4,

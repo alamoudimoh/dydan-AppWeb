@@ -1,5 +1,4 @@
-import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined'
-import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined'
+import { VisibilityOffOutlined, VisibilityOutlined } from '@mui/icons-material'
 import {
   Box,
   Button,

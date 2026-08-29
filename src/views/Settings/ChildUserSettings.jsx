@@ -1,6 +1,8 @@
-import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
-import PersonAddIcon from '@mui/icons-material/PersonAdd'
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  PersonAdd as PersonAddIcon,
+} from '@mui/icons-material'
 import {
   Avatar,
   Box,

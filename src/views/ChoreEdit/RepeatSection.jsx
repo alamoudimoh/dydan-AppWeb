@@ -552,7 +552,6 @@ const RepeatSection = ({
               onTriggerUpdate(null)
             }
           }}
-          defaultChecked={!['once', 'trigger'].includes(frequencyType)}
           checked={!['once', 'trigger'].includes(frequencyType)}
           value={!['once', 'trigger'].includes(frequencyType)}
           overlay
@@ -585,7 +584,7 @@ const RepeatSection = ({
                         REPEAT_ON_TYPE.includes(frequencyType))
                     }
                     // defaultChecked={item === frequencyType}
-                    onClick={() => {
+                    onChange={() => {
                       if (item === 'custom') {
                         onFrequencyTypeUpdate(REPEAT_ON_TYPE[0])
                         onFrequencyUpdate(1)
@@ -729,8 +728,8 @@ const RepeatSection = ({
                   </Grid>
                 </>
               ))}
-            <FormControl error={Boolean(frequencyError)}>
-              <FormHelperText error>{frequencyError}</FormHelperText>
+            <FormControl color={frequencyError ? 'danger' : undefined}>
+              <FormHelperText>{frequencyError}</FormHelperText>
             </FormControl>
           </Card>
         </>
@@ -744,7 +743,6 @@ const RepeatSection = ({
               onTriggerUpdate(null)
             }
           }}
-          defaultChecked={frequencyType === 'trigger'}
           checked={frequencyType === 'trigger'}
           value={frequencyType === 'trigger'}
           disabled={!isPlusAccount(userProfile)}
