@@ -49,6 +49,8 @@ import { useLabels } from '../Labels/LabelQueries'
 import EditHistoryModal from '../Modals/EditHistoryModal'
 import HistoryDetailModal from '../Modals/HistoryDetailModal'
 import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
+import { activityEvents } from './activityViewModel'
+import FigmaActivityScreen from './FigmaActivityScreen'
 
 const groupByDate = history => {
   const aggregated = {}
@@ -411,6 +413,7 @@ const UserActivites = () => {
   const [detailModalConfig, setDetailModalConfig] = useState({ isOpen: false })
   const [editModalConfig, setEditModalConfig] = useState({ isOpen: false })
   const [editHistoryRecord, setEditHistoryRecord] = useState(null)
+  const [legacyMode] = useState(false)
   const updateChoreHistory = useUpdateChoreHistory()
   const deleteChoreHistory = useDeleteChoreHistory()
 
@@ -432,7 +435,7 @@ const UserActivites = () => {
   const {
     data: choresHistory,
     handleLimitChange: refetchHistory,
-    isChoresHistoryLoading,
+    isLoading: isChoresHistoryLoading,
   } = useChoresHistory(tabValue ? tabValue : 30, true)
   const { data: circleMembersData } = useCircleMembers()
   const [selectedUser, setSelectedUser] = React.useState('all')
@@ -944,8 +947,81 @@ const UserActivites = () => {
 
     return result
   }
+
+  const figmaEvents = useMemo(
+    () => activityEvents(filteredTimeline, circleUsers),
+    [filteredTimeline, circleUsers],
+  )
+
+  const openHistoryDetails = record => {
+    setDetailModalConfig({
+      isOpen: true,
+      entry: record,
+      performers: circleUsers,
+      onClose: () => setDetailModalConfig({ isOpen: false }),
+      onEdit: editableRecord => {
+        setDetailModalConfig(previous => ({ ...previous, isOpen: false }))
+        setEditHistoryRecord(editableRecord)
+        setEditModalConfig({
+          isOpen: true,
+          onClose: () => {
+            setEditModalConfig({ isOpen: false })
+            setEditHistoryRecord(null)
+          },
+          onSave: updated => {
+            updateChoreHistory.mutate(
+              {
+                choreId: editableRecord.choreId,
+                historyId: editableRecord.id,
+                historyData: {
+                  performedAt: updated.performedAt,
+                  dueDate: updated.dueDate,
+                  notes: updated.notes,
+                },
+              },
+              {
+                onSuccess: () => {
+                  setEditModalConfig({ isOpen: false })
+                  setEditHistoryRecord(null)
+                },
+              },
+            )
+          },
+          onDelete: () => {
+            deleteChoreHistory.mutate(
+              { choreId: editableRecord.choreId, historyId: editableRecord.id },
+              {
+                onSuccess: () => {
+                  setEditModalConfig({ isOpen: false })
+                  setEditHistoryRecord(null)
+                },
+              },
+            )
+          },
+        })
+      },
+    })
+  }
+
   if (isChoresHistoryLoading || isChoresLoading) {
     return <QueryLoadingView />
+  }
+  if (!legacyMode) {
+    return (
+      <Container maxWidth='lg' sx={listPageContainerSx}>
+        <FigmaActivityScreen
+          events={figmaEvents}
+          isSolo={circleUsers.length < 2}
+          onOpenEvent={openHistoryDetails}
+        />
+        <NoteViewerModal config={noteViewerConfig} />
+        <HistoryDetailModal config={detailModalConfig} />
+        <EditHistoryModal
+          config={editModalConfig}
+          historyRecord={editHistoryRecord}
+        />
+      </Container>
+    )
   }
   const chartData = {
     history: {

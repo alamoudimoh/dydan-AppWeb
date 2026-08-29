@@ -28,13 +28,14 @@ import {
   Typography,
 } from '@mui/joy'
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
+import { useChores } from '../../queries/ChoreQueries'
 import {
   useGoalMutation,
   useGoals,
@@ -43,11 +44,19 @@ import {
   useWorkload,
 } from '../../queries/ProgressQueries'
 import {
+  useMyRewardRequests,
+  useRewardMutation,
+  useRewards,
+} from '../../queries/RewardQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import {
   inlineErrorAlertSx,
   pageShellSx,
   pageStackSpacing,
   sectionCardSx,
 } from '../../theme/appLayout'
+import { RewardEditor } from '../Rewards/RewardsView'
+import FigmaGoalsScreen from './FigmaGoalsScreen'
 
 const Metric = ({ label, value }) => (
   <Box sx={{ minWidth: 72 }}>
@@ -295,10 +304,20 @@ const Reports = () => {
 
 const Goals = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { data, error, isError, isLoading, refetch } = useGoals()
   const { data: workload } = useWorkload('week', '', '')
+  const { data: profile } = useUserProfile()
+  const { data: membersData } = useCircleMembers()
+  const { data: choresData } = useChores(false)
+  const { data: goalStreak } = useStreak()
+  const rewards = useRewards(false)
+  const myRewardRequests = useMyRewardRequests()
   const mutation = useGoalMutation()
+  const rewardMutation = useRewardMutation()
   const [open, setOpen] = useState(false)
+  const [creatingReward, setCreatingReward] = useState(false)
+  const [legacyMode] = useState(false)
   const [form, setForm] = useState({
     name: '',
     metricType: 'TASK_COMPLETIONS',
@@ -306,6 +325,27 @@ const Goals = () => {
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date().toISOString().slice(0, 10),
   })
+  const activeRewards = useMemo(
+    () => rewards.data?.res?.filter(reward => reward.isActive) || [],
+    [rewards.data],
+  )
+  const balance = myRewardRequests.data?.balance || {
+    currentBalance: 0,
+    spendableBalance: 0,
+  }
+  const member = membersData?.res?.find(
+    candidate => String(candidate.userId) === String(profile?.id),
+  )
+  const isAdmin = member?.role === 'admin'
+  const tasksCompleted = useMemo(
+    () =>
+      (choresData?.res || []).filter(
+        chore =>
+          String(chore.assignedTo) === String(profile?.id) &&
+          (chore.isCompleted || chore.status === 4),
+      ).length,
+    [choresData?.res, profile?.id],
+  )
   if (isLoading) return <QueryLoadingView />
   if (isError) {
     return (
@@ -365,6 +405,60 @@ const Goals = () => {
         status: 'ARCHIVED',
       },
     })
+
+  const requestReward = reward => {
+    if (
+      window.confirm(
+        t('rewards.requestConfirm', {
+          name: reward.name,
+          count: reward.costPoints,
+        }),
+      )
+    ) {
+      rewardMutation.mutate({
+        path: '/rewards/requests',
+        data: { rewardId: reward.id },
+      })
+    }
+  }
+
+  if (!legacyMode && !open) {
+    return (
+      <>
+        <FigmaGoalsScreen
+          balance={balance}
+          canManageGoals={data.canManage}
+          canManageRewards={isAdmin}
+          goals={data.goals}
+          onArchiveGoal={archiveGoal}
+          onCreateGoal={() => {
+            setForm({
+              name: '',
+              metricType: 'TASK_COMPLETIONS',
+              target: 10,
+              startDate: new Date().toISOString().slice(0, 10),
+              endDate: new Date().toISOString().slice(0, 10),
+            })
+            setOpen(true)
+          }}
+          onCreateReward={() => setCreatingReward(true)}
+          onEditGoal={editGoal}
+          onRequestReward={requestReward}
+          onViewHistory={() => navigate('/activities')}
+          rewards={activeRewards}
+          streak={goalStreak?.current || 0}
+          tasksCompleted={tasksCompleted}
+        />
+        {creatingReward && (
+          <RewardEditor
+            mutation={rewardMutation}
+            onClose={() => setCreatingReward(false)}
+          />
+        )}
+      </>
+    )
+  }
+
   return (
     <Stack spacing={2}>
       {data.canManage && (

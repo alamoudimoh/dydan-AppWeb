@@ -28,18 +28,33 @@ import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import { Z_INDEX } from '../../constants/zIndex'
-import { useChores } from '../../queries/ChoreQueries'
-import { useUserProfile } from '../../queries/UserQueries'
+import { useChores, useMarkChoreComplete } from '../../queries/ChoreQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { listPageContainerSx } from '../../theme/appLayout'
-import { DEFAULT_PROJECT_COLOR } from '../../utils/Colors'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors'
+import {
+  DEFAULT_PROJECT_COLOR,
+  getTextColorFromBackgroundColor,
+} from '../../utils/Colors'
 import { DeleteProject } from '../../utils/Fetcher'
+import {
+  EFFECTIVE_ROLES,
+  normalizeCircleMembers,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import { getIconComponent } from '../../utils/ProjectIcons'
 import { getSafeBottomStyles } from '../../utils/SafeAreaUtils'
 import { useProjectFilter } from '../Chores/hooks/useProjectFilter'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import ProjectModal from '../Modals/Inputs/ProjectModal'
+import FigmaProjectsScreen from './FigmaProjectsScreen'
 import { useProjects } from './ProjectQueries'
+import {
+  choreProjectId,
+  projectOwner as resolveProjectOwner,
+  projectProgress,
+  projectStatus,
+} from './projectViewModel'
+
 const ProjectCardContent = ({
   currentUserId,
   onCardClick,
@@ -233,7 +248,15 @@ const ProjectView = () => {
     refetch,
   } = useProjects()
   const { data: userProfile } = useUserProfile()
+  const { data: circleMembers } = useCircleMembers()
   const { data: chores = { res: [] } } = useChores(false)
+  const members = normalizeCircleMembers(circleMembers)
+  const effectiveRole = resolveEffectiveRole(userProfile, members)
+  const isChild =
+    effectiveRole === EFFECTIVE_ROLES.CHILD ||
+    effectiveRole === EFFECTIVE_ROLES.NONE
+  const canCreate = !isChild
+  const markComplete = useMarkChoreComplete()
   const { setSelectedProjectWithCache } = useProjectFilter(
     projectsData,
     !projectsLoading,
@@ -247,6 +270,7 @@ const ProjectView = () => {
   const queryClient = useQueryClient()
   const [confirmationModel, setConfirmationModel] = useState({})
   const [showMoreInfoId, setShowMoreInfoId] = useState(null)
+  const [legacyMode] = useState(false)
 
   const handleAddProject = () => {
     setCurrentProject(null)
@@ -343,6 +367,47 @@ const ProjectView = () => {
     }
   }, [chores, userProjects])
 
+  const choresList = chores.res || []
+  const projectCards = [
+    {
+      id: 'default',
+      name: 'Default Project',
+      description: 'All tasks without a specific project',
+      color: DEFAULT_PROJECT_COLOR,
+      status: projectStatus(choresList, 'default'),
+      progress: projectProgress(choresList, 'default'),
+      taskCount: choresList.filter(chore => choreProjectId(chore) === 'default')
+        .length,
+      owner: null,
+    },
+    ...userProjects.map(project => ({
+      ...project,
+      color: project.color || DEFAULT_PROJECT_COLOR,
+      status: projectStatus(choresList, project.id),
+      progress: projectProgress(choresList, project.id),
+      taskCount: choresList.filter(
+        chore => choreProjectId(chore) === project.id,
+      ).length,
+      owner: resolveProjectOwner(project, members, userProfile),
+    })),
+  ]
+
+  const canManageProject = project => {
+    if (!project || project.id === 'default') return false
+    if (effectiveRole === EFFECTIVE_ROLES.OWNER) return true
+    if (effectiveRole === EFFECTIVE_ROLES.CHILD) return false
+    return String(project.created_by) === String(userProfile?.id)
+  }
+
+  const handleOpenTask = task => {
+    navigate(`/chores/${task.id}`)
+  }
+
+  const handleCompleteTask = (task, done) => {
+    if (done) return
+    markComplete.mutate({ choreId: task.id })
+  }
+
   if (projectsLoading) {
     return <QueryLoadingView />
   }
@@ -360,118 +425,162 @@ const ProjectView = () => {
   }
 
   return (
-    <Container maxWidth='md' sx={listPageContainerSx}>
-      <PageHeader
-        sx={{ px: 2 }}
-        title='Projects'
-        subtitle='Organize your tasks into projects. Create custom workspaces to keep your tasks organized and easily accessible.'
+    <>
+      <FigmaProjectsScreen
+        canCreate={canCreate}
+        canManageProject={canManageProject}
+        chores={choresList}
+        members={members}
+        onCompleteTask={handleCompleteTask}
+        onDeleteProject={handleDeleteClicked}
+        onEditProject={handleEditProject}
+        onNewProject={handleAddProject}
+        onOpenTask={handleOpenTask}
+        profile={userProfile}
+        projects={projectCards}
       />
 
-      <Box
-        sx={{
-          overflow: 'hidden',
-        }}
-      >
-        {/* Default project - not swipeable */}
-        <ProjectCardContent
-          project={{
-            id: 'default',
-            name: 'Default Project',
-            description: 'All tasks without a specific project',
-            icon: 'FolderOpen',
-            color: DEFAULT_PROJECT_COLOR,
-            created_by: userProfile?.id,
-          }}
-          currentUserId={userProfile?.id}
-          taskCounts={{ default: taskCounts.default || 0 }}
-          onCardClick={() =>
-            handleCardClick({
-              id: 'default',
-              name: 'Default Project',
-              icon: 'FolderOpen',
-              color: DEFAULT_PROJECT_COLOR,
-            })
-          }
-        />
+      {legacyMode && (
+        <Container maxWidth='md' sx={listPageContainerSx}>
+          <PageHeader
+            sx={{ px: 2 }}
+            title='Projects'
+            subtitle='Organize your tasks into projects. Create custom workspaces to keep your tasks organized and easily accessible.'
+          />
 
-        {/* User projects - swipeable */}
-        <SwipeableList type={ListType.IOS} fullSwipe={false}>
-          {userProjects.map(project => (
-            <SwipeableListItem
-              onClick={() => handleCardClick(project)}
-              key={project.id}
-              swipeActionOpen={
-                showMoreInfoId === project.id ? 'trailing' : null
+          <Box
+            sx={{
+              overflow: 'hidden',
+            }}
+          >
+            {/* Default project - not swipeable */}
+            <ProjectCardContent
+              project={{
+                id: 'default',
+                name: 'Default Project',
+                description: 'All tasks without a specific project',
+                icon: 'FolderOpen',
+                color: DEFAULT_PROJECT_COLOR,
+                created_by: userProfile?.id,
+              }}
+              currentUserId={userProfile?.id}
+              taskCounts={{ default: taskCounts.default || 0 }}
+              onCardClick={() =>
+                handleCardClick({
+                  id: 'default',
+                  name: 'Default Project',
+                  icon: 'FolderOpen',
+                  color: DEFAULT_PROJECT_COLOR,
+                })
               }
-              trailingActions={
-                <TrailingActions>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      boxShadow: 'inset 2px 0 4px rgba(0,0,0,0.06)',
-                      zIndex: 0,
-                    }}
-                  >
-                    <SwipeAction onClick={() => handleEditProject(project)}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: 'neutral.softBg',
-                          color: 'neutral.700',
-                          px: 3,
-                          height: '100%',
-                        }}
-                      >
-                        <EditIcon sx={{ fontSize: 20 }} />
-                        <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                          Edit
-                        </Typography>
-                      </Box>
-                    </SwipeAction>
-                    <SwipeAction
-                      onClick={() => handleDeleteClicked(project.id)}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: 'danger.softBg',
-                          color: 'danger.700',
-                          px: 3,
-                          height: '100%',
-                        }}
-                      >
-                        <DeleteIcon sx={{ fontSize: 20 }} />
-                        <Typography level='body-xs' sx={{ mt: 0.5 }}>
-                          Delete
-                        </Typography>
-                      </Box>
-                    </SwipeAction>
-                  </Box>
-                </TrailingActions>
-              }
-            >
-              <ProjectCardContent
-                project={project}
-                currentUserId={userProfile?.id}
-                taskCounts={taskCounts}
-                onToggleActions={() => {
-                  if (showMoreInfoId === project.id) {
-                    setShowMoreInfoId(null)
-                  } else {
-                    setShowMoreInfoId(project.id)
+            />
+
+            {/* User projects - swipeable */}
+            <SwipeableList type={ListType.IOS} fullSwipe={false}>
+              {userProjects.map(project => (
+                <SwipeableListItem
+                  onClick={() => handleCardClick(project)}
+                  key={project.id}
+                  swipeActionOpen={
+                    showMoreInfoId === project.id ? 'trailing' : null
                   }
+                  trailingActions={
+                    <TrailingActions>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          boxShadow: 'inset 2px 0 4px rgba(0,0,0,0.06)',
+                          zIndex: 0,
+                        }}
+                      >
+                        <SwipeAction onClick={() => handleEditProject(project)}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: 'neutral.softBg',
+                              color: 'neutral.700',
+                              px: 3,
+                              height: '100%',
+                            }}
+                          >
+                            <EditIcon sx={{ fontSize: 20 }} />
+                            <Typography level='body-xs' sx={{ mt: 0.5 }}>
+                              Edit
+                            </Typography>
+                          </Box>
+                        </SwipeAction>
+                        <SwipeAction
+                          onClick={() => handleDeleteClicked(project.id)}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: 'danger.softBg',
+                              color: 'danger.700',
+                              px: 3,
+                              height: '100%',
+                            }}
+                          >
+                            <DeleteIcon sx={{ fontSize: 20 }} />
+                            <Typography level='body-xs' sx={{ mt: 0.5 }}>
+                              Delete
+                            </Typography>
+                          </Box>
+                        </SwipeAction>
+                      </Box>
+                    </TrailingActions>
+                  }
+                >
+                  <ProjectCardContent
+                    project={project}
+                    currentUserId={userProfile?.id}
+                    taskCounts={taskCounts}
+                    onToggleActions={() => {
+                      if (showMoreInfoId === project.id) {
+                        setShowMoreInfoId(null)
+                      } else {
+                        setShowMoreInfoId(project.id)
+                      }
+                    }}
+                  />
+                </SwipeableListItem>
+              ))}
+            </SwipeableList>
+          </Box>
+
+          {canCreate && (
+            <Box
+              sx={{
+                ...getSafeBottomStyles({ bottom: 0, padding: 16 }),
+                insetInlineStart: 10,
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+                zIndex: Z_INDEX.FLOATING_ACTION,
+              }}
+            >
+              <IconButton
+                color='primary'
+                variant='solid'
+                sx={{
+                  borderRadius: '50%',
+                  width: 50,
+                  height: 50,
                 }}
-              />
-            </SwipeableListItem>
-          ))}
-        </SwipeableList>
-      </Box>
+                onClick={handleAddProject}
+              >
+                <Add />
+              </IconButton>
+            </Box>
+          )}
+        </Container>
+      )}
 
       {modalOpen && (
         <ProjectModal
@@ -482,32 +591,8 @@ const ProjectView = () => {
         />
       )}
 
-      <Box
-        sx={{
-          ...getSafeBottomStyles({ bottom: 0, padding: 16 }),
-          insetInlineStart: 10,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: 2,
-          zIndex: Z_INDEX.FLOATING_ACTION,
-        }}
-      >
-        <IconButton
-          color='primary'
-          variant='solid'
-          sx={{
-            borderRadius: '50%',
-            width: 50,
-            height: 50,
-          }}
-          onClick={handleAddProject}
-        >
-          <Add />
-        </IconButton>
-      </Box>
-
       <ConfirmationModal config={confirmationModel} />
-    </Container>
+    </>
   )
 }
 

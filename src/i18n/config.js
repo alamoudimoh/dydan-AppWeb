@@ -50,7 +50,7 @@ i18n
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
 
-    ns: ['common', 'settings', 'chores', 'shoppingLists'],
+    ns: ['common', 'settings', 'chores', 'shoppingLists', 'projects'],
     defaultNS: 'common',
 
     detection: {

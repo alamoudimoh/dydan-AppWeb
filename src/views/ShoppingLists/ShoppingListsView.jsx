@@ -1,7 +1,6 @@
 import { Add, Edit, MoreVert, ShoppingCart } from '@mui/icons-material'
 import {
   Box,
-  Button,
   Card,
   Chip,
   Dropdown,
@@ -17,7 +16,6 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import EmptyState from '../../components/common/EmptyState'
-import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import { hasActiveFamilyCircle } from '../../navigation/navModel'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
@@ -25,6 +23,7 @@ import { pageShellSx, sectionCardSx } from '../../theme/appLayout'
 import { resolveEffectiveRole } from '../../utils/PermissionModel'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import ShoppingListModal from '../Modals/Inputs/ShoppingListModal'
+import FigmaShoppingScreen from './FigmaShoppingScreen'
 import {
   canManageShoppingList,
   partitionShoppingLists,
@@ -35,6 +34,7 @@ import {
   useDeleteShoppingList,
   useShoppingLists,
 } from './ShoppingListQueries'
+import { listFigma } from './shoppingViewModel'
 
 const ListCard = ({
   canManage,
@@ -125,6 +125,7 @@ const ShoppingListsView = () => {
   const archiveList = useArchiveShoppingList()
   const deleteList = useDeleteShoppingList()
 
+  const [legacyMode] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalScope, setModalScope] = useState(SHOPPING_LIST_SCOPES.PERSONAL)
   const [editingList, setEditingList] = useState(null)
@@ -132,14 +133,31 @@ const ShoppingListsView = () => {
 
   const hasFamilyCircle = hasActiveFamilyCircle(profile, membersData)
   const effectiveRole = resolveEffectiveRole(profile, membersData)
+  const isSolo = !hasFamilyCircle
   const { family, personal } = useMemo(
     () => partitionShoppingLists(lists),
     [lists],
   )
 
+  const figmaLists = useMemo(() => lists.map(list => listFigma(list)), [lists])
+
   const openCreate = scope => {
     setEditingList(null)
-    setModalScope(scope)
+    setModalScope(
+      scope ??
+        (hasFamilyCircle
+          ? SHOPPING_LIST_SCOPES.CIRCLE
+          : SHOPPING_LIST_SCOPES.PERSONAL),
+    )
+    setModalOpen(true)
+  }
+  const openEdit = list => {
+    setEditingList(list)
+    setModalScope(
+      list.circleId
+        ? SHOPPING_LIST_SCOPES.CIRCLE
+        : SHOPPING_LIST_SCOPES.PERSONAL,
+    )
     setModalOpen(true)
   }
 
@@ -161,127 +179,23 @@ const ShoppingListsView = () => {
     )
   }
 
-  const renderSection = (sectionLists, emptyTitle, emptyDescription, scope) => (
-    <Stack spacing={1.5}>
-      {sectionLists.length === 0 ? (
-        <EmptyState
-          variant='empty'
-          size='sm'
-          icon={<ShoppingCart />}
-          title={emptyTitle}
-          description={emptyDescription}
-          primaryAction={{
-            label: t('shoppingLists:createList'),
-            onClick: () => openCreate(scope),
-            startDecorator: <Add />,
-          }}
-        />
-      ) : (
-        sectionLists.map(list => (
-          <ListCard
-            key={list.id}
-            list={list}
-            canManage={canManageShoppingList(list, profile?.id, effectiveRole)}
-            onOpen={() => navigate(`/shopping/${list.id}`)}
-            onRename={() => {
-              setEditingList(list)
-              setModalScope(
-                list.circleId
-                  ? SHOPPING_LIST_SCOPES.CIRCLE
-                  : SHOPPING_LIST_SCOPES.PERSONAL,
-              )
-              setModalOpen(true)
-            }}
-            onArchive={() =>
-              setConfirmationModel({
-                isOpen: true,
-                title: t('shoppingLists:archiveList'),
-                message: t('shoppingLists:archiveListConfirm'),
-                confirmText: t('shoppingLists:archiveList'),
-                onClose: async confirmed => {
-                  if (confirmed) await archiveList.mutateAsync(list.id)
-                  setConfirmationModel({})
-                },
-              })
-            }
-            onDelete={() =>
-              setConfirmationModel({
-                isOpen: true,
-                title: t('shoppingLists:deleteList'),
-                message: t('shoppingLists:deleteListConfirm'),
-                confirmText: t('shoppingLists:deleteList'),
-                color: 'danger',
-                onClose: async confirmed => {
-                  if (confirmed) await deleteList.mutateAsync(list.id)
-                  setConfirmationModel({})
-                },
-              })
-            }
-          />
-        ))
-      )}
-    </Stack>
-  )
-
   return (
     <Box sx={pageShellSx}>
-      <PageHeader
-        title={t('shoppingLists:title')}
-        subtitle={t('shoppingLists:subtitle')}
-        action={
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button
-              startDecorator={<Add />}
-              onClick={() => openCreate(SHOPPING_LIST_SCOPES.PERSONAL)}
-            >
-              {t('shoppingLists:createPersonal')}
-            </Button>
-            {hasFamilyCircle && (
-              <Button
-                variant='outlined'
-                startDecorator={<Add />}
-                onClick={() => openCreate(SHOPPING_LIST_SCOPES.CIRCLE)}
-              >
-                {t('shoppingLists:createFamily')}
-              </Button>
-            )}
-          </Stack>
+      <FigmaShoppingScreen
+        activeId={null}
+        canEdit={false}
+        headerSubtitle={
+          isSolo
+            ? t('shoppingLists:overviewSubtitleSolo')
+            : t('shoppingLists:overviewSubtitleFamily')
         }
+        headerTitle={t('shoppingLists:title')}
+        isSolo={isSolo}
+        lists={figmaLists}
+        onInviteMembers={() => navigate('/family')}
+        onNewList={openCreate}
+        onSelectList={id => navigate(`/shopping/${id}`)}
       />
-
-      <Stack spacing={3}>
-        <Box>
-          <Typography level='title-sm' sx={{ mb: 1.5 }}>
-            {t('shoppingLists:personalSection')}
-          </Typography>
-          {renderSection(
-            personal,
-            t('shoppingLists:emptyPersonalTitle'),
-            t('shoppingLists:emptyPersonalDescription'),
-            SHOPPING_LIST_SCOPES.PERSONAL,
-          )}
-        </Box>
-
-        {hasFamilyCircle && (
-          <Box>
-            <Typography level='title-sm' sx={{ mb: 0.5 }}>
-              {t('shoppingLists:familySection')}
-            </Typography>
-            <Typography
-              level='body-sm'
-              sx={{ color: 'text.secondary', mb: 1.5 }}
-            >
-              {t('shoppingLists:familyHint')}
-            </Typography>
-            {renderSection(
-              family,
-              t('shoppingLists:emptyFamilyTitle'),
-              t('shoppingLists:emptyFamilyDescription'),
-              SHOPPING_LIST_SCOPES.CIRCLE,
-            )}
-          </Box>
-        )}
-      </Stack>
 
       <ShoppingListModal
         open={modalOpen}
@@ -292,6 +206,145 @@ const ShoppingListsView = () => {
         scope={modalScope}
         list={editingList}
       />
+
+      {legacyMode && (
+        <>
+          <Stack spacing={3}>
+            <Box>
+              <Typography level='title-sm' sx={{ mb: 1.5 }}>
+                {t('shoppingLists:personalSection')}
+              </Typography>
+              <Stack spacing={1.5}>
+                {personal.length === 0 ? (
+                  <EmptyState
+                    variant='empty'
+                    size='sm'
+                    icon={<ShoppingCart />}
+                    title={t('shoppingLists:emptyPersonalTitle')}
+                    description={t('shoppingLists:emptyPersonalDescription')}
+                    primaryAction={{
+                      label: t('shoppingLists:createList'),
+                      onClick: () => openCreate(),
+                      startDecorator: <Add />,
+                    }}
+                  />
+                ) : (
+                  personal.map(list => (
+                    <ListCard
+                      key={list.id}
+                      list={list}
+                      canManage={canManageShoppingList(
+                        list,
+                        profile?.id,
+                        effectiveRole,
+                      )}
+                      onOpen={() => navigate(`/shopping/${list.id}`)}
+                      onRename={() => openEdit(list)}
+                      onArchive={() =>
+                        setConfirmationModel({
+                          isOpen: true,
+                          title: t('shoppingLists:archiveList'),
+                          message: t('shoppingLists:archiveListConfirm'),
+                          confirmText: t('shoppingLists:archiveList'),
+                          onClose: async confirmed => {
+                            if (confirmed)
+                              await archiveList.mutateAsync(list.id)
+                            setConfirmationModel({})
+                          },
+                        })
+                      }
+                      onDelete={() =>
+                        setConfirmationModel({
+                          isOpen: true,
+                          title: t('shoppingLists:deleteList'),
+                          message: t('shoppingLists:deleteListConfirm'),
+                          confirmText: t('shoppingLists:deleteList'),
+                          color: 'danger',
+                          onClose: async confirmed => {
+                            if (confirmed) await deleteList.mutateAsync(list.id)
+                            setConfirmationModel({})
+                          },
+                        })
+                      }
+                    />
+                  ))
+                )}
+              </Stack>
+            </Box>
+
+            {hasFamilyCircle && (
+              <Box>
+                <Typography level='title-sm' sx={{ mb: 0.5 }}>
+                  {t('shoppingLists:familySection')}
+                </Typography>
+                <Typography
+                  level='body-sm'
+                  sx={{ color: 'text.secondary', mb: 1.5 }}
+                >
+                  {t('shoppingLists:familyHint')}
+                </Typography>
+                <Stack spacing={1.5}>
+                  {family.length === 0 ? (
+                    <EmptyState
+                      variant='empty'
+                      size='sm'
+                      icon={<ShoppingCart />}
+                      title={t('shoppingLists:emptyFamilyTitle')}
+                      description={t('shoppingLists:emptyFamilyDescription')}
+                      primaryAction={{
+                        label: t('shoppingLists:createList'),
+                        onClick: () => openCreate(SHOPPING_LIST_SCOPES.CIRCLE),
+                        startDecorator: <Add />,
+                      }}
+                    />
+                  ) : (
+                    family.map(list => (
+                      <ListCard
+                        key={list.id}
+                        list={list}
+                        canManage={canManageShoppingList(
+                          list,
+                          profile?.id,
+                          effectiveRole,
+                        )}
+                        onOpen={() => navigate(`/shopping/${list.id}`)}
+                        onRename={() => openEdit(list)}
+                        onArchive={() =>
+                          setConfirmationModel({
+                            isOpen: true,
+                            title: t('shoppingLists:archiveList'),
+                            message: t('shoppingLists:archiveListConfirm'),
+                            confirmText: t('shoppingLists:archiveList'),
+                            onClose: async confirmed => {
+                              if (confirmed)
+                                await archiveList.mutateAsync(list.id)
+                              setConfirmationModel({})
+                            },
+                          })
+                        }
+                        onDelete={() =>
+                          setConfirmationModel({
+                            isOpen: true,
+                            title: t('shoppingLists:deleteList'),
+                            message: t('shoppingLists:deleteListConfirm'),
+                            confirmText: t('shoppingLists:deleteList'),
+                            color: 'danger',
+                            onClose: async confirmed => {
+                              if (confirmed)
+                                await deleteList.mutateAsync(list.id)
+                              setConfirmationModel({})
+                            },
+                          })
+                        }
+                      />
+                    ))
+                  )}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+        </>
+      )}
 
       <ConfirmationModal config={confirmationModel} />
     </Box>

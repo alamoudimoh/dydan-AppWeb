@@ -1,0 +1,11 @@
+{
+  "title": "المشاريع",
+  "subtitle": "أعمال منظّمة بمهام متعددة",
+  "newProject": "مشروع جديد",
+  "card.due": "مستحق",
+  "empty.title": "لا توجد مهام بعد",
+  "empty.addTask": "إضافة مهمة",
+  "detail.edit": "تعديل المشروع",
+  "detail.delete": "حذف المشروع",
+  "detail.subtasks": "مهام فرعية"
+}

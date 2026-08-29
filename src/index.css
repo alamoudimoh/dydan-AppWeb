@@ -1115,4 +1115,13 @@ body {
   .figma-calendar-event {
     font-size: 9px;
   }
+  .figma-shopping-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 769px) {
+  .figma-shopping-grid {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
 }

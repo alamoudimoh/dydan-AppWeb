@@ -53,7 +53,7 @@ export const BROWSER_SMOKE_PAGES = [
     id: 'shopping',
     path: '/shopping',
     auth: true,
-    heading: /shopping lists/i,
+    heading: /^shopping$/i,
     nav: true,
   },
   {

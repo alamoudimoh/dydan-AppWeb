@@ -1,0 +1,11 @@
+{
+  "title": "Projects",
+  "subtitle": "Organized work with multiple tasks",
+  "newProject": "New project",
+  "card.due": "Due",
+  "empty.title": "No tasks yet",
+  "empty.addTask": "Add task",
+  "detail.edit": "Edit project",
+  "detail.delete": "Delete project",
+  "detail.subtasks": "subtasks"
+}
