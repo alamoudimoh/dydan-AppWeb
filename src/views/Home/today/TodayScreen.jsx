@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
 import { formatDate } from '../homeModel'
 
 function CompactTaskRow({ onComplete, onOpen, task }) {
+  const { i18n, t } = useTranslation('common')
   const isDone = task.status === 'done'
   return (
     <div
@@ -22,7 +24,9 @@ function CompactTaskRow({ onComplete, onOpen, task }) {
           e.stopPropagation()
           if (!isDone) onComplete(task)
         }}
-        aria-label={isDone ? 'Completed' : 'Mark complete'}
+        aria-label={
+          isDone ? t('homeToday.completed') : t('homeToday.markComplete')
+        }
       >
         {isDone && (
           <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
@@ -49,7 +53,10 @@ function CompactTaskRow({ onComplete, onOpen, task }) {
           )}
           {task.dueDate && (
             <span className='text-faint' style={{ fontSize: 10 }}>
-              {formatDate(task.dueDate)}
+              {formatDate(task.dueDate, {
+                locale: i18n.resolvedLanguage || 'en',
+                t,
+              })}
             </span>
           )}
         </div>
@@ -69,55 +76,58 @@ CompactTaskRow.propTypes = {
   task: PropTypes.object.isRequired,
 }
 
-const MemberCard = ({ assignedToday, doneToday, member, onClick }) => (
-  <button
-    type='button'
-    className='card flex flex-col gap-2 p-4 text-left'
-    onClick={onClick}
-  >
-    <div className='flex items-center gap-2'>
-      <div
-        className='avatar'
-        style={{
-          width: 30,
-          height: 30,
-          background: member.color,
-          fontSize: 11,
-        }}
-      >
-        {member.initials}
+const MemberCard = ({ assignedToday, doneToday, member, onClick }) => {
+  const { t } = useTranslation('common')
+  return (
+    <button
+      type='button'
+      className='card flex flex-col gap-2 p-4 text-left'
+      onClick={onClick}
+    >
+      <div className='flex items-center gap-2'>
+        <div
+          className='avatar'
+          style={{
+            width: 30,
+            height: 30,
+            background: member.color,
+            fontSize: 11,
+          }}
+        >
+          {member.initials}
+        </div>
+        <div
+          className='text-primary truncate font-semibold'
+          style={{ fontSize: 13 }}
+        >
+          {member.name}
+        </div>
       </div>
-      <div
-        className='text-primary truncate font-semibold'
-        style={{ fontSize: 13 }}
-      >
-        {member.name}
-      </div>
-    </div>
-    <div className='flex items-baseline justify-between'>
-      <span className='text-faint' style={{ fontSize: 11 }}>
-        today
-      </span>
-      <span className='font-mono font-bold' style={{ fontSize: 16 }}>
-        {doneToday}
-        <span className='text-faint ms-1' style={{ fontSize: 11 }}>
-          / {assignedToday}
+      <div className='flex items-baseline justify-between'>
+        <span className='text-faint' style={{ fontSize: 11 }}>
+          {t('homeToday.todayLower')}
         </span>
-      </span>
-    </div>
-    <div className='progress-track' style={{ height: 6 }}>
-      <div
-        className='progress-fill'
-        style={{
-          width:
-            assignedToday > 0
-              ? `${Math.round((doneToday / assignedToday) * 100)}%`
-              : '0%',
-        }}
-      />
-    </div>
-  </button>
-)
+        <span className='font-mono font-bold' style={{ fontSize: 16 }}>
+          {doneToday}
+          <span className='text-faint ms-1' style={{ fontSize: 11 }}>
+            / {assignedToday}
+          </span>
+        </span>
+      </div>
+      <div className='progress-track' style={{ height: 6 }}>
+        <div
+          className='progress-fill'
+          style={{
+            width:
+              assignedToday > 0
+                ? `${Math.round((doneToday / assignedToday) * 100)}%`
+                : '0%',
+          }}
+        />
+      </div>
+    </button>
+  )
+}
 
 MemberCard.propTypes = {
   assignedToday: PropTypes.number.isRequired,
@@ -134,6 +144,7 @@ export default function TodayScreen({
   todayKey,
   todo,
 }) {
+  const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const openChore = task => navigate(`/chores/${task.choreId}`)
   const [view, setView] = useState('mine')
@@ -149,13 +160,17 @@ export default function TodayScreen({
               className='text-primary'
               style={{ fontSize: 26, fontWeight: 800, margin: 0 }}
             >
-              Today
+              {t('homeToday.today')}
             </h1>
             <p
               className='text-muted'
               style={{ fontSize: 14, margin: '6px 0 0' }}
             >
-              {formatDate(todayKey)} · {todo.length} tasks to go
+              {formatDate(todayKey, {
+                locale: i18n.resolvedLanguage || 'en',
+                t,
+              })}{' '}
+              · {t('homeToday.tasksToGo', { count: todo.length })}
             </p>
           </div>
           <button
@@ -163,7 +178,7 @@ export default function TodayScreen({
             onClick={() => navigate('/chores/create')}
           >
             <FigmaIcon name='plus' size={15} />
-            New task
+            {t('homeToday.newTask')}
           </button>
         </div>
 
@@ -173,14 +188,14 @@ export default function TodayScreen({
             className={view === 'mine' ? 'active' : ''}
             onClick={() => setView('mine')}
           >
-            For me
+            {t('homeToday.forMe')}
           </button>
           <button
             type='button'
             className={view === 'family' ? 'active' : ''}
             onClick={() => setView('family')}
           >
-            Family
+            {t('homeToday.family')}
           </button>
         </div>
 
@@ -201,7 +216,7 @@ export default function TodayScreen({
                     className='text-primary font-bold'
                     style={{ fontSize: 13 }}
                   >
-                    Assigned to me
+                    {t('homeToday.assignedToMe')}
                   </span>
                   <span className='badge ms-auto' style={{ fontSize: 11 }}>
                     {todo.length}
@@ -213,7 +228,7 @@ export default function TodayScreen({
                   <div className='empty-state py-10'>
                     <div style={{ fontSize: 32 }}>🎉</div>
                     <div className='text-primary font-bold'>
-                      Nothing left to do!
+                      {t('homeToday.nothingLeft')}
                     </div>
                   </div>
                 ) : (
@@ -234,7 +249,7 @@ export default function TodayScreen({
               className='btn btn-ghost btn-sm w-full justify-between'
               onClick={() => setShowDone(prev => !prev)}
             >
-              <span>Today&apos;s done ({done.length})</span>
+              <span>{t('homeToday.todaysDone', { count: done.length })}</span>
               <FigmaIcon
                 name={showDone ? 'chevron_down' : 'chevron_right'}
                 size={16}
@@ -260,7 +275,9 @@ export default function TodayScreen({
         {view === 'family' && (
           <div className='flex flex-col gap-5'>
             <div>
-              <div className='section-label mb-3'>Family progress today</div>
+              <div className='section-label mb-3'>
+                {t('homeToday.familyProgressToday')}
+              </div>
               <div
                 className='grid gap-3'
                 style={{
@@ -283,10 +300,10 @@ export default function TodayScreen({
                 className='text-primary mb-1 font-bold'
                 style={{ fontSize: 14 }}
               >
-                Household workload
+                {t('homeToday.householdWorkload')}
               </div>
               <div className='text-faint mb-3' style={{ fontSize: 12 }}>
-                across all members
+                {t('homeToday.acrossAllMembers')}
               </div>
               {members.map(member => {
                 const stats = household.find(item => item.id === member.id)
@@ -311,7 +328,7 @@ export default function TodayScreen({
                       >
                         <span className='text-primary'>{member.name}</span>
                         <span className='text-faint font-mono'>
-                          {doneCount} done
+                          {t('homeToday.doneCount', { count: doneCount })}
                         </span>
                       </div>
                       <div

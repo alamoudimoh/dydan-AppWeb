@@ -59,13 +59,16 @@ export const groupUpcoming = (chores, timeZone, locale) =>
     return groups
   }, [])
 
-export const maintenanceLabel = schedule => {
+export const maintenanceLabel = (schedule, { locale, t }) => {
   if (!schedule) return null
   const unit = schedule.unit || ''
-  if (schedule.dueReason === 'both') return 'Due by meter and date'
-  if (schedule.dueReason === 'meter') return 'Due by meter'
-  if (schedule.dueReason === 'time') return 'Due by date'
+  if (schedule.dueReason === 'both') return t('homeToday.dueByMeterAndDate')
+  if (schedule.dueReason === 'meter') return t('homeToday.dueByMeter')
+  if (schedule.dueReason === 'time') return t('homeToday.dueByDate')
   if (schedule.approachingByMeter)
-    return `Approaching by meter · ${Number(schedule.remaining).toLocaleString()} ${unit} remaining`
+    return t('homeToday.approachingByMeter', {
+      remaining: Number(schedule.remaining).toLocaleString(locale),
+      unit,
+    })
   return null
 }

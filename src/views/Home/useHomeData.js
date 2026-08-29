@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { hasActiveFamilyCircle } from '../../navigation/navModel'
 import {
@@ -29,13 +30,13 @@ import {
   streakFromHistory,
 } from './homeModel'
 
-const nameOf = profile => {
-  if (!profile) return 'Member'
+const nameOf = (profile, fallbackName) => {
+  if (!profile) return fallbackName
   return (
     profile.name ||
     profile.displayName ||
     profile.username ||
-    'Member'
+    fallbackName
   ).trim()
 }
 
@@ -45,6 +46,7 @@ const nameOf = profile => {
  * derives every list/stat through the pure adapters in ./homeModel.
  */
 export const useHomeData = () => {
+  const { t } = useTranslation('common')
   const queryClient = useQueryClient()
   const profileQuery = useUserProfile()
   const membersQuery = useCircleMembers()
@@ -84,7 +86,7 @@ export const useHomeData = () => {
       .filter(member => member?.isActive !== false)
       .map((member, index) => ({
         id: String(member.userId ?? member.id ?? index),
-        name: member.displayName || member.name || 'Member',
+        name: member.displayName || member.name || t('homeToday.member'),
         initials: initialsOf(member.displayName || member.name),
         color: memberColorFor(index),
         isSelf:
@@ -92,7 +94,7 @@ export const useHomeData = () => {
           selfId !== undefined &&
           String(member.userId ?? member.id) === selfId,
       }))
-  }, [rawMembers, profile])
+  }, [rawMembers, profile, t])
 
   const membersById = useMemo(
     () => Object.fromEntries(members.map(member => [member.id, member])),
@@ -104,8 +106,8 @@ export const useHomeData = () => {
     (selfId && membersById[selfId]) ||
     (profile && {
       id: selfId,
-      name: nameOf(profile),
-      initials: initialsOf(nameOf(profile)),
+      name: nameOf(profile, t('homeToday.member')),
+      initials: initialsOf(nameOf(profile, t('homeToday.member'))),
       color: memberColorFor(0),
       isSelf: true,
     }) ||
@@ -126,11 +128,22 @@ export const useHomeData = () => {
 
   // Rewards/goals/balance are readonly adjacent data the home surfaces.
   const rewards = useMemo(
-    () => buildRewards(rewardsQuery.data?.res),
-    [rewardsQuery.data],
+    () =>
+      buildRewards(rewardsQuery.data?.res, {
+        fallbackName: t('homeToday.reward'),
+      }),
+    [rewardsQuery.data, t],
   )
   const goals = goalsQuery.data?.goals || []
-  const familyGoal = isSolo ? pickFamilyGoal([]) : pickFamilyGoal(goals)
+  const familyGoal = isSolo
+    ? pickFamilyGoal([], {
+        fallbackName: t('homeToday.familyGoal'),
+        fallbackUnit: t('homeToday.chores'),
+      })
+    : pickFamilyGoal(goals, {
+        fallbackName: t('homeToday.familyGoal'),
+        fallbackUnit: t('homeToday.chores'),
+      })
   const hasGoal = familyGoal.id !== null
   const balance =
     requestsQuery.data?.balance || (requestsQuery.data ? {} : null)
@@ -150,8 +163,8 @@ export const useHomeData = () => {
   )
 
   const activityFeed = useMemo(
-    () => buildActivityFeed(history, membersById, { limit: 6, now }),
-    [history, membersById, now],
+    () => buildActivityFeed(history, membersById, { limit: 6, now, t }),
+    [history, membersById, now, t],
   )
 
   const activeProjects = (projectsQuery.data || []).filter(

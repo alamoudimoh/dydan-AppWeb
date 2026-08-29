@@ -3,6 +3,14 @@ import test from 'node:test'
 
 import { dashboardBuckets, maintenanceLabel } from './dashboardModel.js'
 
+const t = (key, values = {}) =>
+  ({
+    'homeToday.approachingByMeter': `Approaching by meter · ${values.remaining} ${values.unit} remaining`,
+    'homeToday.dueByDate': 'Due by date',
+    'homeToday.dueByMeter': 'Due by meter',
+    'homeToday.dueByMeterAndDate': 'Due by meter and date',
+  })[key]
+
 test('classifies calendar days in Asia/Riyadh without UTC leakage', () => {
   const chores = [
     { id: 1, nextDueDate: '2026-08-10T20:59:00Z' },
@@ -47,9 +55,15 @@ test('handles DST calendar boundaries and deterministic ordering', () => {
 })
 
 test('preserves authoritative hybrid maintenance reason', () => {
-  assert.equal(maintenanceLabel({ dueReason: 'both' }), 'Due by meter and date')
+  assert.equal(
+    maintenanceLabel({ dueReason: 'both' }, { locale: 'en', t }),
+    'Due by meter and date',
+  )
   assert.match(
-    maintenanceLabel({ approachingByMeter: true, remaining: 700, unit: 'km' }),
+    maintenanceLabel(
+      { approachingByMeter: true, remaining: 700, unit: 'km' },
+      { locale: 'en', t },
+    ),
     /700 km remaining/,
   )
 })

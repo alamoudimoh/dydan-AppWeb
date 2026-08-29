@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
@@ -78,6 +79,7 @@ StatCard.propTypes = {
 StatCard.defaultProps = { sub: null }
 
 function TaskRow({ onComplete, task }) {
+  const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const statusColor =
     task.status === 'overdue'
@@ -97,7 +99,9 @@ function TaskRow({ onComplete, task }) {
           e.stopPropagation()
           if (!isDone) onComplete(task)
         }}
-        aria-label={isDone ? 'Completed' : 'Mark complete'}
+        aria-label={
+          isDone ? t('homeToday.completed') : t('homeToday.markComplete')
+        }
       >
         {isDone && (
           <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
@@ -124,7 +128,10 @@ function TaskRow({ onComplete, task }) {
           )}
           {task.dueDate && (
             <span style={{ fontSize: 11, color: statusColor, fontWeight: 600 }}>
-              {formatDate(task.dueDate)}
+              {formatDate(task.dueDate, {
+                locale: i18n.resolvedLanguage || 'en',
+                t,
+              })}
             </span>
           )}
           {task.isRecurring && (
@@ -208,6 +215,7 @@ export default function FocusHome({
   upcoming,
   workload,
 }) {
+  const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const openCreate = () => navigate('/chores/create')
   const goto = name => navigate(navTarget(name))
@@ -216,9 +224,15 @@ export default function FocusHome({
   const upcomingList = upcoming.slice(0, 4)
   const maxCompleted = workload.maxCompleted
   const hour = now.getHours()
-  const greeting =
-    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-  const memberName = currentMember?.name || 'there'
+  const greeting = t(
+    hour < 12
+      ? 'homeToday.goodMorning'
+      : hour < 17
+        ? 'homeToday.goodAfternoon'
+        : 'homeToday.goodEvening',
+  )
+  const memberName = currentMember?.name || t('homeToday.there')
+  const locale = i18n.resolvedLanguage || document.documentElement.lang || 'en'
   return (
     <div style={{ padding: '0 0 40px' }}>
       {/* Hero greeting */}
@@ -234,7 +248,7 @@ export default function FocusHome({
               marginBottom: 4,
             }}
           >
-            {new Intl.DateTimeFormat('en-GB', {
+            {new Intl.DateTimeFormat(locale, {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
@@ -254,8 +268,11 @@ export default function FocusHome({
           </h1>
           <p className='text-muted' style={{ fontSize: 14, margin: '6px 0 0' }}>
             {overdue.length > 0
-              ? `${overdue.length} task${overdue.length > 1 ? 's' : ''} overdue — let's clear them first.`
-              : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`}
+              ? t('homeToday.overdueIntro', { count: overdue.length })
+              : t('homeToday.onTrack', {
+                  completed: done.length,
+                  total: myTasks.length,
+                })}
           </p>
         </div>
         <button
@@ -263,7 +280,7 @@ export default function FocusHome({
           onClick={openCreate}
         >
           <FigmaIcon name='plus' size={15} />
-          New task
+          {t('homeToday.newTask')}
         </button>
       </div>
 
@@ -276,31 +293,31 @@ export default function FocusHome({
           }}
         >
           <StatCard
-            label='Done today'
+            label={t('homeToday.doneToday')}
             value={`${done.length}/${myTasks.length}`}
-            sub='your tasks'
+            sub={t('homeToday.yourTasks')}
             color='var(--sig-done)'
             icon='check'
           />
           <StatCard
-            label='Overdue'
+            label={t('homeToday.overdue')}
             value={overdue.length}
-            sub='need attention'
+            sub={t('homeToday.needAttention')}
             color='var(--sig-over)'
             icon='error'
           />
           <StatCard
-            label='Upcoming'
+            label={t('homeToday.upcoming')}
             value={upcomingList.length}
-            sub='next 7 days'
+            sub={t('homeToday.nextDays', { count: 7 })}
             color='var(--brand)'
             icon='calendar'
           />
           {!isSolo && (
             <StatCard
-              label='House streak'
-              value={`${streak}d`}
-              sub='consecutive days'
+              label={t('homeToday.houseStreak')}
+              value={t('homeToday.daysShort', { count: streak })}
+              sub={t('homeToday.consecutiveDays')}
               color='var(--accent-text)'
               icon='fire'
             />
@@ -327,18 +344,18 @@ export default function FocusHome({
                 className='font-bold'
                 style={{ fontSize: 14, color: 'var(--sig-over)' }}
               >
-                {overdue.length} overdue task{overdue.length > 1 ? 's' : ''}
+                {t('homeToday.overdueTasks', { count: overdue.length })}
               </div>
-              {overdue.map(t => (
+              {overdue.map(task => (
                 <div
-                  key={t.id}
+                  key={task.id}
                   className='mt-1 flex items-center gap-1'
                   style={{ fontSize: 13, color: 'var(--sig-over)' }}
                 >
-                  <span>•</span> {t.title}
-                  {t.dueDate && (
+                  <span>•</span> {task.title}
+                  {task.dueDate && (
                     <span className='text-faint ms-1' style={{ fontSize: 11 }}>
-                      {formatDate(t.dueDate)}
+                      {formatDate(task.dueDate, { locale, t })}
                     </span>
                   )}
                 </div>
@@ -362,10 +379,13 @@ export default function FocusHome({
                     className='text-primary font-bold'
                     style={{ fontSize: 15, margin: 0 }}
                   >
-                    Today
+                    {t('homeToday.today')}
                   </h2>
                   <div className='text-muted' style={{ fontSize: 12 }}>
-                    {done.length} of {myTasks.length} completed
+                    {t('homeToday.completedOf', {
+                      completed: done.length,
+                      total: myTasks.length,
+                    })}
                   </div>
                 </div>
                 <div
@@ -387,7 +407,7 @@ export default function FocusHome({
                   <div className='empty-state py-10'>
                     <div style={{ fontSize: 32 }}>🎉</div>
                     <div className='text-primary font-bold'>
-                      All done for today!
+                      {t('homeToday.allDoneForToday')}
                     </div>
                   </div>
                 ) : (
@@ -408,7 +428,7 @@ export default function FocusHome({
                   className='btn btn-ghost btn-sm text-brand w-full'
                   onClick={() => goto('today')}
                 >
-                  View all today →
+                  {t('homeToday.viewAllToday')} →
                 </button>
               </div>
             </div>
@@ -423,7 +443,7 @@ export default function FocusHome({
                   className='text-primary font-bold'
                   style={{ fontSize: 15 }}
                 >
-                  Coming up
+                  {t('homeToday.comingUp')}
                 </div>
               </div>
               <div className='py-1'>
@@ -443,7 +463,7 @@ export default function FocusHome({
                   className='btn btn-ghost btn-sm text-brand w-full'
                   onClick={() => goto('calendar')}
                 >
-                  Open calendar →
+                  {t('homeToday.openCalendar')} →
                 </button>
               </div>
             </div>
@@ -454,19 +474,23 @@ export default function FocusHome({
             {/* Quick actions */}
             <div className='grid grid-cols-2 gap-2'>
               {[
-                { label: 'New task', icon: 'plus', action: openCreate },
                 {
-                  label: 'Shopping',
+                  label: t('homeToday.newTask'),
+                  icon: 'plus',
+                  action: openCreate,
+                },
+                {
+                  label: t('homeToday.shopping'),
                   icon: 'shopping',
                   action: () => goto('shopping'),
                 },
                 {
-                  label: 'Calendar',
+                  label: t('homeToday.calendar'),
                   icon: 'calendar',
                   action: () => goto('calendar'),
                 },
                 {
-                  label: 'Routines',
+                  label: t('homeToday.routines'),
                   icon: 'routines',
                   action: () => goto('routines'),
                 },
@@ -499,7 +523,7 @@ export default function FocusHome({
                     className='text-primary font-bold'
                     style={{ fontSize: 14 }}
                   >
-                    Family goal
+                    {t('homeToday.familyGoal')}
                   </div>
                   <span style={{ fontSize: 20 }}>🚀</span>
                 </div>
@@ -514,8 +538,11 @@ export default function FocusHome({
                   style={{ fontSize: 12 }}
                 >
                   <span>
-                    {familyGoal.progress} of {familyGoal.target}{' '}
-                    {familyGoal.unit}
+                    {t('homeToday.goalProgress', {
+                      progress: familyGoal.progress,
+                      target: familyGoal.target,
+                      unit: familyGoal.unit,
+                    })}
                   </span>
                   <span className='font-bold' style={{ color: 'var(--brand)' }}>
                     {familyGoal.percent}%
@@ -538,14 +565,14 @@ export default function FocusHome({
                     className='text-primary font-bold'
                     style={{ fontSize: 14 }}
                   >
-                    Household workload
+                    {t('homeToday.householdWorkload')}
                   </div>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
                     style={{ fontSize: 11 }}
                     onClick={() => goto('activity')}
                   >
-                    Details
+                    {t('homeToday.details')}
                   </button>
                 </div>
                 {workload.rows.map(member => (
@@ -566,14 +593,14 @@ export default function FocusHome({
                     className='text-primary font-bold'
                     style={{ fontSize: 14 }}
                   >
-                    Active projects
+                    {t('homeToday.activeProjects')}
                   </div>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
                     style={{ fontSize: 11 }}
                     onClick={() => goto('projects')}
                   >
-                    All projects
+                    {t('homeToday.allProjects')}
                   </button>
                 </div>
                 {activeProjects.map(project => (
@@ -627,7 +654,8 @@ export default function FocusHome({
                   className='btn btn-ghost btn-sm text-brand mt-2 w-full'
                   onClick={openCreate}
                 >
-                  <FigmaIcon name='plus' size={13} /> New project
+                  <FigmaIcon name='plus' size={13} />{' '}
+                  {t('homeToday.newProject')}
                 </button>
               </div>
             )}
@@ -640,14 +668,14 @@ export default function FocusHome({
                     className='text-primary font-bold'
                     style={{ fontSize: 14 }}
                   >
-                    Recent activity
+                    {t('homeToday.recentActivity')}
                   </div>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
                     style={{ fontSize: 11 }}
                     onClick={() => goto('activity')}
                   >
-                    See all
+                    {t('homeToday.seeAll')}
                   </button>
                 </div>
                 {activityFeed.events.slice(0, 4).map(event => {
