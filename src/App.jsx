@@ -1,18 +1,11 @@
 import './styles/safe-area.css'
 
-import {
-  Box,
-  Button,
-  LinearProgress,
-  Typography,
-  useColorScheme,
-} from '@mui/joy'
+import { Button, LinearProgress, Typography, useColorScheme } from '@mui/joy'
 import { Suspense, useCallback, useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
 import { hasAppShell } from '@/navigation/appShellModel'
-import { NAV_DRAWER_WIDTH } from '@/navigation/navStyles'
 import NavBar from '@/views/components/NavBar'
 
 import { registerCapacitorListeners } from './CapacitorListener'
@@ -121,17 +114,14 @@ const AppContent = () => {
         </a>
         <ImpersonateUserProvider>
           <NavBar />
-          <Box
+          <main
             id='main-content'
-            component='main'
             tabIndex={-1}
-            sx={{
-              minWidth: 0,
-              marginInlineStart: shellVisible
-                ? { xs: 0, md: `${NAV_DRAWER_WIDTH}px` }
-                : 0,
-              outline: 'none',
-            }}
+            className={
+              shellVisible
+                ? 'main-content figma-route-content'
+                : 'figma-route-content'
+            }
           >
             <PageTransition>
               {/* Route components are React.lazy chunks; Suspense keeps the shell
@@ -142,7 +132,7 @@ const AppContent = () => {
                 </Suspense>
               </ErrorBoundary>
             </PageTransition>
-          </Box>
+          </main>
         </ImpersonateUserProvider>
       </div>
     </RequireAuth>

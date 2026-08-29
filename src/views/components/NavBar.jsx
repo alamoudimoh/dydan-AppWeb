@@ -1,48 +1,17 @@
-import { Capacitor } from '@capacitor/core'
-import {
-  ArrowBack,
-  Logout,
-  MenuRounded,
-  Notifications,
-} from '@mui/icons-material'
-import {
-  Badge,
-  Box,
-  Drawer,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemContent,
-  ListItemDecorator,
-  Typography,
-} from '@mui/joy'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-import { version } from '../../../package.json'
+import FigmaIcon, { LogoMark } from '../../components/FigmaIcon'
 import UserProfileAvatar from '../../components/UserProfileAvatar'
 import { APP_DISPLAY_NAME } from '../../config/AppBranding'
-import Z_INDEX from '../../constants/zIndex'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { resolveAppShellMode } from '../../navigation/appShellModel'
-import NavBarSections from '../../navigation/NavBarSections'
 import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
 import {
   buildNavSectionPlan,
   hasActiveFamilyCircle,
 } from '../../navigation/navModel'
-import {
-  navBrandSx,
-  navDrawerContentSx,
-  navDrawerFooterSx,
-  navDrawerScrollSx,
-  navHeaderSx,
-  navItemButtonSx,
-  navSidebarSx,
-} from '../../navigation/navStyles'
-import { useNotificationCount } from '../../queries/NotificationQueries'
-import { useResource } from '../../queries/ResourceQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useGlobalSearch } from '../../search/GlobalSearchContext'
 import { apiClient } from '../../utils/ApiClient'
@@ -50,212 +19,192 @@ import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 import SyncStatusIndicator from './SyncStatusIndicator'
 
+const iconByLink = {
+  home: 'home',
+  allTasks: 'tasks',
+  calendar: 'calendar',
+  archived: 'tasks',
+  maintenance: 'maintenance',
+  routines: 'routines',
+  categories: 'tag',
+  projects: 'projects',
+  shoppingLists: 'shopping',
+  filters: 'tasks',
+  familyProgress: 'users',
+  points: 'gift',
+  rewards: 'gift',
+  activities: 'activity',
+  profile: 'users',
+  settings: 'settings',
+  search: 'search',
+  feedback: 'activity',
+  bugReport: 'activity',
+}
+
 const NavBar = () => {
   const { t } = useTranslation('common')
   const { isRTL } = useLocalization()
-  const { data: resource } = useResource()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { data: userProfile } = useUserProfile()
   const { data: circleMembersData } = useCircleMembers()
   const { openSearch } = useGlobalSearch()
-
-  const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
-  const { data: notificationCount } = useNotificationCount()
-
-  const navSections = useMemo(() => {
+  const shellMode = resolveAppShellMode(location.pathname)
+  const sections = useMemo(() => {
     const registry = createNavLinkRegistry({
       t,
       openSearch,
       openFeedback: () => setFeedbackOpen(true),
       openBugReport: () => setBugReportOpen(true),
     })
-    const plan = buildNavSectionPlan(
-      hasActiveFamilyCircle(userProfile, circleMembersData),
-    )
-    return plan.map(section => ({
-      id: section.id,
+    return buildNavSectionPlan(
+      hasActiveFamilyCircle(userProfile, circleMembersData?.res),
+    ).map(section => ({
+      ...section,
       links: section.linkIds
-        .map(linkId => {
-          const link = registry[linkId]
-          if (!link) return null
-          return { ...link, id: linkId }
-        })
-        .filter(Boolean),
+        .map(id => ({ ...registry[id], id }))
+        .filter(link => link.label),
     }))
-  }, [t, openSearch, userProfile, circleMembersData])
-
-  const closeDrawer = () => setDrawerOpen(false)
-  const location = useLocation()
-  const [searchParams] = useSearchParams()
-  const getMenuIcon = () => {
-    const menuRounded = (
-      <IconButton
-        size='md'
-        variant='plain'
-        onClick={() => setDrawerOpen(true)}
-        aria-label={t('navigation.openMenu')}
-        title={t('navigation.openMenu')}
-      >
-        <MenuRounded />
-      </IconButton>
-    )
-    if (location.pathname === '/search') {
-      return (
-        <IconButton
-          size='md'
-          variant='plain'
-          onClick={() => {
-            if (window.history.state?.idx > 0) navigate(-1)
-            else navigate('/chores', { replace: true })
-          }}
-          aria-label='Back from search'
-          title={t('back')}
-        >
-          <ArrowBack className='rtl-flip' />
-        </IconButton>
-      )
-    }
-    if (!Capacitor.isNativePlatform()) {
-      return menuRounded
-    }
-    if (
-      ['/chores', '/'].includes(location.pathname) &&
-      !searchParams.get('filterId')
-    ) {
-      return menuRounded
-    }
-    return (
-      <IconButton
-        size='md'
-        variant='plain'
-        onClick={() => {
-          if (location.pathname === '/chores') {
-            navigate('/')
-          } else {
-            navigate(-1)
-          }
-        }}
-        title={
-          searchParams.get('from') === 'calendar'
-            ? t('backToCalendar')
-            : t('back')
-        }
-      >
-        <ArrowBack className='rtl-flip' />
-      </IconButton>
-    )
-  }
-
-  const shellMode = resolveAppShellMode(location.pathname)
-  if (shellMode === 'spacer') {
-    return (
-      <div
-        style={{
-          paddingTop: `calc(var(--safe-area-inset-top, 0px))`,
-          top: 0,
-        }}
-      />
-    )
-  }
-  if (shellMode === 'none') {
-    return null
-  }
+  }, [circleMembersData, openSearch, t, userProfile])
+  if (shellMode === 'spacer')
+    return <div style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }} />
   if (
-    window.location.hostname === 'www.donetick.com' ||
-    window.location.hostname === 'donetick.com'
-  ) {
-    return null
-  }
-
-  const renderNavigationContent = onActivate => (
-    <>
-      <Box sx={navDrawerScrollSx}>
-        <Typography component='p' sx={navBrandSx}>
-          {APP_DISPLAY_NAME}
-        </Typography>
-        <NavBarSections sections={navSections} onItemActivate={onActivate} />
-      </Box>
-      <Box sx={navDrawerFooterSx}>
-        <List size='md' sx={{ p: 0, gap: 0 }}>
-          <ListItemButton
-            onClick={() => apiClient.handleLogout()}
-            variant='plain'
-            color='neutral'
-            sx={navItemButtonSx(false)}
-          >
-            <ListItemDecorator>
-              <Logout />
-            </ListItemDecorator>
-            <ListItemContent sx={{ fontSize: 'sm' }}>
-              {t('logout')}
-            </ListItemContent>
-          </ListItemButton>
-        </List>
-        <Typography
-          onClick={() => window.location.reload(true)}
-          level='body-xs'
-          sx={{
-            py: 0.75,
-            color: 'text.tertiary',
-            textAlign: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          V{version} (API: {resource?.api_version || 'unavailable'})
-        </Typography>
-      </Box>
-    </>
+    shellMode === 'none' ||
+    ['www.donetick.com', 'donetick.com'].includes(window.location.hostname)
   )
-
+    return null
+  const activate = link => {
+    if (link.onClick) link.onClick()
+    else navigate(link.to)
+    setDrawerOpen(false)
+  }
+  const navigation = mobile => (
+    <nav
+      className={mobile ? 'figma-mobile-drawer' : 'sidebar'}
+      aria-label={t('navigation.mainNavigation')}
+    >
+      <div className='figma-brand'>
+        <LogoMark size={28} />
+        <div>
+          <strong>{APP_DISPLAY_NAME}</strong>
+          <small>FOCUS MODE</small>
+        </div>
+        <button
+          className='btn btn-ghost btn-icon'
+          onClick={() => navigate('/chores/create')}
+          aria-label={t('addTask')}
+        >
+          <FigmaIcon name='plus' size={16} />
+        </button>
+      </div>
+      <div className='figma-nav-scroll'>
+        {sections.map(section => (
+          <div key={section.id}>
+            <div className='section-label'>
+              {t(`navigation.sections.${section.id}`)}
+            </div>
+            {section.links.map(link => (
+              <button
+                key={link.id}
+                className={`nav-item ${location.pathname === link.to ? 'active' : ''}`}
+                onClick={() => activate(link)}
+              >
+                <FigmaIcon name={iconByLink[link.id]} size={15} />
+                <span>{link.label}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className='figma-nav-footer'>
+        <button className='nav-item' onClick={() => apiClient.handleLogout()}>
+          <FigmaIcon name='x' size={15} />
+          <span>{t('logout')}</span>
+        </button>
+        <div
+          className='figma-profile'
+          onClick={() => navigate('/settings/profile')}
+        >
+          <UserProfileAvatar />
+          <span>
+            {userProfile?.displayName || userProfile?.name || t('profile')}
+          </span>
+        </div>
+      </div>
+    </nav>
+  )
   return (
     <>
-      <Box component='aside' sx={navSidebarSx}>
-        {renderNavigationContent(undefined)}
-      </Box>
-      <Box component='header' sx={{ ...navHeaderSx, zIndex: Z_INDEX.NAVBAR }}>
-        <Box sx={{ display: { xs: 'block', md: 'none' } }}>{getMenuIcon()}</Box>
-        <Box className='flex-1' />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {navigation(false)}
+      <header className='figma-topbar'>
+        <button
+          className='figma-menu-button'
+          onClick={() => setDrawerOpen(true)}
+          aria-label={t('navigation.openMenu')}
+        >
+          <FigmaIcon name='bars' />
+        </button>
+        <button className='figma-search-button' onClick={openSearch}>
+          <FigmaIcon name='search' size={14} />
+          {t('search')}
+          <kbd>Ctrl K</kbd>
+        </button>
+        <div className='figma-top-actions'>
           <SyncStatusIndicator />
-          <IconButton
-            aria-label={t('navigation.notifications')}
-            title={t('navigation.notifications')}
-            variant='plain'
+          <button
+            className='btn btn-ghost btn-icon'
             onClick={() => navigate('/notifications')}
+            aria-label={t('navigation.notifications')}
           >
-            <Badge
-              badgeContent={notificationCount?.unreadCount || 0}
-              color='danger'
-              invisible={!notificationCount?.unreadCount}
-              size='sm'
-            >
-              <Notifications />
-            </Badge>
-          </IconButton>
+            <FigmaIcon name='bell' />
+          </button>
+          <button
+            className='btn btn-primary btn-icon'
+            onClick={() => navigate('/chores/create')}
+            aria-label={t('addTask')}
+          >
+            <FigmaIcon name='plus' />
+          </button>
           <UserProfileAvatar />
-        </Box>
-      </Box>
-      <Drawer
-        open={drawerOpen}
-        onClose={closeDrawer}
-        anchor={isRTL ? 'right' : 'left'}
-        slotProps={{
-          content: {
-            className: 'safe-area-x',
-            sx: {
-              ...navDrawerContentSx,
-              position: 'fixed',
-              ...(isRTL ? { right: 0 } : { left: 0 }),
-              zIndex: Z_INDEX.DRAWER,
-              overflow: 'hidden',
-            },
+        </div>
+      </header>
+      {drawerOpen && (
+        <div
+          className='figma-drawer-backdrop'
+          onClick={() => setDrawerOpen(false)}
+        >
+          <div
+            dir={isRTL ? 'rtl' : undefined}
+            onClick={event => event.stopPropagation()}
+          >
+            {navigation(true)}
+          </div>
+        </div>
+      )}
+      <nav className='mobile-nav' aria-label={t('navigation.mainNavigation')}>
+        {['home', 'allTasks', 'calendar', 'shoppingLists', 'settings'].map(
+          id => {
+            const link = sections
+              .flatMap(section => section.links)
+              .find(item => item.id === id)
+            return (
+              link && (
+                <button
+                  key={id}
+                  className={location.pathname === link.to ? 'active' : ''}
+                  onClick={() => activate(link)}
+                >
+                  <FigmaIcon name={iconByLink[id]} size={20} />
+                  <span>{link.label}</span>
+                </button>
+              )
+            )
           },
-        }}
-      >
-        {renderNavigationContent(closeDrawer)}
-      </Drawer>
+        )}
+      </nav>
       <FeedbackModal
         open={feedbackOpen}
         onClose={() => setFeedbackOpen(false)}
