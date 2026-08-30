@@ -1,7 +1,6 @@
-import { Add, Label } from '@mui/icons-material'
-import { Button } from '@mui/joy'
 import { useState } from 'react'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import LabelModal from '../Modals/Inputs/LabelModal'
 import BaseOptionPicker from './BaseOptionPicker'
 
@@ -36,12 +35,16 @@ const LabelsPickerField = ({
         getItemValue={item => item.id}
         getItemLabel={item => item.name}
         getItemColor={item => item.color}
-        renderTriggerIcon={() => <Label sx={{ fontSize: '20px' }} />}
+        renderTriggerIcon={() => <FigmaIcon name='tag' size={20} />}
         renderItemStart={({ item }) => (
-          <Label
-            sx={{
-              fontSize: '18px',
-              color: item.color || 'text.secondary',
+          <span
+            aria-hidden='true'
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: item.color || 'var(--t-muted)',
+              flexShrink: 0,
             }}
           />
         )}
@@ -52,20 +55,22 @@ const LabelsPickerField = ({
         }}
         menuMinWidth={220}
         menuFooter={
-          <Button
-            size='sm'
-            variant='plain'
-            color='neutral'
-            startDecorator={<Add sx={{ fontSize: '16px' }} />}
+          <button
+            type='button'
+            className='btn btn-ghost btn-sm'
+            style={{
+              width: '100%',
+              justifyContent: 'flex-start',
+            }}
             onClick={e => {
               e.stopPropagation()
               setPickerOpen(false)
               setCreateOpen(true)
             }}
-            sx={{ width: '100%', justifyContent: 'flex-start' }}
           >
+            <FigmaIcon name='plus' size={16} />
             Create label
-          </Button>
+          </button>
         }
       />
       <LabelModal

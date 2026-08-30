@@ -1,19 +1,3 @@
-import { Build } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Card,
-  Chip,
-  Divider,
-  FormControl,
-  FormLabel,
-  Input,
-  Option,
-  Select,
-  Stack,
-  Textarea,
-  Typography,
-} from '@mui/joy'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -23,8 +7,10 @@ import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useNotification } from '../../service/NotificationProvider'
-import { pageShellSx, pageStackSpacing } from '../../theme/appLayout'
+import { pageShellSx } from '../../theme/appLayout'
+import { sxToStyle } from '../../theme/sxToStyle'
 import { getRecurrentChipText } from '../../utils/ChoreCardHelpers'
 import {
   AddMeterReading,
@@ -51,14 +37,37 @@ const categories = [
 ]
 
 const ModalActions = ({ disabled, onClose, onSave, saveLabel, t }) => (
-  <Stack direction='row' justifyContent='flex-end' spacing={1}>
-    <Button variant='plain' color='neutral' onClick={onClose}>
+  <div className='flex items-center justify-end gap-2'>
+    <button className='btn btn-ghost' onClick={onClose} type='button'>
       {t('cancel')}
-    </Button>
-    <Button disabled={disabled} onClick={onSave}>
+    </button>
+    <button
+      className='btn btn-primary'
+      disabled={disabled}
+      onClick={onSave}
+      type='button'
+    >
       {saveLabel}
-    </Button>
-  </Stack>
+    </button>
+  </div>
+)
+
+const ModalField = ({ children, label, required }) => (
+  <label className='block'>
+    <span
+      className='section-label'
+      style={{ display: 'block', padding: '0 0 6px' }}
+    >
+      {label}
+      {required && (
+        <span aria-hidden='true' style={{ color: 'var(--sig-over)' }}>
+          {' '}
+          *
+        </span>
+      )}
+    </span>
+    {children}
+  </label>
 )
 
 const AssetForm = ({ asset, onClose, onSaved }) => {
@@ -95,39 +104,41 @@ const AssetForm = ({ asset, onClose, onSaved }) => {
         />
       }
     >
-      <Stack spacing={2}>
-        <FormControl required>
-          <FormLabel>{t('maintenance.name')}</FormLabel>
-          <Input
+      <div className='flex flex-col gap-3'>
+        <ModalField label={t('maintenance.name')} required>
+          <input
+            className='input'
             value={form.name}
             onChange={event => setForm({ ...form, name: event.target.value })}
           />
-        </FormControl>
-        <FormControl>
-          <FormLabel>{t('maintenance.category')}</FormLabel>
-          <Select
-            value={form.category || null}
-            placeholder={t('maintenance.optional')}
-            onChange={(_, value) => setForm({ ...form, category: value || '' })}
+        </ModalField>
+        <ModalField label={t('maintenance.category')}>
+          <select
+            className='input'
+            value={form.category || ''}
+            onChange={event =>
+              setForm({ ...form, category: event.target.value })
+            }
           >
+            <option value=''>{t('maintenance.optional')}</option>
             {categories.map(value => (
-              <Option value={value} key={value}>
+              <option value={value} key={value}>
                 {t(`maintenance.categories.${value.toLowerCase()}`)}
-              </Option>
+              </option>
             ))}
-          </Select>
-        </FormControl>
-        <FormControl>
-          <FormLabel>{t('maintenance.description')}</FormLabel>
-          <Textarea
-            minRows={3}
+          </select>
+        </ModalField>
+        <ModalField label={t('maintenance.description')}>
+          <textarea
+            className='input'
+            rows={3}
             value={form.description}
             onChange={event =>
               setForm({ ...form, description: event.target.value })
             }
           />
-        </FormControl>
-      </Stack>
+        </ModalField>
+      </div>
     </AppModal>
   )
 }
@@ -195,159 +206,202 @@ export const AssetDetail = () => {
 
   if (loadError) {
     return (
-      <Box sx={pageShellSx}>
+      <div style={sxToStyle(pageShellSx)}>
         <EmptyState
           variant='error'
-          icon={<Build />}
+          icon={<FigmaIcon name='error' size={22} />}
           title={t('maintenance.assetLoadError')}
           primaryAction={{ label: t('retry'), onClick: load }}
         />
-      </Box>
+      </div>
     )
   }
   if (!asset) {
     return (
-      <Box sx={pageShellSx}>
+      <div style={sxToStyle(pageShellSx)}>
         <QueryLoadingView label={t('maintenance.loadingAsset')} />
-      </Box>
+      </div>
     )
   }
 
   return (
-    <Box sx={pageShellSx}>
-      <Stack spacing={pageStackSpacing}>
-        <PageHeader
-          title={asset.name}
-          subtitle={`${asset.category || t('maintenance.assetFallback')}${
-            asset.description ? ` · ${asset.description}` : ''
-          }`}
-          action={
-            <Stack direction='row' flexWrap='wrap' gap={1}>
-              <Button
-                variant='outlined'
-                startDecorator={<Edit />}
-                onClick={() => setEditing(true)}
-              >
-                {t('edit')}
-              </Button>
-              <Button startDecorator={<Add />} onClick={openLinks}>
-                {t('maintenance.link')}
-              </Button>
-            </Stack>
-          }
-        />
+    <div style={sxToStyle(pageShellSx)}>
+      <PageHeader
+        title={asset.name}
+        subtitle={`${asset.category || t('maintenance.assetFallback')}${
+          asset.description ? ` · ${asset.description}` : ''
+        }`}
+        action={
+          <div className='flex flex-wrap gap-2'>
+            <button
+              className='btn btn-ghost'
+              onClick={() => setEditing(true)}
+              type='button'
+            >
+              <FigmaIcon name='edit' size={14} />
+              {t('edit')}
+            </button>
+            <button
+              className='btn btn-primary'
+              onClick={openLinks}
+              type='button'
+            >
+              <FigmaIcon name='plus' size={14} />
+              {t('maintenance.link')}
+            </button>
+          </div>
+        }
+      />
 
-        <SectionCard title={t('maintenance.meters')}>
-          {asset.meters.length === 0 ? (
-            <EmptyState size='sm' title={t('maintenance.noLinkedMeters')} />
-          ) : (
-            <Stack spacing={1}>
-              {asset.meters.map(meter => (
-                <Card key={meter.id} variant='soft'>
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    alignItems={{ sm: 'center' }}
-                    gap={1.5}
-                  >
-                    <Speed />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography level='title-md'>{meter.name}</Typography>
-                      <Typography level='body-xs'>
-                        {t('maintenance.updated', {
-                          date: new Date(meter.updatedAt).toLocaleString(
-                            locale,
+      <SectionCard title={t('maintenance.meters')}>
+        {asset.meters.length === 0 ? (
+          <EmptyState size='sm' title={t('maintenance.noLinkedMeters')} />
+        ) : (
+          <div className='flex flex-col gap-2'>
+            {asset.meters.map(meter => (
+              <div key={meter.id} className='card'>
+                <div className='flex flex-wrap items-center gap-3 p-4'>
+                  <FigmaIcon
+                    name='maintenance'
+                    size={20}
+                    style={{ color: 'var(--t-muted)', flexShrink: 0 }}
+                  />
+                  <div className='min-w-0 flex-1'>
+                    <div
+                      className='text-primary font-bold'
+                      style={{ fontSize: 14 }}
+                    >
+                      {meter.name}
+                    </div>
+                    <div className='text-muted' style={{ fontSize: 12 }}>
+                      {t('maintenance.updated', {
+                        date: new Date(meter.updatedAt).toLocaleString(locale),
+                      })}
+                    </div>
+                    {meter.updateReminder && (
+                      <div
+                        className='text-muted'
+                        style={{
+                          fontSize: 12,
+                          color:
+                            meter.updateReminder.updateStatus === 'overdue'
+                              ? 'var(--sig-over)'
+                              : undefined,
+                        }}
+                      >
+                        {t('maintenance.updateReminder', {
+                          recurrence: getRecurrentChipText(
+                            meter.updateReminder,
                           ),
                         })}
-                      </Typography>
-                      {meter.updateReminder && (
-                        <Typography
-                          level='body-xs'
-                          color={
-                            meter.updateReminder.updateStatus === 'overdue'
-                              ? 'warning'
-                              : 'neutral'
-                          }
-                        >
-                          {t('maintenance.updateReminder', {
-                            recurrence: getRecurrentChipText(
-                              meter.updateReminder,
-                            ),
-                          })}
-                          {meter.updateReminder.nextUpdateDue
-                            ? t('maintenance.nextUpdate', {
-                                date: new Date(
-                                  meter.updateReminder.nextUpdateDue,
-                                ).toLocaleString(locale),
-                              })
-                            : ''}
-                          {meter.updateReminder.updateStatus === 'overdue'
-                            ? t('maintenance.readingOutdated')
-                            : ''}
-                        </Typography>
-                      )}
-                    </Box>
-                    <Typography level='h3' className='daydan-metric'>
-                      {meter.currentReading.toLocaleString(locale)} {meter.unit}
-                    </Typography>
-                    <Button
-                      size='sm'
-                      onClick={() => {
-                        setReadingMeter(meter)
-                        setReading(meter.currentReading)
-                      }}
+                        {meter.updateReminder.nextUpdateDue
+                          ? t('maintenance.nextUpdate', {
+                              date: new Date(
+                                meter.updateReminder.nextUpdateDue,
+                              ).toLocaleString(locale),
+                            })
+                          : ''}
+                        {meter.updateReminder.updateStatus === 'overdue'
+                          ? t('maintenance.readingOutdated')
+                          : ''}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className='daydan-metric'
+                    style={{ fontSize: 20, fontWeight: 700 }}
+                  >
+                    {meter.currentReading.toLocaleString(locale)} {meter.unit}
+                  </div>
+                  <button
+                    className='btn btn-sm btn-secondary'
+                    onClick={() => {
+                      setReadingMeter(meter)
+                      setReading(meter.currentReading)
+                    }}
+                    type='button'
+                  >
+                    {t('maintenance.updateReading')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard title={t('maintenance.maintenanceStatus')}>
+        {asset.maintenance.length === 0 ? (
+          <EmptyState size='sm' title={t('maintenance.noMaintenance')} />
+        ) : (
+          <div className='flex flex-col gap-2'>
+            {asset.maintenance.map(item => (
+              <div key={item.choreId ?? item.id} className='card'>
+                <div className='flex flex-wrap items-center justify-between gap-3 p-4'>
+                  <div className='min-w-0 flex-1'>
+                    <div
+                      className='text-primary font-bold'
+                      style={{ fontSize: 14 }}
                     >
-                      {t('maintenance.updateReading')}
-                    </Button>
-                  </Stack>
-                </Card>
-              ))}
-            </Stack>
-          )}
-        </SectionCard>
+                      {item.choreName || item.name}
+                    </div>
+                    {item.description && (
+                      <div className='text-muted' style={{ fontSize: 12 }}>
+                        {item.description}
+                      </div>
+                    )}
+                    {item.nextDueDate && (
+                      <div className='text-muted' style={{ fontSize: 12 }}>
+                        {t('maintenance.nextDueLabel')}:{' '}
+                        {new Date(item.nextDueDate).toLocaleDateString(locale)}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className='btn btn-sm btn-secondary'
+                    onClick={() => navigate(`/chores/${item.choreId}`)}
+                    type='button'
+                  >
+                    {t('maintenance.markDone')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
 
-        <SectionCard title={t('maintenance.maintenanceStatus')}>
-          {asset.maintenance.length === 0 ? (
-            <EmptyState size='sm' title={t('maintenance.noMaintenance')} />
-          ) : (
-            <Stack spacing={1}>
-              {asset.maintenance.map(item => (
-                <MaintenanceCard
-                  key={item.choreId}
-                  item={item}
-                  onComplete={() => navigate(`/chores/${item.choreId}`)}
-                />
-              ))}
-            </Stack>
-          )}
-        </SectionCard>
-
-        <SectionCard title={t('maintenance.maintenanceHistory')}>
-          {asset.history.length === 0 ? (
-            <EmptyState size='sm' title={t('maintenance.noHistory')} />
-          ) : (
-            <Stack divider={<Divider />} spacing={1}>
-              {asset.history.map(entry => (
-                <Box key={entry.id}>
-                  <Typography level='title-sm'>{entry.choreName}</Typography>
-                  <Typography level='body-sm'>
-                    {t('maintenance.completedBy', {
-                      date: new Date(entry.performedAt).toLocaleString(locale),
-                      name:
-                        entry.completedByName || t('maintenance.unknownMember'),
-                    })}
-                    {entry.meterReading != null
-                      ? t('maintenance.atReading', {
-                          reading: entry.meterReading.toLocaleString(locale),
-                          unit: entry.meterUnit,
-                        })
-                      : ''}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </SectionCard>
-      </Stack>
+      <SectionCard title={t('maintenance.maintenanceHistory')}>
+        {asset.history.length === 0 ? (
+          <EmptyState size='sm' title={t('maintenance.noHistory')} />
+        ) : (
+          <div>
+            {asset.history.map(entry => (
+              <div key={entry.id} className='border-line border-b py-2'>
+                <div
+                  className='text-primary font-semibold'
+                  style={{ fontSize: 13 }}
+                >
+                  {entry.choreName}
+                </div>
+                <div className='text-muted' style={{ fontSize: 12 }}>
+                  {t('maintenance.completedBy', {
+                    date: new Date(entry.performedAt).toLocaleString(locale),
+                    name:
+                      entry.completedByName || t('maintenance.unknownMember'),
+                  })}
+                  {entry.meterReading != null
+                    ? t('maintenance.atReading', {
+                        reading: entry.meterReading.toLocaleString(locale),
+                        unit: entry.meterUnit,
+                      })
+                    : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
 
       {editing && (
         <AssetForm
@@ -370,28 +424,50 @@ export const AssetDetail = () => {
           />
         }
       >
-        <Stack spacing={2}>
-          <Select
-            value={link.kind}
-            onChange={(_, value) => setLink({ kind: value, id: null })}
-          >
-            <Option value='meter'>{t('maintenance.meterOption')}</Option>
-            <Option value='chore'>{t('maintenance.choreOption')}</Option>
-          </Select>
-          <Select
-            placeholder={t('maintenance.chooseKind', {
+        <div className='flex flex-col gap-3'>
+          <ModalField label={t('maintenance.linkKind')}>
+            <div className='view-toggle' style={{ width: '100%' }}>
+              <button
+                className={`view-toggle-btn ${link.kind === 'meter' ? 'active' : ''}`}
+                onClick={() => setLink({ kind: 'meter', id: null })}
+                type='button'
+              >
+                {t('maintenance.meterOption')}
+              </button>
+              <button
+                className={`view-toggle-btn ${link.kind === 'chore' ? 'active' : ''}`}
+                onClick={() => setLink({ kind: 'chore', id: null })}
+                type='button'
+              >
+                {t('maintenance.choreOption')}
+              </button>
+            </div>
+          </ModalField>
+          <ModalField
+            label={t('maintenance.chooseKind', {
               kind: t(`maintenance.${link.kind}Option`),
             })}
-            value={link.id}
-            onChange={(_, value) => setLink({ ...link, id: value })}
           >
-            {(link.kind === 'meter' ? meters : chores).map(item => (
-              <Option key={item.id} value={item.id}>
-                {item.name}
-              </Option>
-            ))}
-          </Select>
-        </Stack>
+            <select
+              className='input'
+              value={link.id ?? ''}
+              onChange={event =>
+                setLink({ ...link, id: event.target.value || null })
+              }
+            >
+              <option value=''>
+                {t('maintenance.chooseKind', {
+                  kind: t(`maintenance.${link.kind}Option`),
+                })}
+              </option>
+              {(link.kind === 'meter' ? meters : chores).map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </ModalField>
+        </div>
       </AppModal>
       <AppModal
         open={!!readingMeter}
@@ -406,14 +482,22 @@ export const AssetDetail = () => {
           />
         }
       >
-        <Input
-          type='number'
-          value={reading}
-          endDecorator={readingMeter?.unit}
-          onChange={event => setReading(event.target.value)}
-        />
+        <div className='flex items-end gap-2'>
+          <input
+            className='input'
+            style={{ minWidth: 0, flex: 1 }}
+            type='number'
+            value={reading}
+            onChange={event => setReading(event.target.value)}
+          />
+          {readingMeter?.unit && (
+            <span className='text-muted' style={{ fontSize: 13 }}>
+              {readingMeter.unit}
+            </span>
+          )}
+        </div>
       </AppModal>
-    </Box>
+    </div>
   )
 }
 
@@ -466,12 +550,12 @@ const MaintenanceView = () => {
   }
 
   return (
-    <Box sx={pageShellSx}>
+    <div style={sxToStyle(pageShellSx)}>
       {isLoading && <QueryLoadingView label={t('maintenance.loading')} />}
       {!isLoading && loadError && (
         <EmptyState
           variant='error'
-          icon={<Build />}
+          icon={<FigmaIcon name='error' size={22} />}
           title={t('maintenance.loadError')}
           primaryAction={{ label: t('retry'), onClick: load }}
         />
@@ -489,7 +573,7 @@ const MaintenanceView = () => {
       {creating && (
         <AssetForm onClose={() => setCreating(false)} onSaved={load} />
       )}
-    </Box>
+    </div>
   )
 }
 

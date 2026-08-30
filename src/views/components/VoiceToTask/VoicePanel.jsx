@@ -1,24 +1,9 @@
 import './VoicePanel.css'
 
-import {
-  CalendarMonth,
-  Check,
-  Close,
-  Flag,
-  GraphicEq,
-  Lock,
-  Mic,
-  NotificationsNone,
-  Person,
-  Repeat,
-  Sell,
-  Toll,
-  WarningAmber,
-} from '@mui/icons-material'
-import { Box, Button, Chip, IconButton, Input, Typography } from '@mui/joy'
 import moment from 'moment'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import FigmaIcon from '../../../components/FigmaIcon'
 import { TASK_COLOR } from '../../../utils/Colors'
 import { isPlusAccount } from '../../../utils/Helpers'
 import AssigneePickerField from '../AssigneePickerField'
@@ -117,7 +102,7 @@ const buildChips = (
     chips.push({
       key: 'due',
       color: 'warning',
-      icon: <CalendarMonth sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='calendar' size={12} />,
       label: formatDue(effective.dueDate),
     })
   }
@@ -125,7 +110,7 @@ const buildChips = (
     chips.push({
       key: 'repeat',
       color: 'success',
-      icon: <Repeat sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='repeat' size={12} />,
       label: frequencyLabel,
     })
   }
@@ -133,7 +118,7 @@ const buildChips = (
     chips.push({
       key: 'priority',
       color: 'danger',
-      icon: <Flag sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='flag' size={12} />,
       label: `P${effective.priority}`,
     })
   }
@@ -148,7 +133,7 @@ const buildChips = (
     chips.push({
       key: 'reminders',
       color: 'neutral',
-      icon: <NotificationsNone sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='bell' size={12} />,
       label: reminderCount > 1 ? `${reminderCount} reminders` : '1 reminder',
     })
   }
@@ -156,7 +141,7 @@ const buildChips = (
     chips.push({
       key: 'points',
       color: 'primary',
-      icon: <Toll sx={{ fontSize: 12 }} />,
+      icon: <TollIcon size={12} />,
       label: `${effective.points} pts`,
     })
   }
@@ -164,7 +149,7 @@ const buildChips = (
     chips.push({
       key: `label-${name}`,
       color: 'primary',
-      icon: <Sell sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='tag' size={12} />,
       label: name,
     })
   })
@@ -172,7 +157,7 @@ const buildChips = (
     chips.push({
       key: 'assignee',
       color: 'neutral',
-      icon: <Person sx={{ fontSize: 12 }} />,
+      icon: <FigmaIcon name='user' size={12} />,
       label: 'Anyone',
     })
   } else if (
@@ -184,13 +169,67 @@ const buildChips = (
       chips.push({
         key: 'assignee',
         color: 'neutral',
-        icon: <Person sx={{ fontSize: 12 }} />,
+        icon: <FigmaIcon name='user' size={12} />,
         label: member.displayName,
       })
     }
   }
   return chips
 }
+
+const MicIcon = ({ size = 20 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z' />
+    <path d='M19 10v2a7 7 0 0 1-14 0v-2' />
+    <path d='M12 19v4' />
+  </svg>
+)
+
+const GraphicEqIcon = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M4 20v-6' />
+    <path d='M10 20V4' />
+    <path d='M16 20v-8' />
+    <path d='M20 20v-4' />
+  </svg>
+)
+
+const TollIcon = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <circle cx='12' cy='12' r='9' />
+    <path d='M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z' />
+  </svg>
+)
 
 const TaskPreviewCard = ({
   onPatch,
@@ -267,23 +306,23 @@ const TaskPreviewCard = ({
   }
 
   return (
-    <Box
+    <div
       className='voice-task-card'
-      sx={{
-        borderRadius: 'md',
+      style={{
+        borderRadius: 'var(--r-md)',
         border: '1px solid',
-        borderColor: expanded ? 'primary.outlinedBorder' : 'divider',
-        bgcolor: 'background.surface',
-        p: 1.25,
+        borderColor: expanded ? 'var(--brand)' : 'var(--line)',
+        background: 'var(--surface)',
+        padding: '10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 0.75,
+        gap: '6px',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
         {expanded ? (
-          <Input
-            size='sm'
+          <input
+            className='input'
             autoFocus
             value={draft}
             onChange={e => setDraft(e.target.value)}
@@ -292,51 +331,92 @@ const TaskPreviewCard = ({
               if (e.key === 'Escape') setDraft(segment.text)
             }}
             onBlur={commitText}
-            sx={{ flex: 1 }}
+            style={{ flex: 1 }}
           />
         ) : (
-          <Typography
-            level='title-sm'
-            sx={{ flex: 1, cursor: 'pointer', wordBreak: 'break-word' }}
+          <span
+            role='button'
+            tabIndex={0}
+            style={{
+              flex: 1,
+              cursor: 'pointer',
+              wordBreak: 'break-word',
+              color: 'var(--t-primary)',
+              fontWeight: 700,
+              fontSize: '14px',
+              lineHeight: 1.4,
+              fontFamily: 'var(--font-ui)',
+            }}
             onClick={() => {
               setDraft(segment.text)
               setExpanded(true)
             }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                setDraft(segment.text)
+                setExpanded(true)
+              }
+            }}
           >
             {parsed.title || segment.text}
-          </Typography>
+          </span>
         )}
         {expanded && (
-          <IconButton
-            size='sm'
-            variant='soft'
-            color='primary'
+          <button
+            type='button'
+            aria-label='Confirm edited text'
+            className='btn btn-sm'
             onClick={() => {
               commitText()
               setExpanded(false)
             }}
-            sx={{ '--IconButton-size': '28px' }}
+            style={{
+              flexShrink: 0,
+              width: 28,
+              height: 28,
+              minHeight: 28,
+              padding: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--brand)',
+              color: 'var(--brand-contrast)',
+              borderColor: 'var(--brand)',
+            }}
           >
-            <Check fontSize='small' />
-          </IconButton>
+            <FigmaIcon name='check' size={16} />
+          </button>
         )}
-        <IconButton
-          size='sm'
-          variant='plain'
-          color='neutral'
+        <button
+          type='button'
+          aria-label='Remove task'
           onClick={onRemove}
-          sx={{ '--IconButton-size': '28px' }}
+          style={{
+            flexShrink: 0,
+            width: 28,
+            height: 28,
+            minHeight: 28,
+            padding: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--t-muted)',
+            cursor: 'pointer',
+          }}
         >
-          <Close fontSize='small' />
-        </IconButton>
-      </Box>
+          <FigmaIcon name='x' size={16} />
+        </button>
+      </div>
 
       {!expanded && chips.length > 0 && (
-        <Box
-          sx={{
+        <div
+          style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: 0.5,
+            gap: '4px',
             cursor: 'pointer',
           }}
           onClick={() => {
@@ -345,29 +425,28 @@ const TaskPreviewCard = ({
           }}
         >
           {chips.map(chip => (
-            <Chip
+            <span
               key={chip.key}
-              size='sm'
-              variant='soft'
-              color={chip.color}
-              startDecorator={chip.icon}
+              className='badge'
+              style={chipStyle(chip.color)}
             >
+              {chip.icon}
               {chip.label}
-            </Chip>
+            </span>
           ))}
-        </Box>
+        </div>
       )}
 
       {expanded && (
-        <Box
-          sx={{
-            mt: 1,
+        <div
+          style={{
+            marginTop: '8px',
             display: 'flex',
             flexDirection: 'row',
-            gap: 1,
+            gap: '8px',
             overflowX: 'auto',
-            pt: 0.5,
-            '&::-webkit-scrollbar': { display: 'none' },
+            paddingTop: '4px',
+            scrollbarWidth: 'none',
           }}
         >
           <DueDatePickerField
@@ -435,10 +514,21 @@ const TaskPreviewCard = ({
               }
             />
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
+}
+
+const chipStyle = color => {
+  const palette = {
+    primary: { background: 'var(--brand-faint)', color: 'var(--brand)' },
+    neutral: { background: 'var(--surface-2)', color: 'var(--t-muted)' },
+    success: { background: 'var(--sig-done-bg)', color: 'var(--sig-done)' },
+    warning: { background: 'var(--sig-due-bg)', color: 'var(--sig-due)' },
+    danger: { background: 'var(--sig-over-bg)', color: 'var(--sig-over)' },
+  }
+  return palette[color] || palette.neutral
 }
 
 /**
@@ -520,63 +610,95 @@ const VoicePanel = ({
       : 'Hold to speak · quick tap for hands-free'
 
   return (
-    <Box>
+    <div>
       {/* ── Header ── */}
-      <Box
-        sx={{
-          pt: 0.5,
+      <div
+        style={{
+          paddingTop: '4px',
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: '8px',
         }}
       >
-        <GraphicEq color='primary' fontSize='small' />
-        <Typography level='title-sm'>Speak your tasks</Typography>
+        <span style={{ color: 'var(--brand)', lineHeight: 0 }}>
+          <GraphicEqIcon size={16} />
+        </span>
+        <span
+          style={{
+            color: 'var(--t-primary)',
+            fontWeight: 700,
+            fontSize: '14px',
+            fontFamily: 'var(--font-ui)',
+          }}
+        >
+          Speak your tasks
+        </span>
         {isNative && (
-          <Chip
-            size='sm'
-            variant='soft'
-            color='success'
-            startDecorator={<Lock sx={{ fontSize: 12 }} />}
-            sx={{ ms: 'auto' }}
+          <span
+            className='badge'
+            style={{
+              marginInlineStart: 'auto',
+              ...chipStyle('success'),
+            }}
           >
+            <FigmaIcon name='lock' size={12} />
             On-device
-          </Chip>
+          </span>
         )}
-      </Box>
+      </div>
 
       {/* ── Permission denied ── */}
       {phase === 'denied' && (
-        <Box sx={{ py: 2 }}>
-          <Box
-            sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}
+        <div style={{ padding: '16px 0' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px',
+              marginBottom: '12px',
+            }}
           >
-            <WarningAmber color='warning' sx={{ mt: 0.25, flexShrink: 0 }} />
-            <Typography level='body-sm'>
+            <span
+              style={{
+                color: 'var(--sig-over)',
+                marginTop: '2px',
+                flexShrink: 0,
+                lineHeight: 0,
+              }}
+            >
+              <FigmaIcon name='error' size={16} />
+            </span>
+            <span
+              style={{
+                color: 'var(--t-muted)',
+                fontSize: '13px',
+                lineHeight: 1.4,
+                fontFamily: 'var(--font-ui)',
+              }}
+            >
               Microphone access is needed for voice capture. Enable it in your
               device settings and try again.
-            </Typography>
-          </Box>
-          <Button
-            size='sm'
-            variant='outlined'
-            color='neutral'
+            </span>
+          </div>
+          <button
+            type='button'
+            className='btn btn-secondary btn-sm'
             onClick={startHandsFree}
           >
             Try Again
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
 
       {/* ── Captured task cards ── */}
       {segments.length > 0 && (
-        <Box
+        <div
           ref={segmentsScrollRef}
-          sx={{
-            pt: 1.25,
+          style={{
+            paddingTop: '10px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 0.75,
+            gap: '6px',
             maxHeight: 300,
             overflowY: 'auto',
           }}
@@ -591,44 +713,57 @@ const VoicePanel = ({
               onPatch={patch => patchSegment(segment.id, patch)}
             />
           ))}
-        </Box>
+        </div>
       )}
 
       {/* ── Live transcript ── */}
       {isListening && (
-        <Box sx={{ pt: 1.25 }}>
-          <Box
-            sx={{
+        <div style={{ paddingTop: '10px' }}>
+          <div
+            style={{
               minHeight: 44,
-              borderRadius: 'md',
-              border: '1px dashed',
-              borderColor: 'neutral.outlinedBorder',
-              px: 1.25,
-              py: 1,
+              borderRadius: 'var(--r-md)',
+              border: '1px dashed var(--line)',
+              padding: '8px 10px',
             }}
           >
             {partialText ? (
-              <Typography level='body-md' sx={{ wordBreak: 'break-word' }}>
+              <span
+                style={{
+                  color: 'var(--t-primary)',
+                  fontSize: '15px',
+                  lineHeight: 1.4,
+                  fontFamily: 'var(--font-ui)',
+                  wordBreak: 'break-word',
+                }}
+              >
                 {renderTranscript(partialText, partialParsed?.highlights || [])}
-              </Typography>
+              </span>
             ) : (
-              <Typography level='body-sm' sx={{ opacity: 0.5 }}>
+              <span
+                style={{
+                  color: 'var(--t-muted)',
+                  opacity: 0.5,
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-ui)',
+                }}
+              >
                 Listening…
-              </Typography>
+              </span>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* ── Mic stage ── */}
       {phase !== 'denied' && (
-        <Box
-          sx={{
+        <div
+          style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            py: 2,
-            gap: 1.25,
+            padding: '16px 0',
+            gap: '10px',
           }}
         >
           <div className='voice-eq' style={{ opacity: isListening ? 1 : 0 }}>
@@ -653,21 +788,36 @@ const VoicePanel = ({
           >
             <span className='voice-pulse-ring' />
             <span className='voice-pulse-ring' />
-            <Mic sx={{ fontSize: 32 }} />
+            <span style={{ lineHeight: 0, position: 'relative', zIndex: 1 }}>
+              <MicIcon size={32} />
+            </span>
           </button>
-          <Typography level='body-xs' sx={{ opacity: 0.7 }}>
+          <span
+            style={{
+              color: 'var(--t-muted)',
+              opacity: 0.7,
+              fontSize: '12px',
+              fontFamily: 'var(--font-ui)',
+            }}
+          >
             {micCaption}
-          </Typography>
-          <Typography
-            level='body-xs'
-            sx={{ opacity: 0.5, px: 2, textAlign: 'center' }}
+          </span>
+          <span
+            style={{
+              color: 'var(--t-muted)',
+              opacity: 0.5,
+              paddingInline: '16px',
+              textAlign: 'center',
+              fontSize: '12px',
+              fontFamily: 'var(--font-ui)',
+            }}
           >
             Pause between tasks &middot; say &ldquo;scratch that&rdquo; to
             remove the last one
-          </Typography>
-        </Box>
+          </span>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 

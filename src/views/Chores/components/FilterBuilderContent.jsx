@@ -1,16 +1,6 @@
-import {
-  CalendarMonth,
-  Check,
-  FolderOpen,
-  Label,
-  Person,
-  PriorityHigh,
-  Stars,
-  TaskAlt,
-} from '@mui/icons-material'
-import { Avatar, Box, Chip, Divider, Input, Typography } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
 
+import FigmaIcon from '../../../components/FigmaIcon'
 import Priorities from '../../../utils/Priorities'
 
 export const DUE_DATE_OPTIONS = [
@@ -101,38 +91,90 @@ export const selectionsToConditions = selections => {
   return conditions
 }
 
-const SectionHeader = ({ children, icon, label }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-    <Box
-      sx={{
-        color: 'text.secondary',
-        display: 'flex',
-        alignItems: 'center',
-        '& svg': { fontSize: 18 },
-      }}
-    >
-      {icon}
-    </Box>
-    <Typography level='title-sm' sx={{ fontWeight: 600 }}>
-      {label}
-    </Typography>
+const CHIP_COLORS = {
+  danger: {
+    solid: 'var(--sig-over)',
+    soft: 'var(--sig-over-bg)',
+    text: 'var(--sig-over)',
+  },
+  neutral: {
+    solid: 'var(--surface-3)',
+    soft: 'var(--surface-2)',
+    text: 'var(--t-muted)',
+  },
+  primary: {
+    solid: 'var(--brand)',
+    soft: 'var(--brand-faint)',
+    text: 'var(--brand)',
+  },
+  warning: {
+    solid: 'var(--sig-due)',
+    soft: 'var(--sig-due-bg)',
+    text: 'var(--sig-due)',
+  },
+}
+
+const chipStyle = (color, selected) => {
+  const tokens = CHIP_COLORS[color] || CHIP_COLORS.primary
+  return {
+    background: selected ? tokens.solid : tokens.soft,
+    border: `1px solid ${selected ? tokens.solid : 'var(--line)'}`,
+    color: selected ? 'var(--brand-contrast)' : tokens.text,
+    cursor: 'pointer',
+    font: '700 12px var(--font-ui)',
+    minHeight: 28,
+    transition: 'all 0.15s ease',
+    userSelect: 'none',
+  }
+}
+
+const FilterChip = ({
+  children,
+  color = 'neutral',
+  endDecorator,
+  isToggle = true,
+  selected = false,
+  startDecorator,
+  style,
+  ...props
+}) => (
+  <button
+    type='button'
+    className='badge'
+    aria-pressed={isToggle ? selected : undefined}
+    style={{ ...chipStyle(color, selected), ...style }}
+    {...props}
+  >
+    {startDecorator}
     {children}
-  </Box>
+    {endDecorator}
+  </button>
+)
+
+const SectionHeader = ({ children, icon, label }) => (
+  <div className='flex items-center gap-2' style={{ marginBottom: 12 }}>
+    <span className='text-muted flex' aria-hidden='true'>
+      {icon}
+    </span>
+    <span className='text-primary' style={{ fontSize: 14, fontWeight: 600 }}>
+      {label}
+    </span>
+    {children}
+  </div>
 )
 
 const IncludeExcludeToggle = ({ labels, onChange, value }) => {
   const { t } = useTranslation('chores')
   const resolvedLabels = labels || [t('filters.include'), t('filters.exclude')]
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, ms: 'auto' }}>
+    <div className='flex gap-1' style={{ marginInlineStart: 'auto' }}>
       {[
         { op: 'is', label: resolvedLabels[0] },
         { op: 'isNot', label: resolvedLabels[1] },
       ].map(o => (
-        <Chip
+        <FilterChip
           key={o.op}
-          size='sm'
-          variant={value === o.op ? 'solid' : 'soft'}
+          selected={value === o.op}
           color={
             value === o.op
               ? o.op === 'isNot'
@@ -141,16 +183,11 @@ const IncludeExcludeToggle = ({ labels, onChange, value }) => {
               : 'neutral'
           }
           onClick={() => onChange(o.op)}
-          sx={{
-            cursor: 'pointer',
-            userSelect: 'none',
-            transition: 'all 0.15s ease',
-          }}
         >
           {o.label}
-        </Chip>
+        </FilterChip>
       ))}
-    </Box>
+    </div>
   )
 }
 
@@ -207,116 +244,146 @@ const FilterBuilderContent = ({
   const chipRow = (type, options, getChipProps) => {
     const selected = selections[type].values || []
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div className='flex flex-wrap gap-2'>
         {options.map(opt => {
           const isSelected = selected.includes(opt.value)
           const extra = getChipProps ? getChipProps(opt, isSelected) : {}
           return (
-            <Chip
+            <FilterChip
               key={opt.value}
-              variant={isSelected ? 'solid' : 'soft'}
+              selected={isSelected}
               color={isSelected ? (extra.color ?? 'primary') : 'neutral'}
               startDecorator={
                 isSelected ? (
-                  <Check sx={{ fontSize: 14 }} />
+                  <FigmaIcon name='check' size={14} />
                 ) : (
                   (extra.startDecorator ?? null)
                 )
               }
               onClick={() => toggleValue(type, opt.value)}
-              sx={{
-                cursor: 'pointer',
-                userSelect: 'none',
-                transition: 'all 0.15s ease',
-              }}
             >
               {resolveLabel(opt)}
-            </Chip>
+            </FilterChip>
           )
         })}
-      </Box>
+      </div>
     )
   }
 
   const personChipRow = type => {
     const selected = selections[type].values || []
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div className='flex flex-wrap gap-2'>
         {members.map(m => {
           const isSelected = selected.includes(m.userId)
+          const name = m.displayName || m.username
           return (
-            <Chip
+            <FilterChip
               key={m.userId}
-              variant={isSelected ? 'solid' : 'soft'}
+              selected={isSelected}
               color={isSelected ? 'primary' : 'neutral'}
               startDecorator={
                 isSelected ? (
-                  <Check sx={{ fontSize: 14 }} />
-                ) : (
-                  <Avatar
+                  <FigmaIcon name='check' size={14} />
+                ) : m.image ? (
+                  <img
+                    className='avatar'
                     src={m.image}
-                    alt={m.displayName}
-                    sx={{ '--Avatar-size': '20px' }}
+                    alt=''
+                    style={{ height: 20, objectFit: 'cover', width: 20 }}
                   />
+                ) : (
+                  <span
+                    className='avatar bg-brand'
+                    aria-hidden='true'
+                    style={{ height: 20, width: 20 }}
+                  >
+                    {name?.slice(0, 1).toUpperCase() || '?'}
+                  </span>
                 )
               }
               onClick={() => toggleValue(type, m.userId)}
-              sx={{
-                cursor: 'pointer',
-                userSelect: 'none',
-                transition: 'all 0.15s ease',
-              }}
             >
-              {m.displayName || m.username}
-            </Chip>
+              {name}
+            </FilterChip>
           )
         })}
-      </Box>
+      </div>
     )
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+    <div className='flex flex-col'>
       {/* Assignee */}
       {members.length > 0 && (
         <>
-          <SectionHeader icon={<Person />} label='Assignee'>
+          <SectionHeader
+            icon={<FigmaIcon name='user' size={18} />}
+            label='Assignee'
+          >
             <IncludeExcludeToggle
               value={selections.assignee.operator}
               onChange={op => setOperator('assignee', op)}
             />
           </SectionHeader>
           {personChipRow('assignee')}
-          <Divider sx={{ my: 2.5 }} />
+          <hr
+            className='border-line'
+            style={{
+              border: 0,
+              borderTop: '1px solid var(--line)',
+              margin: '20px 0',
+            }}
+          />
         </>
       )}
 
       {/* Created By */}
       {members.length > 0 && (
         <>
-          <SectionHeader icon={<Person />} label='Created By'>
+          <SectionHeader
+            icon={<FigmaIcon name='user' size={18} />}
+            label='Created By'
+          >
             <IncludeExcludeToggle
               value={selections.createdBy.operator}
               onChange={op => setOperator('createdBy', op)}
             />
           </SectionHeader>
           {personChipRow('createdBy')}
-          <Divider sx={{ my: 2.5 }} />
+          <hr
+            className='border-line'
+            style={{
+              border: 0,
+              borderTop: '1px solid var(--line)',
+              margin: '20px 0',
+            }}
+          />
         </>
       )}
 
       {/* Status */}
-      <SectionHeader icon={<TaskAlt />} label='Status'>
+      <SectionHeader icon={<FigmaIcon name='tasks' size={18} />} label='Status'>
         <IncludeExcludeToggle
           value={selections.status.operator}
           onChange={op => setOperator('status', op)}
         />
       </SectionHeader>
       {chipRow('status', CHORE_STATUSES)}
-      <Divider sx={{ my: 2.5 }} />
+      <hr
+        className='border-line'
+        style={{
+          border: 0,
+          borderTop: '1px solid var(--line)',
+          margin: '20px 0',
+        }}
+      />
 
       {/* Priority */}
-      <SectionHeader icon={<PriorityHigh />} label='Priority'>
+      <SectionHeader
+        icon={<FigmaIcon name='flag' size={18} />}
+        label='Priority'
+      >
         <IncludeExcludeToggle
           value={selections.priority.operator}
           onChange={op => setOperator('priority', op)}
@@ -329,96 +396,118 @@ const FilterBuilderContent = ({
           color: isSelected
             ? Priorities.find(p => p.value === opt.value)?.color || 'primary'
             : 'neutral',
-          startDecorator: !isSelected
-            ? Priorities.find(p => p.value === opt.value)?.icon
-            : null,
+          startDecorator: !isSelected ? (
+            <FigmaIcon name='flag' size={14} />
+          ) : null,
         }),
       )}
-      <Divider sx={{ my: 2.5 }} />
+      <hr
+        className='border-line'
+        style={{
+          border: 0,
+          borderTop: '1px solid var(--line)',
+          margin: '20px 0',
+        }}
+      />
 
       {/* Due Date */}
-      <SectionHeader icon={<CalendarMonth />} label='Due Date' />
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <SectionHeader
+        icon={<FigmaIcon name='calendar' size={18} />}
+        label='Due Date'
+      />
+      <div className='flex flex-wrap gap-2'>
         {DUE_DATE_OPTIONS.map(opt => {
           const isSelected = selections.dueDate.operator === opt.value
           return (
-            <Chip
+            <FilterChip
               key={opt.value}
-              variant={isSelected ? 'solid' : 'soft'}
+              selected={isSelected}
               color={isSelected ? (opt.color ?? 'primary') : 'neutral'}
               startDecorator={
-                isSelected ? <Check sx={{ fontSize: 14 }} /> : null
+                isSelected ? <FigmaIcon name='check' size={14} /> : null
               }
               onClick={() => toggleDueDate(opt.value)}
-              sx={{
-                cursor: 'pointer',
-                userSelect: 'none',
-                transition: 'all 0.15s ease',
-              }}
             >
-              {opt.label}
-            </Chip>
+              {resolveLabel(opt)}
+            </FilterChip>
           )
         })}
-      </Box>
-      <Divider sx={{ my: 2.5 }} />
+      </div>
+      <hr
+        className='border-line'
+        style={{
+          border: 0,
+          borderTop: '1px solid var(--line)',
+          margin: '20px 0',
+        }}
+      />
 
       {/* Labels */}
       {labels.length > 0 && (
         <>
-          <SectionHeader icon={<Label />} label='Labels'>
+          <SectionHeader
+            icon={<FigmaIcon name='tag' size={18} />}
+            label='Labels'
+          >
             <IncludeExcludeToggle
               value={selections.label.operator}
               onChange={op => setOperator('label', op)}
               labels={['Has', "Doesn't Have"]}
             />
           </SectionHeader>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className='flex flex-wrap gap-2'>
             {labels.map(lbl => {
               const isSelected = selections.label.values.includes(lbl.id)
               return (
-                <Chip
+                <FilterChip
                   key={lbl.id}
-                  variant={isSelected ? 'solid' : 'soft'}
+                  selected={isSelected}
                   color='neutral'
                   startDecorator={
-                    <Box
-                      sx={{
-                        width: 10,
-                        height: 10,
+                    <span
+                      aria-hidden='true'
+                      style={{
+                        background: lbl.color || '#90a4ae',
                         borderRadius: '50%',
-                        bgcolor: lbl.color || '#90a4ae',
                         flexShrink: 0,
+                        height: 10,
+                        width: 10,
                       }}
                     />
                   }
                   endDecorator={
-                    isSelected ? <Check sx={{ fontSize: 12 }} /> : null
+                    isSelected ? <FigmaIcon name='check' size={12} /> : null
                   }
                   onClick={() => toggleValue('label', lbl.id)}
-                  sx={{
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    transition: 'all 0.15s ease',
-                    ...(isSelected && {
-                      outline: '2px solid',
-                      outlineColor: 'primary.400',
-                    }),
-                  }}
+                  style={
+                    isSelected
+                      ? { outline: '2px solid var(--brand)' }
+                      : undefined
+                  }
                 >
                   {lbl.name}
-                </Chip>
+                </FilterChip>
               )
             })}
-          </Box>
-          <Divider sx={{ my: 2.5 }} />
+          </div>
+          <hr
+            className='border-line'
+            style={{
+              border: 0,
+              borderTop: '1px solid var(--line)',
+              margin: '20px 0',
+            }}
+          />
         </>
       )}
 
       {/* Projects */}
       {projects.length > 0 && (
         <>
-          <SectionHeader icon={<FolderOpen />} label='Projects'>
+          <SectionHeader
+            icon={<FigmaIcon name='projects' size={18} />}
+            label='Projects'
+          >
             <IncludeExcludeToggle
               value={selections.project.operator}
               onChange={op => setOperator('project', op)}
@@ -430,24 +519,29 @@ const FilterBuilderContent = ({
               .filter(p => p.id !== 'default')
               .map(p => ({ value: p.id, label: p.name })),
           ])}
-          <Divider sx={{ my: 2.5 }} />
+          <hr
+            className='border-line'
+            style={{
+              border: 0,
+              borderTop: '1px solid var(--line)',
+              margin: '20px 0',
+            }}
+          />
         </>
       )}
 
       {/* Points */}
-      <SectionHeader icon={<Stars />} label='Points' />
-      <Box
-        sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
-      >
+      <SectionHeader
+        icon={<FigmaIcon name='star' size={18} />}
+        label='Points'
+      />
+      <div className='flex flex-wrap items-center gap-2'>
         {POINTS_OPERATORS.map(op => (
-          <Chip
+          <FilterChip
             key={op.value}
-            size='sm'
-            variant={
+            selected={
               selections.points.operator === op.value &&
               selections.points.active
-                ? 'solid'
-                : 'soft'
             }
             color={
               selections.points.operator === op.value &&
@@ -456,42 +550,36 @@ const FilterBuilderContent = ({
                 : 'neutral'
             }
             onClick={() => setPointsOperator(op.value)}
-            sx={{
-              cursor: 'pointer',
-              userSelect: 'none',
-              fontFamily: 'monospace',
-              fontWeight: 600,
-            }}
+            style={{ fontFamily: 'var(--font-mono)' }}
           >
             {op.label}
-          </Chip>
+          </FilterChip>
         ))}
-        <Input
+        <input
           type='number'
-          size='sm'
+          className='input'
           value={selections.points.value}
           onChange={e => setPointsValue(parseInt(e.target.value) || 0)}
-          sx={{ width: 80 }}
-          slotProps={{ input: { min: 0 } }}
+          min={0}
+          aria-label={t('filters.points')}
+          style={{ width: 80 }}
         />
         {selections.points.active && (
-          <Chip
-            size='sm'
-            variant='soft'
+          <FilterChip
             color='danger'
+            isToggle={false}
             onClick={() =>
               onSelectionsChange(prev => ({
                 ...prev,
                 points: { ...prev.points, active: false, value: 0 },
               }))
             }
-            sx={{ cursor: 'pointer' }}
           >
             {t('filters.clear')}
-          </Chip>
+          </FilterChip>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 

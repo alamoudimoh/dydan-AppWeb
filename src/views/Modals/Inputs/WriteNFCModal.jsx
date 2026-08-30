@@ -1,15 +1,9 @@
 import { Capacitor } from '@capacitor/core'
-import {
-  CheckCircle,
-  ContentCopy,
-  ErrorOutline,
-  Nfc,
-} from '@mui/icons-material'
-import { Box, IconButton, Input, Switch, Typography } from '@mui/joy'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../../components/common/ModalActions'
+import FigmaIcon from '../../../components/FigmaIcon'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
 import { startNativeNFCWrite } from '../../../service/NFCWriter'
 
@@ -24,85 +18,113 @@ const pulseKeyframes = `
     70% { transform: scale(2.1); opacity: 0; }
     100% { transform: scale(2.1); opacity: 0; }
   }
+  @media (prefers-reduced-motion: reduce) {
+    [data-nfc-pulse] { animation: none !important; }
+  }
 `
+
+function NFCGlyph({ size = 40, style }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      style={style}
+      aria-hidden='true'
+    >
+      <path d='M5 4v16M9 4v16M15 4v16M19 4v16M12 6v12' />
+    </svg>
+  )
+}
 
 function NFCIcon({ status }) {
   const isWaiting = status === 'waiting_for_tag'
   const isSuccess = status === 'success'
   const isError = status === 'error'
+  const statusBackground = isSuccess
+    ? 'var(--sig-done-bg)'
+    : isError
+      ? 'var(--sig-over-bg)'
+      : isWaiting
+        ? 'var(--brand-faint)'
+        : 'var(--surface-2)'
+  const statusColor = isSuccess
+    ? 'var(--sig-done)'
+    : isError
+      ? 'var(--sig-over)'
+      : isWaiting
+        ? 'var(--brand)'
+        : 'var(--t-muted)'
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         width: 96,
         height: 96,
-        mx: 'auto',
-        mb: 3,
+        margin: '0 auto 24px',
       }}
     >
       {isWaiting && (
         <>
-          <Box
-            sx={{
+          <span
+            aria-hidden='true'
+            data-nfc-pulse
+            style={{
               position: 'absolute',
               inset: 0,
               borderRadius: '50%',
-              border: '2px solid',
-              borderColor: 'primary.400',
+              border: '2px solid var(--brand)',
               animation: 'nfc-pulse 1.8s ease-out infinite',
-              '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           />
-          <Box
-            sx={{
+          <span
+            aria-hidden='true'
+            data-nfc-pulse
+            style={{
               position: 'absolute',
               inset: 0,
               borderRadius: '50%',
-              border: '2px solid',
-              borderColor: 'primary.300',
+              border: '2px solid var(--accent)',
               animation: 'nfc-pulse-2 1.8s ease-out infinite 0.4s',
-              '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
             }}
           />
         </>
       )}
-      <Box
-        sx={{
+      <div
+        style={{
           width: 80,
           height: 80,
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: isSuccess
-            ? 'success.softBg'
-            : isError
-              ? 'danger.softBg'
-              : isWaiting
-                ? 'primary.softBg'
-                : 'neutral.100',
+          background: statusBackground,
           transition: 'background-color 0.25s ease',
         }}
       >
         {isSuccess ? (
-          <CheckCircle sx={{ fontSize: 40, color: 'success.500' }} />
+          <FigmaIcon name='check' size={40} style={{ color: statusColor }} />
         ) : isError ? (
-          <ErrorOutline sx={{ fontSize: 40, color: 'danger.500' }} />
+          <FigmaIcon name='error' size={40} style={{ color: statusColor }} />
         ) : (
-          <Nfc
-            sx={{
-              fontSize: 40,
-              color: isWaiting ? 'primary.500' : 'neutral.500',
+          <NFCGlyph
+            size={40}
+            style={{
+              color: statusColor,
               transition: 'color 0.25s ease',
             }}
           />
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 
@@ -229,94 +251,124 @@ function WriteNFCModal({ config }) {
                 label: nfcStatus === 'writing' ? 'Starting…' : 'Write tag',
                 onClick: writeToNFC,
                 disabled: nfcStatus === 'writing',
-                startDecorator: <Nfc />,
+                startDecorator: <NFCGlyph size={18} />,
               }}
             />
           )
         }
       >
-        <Box sx={{ px: 0.5, pb: 1 }}>
+        <div style={{ padding: '0 4px 8px' }}>
           {/* Icon */}
           <NFCIcon status={nfcStatus} />
 
           {/* Idle / Error: URL + toggle + CTA */}
           {!isWaiting && !isSuccess && (
             <>
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  level='body-xs'
-                  sx={{
-                    mb: 0.75,
+              <div style={{ marginBottom: 16 }}>
+                <label
+                  htmlFor='nfc-tag-url'
+                  style={{
+                    display: 'block',
+                    marginBottom: 6,
+                    fontSize: 12,
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
-                    color: 'text.tertiary',
+                    color: 'var(--t-muted)',
                   }}
                 >
                   Tag URL
-                </Typography>
-                <Input
-                  value={getURL()}
-                  readOnly
-                  size='sm'
-                  sx={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.75rem',
-                    '--Input-focusedHighlight': 'transparent',
-                    bgcolor: 'neutral.50',
-                  }}
-                  endDecorator={
-                    <IconButton
-                      aria-label='Copy tag URL'
-                      size='sm'
-                      variant='plain'
-                      color={copied ? 'success' : 'neutral'}
-                      onClick={handleCopy}
-                      title='Copy URL'
-                    >
-                      <ContentCopy sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  }
-                />
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id='nfc-tag-url'
+                    className='input'
+                    value={getURL()}
+                    readOnly
+                    style={{
+                      paddingRight: 40,
+                      background: 'var(--surface-2)',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 12,
+                    }}
+                  />
+                  <button
+                    type='button'
+                    className='btn btn-ghost btn-icon'
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 4,
+                      width: 28,
+                      minHeight: 28,
+                      height: 28,
+                      padding: 6,
+                      transform: 'translateY(-50%)',
+                      color: copied ? 'var(--sig-done)' : 'var(--t-muted)',
+                    }}
+                    aria-label='Copy tag URL'
+                    onClick={handleCopy}
+                    title='Copy URL'
+                  >
+                    <FigmaIcon name='copy' size={16} />
+                  </button>
+                </div>
                 {copied && (
-                  <Typography
-                    level='body-xs'
-                    sx={{ color: 'success.500', mt: 0.5, textAlign: 'right' }}
+                  <p
+                    role='status'
+                    style={{
+                      margin: '4px 0 0',
+                      color: 'var(--sig-done)',
+                      fontSize: 12,
+                      textAlign: 'right',
+                    }}
                   >
                     Copied!
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
 
-              <Box
-                sx={{
+              <div
+                style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  py: 1.5,
-                  px: 2,
-                  borderRadius: 'md',
-                  bgcolor: 'neutral.50',
-                  mb: 3,
+                  padding: '12px 16px',
+                  borderRadius: 'var(--r-md)',
+                  background: 'var(--surface-2)',
+                  marginBottom: 24,
                 }}
               >
-                <Box>
-                  <Typography level='body-sm' fontWeight={500}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>
                     Auto-complete on scan
-                  </Typography>
-                  <Typography level='body-xs' sx={{ color: 'text.tertiary' }}>
+                  </div>
+                  <p
+                    style={{
+                      margin: '4px 0 0',
+                      color: 'var(--t-muted)',
+                      fontSize: 12,
+                    }}
+                  >
                     Mark task done when tag is tapped
-                  </Typography>
-                </Box>
-                <Switch
-                  checked={isAutoCompleteWhenScan}
-                  onChange={e => setIsAutoCompleteWhenScan(e.target.checked)}
-                  size='sm'
-                />
-              </Box>
+                  </p>
+                </div>
+                <button
+                  type='button'
+                  className={`figma-settings-toggle ${isAutoCompleteWhenScan ? 'on' : ''}`}
+                  role='switch'
+                  aria-checked={isAutoCompleteWhenScan}
+                  aria-label='Auto-complete on scan'
+                  onClick={() =>
+                    setIsAutoCompleteWhenScan(!isAutoCompleteWhenScan)
+                  }
+                >
+                  <span />
+                </button>
+              </div>
             </>
           )}
-        </Box>
+        </div>
       </ResponsiveModal>
     </>
   )

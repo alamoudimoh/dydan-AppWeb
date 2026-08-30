@@ -1,5 +1,3 @@
-import { Box } from '@mui/joy'
-
 import CustomFilterChips from './CustomFilterChips'
 
 const FilterSection = ({
@@ -15,7 +13,7 @@ const FilterSection = ({
     <>
       {/* Custom Filter Chips */}
       {savedFilters.length > 0 && (
-        <Box sx={{ mt: 1 }}>
+        <div style={{ marginTop: '0.25rem' }}>
           <CustomFilterChips
             filters={savedFilters}
             activeFilterId={activeFilterId}
@@ -24,7 +22,7 @@ const FilterSection = ({
             onFilterPin={onFilterPin}
             onFilterEdit={onFilterEdit}
           />
-        </Box>
+        </div>
       )}
 
       {/* Active Custom Filter Display */}

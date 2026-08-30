@@ -1,4 +1,3 @@
-import { Input } from '@mui/joy'
 import { useState } from 'react'
 
 import ModalActions from '../../../components/common/ModalActions'
@@ -28,8 +27,9 @@ function DateModal({ current, isOpen, onClose, onSave, title }) {
         />
       }
     >
-      <Input
+      <input
         autoFocus
+        className='input'
         type='date'
         value={date}
         onChange={event => setDate(event.target.value)}

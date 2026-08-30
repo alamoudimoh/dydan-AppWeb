@@ -1,4 +1,23 @@
+/* eslint-disable tailwindcss/no-custom-classname -- Quill requires ql-* format classes. */
+import './RichTextEditor.css'
+
 import imageCompression from 'browser-image-compression'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+} from 'react'
+
+import FigmaIcon from '../../components/FigmaIcon'
+import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
+import { useUserProfile } from '../../queries/UserQueries'
+import { useNotification } from '../../service/NotificationProvider'
+import { apiClient } from '../../utils/ApiClient'
+import { isPlusAccount, resolvePhotoURL } from '../../utils/Helpers'
+import { patchDescriptionHtml } from '../../utils/ImageCache'
 
 // Quill (and quilljs-markdown) are loaded on demand: the rich editor is only
 // needed when an editable description is actually rendered, so keeping it out
@@ -48,22 +67,6 @@ const loadQuillModules = () => {
   }
   return quillModulesPromise
 }
-import './RichTextEditor.css'
-
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from 'react'
-
-import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
-import { useUserProfile } from '../../queries/UserQueries'
-import { useNotification } from '../../service/NotificationProvider'
-import { apiClient } from '../../utils/ApiClient'
-import { isPlusAccount, resolvePhotoURL } from '../../utils/Helpers'
-import { patchDescriptionHtml } from '../../utils/ImageCache'
 
 const RichTextEditor = forwardRef(
   (
@@ -84,8 +87,10 @@ const RichTextEditor = forwardRef(
     // Display-only HTML with expired image srcs swapped for cached/re-signed ones
     const displayHtml = useDescriptionHtml(value)
     const quillRef = useRef(null)
+    const toolbarRef = useRef(null)
     const editorRef = useRef(null)
     const initialContentSet = useRef(false)
+    const headingSelectId = useId()
 
     // Expose focus method to parent components
     useImperativeHandle(
@@ -234,14 +239,7 @@ const RichTextEditor = forwardRef(
             theme: variant === 'bubble' ? 'bubble' : 'snow',
             modules: {
               toolbar: {
-                container: [
-                  [{ header: [1, 2, 3, 4, false] }],
-                  ['bold', 'italic', 'underline', 'strike'],
-                  ['blockquote', 'code-block'],
-                  [{ list: 'ordered' }, { list: 'bullet' }],
-                  ['link', 'image'],
-                  ['clean'],
-                ],
+                container: toolbarRef.current,
                 handlers: {
                   image: handleImageUpload,
                 },
@@ -265,7 +263,15 @@ const RichTextEditor = forwardRef(
       if (editorRef.current) {
         editorRef.current.enable(isEditable)
       }
-    }, [onChange, value, isEditable, variant, handleImageUpload, userProfile]) // Added handleImageUpload and userProfile to dependency array
+    }, [
+      onChange,
+      value,
+      isEditable,
+      variant,
+      handleImageUpload,
+      userProfile,
+      placeholder,
+    ]) // Added handleImageUpload and userProfile to dependency array
 
     useEffect(() => {
       if (editorRef.current && isEditable) {
@@ -296,13 +302,11 @@ const RichTextEditor = forwardRef(
             //     '1px solid var(--joy-palette-neutral-outlinedBorder, #DDE7EE)',
             borderRadius: 8,
             padding: 16,
-            background: 'var(--joy-palette-background-surface, #fff)',
-            color: 'var(--joy-palette-text-primary, #1A2027)',
-            fontFamily:
-              'var(--joy-fontFamily-body, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif)',
+            background: 'var(--surface)',
+            color: 'var(--t-primary)',
+            fontFamily: 'var(--font-ui)',
             fontSize: 16,
-            boxShadow:
-              'var(--joy-shadow-xs, 0px 1px 2px 0px rgba(16, 24, 40, 0.05))',
+            boxShadow: 'var(--shadow-xs)',
           }}
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />
@@ -310,12 +314,146 @@ const RichTextEditor = forwardRef(
     }
 
     return (
-      <div className={`quill-root quill-variant-${variant}`}>
+      <div
+        className={`quill-root quill-variant-${variant}`}
+        style={{ background: 'var(--surface-2)' }}
+      >
+        <div
+          ref={toolbarRef}
+          className='ql-toolbar ql-snow'
+          role='toolbar'
+          aria-label='Text formatting'
+        >
+          <span className='ql-formats'>
+            <label className='sr-only' htmlFor={headingSelectId}>
+              Heading level
+            </label>
+            <select
+              id={headingSelectId}
+              className='ql-header'
+              defaultValue=''
+              aria-label='Heading level'
+            >
+              <option value='1'>Heading 1</option>
+              <option value='2'>Heading 2</option>
+              <option value='3'>Heading 3</option>
+              <option value='4'>Heading 4</option>
+              <option value=''>Normal text</option>
+            </select>
+          </span>
+          <span className='ql-formats'>
+            <button
+              type='button'
+              className='ql-bold'
+              aria-label='Bold'
+              title='Bold'
+            >
+              <strong aria-hidden='true'>B</strong>
+            </button>
+            <button
+              type='button'
+              className='ql-italic'
+              aria-label='Italic'
+              title='Italic'
+            >
+              <em aria-hidden='true'>I</em>
+            </button>
+            <button
+              type='button'
+              className='ql-underline'
+              aria-label='Underline'
+              title='Underline'
+            >
+              <span aria-hidden='true' style={{ textDecoration: 'underline' }}>
+                U
+              </span>
+            </button>
+            <button
+              type='button'
+              className='ql-strike'
+              aria-label='Strikethrough'
+              title='Strikethrough'
+            >
+              <span
+                aria-hidden='true'
+                style={{ textDecoration: 'line-through' }}
+              >
+                S
+              </span>
+            </button>
+          </span>
+          <span className='ql-formats'>
+            <button
+              type='button'
+              className='ql-blockquote'
+              aria-label='Block quote'
+              title='Block quote'
+            >
+              <span aria-hidden='true'>&quot;</span>
+            </button>
+            <button
+              type='button'
+              className='ql-code-block'
+              aria-label='Code block'
+              title='Code block'
+            >
+              <span aria-hidden='true'>&lt;/&gt;</span>
+            </button>
+          </span>
+          <span className='ql-formats'>
+            <button
+              type='button'
+              className='ql-list'
+              value='ordered'
+              aria-label='Numbered list'
+              title='Numbered list'
+            >
+              <span aria-hidden='true'>1.</span>
+            </button>
+            <button
+              type='button'
+              className='ql-list'
+              value='bullet'
+              aria-label='Bulleted list'
+              title='Bulleted list'
+            >
+              <span aria-hidden='true'>*</span>
+            </button>
+          </span>
+          <span className='ql-formats'>
+            <button
+              type='button'
+              className='ql-link'
+              aria-label='Insert link'
+              title='Insert link'
+            >
+              <FigmaIcon name='copy' size={16} />
+            </button>
+            <button
+              type='button'
+              className='ql-image'
+              aria-label='Add image'
+              title='Add image'
+            >
+              <FigmaIcon name='plus' size={16} />
+            </button>
+          </span>
+          <span className='ql-formats'>
+            <button
+              type='button'
+              className='ql-clean'
+              aria-label='Clear formatting'
+              title='Clear formatting'
+            >
+              <span aria-hidden='true'>Tx</span>
+            </button>
+          </span>
+        </div>
         <div
           ref={quillRef}
           style={{
             minHeight: 120,
-            background: 'var(--joy-palette-background-surface, #fff)',
+            background: 'var(--surface)',
           }}
         />
       </div>

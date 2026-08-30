@@ -1,23 +1,11 @@
-import { Add, Check, FolderOpen, Settings } from '@mui/icons-material'
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  ListItemContent,
-  ListItemDecorator,
-  Menu,
-  MenuItem,
-  Typography,
-} from '@mui/joy'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
+import FigmaIcon from '../../components/FigmaIcon'
 import LABEL_COLORS, {
   getTextColorFromBackgroundColor,
 } from '../../utils/Colors'
-import { getIconComponent } from '../../utils/ProjectIcons'
 import ProjectModal from '../Modals/Inputs/ProjectModal'
 import { useProjects } from '../Projects/ProjectQueries'
 
@@ -179,53 +167,36 @@ const ProjectSelector = ({
 
   return (
     <>
-      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-        <Button
+      <div
+        className='figma-project-selector'
+        style={{ position: 'relative', display: 'inline-flex' }}
+      >
+        <button
           ref={buttonRef}
           onClick={handleMenuOpen}
-          variant='outlined'
-          color='neutral'
-          size='sm'
-          sx={{
+          className='figma-icon-button figma-project-selector__trigger'
+          type='button'
+          style={{
             height: 24,
+            width: 24,
             borderRadius: 24,
-            minWidth: 'auto',
-            maxWidth: '200px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
             backgroundColor: currentProject?.color || LABEL_COLORS[0].value,
+            border: '1px solid var(--figma-color-border, transparent)',
+            color: getTextColorFromBackgroundColor(
+              currentProject?.color || LABEL_COLORS[0].value,
+            ),
+            alignItems: 'center',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            justifyContent: 'center',
+            padding: 0,
           }}
           title={`Current project: ${effectiveSelectedProject} (Ctrl+E)`}
+          aria-haspopup='menu'
+          aria-expanded={Boolean(anchorEl)}
         >
-          {(() => {
-            const IconComponent = getIconComponent(
-              currentProject?.icon || 'FolderOpen',
-            )
-            return (
-              // <Avatar
-              //   size='sm'
-              //   sx={{
-              //     width: 24,
-              //     height: 24,
-              //     backgroundColor: project.color || LABEL_COLORS[0].value,
-              //     display: 'flex',
-              //     alignItems: 'center',
-              //     justifyContent: 'center',
-              //   }}
-              // >
-              <IconComponent
-                sx={{
-                  fontSize: 16,
-                  color: getTextColorFromBackgroundColor(
-                    currentProject?.color || LABEL_COLORS[0].value,
-                  ),
-                }}
-              />
-              // </Avatar>
-            )
-          })()}
-        </Button>
+          <FigmaIcon icon={currentProject?.icon || 'FolderOpen'} size={16} />
+        </button>
         <KeyboardShortcutHint
           shortcut='E'
           show={showKeyboardShortcuts}
@@ -236,300 +207,320 @@ const ProjectSelector = ({
             zIndex: 1000,
           }}
         />
-      </Box>
 
-      <Menu
-        ref={menuRef}
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        placement='bottom-start'
-        sx={{
-          minWidth: 280,
-          p: 1,
-          '--List-gap': '4px',
-          boxShadow: 'var(--joy-shadow-lg)',
-          border: '1px solid var(--joy-palette-divider)',
-          borderRadius: 'var(--joy-radius-md)',
-        }}
-      >
-        <MenuItem
-          disabled
-          sx={{
-            borderRadius: 'var(--joy-radius-sm)',
-            cursor: 'default',
-            opacity: 1,
-          }}
-        >
-          <ListItemDecorator sx={{ color: 'var(--joy-palette-primary-500)' }}>
-            <FolderOpen />
-          </ListItemDecorator>
-          <ListItemContent>
-            <Typography level='title-sm' sx={{ fontWeight: 600 }}>
-              Projects
-            </Typography>
-          </ListItemContent>
-        </MenuItem>
-
-        <Divider sx={{ my: 1 }} />
-
-        <MenuItem
-          key={'default-project'}
-          onClick={() =>
-            handleProjectSelect({
-              id: 'default',
-              name: 'Default Project',
-              color: LABEL_COLORS[0].value,
-              icon: 'FolderOpen',
-            })
-          }
-          onMouseEnter={() => setIsKeyboardNavigating(false)}
-          sx={{
-            borderRadius: 'var(--joy-radius-sm)',
-            backgroundColor:
-              effectiveSelectedProject === 'Default Project'
-                ? 'var(--joy-palette-primary-softBg)'
-                : selectedIndex === 0 && anchorEl && isKeyboardNavigating
-                  ? 'var(--joy-palette-neutral-softHoverBg)'
-                  : 'transparent',
-            '&:hover': {
-              backgroundColor:
-                effectiveSelectedProject === 'Default Project'
-                  ? 'var(--joy-palette-primary-softBg)'
-                  : 'var(--joy-palette-neutral-softHoverBg)',
-            },
-            position: 'relative',
-          }}
-        >
-          <ListItemDecorator>
-            <Avatar
-              size='sm'
-              sx={{
-                width: 24,
-                height: 24,
-                backgroundColor: LABEL_COLORS[0].value,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <FolderOpen
-                sx={{
-                  fontSize: 14,
-                  color: getTextColorFromBackgroundColor(LABEL_COLORS[0].value),
-                }}
-              />
-            </Avatar>
-          </ListItemDecorator>
-          <ListItemContent>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Typography
-                level='body-sm'
-                sx={{
-                  fontWeight:
-                    effectiveSelectedProject === 'Default Project' ? 600 : 400,
-                  color:
-                    effectiveSelectedProject === 'Default Project'
-                      ? 'var(--joy-palette-primary-600)'
-                      : 'var(--joy-palette-text-primary)',
-                }}
-              >
-                Default Project
-              </Typography>
-              {effectiveSelectedProject === 'Default Project' && (
-                <Check
-                  sx={{
-                    fontSize: '16px',
-                    color: 'var(--joy-palette-primary-500)',
-                  }}
-                />
-              )}
-            </Box>
-            <Typography
-              level='body-xs'
-              sx={{ color: 'var(--joy-palette-text-tertiary)' }}
-            >
-              Built-in project workspace
-            </Typography>
-          </ListItemContent>
-        </MenuItem>
-        {defaultProjects.map((project, index) => (
-          <MenuItem
-            key={project.id}
-            onClick={() => handleProjectSelect(project)}
-            onMouseEnter={() => setIsKeyboardNavigating(false)}
-            sx={{
-              borderRadius: 'var(--joy-radius-sm)',
-              backgroundColor:
-                effectiveSelectedProject === project.name
-                  ? 'var(--joy-palette-primary-softBg)'
-                  : selectedIndex === index + 1 &&
-                      anchorEl &&
-                      isKeyboardNavigating
-                    ? 'var(--joy-palette-neutral-softHoverBg)'
-                    : 'transparent',
-              '&:hover': {
-                backgroundColor:
-                  effectiveSelectedProject === project.name
-                    ? 'var(--joy-palette-primary-softBg)'
-                    : 'var(--joy-palette-neutral-softHoverBg)',
-              },
-              position: 'relative',
+        {anchorEl && (
+          <div
+            ref={menuRef}
+            className='figma-dropdown-menu figma-project-selector__menu'
+            role='menu'
+            style={{
+              backgroundColor: 'var(--figma-color-bg, #fff)',
+              border: '1px solid var(--figma-color-border, #e5e5e5)',
+              borderRadius: 'var(--figma-radius-md, 8px)',
+              boxShadow: 'var(--figma-shadow-lg, 0 8px 24px rgb(0 0 0 / 16%))',
+              left: 0,
+              minWidth: 280,
+              padding: 4,
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              zIndex: 1000,
             }}
           >
-            <ListItemDecorator>
-              <Avatar
-                size='sm'
-                sx={{
-                  width: 24,
+            <div
+              className='figma-menu-header'
+              style={{
+                alignItems: 'center',
+                color: 'var(--figma-color-text, #1e1e1e)',
+                display: 'flex',
+                fontSize: 13,
+                fontWeight: 600,
+                gap: 8,
+                padding: '8px 10px',
+              }}
+            >
+              <FigmaIcon icon='FolderOpen' size={16} />
+              Projects
+            </div>
+
+            <div
+              className='figma-menu-divider'
+              role='separator'
+              style={{
+                backgroundColor: 'var(--figma-color-border, #e5e5e5)',
+                height: 1,
+                margin: '4px 0',
+              }}
+            />
+
+            <button
+              className='figma-menu-item figma-project-selector__menu-item'
+              type='button'
+              onClick={() =>
+                handleProjectSelect({
+                  id: 'default',
+                  name: 'Default Project',
+                  color: LABEL_COLORS[0].value,
+                  icon: 'FolderOpen',
+                })
+              }
+              onMouseEnter={() => setIsKeyboardNavigating(false)}
+              style={{
+                alignItems: 'center',
+                backgroundColor:
+                  effectiveSelectedProject === 'Default Project'
+                    ? 'var(--figma-color-bg-selected, #e5f0ff)'
+                    : selectedIndex === 0 && anchorEl && isKeyboardNavigating
+                      ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                      : 'transparent',
+                border: 0,
+                borderRadius: 'var(--figma-radius-sm, 4px)',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: 8,
+                padding: '8px 10px',
+                textAlign: 'left',
+                width: '100%',
+              }}
+            >
+              <span
+                className='figma-project-selector__avatar'
+                style={{
+                  alignItems: 'center',
+                  backgroundColor: LABEL_COLORS[0].value,
+                  borderRadius: 4,
+                  color: getTextColorFromBackgroundColor(LABEL_COLORS[0].value),
+                  display: 'flex',
+                  flex: '0 0 24px',
                   height: 24,
-                  backgroundColor: project.color || LABEL_COLORS[0].value,
-                  display: 'flex',
-                  alignItems: 'center',
                   justifyContent: 'center',
+                  width: 24,
                 }}
               >
-                {(() => {
-                  const IconComponent = getIconComponent(
-                    project.icon || 'FolderOpen',
-                  )
-                  return (
-                    <IconComponent
-                      sx={{
-                        fontSize: 14,
-                        color: getTextColorFromBackgroundColor(
-                          project.color || LABEL_COLORS[0].value,
-                        ),
-                      }}
-                    />
-                  )
-                })()}
-              </Avatar>
-            </ListItemDecorator>
-            <ListItemContent>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography
-                  level='body-sm'
-                  sx={{
-                    fontWeight:
-                      effectiveSelectedProject === project.name ? 600 : 400,
+                <FigmaIcon icon='FolderOpen' size={14} />
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span
+                  style={{
+                    alignItems: 'center',
                     color:
-                      effectiveSelectedProject === project.name
-                        ? 'var(--joy-palette-primary-600)'
-                        : 'var(--joy-palette-text-primary)',
+                      effectiveSelectedProject === 'Default Project'
+                        ? 'var(--figma-color-text-brand, #0d99ff)'
+                        : 'var(--figma-color-text, #1e1e1e)',
+                    display: 'flex',
+                    fontSize: 13,
+                    fontWeight:
+                      effectiveSelectedProject === 'Default Project'
+                        ? 600
+                        : 400,
+                    justifyContent: 'space-between',
                   }}
                 >
-                  {project.name}
-                </Typography>
-                {effectiveSelectedProject === project.name && (
-                  <Check
-                    sx={{
-                      fontSize: '16px',
-                      color: 'var(--joy-palette-primary-500)',
-                    }}
-                  />
-                )}
-              </Box>
-              {project.id === 'default' && (
-                <Typography
-                  level='body-xs'
-                  sx={{ color: 'var(--joy-palette-text-tertiary)' }}
+                  Default Project
+                  {effectiveSelectedProject === 'Default Project' && (
+                    <FigmaIcon icon='Check' size={16} />
+                  )}
+                </span>
+                <span
+                  style={{
+                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    display: 'block',
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
                 >
                   Built-in project workspace
-                </Typography>
-              )}
-            </ListItemContent>
-          </MenuItem>
-        ))}
+                </span>
+              </span>
+            </button>
+            {defaultProjects.map((project, index) => (
+              <button
+                key={project.id}
+                className='figma-menu-item figma-project-selector__menu-item'
+                type='button'
+                onClick={() => handleProjectSelect(project)}
+                onMouseEnter={() => setIsKeyboardNavigating(false)}
+                style={{
+                  alignItems: 'center',
+                  backgroundColor:
+                    effectiveSelectedProject === project.name
+                      ? 'var(--figma-color-bg-selected, #e5f0ff)'
+                      : selectedIndex === index + 1 &&
+                          anchorEl &&
+                          isKeyboardNavigating
+                        ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                        : 'transparent',
+                  border: 0,
+                  borderRadius: 'var(--figma-radius-sm, 4px)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  gap: 8,
+                  padding: '8px 10px',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
+              >
+                <span
+                  className='figma-project-selector__avatar'
+                  style={{
+                    alignItems: 'center',
+                    backgroundColor: project.color || LABEL_COLORS[0].value,
+                    borderRadius: 4,
+                    color: getTextColorFromBackgroundColor(
+                      project.color || LABEL_COLORS[0].value,
+                    ),
+                    display: 'flex',
+                    flex: '0 0 24px',
+                    height: 24,
+                    justifyContent: 'center',
+                    width: 24,
+                  }}
+                >
+                  <FigmaIcon icon={project.icon || 'FolderOpen'} size={14} />
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      alignItems: 'center',
+                      color:
+                        effectiveSelectedProject === project.name
+                          ? 'var(--figma-color-text-brand, #0d99ff)'
+                          : 'var(--figma-color-text, #1e1e1e)',
+                      display: 'flex',
+                      fontSize: 13,
+                      fontWeight:
+                        effectiveSelectedProject === project.name ? 600 : 400,
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    {project.name}
+                    {effectiveSelectedProject === project.name && (
+                      <FigmaIcon icon='Check' size={16} />
+                    )}
+                  </span>
+                  {project.id === 'default' && (
+                    <span
+                      style={{
+                        color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                        display: 'block',
+                        fontSize: 11,
+                        marginTop: 2,
+                      }}
+                    >
+                      Built-in project workspace
+                    </span>
+                  )}
+                </span>
+              </button>
+            ))}
 
-        <Divider sx={{ my: 1 }} />
+            <div
+              className='figma-menu-divider'
+              role='separator'
+              style={{
+                backgroundColor: 'var(--figma-color-border, #e5e5e5)',
+                height: 1,
+                margin: '4px 0',
+              }}
+            />
 
-        <MenuItem
-          onClick={handleAddProjectClick}
-          onMouseEnter={() => setIsKeyboardNavigating(false)}
-          sx={{
-            borderRadius: 'var(--joy-radius-sm)',
-            backgroundColor:
-              selectedIndex === defaultProjects.length + 1 &&
-              anchorEl &&
-              isKeyboardNavigating
-                ? 'var(--joy-palette-success-softHoverBg)'
-                : 'transparent',
-            '&:hover': {
-              backgroundColor: 'var(--joy-palette-success-softHoverBg)',
-            },
-          }}
-        >
-          <ListItemDecorator sx={{ color: 'var(--joy-palette-success-500)' }}>
-            <Add />
-          </ListItemDecorator>
-          <ListItemContent>
-            <Typography
-              level='body-sm'
-              sx={{
-                fontWeight: 500,
+            <button
+              className='figma-menu-item figma-project-selector__menu-item'
+              type='button'
+              onClick={handleAddProjectClick}
+              onMouseEnter={() => setIsKeyboardNavigating(false)}
+              style={{
+                alignItems: 'center',
+                backgroundColor:
+                  selectedIndex === defaultProjects.length + 1 &&
+                  anchorEl &&
+                  isKeyboardNavigating
+                    ? 'var(--figma-color-bg-success, #e5f7ed)'
+                    : 'transparent',
+                border: 0,
+                borderRadius: 'var(--figma-radius-sm, 4px)',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: 8,
+                padding: '8px 10px',
+                textAlign: 'left',
+                width: '100%',
               }}
             >
-              Create New Project
-            </Typography>
-            <Typography
-              level='body-xs'
-              sx={{ color: 'var(--joy-palette-text-tertiary)' }}
-            >
-              Add a custom project workspace
-            </Typography>
-          </ListItemContent>
-        </MenuItem>
+              <FigmaIcon icon='Add' size={16} />
+              <span>
+                <span
+                  style={{
+                    color: 'var(--figma-color-text, #1e1e1e)',
+                    display: 'block',
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                >
+                  Create New Project
+                </span>
+                <span
+                  style={{
+                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    display: 'block',
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  Add a custom project workspace
+                </span>
+              </span>
+            </button>
 
-        <MenuItem
-          onClick={handleManageProjects}
-          onMouseEnter={() => setIsKeyboardNavigating(false)}
-          sx={{
-            borderRadius: 'var(--joy-radius-sm)',
-            backgroundColor:
-              selectedIndex === defaultProjects.length + 2 &&
-              anchorEl &&
-              isKeyboardNavigating
-                ? 'var(--joy-palette-neutral-softHoverBg)'
-                : 'transparent',
-            '&:hover': {
-              backgroundColor: 'var(--joy-palette-neutral-softHoverBg)',
-            },
-          }}
-        >
-          <ListItemDecorator sx={{ color: 'var(--joy-palette-neutral-500)' }}>
-            <Settings />
-          </ListItemDecorator>
-          <ListItemContent>
-            <Typography
-              level='body-sm'
-              sx={{
-                fontWeight: 500,
+            <button
+              className='figma-menu-item figma-project-selector__menu-item'
+              type='button'
+              onClick={handleManageProjects}
+              onMouseEnter={() => setIsKeyboardNavigating(false)}
+              style={{
+                alignItems: 'center',
+                backgroundColor:
+                  selectedIndex === defaultProjects.length + 2 &&
+                  anchorEl &&
+                  isKeyboardNavigating
+                    ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                    : 'transparent',
+                border: 0,
+                borderRadius: 'var(--figma-radius-sm, 4px)',
+                cursor: 'pointer',
+                display: 'flex',
+                gap: 8,
+                padding: '8px 10px',
+                textAlign: 'left',
+                width: '100%',
               }}
             >
-              Manage Projects
-            </Typography>
-            <Typography
-              level='body-xs'
-              sx={{ color: 'var(--joy-palette-text-tertiary)' }}
-            >
-              View, edit, and organize all projects
-            </Typography>
-          </ListItemContent>
-        </MenuItem>
-      </Menu>
+              <FigmaIcon icon='Settings' size={16} />
+              <span>
+                <span
+                  style={{
+                    color: 'var(--figma-color-text, #1e1e1e)',
+                    display: 'block',
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                >
+                  Manage Projects
+                </span>
+                <span
+                  style={{
+                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    display: 'block',
+                    fontSize: 11,
+                    marginTop: 2,
+                  }}
+                >
+                  View, edit, and organize all projects
+                </span>
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
 
       <ProjectModal
         isOpen={isProjectModalOpen}

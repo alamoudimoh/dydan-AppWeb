@@ -1,5 +1,3 @@
-import { Box, Button, CircularProgress, Container } from '@mui/joy'
-import { Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -35,45 +33,38 @@ const LoadingComponent = () => {
   }, [])
 
   return (
-    <Container className='flex h-full items-center justify-center'>
-      <Box
-        className='flex flex-col items-center justify-center'
-        sx={{
-          minHeight: '80vh',
+    <div className='loading-splash'>
+      <div className='loading-ring' role='status' aria-live='polite'>
+        <Logo size='96px' />
+      </div>
+      <div
+        className='text-primary'
+        style={{ fontSize: 24, fontWeight: 700, marginTop: 14 }}
+      >
+        {message}
+      </div>
+      <div
+        className='text-muted'
+        style={{
+          fontSize: 14,
+          lineHeight: 1.5,
+          maxWidth: '34ch',
+          textAlign: 'center',
         }}
       >
-        <CircularProgress
-          color='success'
-          determinate={!isOnline}
-          sx={{ '--CircularProgress-size': '200px' }}
-        >
-          <Logo />
-        </CircularProgress>
-        <Box
-          className='flex items-center gap-2'
-          sx={{
-            fontWeight: 700,
-            fontSize: 24,
-            mt: 2,
-          }}
-        >
-          {message}
-        </Box>
-        <Typography level='h2' fontWeight={500} textAlign={'center'}>
-          {subMessage}
-        </Typography>
-        <Button
-          variant='outlined'
-          color='primary'
-          sx={{ mt: 4 }}
-          onClick={() => {
-            window.location.href = '/' // navigate back to the home page
-          }}
-        >
-          Navigate Back
-        </Button>
-      </Box>
-    </Container>
+        {subMessage}
+      </div>
+      <button
+        className='btn btn-secondary'
+        style={{ marginTop: 24 }}
+        onClick={() => {
+          window.location.href = '/' // navigate back to the home page
+        }}
+        type='button'
+      >
+        Navigate Back
+      </button>
+    </div>
   )
 }
 

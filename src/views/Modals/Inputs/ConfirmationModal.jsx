@@ -1,4 +1,3 @@
-import { Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -95,9 +94,7 @@ function ConfirmationModal({ config }) {
         />
       }
     >
-      <Typography level='body-md' sx={{ whiteSpace: 'pre-wrap' }}>
-        {config?.message}
-      </Typography>
+      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{config?.message}</p>
     </ResponsiveModal>
   )
 }

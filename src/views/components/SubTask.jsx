@@ -11,26 +11,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import {
-  ChevronRight,
-  Delete,
-  DragIndicator,
-  ExpandMore,
-  KeyboardReturn,
-} from '@mui/icons-material'
-import {
-  Box,
-  Checkbox,
-  Chip,
-  IconButton,
-  Input,
-  List,
-  ListItem,
-  Typography,
-} from '@mui/joy'
 import { useCallback, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -72,8 +56,14 @@ function SortableItem({
   task,
 }) {
   const { fmt } = useLocalization()
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: task.id })
+  const {
+    attributes,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: task.id })
 
   const expanded = expandedIds.has(task.id)
   const childTasks = allTasks
@@ -92,50 +82,71 @@ function SortableItem({
 
   return (
     <>
-      <ListItem ref={setNodeRef} style={style} {...attributes}>
+      <div
+        ref={setNodeRef}
+        className={`task-row ${task.completedAt ? 'done' : ''}`}
+        role='listitem'
+        style={style}
+      >
         {editMode && (
-          <IconButton
+          <button
+            ref={setActivatorNodeRef}
+            type='button'
+            className='btn btn-ghost btn-icon'
+            {...attributes}
             {...listeners}
-            size='sm'
             data-drag-handle='true'
             aria-label='Drag to reorder'
-            sx={{ touchAction: 'none', cursor: 'grab' }}
+            style={{ cursor: 'grab', touchAction: 'none' }}
           >
-            <DragIndicator />
-          </IconButton>
+            <FigmaIcon name='bars' size={18} />
+          </button>
         )}
 
         {hasChildren ? (
-          <IconButton
-            size='sm'
-            variant='plain'
-            color='neutral'
+          <button
+            type='button'
+            className='btn btn-ghost btn-icon'
             aria-label={expanded ? 'Collapse subtasks' : 'Expand subtasks'}
+            aria-expanded={expanded}
             onClick={() => onToggleExpand(task.id)}
           >
-            {expanded ? <ExpandMore /> : <ChevronRight className='rtl-flip' />}
-          </IconButton>
+            <FigmaIcon
+              name={expanded ? 'chevron_down' : 'chevron_right'}
+              size={18}
+              className={expanded ? '' : 'rtl-flip'}
+            />
+          </button>
         ) : level > 0 ? (
-          <Box sx={{ width: 28 }} />
+          <span aria-hidden='true' style={{ flex: '0 0 36px' }} />
         ) : null}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+        <div style={{ alignItems: 'center', display: 'flex', flex: 1, gap: 8 }}>
           {!editMode && (
-            <Checkbox
-              checked={!!task.completedAt}
-              onChange={() => handleToggle(task.id)}
-            />
+            <button
+              type='button'
+              aria-checked={!!task.completedAt}
+              aria-label={
+                task.completedAt
+                  ? 'Mark subtask incomplete'
+                  : 'Mark subtask complete'
+              }
+              className={`task-check ${task.completedAt ? 'checked' : ''}`}
+              onClick={() => handleToggle(task.id)}
+              role='checkbox'
+            >
+              {task.completedAt && (
+                <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
+              )}
+            </button>
           )}
 
           {editMode ? (
-            <Input
-              slotProps={{
-                input: {
-                  ref: el => {
-                    inputRefs.current[task.id] = el
-                  },
-                },
+            <input
+              ref={el => {
+                inputRefs.current[task.id] = el
               }}
+              className='input'
               value={task.name}
               placeholder='Task name...'
               onChange={e =>
@@ -146,60 +157,70 @@ function SortableItem({
                 )
               }
               onKeyDown={e => onKeyDown(e, task)}
-              sx={{
-                flex: 1,
+              style={{
+                background: 'transparent',
                 border: 'none',
-                backgroundColor: 'transparent',
                 boxShadow: 'none',
-                '--Input-focusedHighlight': 'var(--joy-palette-primary-300)',
-                '&:not(:focus-within)': {
-                  boxShadow: 'none',
-                  backgroundColor: 'transparent',
-                },
+                flex: 1,
+                minWidth: 0,
               }}
             />
           ) : (
-            <Box
-              sx={{
+            <button
+              type='button'
+              className='btn btn-ghost'
+              style={{
+                alignItems: 'flex-start',
                 flex: 1,
-                minHeight: 50,
-                display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                cursor: 'pointer',
+                minHeight: 50,
+                minWidth: 0,
+                padding: 0,
+                textAlign: 'start',
+                whiteSpace: 'normal',
               }}
               onClick={() => handleToggle(task.id)}
             >
-              <Typography
-                sx={{
+              <span
+                className='task-title'
+                style={{
+                  color: 'var(--t-primary)',
                   textDecoration: task.completedAt ? 'line-through' : 'none',
                 }}
               >
                 {task.name}
-              </Typography>
+              </span>
               {task.completedAt && (
-                <Typography sx={{ color: 'text.secondary', fontSize: 'sm' }}>
+                <span
+                  className='text-muted'
+                  style={{
+                    alignItems: 'center',
+                    display: 'flex',
+                    fontSize: 12,
+                    gap: 6,
+                  }}
+                >
                   {fmt.dateTime(task.completedAt)}
                   {performers?.find(p => p.userId === task.completedBy) && (
-                    <Chip>
+                    <span className='badge'>
                       {
                         performers.find(p => p.userId === task.completedBy)
                           .displayName
                       }
-                    </Chip>
+                    </span>
                   )}
-                </Typography>
+                </span>
               )}
-            </Box>
+            </button>
           )}
-        </Box>
+        </div>
 
         {editMode && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton
-              variant='soft'
-              color='danger'
-              size='sm'
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type='button'
+              className='btn btn-danger btn-icon btn-sm'
               aria-label='Delete subtask'
               title='Delete (Shift+Backspace)'
               onClick={() =>
@@ -213,14 +234,14 @@ function SortableItem({
                 )
               }
             >
-              <Delete />
-            </IconButton>
-          </Box>
+              <FigmaIcon name='trash' size={16} />
+            </button>
+          </div>
         )}
-      </ListItem>
+      </div>
 
       {hasChildren && expanded && (
-        <Box>
+        <div role='group'>
           {childTasks.map(childTask => (
             <SortableItem
               key={childTask.id}
@@ -237,7 +258,7 @@ function SortableItem({
               performers={performers}
             />
           ))}
-        </Box>
+        </div>
       )}
     </>
   )
@@ -646,11 +667,12 @@ const SubTasks = ({
       sensors={sensors}
     >
       <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-        <List
-          sx={{
-            padding: 0,
+        <div
+          role='list'
+          style={{
             maxHeight: 'inherit',
             overflow: 'visible',
+            padding: 0,
             WebkitOverflowScrolling: 'touch',
           }}
         >
@@ -674,12 +696,16 @@ const SubTasks = ({
             ))}
 
           {editMode && tasks.length === 0 && (
-            <ListItem sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Input
+            <div
+              role='listitem'
+              style={{ alignItems: 'center', display: 'flex', gap: 8 }}
+            >
+              <input
                 autoFocus={shouldFocus}
+                className='input'
                 placeholder='Add new task... (Enter to add)'
                 value={newTask}
-                slotProps={{ input: { ref: addInputRef } }}
+                ref={addInputRef}
                 onChange={e => setNewTask(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
@@ -687,14 +713,19 @@ const SubTasks = ({
                     handleAdd()
                   }
                 }}
-                sx={{ flex: 1 }}
+                style={{ flex: 1 }}
               />
-              <IconButton onClick={handleAdd} aria-label='Add subtask'>
-                <KeyboardReturn />
-              </IconButton>
-            </ListItem>
+              <button
+                type='button'
+                className='btn btn-primary btn-icon'
+                onClick={handleAdd}
+                aria-label='Add subtask'
+              >
+                <FigmaIcon name='plus' size={18} />
+              </button>
+            </div>
           )}
-        </List>
+        </div>
       </SortableContext>
     </DndContext>
   )

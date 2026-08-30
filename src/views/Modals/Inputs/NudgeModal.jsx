@@ -1,12 +1,3 @@
-import {
-  Alert,
-  Box,
-  FormControl,
-  FormLabel,
-  Switch,
-  Textarea,
-  Typography,
-} from '@mui/joy'
 import { useCallback, useEffect, useState } from 'react'
 
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
@@ -131,8 +122,17 @@ function NudgeModal({ config }) {
       }
     >
       {!isOfficialInstance && (
-        <Alert color='warning' sx={{ mb: 2 }}>
-          <Typography level='body-sm'>
+        <div
+          role='alert'
+          className='card'
+          style={{
+            marginBottom: 16,
+            background: 'var(--sig-due-bg)',
+            borderColor: 'var(--sig-due)',
+            color: 'var(--sig-due)',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 14 }}>
             <strong>Heads up!</strong>This feature is available on DayDan Cloud!
             Since you&apos;re using a self-hosted instance, nudges will requires
             you to setup Google cloud account and Firebase Cloud Messaging
@@ -140,34 +140,64 @@ function NudgeModal({ config }) {
             <br />
             Will update if we come up with a solution to make this easier for to
             configure. for selfhosters
-          </Typography>
-        </Alert>
+          </p>
+        </div>
       )}
 
-      <FormControl mb={2}>
-        <FormLabel>Custom Message (optional)</FormLabel>
-        <Textarea
+      <div style={{ marginBottom: 16 }}>
+        <label
+          htmlFor='nudge-message'
+          style={{
+            display: 'block',
+            marginBottom: 6,
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          Custom Message (optional)
+        </label>
+        <textarea
+          id='nudge-message'
+          className='input'
           placeholder='Add a personal message with your nudge...'
           value={message}
           onChange={e => setMessage(e.target.value)}
-          minRows={3}
-          maxRows={5}
+          rows={3}
+          style={{ resize: 'vertical' }}
         />
-      </FormControl>
+      </div>
 
-      <FormControl orientation='horizontal' sx={{ mb: 3 }}>
-        <Box sx={{ flex: 1 }}>
-          <FormLabel>Notify All Assignees</FormLabel>
-          <Typography level='body-sm' color='text.secondary'>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          marginBottom: 24,
+        }}
+      >
+        <div>
+          <label
+            htmlFor='nudge-notify-all'
+            style={{ display: 'block', fontWeight: 600 }}
+          >
+            Notify All Assignees
+          </label>
+          <p
+            style={{ margin: '4px 0 0', color: 'var(--t-muted)', fontSize: 14 }}
+          >
             If enabled, all members who can see this task will be notified.
             Otherwise, only the assigned person will receive the nudge.
-          </Typography>
-        </Box>
-        <Switch
+          </p>
+        </div>
+        <input
+          id='nudge-notify-all'
+          type='checkbox'
           checked={notifyAllAssignees}
           onChange={e => setNotifyAllAssignees(e.target.checked)}
+          style={{ accentColor: 'var(--brand)', blockSize: 18, inlineSize: 18 }}
         />
-      </FormControl>
+      </div>
     </ResponsiveModal>
   )
 }

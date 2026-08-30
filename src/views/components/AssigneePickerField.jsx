@@ -1,5 +1,4 @@
-import { Person } from '@mui/icons-material'
-
+import FigmaIcon from '../../components/FigmaIcon'
 import BaseOptionPicker from './BaseOptionPicker'
 
 const ANYONE = 'anyone'
@@ -55,8 +54,8 @@ const AssigneePickerField = ({
       emptyLabel='Assignee'
       getItemValue={item => item.userId}
       getItemLabel={item => item.displayName}
-      renderTriggerIcon={() => <Person sx={{ fontSize: '20px' }} />}
-      renderItemStart={() => <Person sx={{ fontSize: '18px' }} />}
+      renderTriggerIcon={() => <FigmaIcon name='user' size={20} />}
+      renderItemStart={() => <FigmaIcon name='user' size={18} />}
       getTriggerText={({ isEmpty, selectedItems }) => {
         if (isEmpty) return 'Assignee'
         if (selectedItems.length === 1) return selectedItems[0].displayName

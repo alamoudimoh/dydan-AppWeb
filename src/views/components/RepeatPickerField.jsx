@@ -1,21 +1,8 @@
-import { Close, Repeat } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Divider,
-  IconButton,
-  Input,
-  List,
-  ListItem,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/joy'
 import moment from 'moment'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 import ModalActions from '../../components/common/ModalActions'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 import { getRecurrentChipText } from '../../utils/ChoreCardHelpers'
 
@@ -79,7 +66,7 @@ const initLocalState = value => {
 
   let { frequency, frequencyMetadata, frequencyType } = value
 
-  // Normalize parser output: interval/1/days → daily, etc.
+  // Normalize parser output: interval/1/days -> daily, etc.
   if (frequencyType === 'interval' && frequency === 1) {
     const unitTypeMap = {
       days: 'daily',
@@ -103,28 +90,101 @@ const initLocalState = value => {
 const getDisplayType = frequencyType =>
   REPEAT_ON_TYPE.includes(frequencyType) ? 'custom' : frequencyType
 
-// Shared section label
+const sectionLabelStyle = {
+  color: 'var(--t-muted)',
+  font: '600 11px/1.2 var(--font-ui)',
+  letterSpacing: '0.05em',
+  margin: '0 0 6px',
+  textTransform: 'uppercase',
+}
+
+const optionListStyle = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 8,
+}
+
+const inputStyle = {
+  background: 'var(--surface)',
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--r-sm)',
+  color: 'var(--t-primary)',
+  font: '14px var(--font-ui)',
+  minHeight: 32,
+  padding: '4px 8px',
+}
+
 const SectionLabel = ({ children }) => (
-  <Typography
-    level='body-xs'
-    sx={{
-      color: 'text.tertiary',
-      mb: 0.75,
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-    }}
-  >
-    {children}
-  </Typography>
+  <p style={sectionLabelStyle}>{children}</p>
 )
 
-// Shared time-of-day picker
+const ChoiceCheckbox = ({ checked, label, onChange }) => (
+  <label
+    style={{
+      alignItems: 'center',
+      background: checked ? 'var(--surface-2)' : 'var(--surface)',
+      border: `1px solid ${checked ? 'var(--brand)' : 'var(--line)'}`,
+      borderRadius: 'var(--r-full)',
+      color: 'var(--t-primary)',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      font: '500 13px var(--font-ui)',
+      gap: 6,
+      minHeight: 32,
+      padding: '4px 10px',
+    }}
+  >
+    <input
+      type='checkbox'
+      checked={checked}
+      onChange={onChange}
+      style={{ accentColor: 'var(--brand)', margin: 0 }}
+    />
+    {label}
+  </label>
+)
+
+const SegmentedRadio = ({ checked, label, name, onChange, value }) => (
+  <label
+    style={{
+      alignItems: 'center',
+      background: checked ? 'var(--surface)' : 'transparent',
+      borderRadius: 'var(--r-sm)',
+      boxShadow: checked ? 'var(--shadow-sm)' : 'none',
+      color: 'var(--t-primary)',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      font: '500 13px var(--font-ui)',
+      gap: 6,
+      minHeight: 30,
+      padding: '2px 10px',
+    }}
+  >
+    <input
+      type='radio'
+      name={name}
+      value={value}
+      checked={checked}
+      onChange={onChange}
+      style={{ accentColor: 'var(--brand)', margin: 0 }}
+    />
+    {label}
+  </label>
+)
+
 const TimeRow = ({ metadata, onUpdate }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2 }}>
+  <div
+    style={{
+      alignItems: 'center',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 12,
+      marginTop: 16,
+    }}
+  >
     <SectionLabel>Time of day</SectionLabel>
-    <Input
+    <input
       type='time'
-      size='sm'
       value={moment(metadata?.time).format('HH:mm')}
       onChange={e =>
         onUpdate({
@@ -135,67 +195,62 @@ const TimeRow = ({ metadata, onUpdate }) => (
           ).format(),
         })
       }
-      sx={{ width: 120 }}
+      style={{ ...inputStyle, width: 120 }}
     />
-  </Box>
+  </div>
 )
 
-const pillListSx = {
-  '--List-gap': '8px',
-  '--ListItem-radius': '20px',
-}
-
-// Interval section
 const IntervalSection = ({
   frequency,
   frequencyMetadata,
   onFrequencyMetadataUpdate,
   onFrequencyUpdate,
 }) => (
-  <Box>
+  <div>
     <SectionLabel>Repeat every</SectionLabel>
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
+    <div
+      style={{
+        alignItems: 'center',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 8,
+      }}
     >
-      <Input
+      <input
         type='number'
-        size='sm'
+        min={1}
+        max={999}
         value={frequency}
         onChange={e =>
           onFrequencyUpdate(Math.max(1, parseInt(e.target.value, 10) || 1))
         }
-        sx={{ width: 72 }}
-        slotProps={{ input: { min: 1, max: 999 } }}
+        style={{ ...inputStyle, width: 72 }}
       />
-      <List orientation='horizontal' wrap sx={pillListSx}>
+      <div style={optionListStyle}>
         {['days', 'weeks', 'months', 'years'].map(unit => (
-          <ListItem key={unit}>
-            <Checkbox
-              checked={frequencyMetadata?.unit === unit}
-              onClick={() =>
-                onFrequencyMetadataUpdate({ ...frequencyMetadata, unit })
-              }
-              overlay
-              disableIcon
-              variant='soft'
-              label={unit.charAt(0).toUpperCase() + unit.slice(1)}
-            />
-          </ListItem>
+          <ChoiceCheckbox
+            key={unit}
+            checked={frequencyMetadata?.unit === unit}
+            onChange={() =>
+              onFrequencyMetadataUpdate({ ...frequencyMetadata, unit })
+            }
+            label={unit.charAt(0).toUpperCase() + unit.slice(1)}
+          />
         ))}
-      </List>
-    </Box>
+      </div>
+    </div>
     <TimeRow
       metadata={frequencyMetadata}
       onUpdate={onFrequencyMetadataUpdate}
     />
-  </Box>
+  </div>
 )
 
-// Days of week section
 const DaysOfWeekSection = ({
   frequencyMetadata,
   onFrequencyMetadataUpdate,
 }) => {
+  const patternId = useId()
   const selectedDays = frequencyMetadata?.days || []
   const weekPattern = frequencyMetadata?.weekPattern || 'every_week'
   const selectedOccurrences = frequencyMetadata?.occurrences || []
@@ -215,102 +270,79 @@ const DaysOfWeekSection = ({
   }
 
   return (
-    <Box>
+    <div>
       <SectionLabel>Days</SectionLabel>
-      <List orientation='horizontal' wrap sx={pillListSx}>
+      <div style={optionListStyle}>
         {DAYS.map(day => (
-          <ListItem key={day}>
-            <Checkbox
-              checked={selectedDays.includes(day)}
-              onClick={() => toggleDay(day)}
-              overlay
-              disableIcon
-              variant='soft'
-              label={day.charAt(0).toUpperCase() + day.slice(1, 3)}
-            />
-          </ListItem>
+          <ChoiceCheckbox
+            key={day}
+            checked={selectedDays.includes(day)}
+            onChange={() => toggleDay(day)}
+            label={day.charAt(0).toUpperCase() + day.slice(1, 3)}
+          />
         ))}
-      </List>
+      </div>
 
-      <Box sx={{ mt: 2 }}>
+      <div style={{ marginTop: 16 }}>
         <SectionLabel>Pattern</SectionLabel>
-        <RadioGroup
-          orientation='horizontal'
-          value={weekPattern}
-          onChange={e =>
-            onFrequencyMetadataUpdate({
-              ...frequencyMetadata,
-              weekPattern: e.target.value,
-              occurrences:
-                e.target.value === 'every_week' ? [] : selectedOccurrences,
-            })
-          }
-          sx={{
-            padding: '3px',
-            borderRadius: '10px',
-            bgcolor: 'neutral.softBg',
-            '--RadioGroup-gap': '3px',
-            '--Radio-actionRadius': '7px',
+        <div
+          role='radiogroup'
+          aria-label='Repeat pattern'
+          style={{
+            background: 'var(--surface-2)',
+            borderRadius: 'var(--r-md)',
             display: 'inline-flex',
+            gap: 3,
+            padding: 3,
           }}
         >
           {[
             { value: 'every_week', label: 'Every week' },
             { value: 'week_of_month', label: 'Specific weeks' },
-          ].map(opt => (
-            <Radio
-              key={opt.value}
-              value={opt.value}
-              color='neutral'
-              disableIcon
-              label={opt.label}
-              variant='plain'
-              sx={{ px: 1.5, py: 0.5 }}
-              slotProps={{
-                action: ({ checked }) => ({
-                  sx: checked
-                    ? {
-                        bgcolor: 'background.surface',
-                        boxShadow: 'sm',
-                        '&:hover': { bgcolor: 'background.surface' },
-                      }
-                    : {},
-                }),
-              }}
+          ].map(option => (
+            <SegmentedRadio
+              key={option.value}
+              name={patternId}
+              value={option.value}
+              checked={weekPattern === option.value}
+              label={option.label}
+              onChange={e =>
+                onFrequencyMetadataUpdate({
+                  ...frequencyMetadata,
+                  weekPattern: e.target.value,
+                  occurrences:
+                    e.target.value === 'every_week' ? [] : selectedOccurrences,
+                })
+              }
             />
           ))}
-        </RadioGroup>
-      </Box>
+        </div>
+      </div>
 
       {weekPattern === 'week_of_month' && (
-        <Box sx={{ mt: 1.5 }}>
+        <div style={{ marginTop: 12 }}>
           <SectionLabel>Occurrences</SectionLabel>
-          <List orientation='horizontal' wrap sx={pillListSx}>
-            {OCCURRENCE_OPTIONS.map(opt => (
-              <ListItem key={opt.value}>
-                <Checkbox
-                  checked={selectedOccurrences.includes(opt.value)}
-                  onClick={() => toggleOccurrence(opt.value)}
-                  overlay
-                  disableIcon
-                  variant='soft'
-                  label={opt.label}
-                />
-              </ListItem>
+          <div style={optionListStyle}>
+            {OCCURRENCE_OPTIONS.map(option => (
+              <ChoiceCheckbox
+                key={option.value}
+                checked={selectedOccurrences.includes(option.value)}
+                onChange={() => toggleOccurrence(option.value)}
+                label={option.label}
+              />
             ))}
-          </List>
-        </Box>
+          </div>
+        </div>
       )}
 
       <TimeRow
         metadata={frequencyMetadata}
         onUpdate={onFrequencyMetadataUpdate}
       />
-    </Box>
+    </div>
   )
 }
 
-// Day of month section
 const DayOfMonthSection = ({
   frequency,
   frequencyMetadata,
@@ -327,46 +359,50 @@ const DayOfMonthSection = ({
   }
 
   return (
-    <Box>
+    <div>
       <SectionLabel>Months</SectionLabel>
-      <List orientation='horizontal' wrap sx={pillListSx}>
+      <div style={optionListStyle}>
         {MONTHS.map(month => (
-          <ListItem key={month}>
-            <Checkbox
-              checked={selectedMonths.includes(month)}
-              onClick={() => toggleMonth(month)}
-              overlay
-              disableIcon
-              variant='soft'
-              label={month.charAt(0).toUpperCase() + month.slice(1, 3)}
-            />
-          </ListItem>
+          <ChoiceCheckbox
+            key={month}
+            checked={selectedMonths.includes(month)}
+            onChange={() => toggleMonth(month)}
+            label={month.charAt(0).toUpperCase() + month.slice(1, 3)}
+          />
         ))}
-      </List>
+      </div>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2 }}>
+      <div
+        style={{
+          alignItems: 'center',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          marginTop: 16,
+        }}
+      >
         <SectionLabel>Day of month</SectionLabel>
-        <Input
+        <input
           type='number'
-          size='sm'
+          min={1}
+          max={31}
           value={frequency}
           onChange={e => {
-            const v = Math.min(
+            const nextValue = Math.min(
               31,
               Math.max(1, parseInt(e.target.value, 10) || 1),
             )
-            onFrequencyUpdate(v)
+            onFrequencyUpdate(nextValue)
           }}
-          sx={{ width: 72 }}
-          slotProps={{ input: { min: 1, max: 31 } }}
+          style={{ ...inputStyle, width: 72 }}
         />
-      </Box>
+      </div>
 
       <TimeRow
         metadata={frequencyMetadata}
         onUpdate={onFrequencyMetadataUpdate}
       />
-    </Box>
+    </div>
   )
 }
 
@@ -382,6 +418,7 @@ const RepeatPickerField = ({
   const [localFrequency, setLocalFrequency] = useState(1)
   const [localFrequencyMetadata, setLocalFrequencyMetadata] =
     useState(defaultMetadata)
+  const scheduleTypeId = useId()
   const { ResponsiveModal } = useResponsiveModal()
 
   useEffect(() => {
@@ -437,64 +474,81 @@ const RepeatPickerField = ({
 
   return (
     <>
-      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <Button
-          size={size}
-          variant={hasRepeat ? 'soft' : 'outlined'}
-          color='neutral'
+      <div
+        style={{ alignItems: 'center', display: 'flex', position: 'relative' }}
+      >
+        <button
+          aria-expanded={isOpen}
+          aria-haspopup='dialog'
+          aria-label={
+            hasRepeat ? `Repeat: ${displayLabel}` : 'Set repeat schedule'
+          }
+          className='btn btn-secondary'
+          data-size={size}
           onClick={() => setIsOpen(true)}
-          sx={{
-            minHeight: 40,
-            borderRadius: '128px',
-            minWidth: 'min-content',
-            px: shouldShowLabel ? 1.25 : 0.75,
-            gap: shouldShowLabel ? 1 : 0,
+          style={{
+            alignItems: 'center',
+            background: hasRepeat ? 'var(--surface-2)' : 'var(--surface)',
+            border: `1px solid ${hasRepeat ? 'transparent' : 'var(--line)'}`,
+            borderRadius: 'var(--r-full)',
+            color: 'var(--t-primary)',
+            display: 'inline-flex',
+            fontSize: size === 'lg' ? 15 : size === 'sm' ? 12 : 14,
+            gap: shouldShowLabel ? 8 : 0,
             justifyContent: 'flex-start',
-            whiteSpace: 'nowrap',
+            minHeight: 40,
+            minWidth: 'min-content',
+            padding: shouldShowLabel ? '8px 10px' : '8px 6px',
             transition: 'all 0.25s ease-in-out',
+            whiteSpace: 'nowrap',
           }}
+          type='button'
         >
-          <Repeat sx={{ fontSize: '20px' }} />
-          <Typography
-            level='body-sm'
-            sx={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+          <FigmaIcon name='repeat' size={20} />
+          <span
+            aria-hidden='true'
+            style={{
               maxWidth: shouldShowLabel ? 220 : 0,
               opacity: shouldShowLabel ? 1 : 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
               transition:
                 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
+              whiteSpace: 'nowrap',
             }}
           >
             {displayLabel}
-          </Typography>
-        </Button>
+          </span>
+        </button>
 
         {hasRepeat && onClear && (
-          <IconButton
+          <button
             aria-label='Clear repeat schedule'
-            size='sm'
-            variant='soft'
-            color='danger'
+            className='btn btn-danger'
             onClick={e => {
               e.stopPropagation()
               onClear?.()
             }}
-            sx={{
-              position: 'absolute',
-              top: -18,
-              right: -18,
-              zIndex: 10,
+            style={{
+              alignItems: 'center',
               borderRadius: '50%',
-              '&:hover': { bgcolor: 'danger.softBg' },
+              display: 'inline-flex',
+              height: 30,
+              justifyContent: 'center',
+              padding: 6,
+              position: 'absolute',
+              right: -18,
+              top: -18,
+              width: 30,
+              zIndex: 10,
             }}
+            type='button'
           >
-            <Close sx={{ fontSize: '18px' }} />
-          </IconButton>
+            <FigmaIcon name='x' size={18} />
+          </button>
         )}
-      </Box>
+      </div>
 
       <ResponsiveModal
         open={isOpen}
@@ -519,77 +573,64 @@ const RepeatPickerField = ({
           />
         }
       >
-        {/* Frequency type selector */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <Box>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
             <SectionLabel>Frequency</SectionLabel>
-            <List orientation='horizontal' wrap sx={pillListSx}>
+            <div style={optionListStyle}>
               {FREQUENCY_TYPES.map(type => (
-                <ListItem key={type}>
-                  <Checkbox
-                    checked={displayType === type}
-                    onClick={() => handleTypeSelect(type)}
-                    overlay
-                    disableIcon
-                    variant='soft'
-                    label={type.charAt(0).toUpperCase() + type.slice(1)}
-                  />
-                </ListItem>
+                <ChoiceCheckbox
+                  key={type}
+                  checked={displayType === type}
+                  onChange={() => handleTypeSelect(type)}
+                  label={type.charAt(0).toUpperCase() + type.slice(1)}
+                />
               ))}
-            </List>
-          </Box>
+            </div>
+          </div>
 
-          {/* Custom sub-type + detail panel */}
           {displayType === 'custom' && (
             <>
-              <Box>
+              <div>
                 <SectionLabel>Schedule type</SectionLabel>
-                <RadioGroup
-                  orientation='horizontal'
-                  value={localFrequencyType}
-                  onChange={e => handleSubTypeSelect(e.target.value)}
-                  sx={{
-                    padding: '3px',
-                    borderRadius: '10px',
-                    bgcolor: 'neutral.softBg',
-                    '--RadioGroup-gap': '3px',
-                    '--Radio-actionRadius': '7px',
+                <div
+                  role='radiogroup'
+                  aria-label='Schedule type'
+                  style={{
+                    background: 'var(--surface-2)',
+                    borderRadius: 'var(--r-md)',
                     display: 'inline-flex',
+                    gap: 3,
+                    padding: 3,
                   }}
                 >
                   {REPEAT_ON_TYPE.map(type => (
-                    <Radio
+                    <SegmentedRadio
                       key={type}
+                      name={scheduleTypeId}
                       value={type}
-                      color='neutral'
-                      disableIcon
+                      checked={localFrequencyType === type}
                       label={type
                         .split('_')
-                        .map((w, i, arr) =>
-                          i === 0 || i === arr.length - 1
-                            ? w.charAt(0).toUpperCase() + w.slice(1)
-                            : w,
+                        .map((word, index, words) =>
+                          index === 0 || index === words.length - 1
+                            ? word.charAt(0).toUpperCase() + word.slice(1)
+                            : word,
                         )
                         .join(' ')}
-                      variant='plain'
-                      sx={{ px: 1.5, py: 0.5 }}
-                      slotProps={{
-                        action: ({ checked }) => ({
-                          sx: checked
-                            ? {
-                                bgcolor: 'background.surface',
-                                boxShadow: 'sm',
-                                '&:hover': { bgcolor: 'background.surface' },
-                              }
-                            : {},
-                        }),
-                      }}
+                      onChange={e => handleSubTypeSelect(e.target.value)}
                     />
                   ))}
-                </RadioGroup>
-              </Box>
+                </div>
+              </div>
 
-              <Divider />
+              <hr
+                style={{
+                  border: 0,
+                  borderTop: '1px solid var(--line)',
+                  margin: 0,
+                  width: '100%',
+                }}
+              />
 
               {localFrequencyType === 'interval' && (
                 <IntervalSection
@@ -615,7 +656,7 @@ const RepeatPickerField = ({
               )}
             </>
           )}
-        </Box>
+        </div>
       </ResponsiveModal>
     </>
   )

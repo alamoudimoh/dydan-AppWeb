@@ -1,38 +1,13 @@
-import {
-  Add,
-  Archive,
-  ArrowDownward,
-  ArrowUpward,
-  Edit,
-  PlayArrow,
-  Restore,
-} from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Card,
-  Checkbox,
-  Chip,
-  Container,
-  Divider,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Input,
-  Option,
-  Select,
-  Stack,
-  Textarea,
-  Typography,
-} from '@mui/joy'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../components/common/AppModal'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useRoutineMutation, useRoutines } from '../../queries/RoutineQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { pageShellSx } from '../../theme/appLayout'
+import { sxToStyle } from '../../theme/sxToStyle'
 import { GetAllCircleMembers, GetAssets, GetMeters } from '../../utils/Fetcher'
 import {
   EFFECTIVE_ROLES,
@@ -96,27 +71,74 @@ const memberName = (members, id, t) =>
   members.find(member => member.userId === id)?.username ||
   t('routines.member', { id })
 
+const Field = ({ children, hint, label, required }) => (
+  <label className='block'>
+    <span
+      className='section-label'
+      style={{ display: 'block', padding: '0 0 6px' }}
+    >
+      {label}
+      {required && (
+        <span aria-hidden='true' style={{ color: 'var(--sig-over)' }}>
+          {' '}
+          *
+        </span>
+      )}
+    </span>
+    {children}
+    {hint && (
+      <span
+        className='text-muted'
+        style={{ display: 'block', fontSize: 12, marginTop: 4 }}
+      >
+        {hint}
+      </span>
+    )}
+  </label>
+)
+
+const CheckRow = ({ checked, label, onChange }) => (
+  <label
+    className='flex items-center gap-2'
+    style={{ cursor: 'pointer', fontSize: 13 }}
+  >
+    <input
+      checked={checked}
+      onChange={onChange}
+      style={{ accentColor: 'var(--brand)' }}
+      type='checkbox'
+    />
+    {label}
+  </label>
+)
+
+const ModalShell = ({ children }) => (
+  <div className='flex flex-col gap-3'>{children}</div>
+)
+
 const TaskSummary = ({ item, members }) => {
   const { t } = useTranslation('chores')
   return (
-    <Stack spacing={0.35} sx={{ minWidth: 0 }}>
-      <Typography level='title-sm'>{item.name}</Typography>
-      <Typography level='body-xs'>
+    <div className='min-w-0'>
+      <div className='text-primary font-bold' style={{ fontSize: 14 }}>
+        {item.name}
+      </div>
+      <div className='text-muted' style={{ fontSize: 12 }}>
         {recurrence(item, t)} ·{' '}
-        <Box component='span' className='daydan-metric'>
+        <span className='daydan-metric'>
           {t('dashboard.ptsValue', { count: item.points || 0 })}
-        </Box>
+        </span>
         {item.requireApproval ? ` · ${t('routines.approvalRequired')}` : ''}
-      </Typography>
-      <Typography level='body-xs'>
+      </div>
+      <div className='text-muted' style={{ fontSize: 12 }}>
         {(item.assigneeIds || []).length
           ? item.assigneeIds.map(id => memberName(members, id, t)).join(', ')
           : t('routines.anyActiveMember')}
         {item.requireAsset
           ? ` · ${t('routines.chooseAssetWhenUsedShort')}`
           : ''}
-      </Typography>
-    </Stack>
+      </div>
+    </div>
   )
 }
 
@@ -134,31 +156,34 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
       title={pack ? t('routines.editRoutine') : t('routines.newPack')}
       size='md'
     >
-      <FormControl required>
-        <FormLabel>{t('routines.name')}</FormLabel>
-        <Input
-          autoFocus
-          value={form.name}
-          onChange={event => setForm({ ...form, name: event.target.value })}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>{t('routines.description')}</FormLabel>
-        <Textarea
-          minRows={3}
-          value={form.description}
-          onChange={event =>
-            setForm({ ...form, description: event.target.value })
-          }
-        />
-      </FormControl>
-      <Button
-        loading={busy}
-        disabled={!form.name.trim()}
-        onClick={() => onSave(form)}
-      >
-        {t('routines.saveRoutine')}
-      </Button>
+      <ModalShell>
+        <Field label={t('routines.name')} required>
+          <input
+            autoFocus
+            className='input'
+            value={form.name}
+            onChange={event => setForm({ ...form, name: event.target.value })}
+          />
+        </Field>
+        <Field label={t('routines.description')}>
+          <textarea
+            className='input'
+            rows={3}
+            value={form.description}
+            onChange={event =>
+              setForm({ ...form, description: event.target.value })
+            }
+          />
+        </Field>
+        <button
+          className='btn btn-primary'
+          disabled={!form.name.trim() || busy}
+          onClick={() => onSave(form)}
+          type='button'
+        >
+          {t('routines.saveRoutine')}
+        </button>
+      </ModalShell>
     </AppModal>
   )
 }
@@ -224,6 +249,12 @@ const TaskDialog = ({
       meterInterval: form.meterId ? Number(form.meterInterval) : null,
     }
   }
+  const disabled =
+    !form.name.trim() ||
+    (form.frequencyType === 'days_of_the_week' && !form.weekdays.length) ||
+    (form.assetMode === 'fixed' && !form.assetId) ||
+    (form.meterId && Number(form.meterInterval) < 1)
+
   return (
     <AppModal
       open={open}
@@ -231,246 +262,266 @@ const TaskDialog = ({
       title={item ? t('routines.editTask') : t('routines.addTask')}
       size='lg'
     >
-      <FormControl required>
-        <FormLabel>{t('routines.taskName')}</FormLabel>
-        <Input
-          value={form.name}
-          onChange={event => setForm({ ...form, name: event.target.value })}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>{t('routines.description')}</FormLabel>
-        <Textarea
-          minRows={2}
-          value={form.description}
-          onChange={event =>
-            setForm({ ...form, description: event.target.value })
-          }
-        />
-      </FormControl>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-        <FormControl sx={{ flex: 1 }}>
-          <FormLabel>{t('routines.repeat')}</FormLabel>
-          <Select
-            value={form.frequencyType}
-            onChange={(_, value) => setForm({ ...form, frequencyType: value })}
-          >
-            <Option value='once'>{t('routines.once')}</Option>
-            <Option value='daily'>{t('routines.daily')}</Option>
-            <Option value='weekly'>{t('routines.weekly')}</Option>
-            <Option value='monthly'>{t('routines.monthly')}</Option>
-            <Option value='yearly'>{t('routines.yearly')}</Option>
-            <Option value='interval'>{t('routines.customInterval')}</Option>
-            <Option value='days_of_the_week'>
-              {t('routines.selectedWeekdays')}
-            </Option>
-            <Option value='day_of_the_month'>{t('routines.dayOfMonth')}</Option>
-          </Select>
-        </FormControl>
-        {form.frequencyType === 'interval' && (
-          <>
-            <FormControl sx={{ width: { sm: 120 } }}>
-              <FormLabel>{t('routines.every')}</FormLabel>
-              <Input
-                type='number'
-                slotProps={{ input: { min: 1 } }}
-                value={form.frequency}
-                onChange={event =>
-                  setForm({ ...form, frequency: event.target.value })
-                }
-              />
-            </FormControl>
-            <FormControl sx={{ width: { sm: 150 } }}>
-              <FormLabel>{t('routines.unit')}</FormLabel>
-              <Select
-                value={form.intervalUnit}
-                onChange={(_, value) =>
-                  setForm({ ...form, intervalUnit: value })
-                }
-              >
-                {['hours', 'days', 'weeks', 'months', 'years'].map(unit => (
-                  <Option key={unit} value={unit}>
-                    {t(`routines.units.${unit}`)}
-                  </Option>
-                ))}
-              </Select>
-            </FormControl>
-          </>
+      <ModalShell>
+        <Field label={t('routines.taskName')} required>
+          <input
+            className='input'
+            value={form.name}
+            onChange={event => setForm({ ...form, name: event.target.value })}
+          />
+        </Field>
+        <Field label={t('routines.description')}>
+          <textarea
+            className='input'
+            rows={2}
+            value={form.description}
+            onChange={event =>
+              setForm({ ...form, description: event.target.value })
+            }
+          />
+        </Field>
+        <div className='flex flex-col gap-3 sm:flex-row'>
+          <Field label={t('routines.repeat')}>
+            <select
+              className='input'
+              value={form.frequencyType}
+              onChange={event =>
+                setForm({ ...form, frequencyType: event.target.value })
+              }
+            >
+              <option value='once'>{t('routines.once')}</option>
+              <option value='daily'>{t('routines.daily')}</option>
+              <option value='weekly'>{t('routines.weekly')}</option>
+              <option value='monthly'>{t('routines.monthly')}</option>
+              <option value='yearly'>{t('routines.yearly')}</option>
+              <option value='interval'>{t('routines.customInterval')}</option>
+              <option value='days_of_the_week'>
+                {t('routines.selectedWeekdays')}
+              </option>
+              <option value='day_of_the_month'>
+                {t('routines.dayOfMonth')}
+              </option>
+            </select>
+          </Field>
+          {form.frequencyType === 'interval' && (
+            <>
+              <Field label={t('routines.every')}>
+                <input
+                  className='input'
+                  min='1'
+                  type='number'
+                  value={form.frequency}
+                  onChange={event =>
+                    setForm({ ...form, frequency: event.target.value })
+                  }
+                />
+              </Field>
+              <Field label={t('routines.unit')}>
+                <select
+                  className='input'
+                  value={form.intervalUnit}
+                  onChange={event =>
+                    setForm({ ...form, intervalUnit: event.target.value })
+                  }
+                >
+                  {['hours', 'days', 'weeks', 'months', 'years'].map(unit => (
+                    <option key={unit} value={unit}>
+                      {t(`routines.units.${unit}`)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </>
+          )}
+        </div>
+        {form.frequencyType === 'days_of_the_week' && (
+          <Field label={t('routines.weekdays')}>
+            <div className='flex flex-wrap gap-x-4 gap-y-1'>
+              {DAYS.map(day => (
+                <CheckRow
+                  checked={form.weekdays.includes(day)}
+                  key={day}
+                  label={t(`routines.days.${day}`)}
+                  onChange={event =>
+                    setForm({
+                      ...form,
+                      weekdays: event.target.checked
+                        ? [...form.weekdays, day]
+                        : form.weekdays.filter(value => value !== day),
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </Field>
         )}
-      </Stack>
-      {form.frequencyType === 'days_of_the_week' && (
-        <FormControl>
-          <FormLabel>{t('routines.weekdays')}</FormLabel>
-          <Stack direction='row' flexWrap='wrap' gap={1}>
-            {DAYS.map(day => (
-              <Checkbox
-                key={day}
-                label={t(`routines.days.${day}`)}
-                checked={form.weekdays.includes(day)}
+        {form.frequencyType === 'day_of_the_month' && (
+          <Field label={t('routines.dayOfMonth')}>
+            <input
+              className='input'
+              max='31'
+              min='1'
+              type='number'
+              value={form.monthDay}
+              onChange={event =>
+                setForm({ ...form, monthDay: event.target.value })
+              }
+            />
+          </Field>
+        )}
+        <Field label={t('routines.assignmentBehavior')}>
+          <select
+            className='input'
+            value={form.assignStrategy}
+            onChange={event =>
+              setForm({ ...form, assignStrategy: event.target.value })
+            }
+          >
+            <option value='no_assignee'>{t('routines.anyone')}</option>
+            <option value='random'>{t('routines.random')}</option>
+            <option value='round_robin'>{t('routines.rotating')}</option>
+            <option value='least_assigned'>
+              {t('routines.leastAssigned')}
+            </option>
+            <option value='least_completed'>
+              {t('routines.leastCompleted')}
+            </option>
+            <option value='keep_last_assigned'>
+              {t('routines.keepLastAssigned')}
+            </option>
+          </select>
+        </Field>
+        <Field
+          hint={t('routines.leaveEmptyHint')}
+          label={t('routines.eligibleMembers')}
+        >
+          <div className='flex flex-wrap gap-x-4 gap-y-1'>
+            {members.map(member => (
+              <CheckRow
+                checked={form.assigneeIds.includes(member.userId)}
+                key={member.userId}
+                label={member.displayName || member.username}
                 onChange={event =>
                   setForm({
                     ...form,
-                    weekdays: event.target.checked
-                      ? [...form.weekdays, day]
-                      : form.weekdays.filter(value => value !== day),
+                    assigneeIds: event.target.checked
+                      ? [...form.assigneeIds, member.userId]
+                      : form.assigneeIds.filter(id => id !== member.userId),
                   })
                 }
               />
             ))}
-          </Stack>
-        </FormControl>
-      )}
-      {form.frequencyType === 'day_of_the_month' && (
-        <FormControl>
-          <FormLabel>{t('routines.dayOfMonth')}</FormLabel>
-          <Input
-            type='number'
-            slotProps={{ input: { min: 1, max: 31 } }}
-            value={form.monthDay}
-            onChange={event =>
-              setForm({ ...form, monthDay: event.target.value })
-            }
-          />
-        </FormControl>
-      )}
-      <FormControl>
-        <FormLabel>{t('routines.assignmentBehavior')}</FormLabel>
-        <Select
-          value={form.assignStrategy}
-          onChange={(_, value) => setForm({ ...form, assignStrategy: value })}
-        >
-          <Option value='no_assignee'>{t('routines.anyone')}</Option>
-          <Option value='random'>{t('routines.random')}</Option>
-          <Option value='round_robin'>{t('routines.rotating')}</Option>
-          <Option value='least_assigned'>{t('routines.leastAssigned')}</Option>
-          <Option value='least_completed'>
-            {t('routines.leastCompleted')}
-          </Option>
-          <Option value='keep_last_assigned'>
-            {t('routines.keepLastAssigned')}
-          </Option>
-        </Select>
-      </FormControl>
-      <FormControl>
-        <FormLabel>{t('routines.eligibleMembers')}</FormLabel>
-        <Stack direction='row' flexWrap='wrap' gap={1}>
-          {members.map(member => (
-            <Checkbox
-              key={member.userId}
-              label={member.displayName || member.username}
-              checked={form.assigneeIds.includes(member.userId)}
+          </div>
+        </Field>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
+          <Field label={t('routines.points')}>
+            <input
+              className='input'
+              min='0'
+              type='number'
+              value={form.points}
               onChange={event =>
-                setForm({
-                  ...form,
-                  assigneeIds: event.target.checked
-                    ? [...form.assigneeIds, member.userId]
-                    : form.assigneeIds.filter(id => id !== member.userId),
-                })
+                setForm({ ...form, points: event.target.value })
               }
             />
-          ))}
-        </Stack>
-        <Typography level='body-xs'>{t('routines.leaveEmptyHint')}</Typography>
-      </FormControl>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-        <FormControl sx={{ flex: 1 }}>
-          <FormLabel>{t('routines.points')}</FormLabel>
-          <Input
-            type='number'
-            slotProps={{ input: { min: 0 } }}
-            value={form.points}
-            onChange={event => setForm({ ...form, points: event.target.value })}
-          />
-        </FormControl>
-        <FormControl sx={{ justifyContent: 'end' }}>
-          <Checkbox
-            label={t('routines.requireApproval')}
+          </Field>
+          <CheckRow
             checked={form.requireApproval}
+            label={t('routines.requireApproval')}
             onChange={event =>
               setForm({ ...form, requireApproval: event.target.checked })
             }
           />
-        </FormControl>
-      </Stack>
-      <Divider />
-      <FormControl>
-        <FormLabel>{t('routines.assetBinding')}</FormLabel>
-        <Select
-          value={form.assetMode}
-          onChange={(_, value) =>
-            setForm({
-              ...form,
-              assetMode: value,
-              assetId: null,
-              meterId: null,
-            })
-          }
-        >
-          <Option value='none'>{t('routines.noAsset')}</Option>
-          <Option value='fixed'>{t('routines.useExistingAsset')}</Option>
-          <Option value='required'>{t('routines.chooseAssetWhenUsed')}</Option>
-        </Select>
-      </FormControl>
-      {form.assetMode === 'fixed' && (
-        <FormControl required>
-          <FormLabel>{t('routines.asset')}</FormLabel>
-          <Select
-            value={form.assetId}
-            onChange={(_, value) =>
-              setForm({ ...form, assetId: value, meterId: null })
+        </div>
+        <hr
+          style={{ border: 0, borderTop: '1px solid var(--line)', margin: 0 }}
+        />
+        <Field label={t('routines.assetBinding')}>
+          <select
+            className='input'
+            value={form.assetMode}
+            onChange={event =>
+              setForm({
+                ...form,
+                assetMode: event.target.value,
+                assetId: null,
+                meterId: null,
+              })
             }
           >
-            {assets.map(asset => (
-              <Option key={asset.id} value={asset.id}>
-                {asset.name}
-              </Option>
-            ))}
-          </Select>
-        </FormControl>
-      )}
-      {form.assetMode === 'fixed' && matchingMeters.length > 0 && (
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-          <FormControl sx={{ flex: 1 }}>
-            <FormLabel>{t('routines.meterSchedule')}</FormLabel>
-            <Select
-              value={form.meterId}
-              onChange={(_, value) => setForm({ ...form, meterId: value })}
+            <option value='none'>{t('routines.noAsset')}</option>
+            <option value='fixed'>{t('routines.useExistingAsset')}</option>
+            <option value='required'>
+              {t('routines.chooseAssetWhenUsed')}
+            </option>
+          </select>
+        </Field>
+        {form.assetMode === 'fixed' && (
+          <Field label={t('routines.asset')} required>
+            <select
+              className='input'
+              value={form.assetId ?? ''}
+              onChange={event =>
+                setForm({
+                  ...form,
+                  assetId: event.target.value || null,
+                  meterId: null,
+                })
+              }
             >
-              <Option value={null}>{t('routines.none')}</Option>
-              {matchingMeters.map(meter => (
-                <Option key={meter.id} value={meter.id}>
-                  {meter.name}
-                </Option>
+              <option value='' disabled>
+                {t('routines.useExistingAsset')}
+              </option>
+              {assets.map(asset => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.name}
+                </option>
               ))}
-            </Select>
-          </FormControl>
-          {form.meterId && (
-            <FormControl sx={{ width: { sm: 180 } }} required>
-              <FormLabel>{t('routines.everyMeterUnits')}</FormLabel>
-              <Input
-                type='number'
-                slotProps={{ input: { min: 1 } }}
-                value={form.meterInterval}
+            </select>
+          </Field>
+        )}
+        {form.assetMode === 'fixed' && matchingMeters.length > 0 && (
+          <div className='flex flex-col gap-3 sm:flex-row'>
+            <Field label={t('routines.meterSchedule')}>
+              <select
+                className='input'
+                value={form.meterId ?? ''}
                 onChange={event =>
-                  setForm({ ...form, meterInterval: event.target.value })
+                  setForm({ ...form, meterId: event.target.value || null })
                 }
-              />
-            </FormControl>
-          )}
-        </Stack>
-      )}
-      <Button
-        disabled={
-          !form.name.trim() ||
-          (form.frequencyType === 'days_of_the_week' &&
-            !form.weekdays.length) ||
-          (form.assetMode === 'fixed' && !form.assetId) ||
-          (form.meterId && Number(form.meterInterval) < 1)
-        }
-        onClick={() => onSave(payload())}
-      >
-        {t('routines.saveTask')}
-      </Button>
+              >
+                <option value=''>{t('routines.none')}</option>
+                {matchingMeters.map(meter => (
+                  <option key={meter.id} value={meter.id}>
+                    {meter.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {form.meterId && (
+              <Field label={t('routines.everyMeterUnits')} required>
+                <input
+                  className='input'
+                  min='1'
+                  type='number'
+                  value={form.meterInterval}
+                  onChange={event =>
+                    setForm({ ...form, meterInterval: event.target.value })
+                  }
+                />
+              </Field>
+            )}
+          </div>
+        )}
+        <button
+          className='btn btn-primary'
+          disabled={disabled}
+          onClick={() => onSave(payload())}
+          type='button'
+        >
+          {t('routines.saveTask')}
+        </button>
+      </ModalShell>
     </AppModal>
   )
 }
@@ -503,60 +554,78 @@ const ApplyDialog = ({
       title={t('routines.usePackTitle', { name: pack?.name })}
       size='lg'
     >
-      <Typography level='body-sm'>
-        {t('routines.applyInfo', { count: pack?.items?.length || 0 })}
-      </Typography>
-      <FormControl required>
-        <FormLabel>{t('routines.startApplyDate')}</FormLabel>
-        <Input
-          type='date'
-          value={startDate}
-          onChange={event => setStartDate(event.target.value)}
-        />
-      </FormControl>
-      <Stack spacing={1} sx={{ overflowY: 'auto' }}>
-        {(pack?.items || []).map((item, index) => (
-          <Card key={item.id} variant='outlined'>
-            <Stack direction='row' spacing={1.5}>
-              <Typography level='body-sm'>{index + 1}.</Typography>
-              <Box sx={{ flex: 1 }}>
-                <TaskSummary item={item} members={members} />
-                {item.requireAsset && (
-                  <FormControl required sx={{ mt: 1 }}>
-                    <FormLabel>
-                      {t('routines.assetFor', { name: item.name })}
-                    </FormLabel>
-                    <Select
-                      value={selections[item.id] || null}
-                      onChange={(_, value) =>
-                        setSelections({ ...selections, [item.id]: value })
-                      }
-                    >
-                      {assets.map(asset => (
-                        <Option key={asset.id} value={asset.id}>
-                          {asset.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
-              </Box>
-            </Stack>
-          </Card>
-        ))}
-      </Stack>
-      <Stack direction='row' justifyContent='flex-end' spacing={1}>
-        <Button variant='plain' color='neutral' onClick={onClose}>
-          {t('routines.cancel')}
-        </Button>
-        <Button
-          loading={busy}
-          disabled={!ready || !pack?.items?.length}
-          onClick={() => onApply(startDate, selections)}
+      <ModalShell>
+        <div className='text-muted' style={{ fontSize: 13 }}>
+          {t('routines.applyInfo', { count: pack?.items?.length || 0 })}
+        </div>
+        <Field label={t('routines.startApplyDate')} required>
+          <input
+            className='input'
+            type='date'
+            value={startDate}
+            onChange={event => setStartDate(event.target.value)}
+          />
+        </Field>
+        <div
+          className='flex flex-col gap-2'
+          style={{ maxHeight: 320, overflowY: 'auto' }}
         >
-          {t('routines.createTasks', { count: pack?.items?.length || 0 })}
-        </Button>
-      </Stack>
+          {(pack?.items || []).map((item, index) => (
+            <div key={item.id} className='card'>
+              <div className='flex gap-3 p-4'>
+                <div
+                  className='text-muted'
+                  style={{ fontSize: 13, flexShrink: 0 }}
+                >
+                  {index + 1}.
+                </div>
+                <div className='min-w-0 flex-1'>
+                  <TaskSummary item={item} members={members} />
+                  {item.requireAsset && (
+                    <Field
+                      label={t('routines.assetFor', { name: item.name })}
+                      required
+                    >
+                      <select
+                        className='input'
+                        value={selections[item.id] || ''}
+                        onChange={event =>
+                          setSelections({
+                            ...selections,
+                            [item.id]: event.target.value || null,
+                          })
+                        }
+                      >
+                        <option value='' disabled>
+                          {t('routines.useExistingAsset')}
+                        </option>
+                        {assets.map(asset => (
+                          <option key={asset.id} value={asset.id}>
+                            {asset.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className='flex items-center justify-end gap-2'>
+          <button className='btn btn-ghost' onClick={onClose} type='button'>
+            {t('routines.cancel')}
+          </button>
+          <button
+            className='btn btn-primary'
+            disabled={!ready || !pack?.items?.length || busy}
+            onClick={() => onApply(startDate, selections)}
+            type='button'
+          >
+            {t('routines.createTasks', { count: pack?.items?.length || 0 })}
+          </button>
+        </div>
+      </ModalShell>
     </AppModal>
   )
 }
@@ -697,7 +766,7 @@ const RoutinesView = () => {
   }
 
   return (
-    <Box sx={pageShellSx}>
+    <div style={sxToStyle(pageShellSx)}>
       <FigmaRoutinesScreen
         canArchive={canCreate}
         canCreate={canCreate}
@@ -717,97 +786,129 @@ const RoutinesView = () => {
         onClose={() => setSelected(null)}
         size='xl'
       >
-        <Stack spacing={2}>
-          <Box>
-            <Stack direction='row' spacing={1} alignItems='center'>
-              <Typography level='h2'>{selected?.name}</Typography>
-              {!selected?.isActive && <Chip>{t('routines.archived')}</Chip>}
-            </Stack>
-            <Typography level='body-sm'>{selected?.description}</Typography>
-          </Box>
-          <Stack direction='row' spacing={1} flexWrap='wrap'>
-            <Button
-              startDecorator={<Edit />}
-              variant='soft'
+        <div className='flex flex-col gap-4'>
+          <div>
+            <div className='flex items-center gap-2'>
+              <h2
+                className='text-primary'
+                style={{ fontSize: 20, fontWeight: 800, margin: 0 }}
+              >
+                {selected?.name}
+              </h2>
+              {!selected?.isActive && (
+                <span className='badge'>{t('routines.archived')}</span>
+              )}
+            </div>
+            <div className='text-muted' style={{ fontSize: 13 }}>
+              {selected?.description}
+            </div>
+          </div>
+          <div className='flex flex-wrap gap-2'>
+            <button
+              className='btn btn-ghost'
               onClick={() => setPackEditor(selected)}
+              type='button'
             >
+              <FigmaIcon name='edit' size={14} />
               {t('routines.editRoutine')}
-            </Button>
-            <Button
-              startDecorator={selected?.isActive ? <Archive /> : <Restore />}
-              variant='soft'
-              color='neutral'
+            </button>
+            <button
+              className='btn btn-ghost'
               onClick={() => setActive(selected)}
+              type='button'
             >
+              <FigmaIcon
+                name={selected?.isActive ? 'archive' : 'repeat'}
+                size={14}
+              />
               {selected?.isActive
                 ? t('routines.archive')
                 : t('routines.reactivate')}
-            </Button>
+            </button>
             {selected?.isActive && (
-              <Button
-                startDecorator={<PlayArrow />}
-                onClick={() => setApplying(true)}
+              <button
+                className='btn btn-primary'
                 disabled={!selected?.items?.length}
+                onClick={() => setApplying(true)}
+                type='button'
               >
+                <FigmaIcon name='play' size={14} />
                 {t('routines.useRoutine')}
-              </Button>
+              </button>
             )}
-          </Stack>
-          <Divider />
-          <Stack direction='row' justifyContent='space-between'>
-            <Typography level='title-lg'>{t('routines.tasks')}</Typography>
-            <Button
-              size='sm'
-              startDecorator={<Add />}
+          </div>
+          <hr
+            style={{ border: 0, borderTop: '1px solid var(--line)', margin: 0 }}
+          />
+          <div className='flex items-center justify-between'>
+            <div className='text-primary font-bold' style={{ fontSize: 15 }}>
+              {t('routines.tasks')}
+            </div>
+            <button
+              className='btn btn-sm btn-primary'
               onClick={() => setTaskEditor({})}
+              type='button'
             >
+              <FigmaIcon name='plus' size={12} />
               {t('routines.addTask')}
-            </Button>
-          </Stack>
+            </button>
+          </div>
           {selected?.items?.map((item, index) => (
-            <Card key={item.id} variant='outlined'>
-              <Stack direction='row' spacing={1} alignItems='center'>
-                <Typography level='body-sm'>{index + 1}.</Typography>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
+            <div key={item.id} className='card'>
+              <div className='flex items-center gap-3 p-4'>
+                <div
+                  className='text-muted'
+                  style={{ fontSize: 13, flexShrink: 0 }}
+                >
+                  {index + 1}.
+                </div>
+                <div className='min-w-0 flex-1'>
                   <TaskSummary item={item} members={members} />
-                </Box>
-                <Stack direction='row'>
-                  <IconButton
-                    size='sm'
-                    disabled={index === 0}
+                </div>
+                <div className='flex items-center gap-1'>
+                  <button
                     aria-label={t('routines.moveTaskUp', { name: item.name })}
+                    className='btn btn-ghost btn-icon'
+                    disabled={index === 0}
                     onClick={() => move(index, -1)}
+                    type='button'
                   >
-                    <ArrowUpward />
-                  </IconButton>
-                  <IconButton
-                    size='sm'
-                    disabled={index === selected.items.length - 1}
+                    <FigmaIcon
+                      name='chevron_down'
+                      size={16}
+                      style={{ transform: 'rotate(180deg)' }}
+                    />
+                  </button>
+                  <button
                     aria-label={t('routines.moveTaskDown', { name: item.name })}
+                    className='btn btn-ghost btn-icon'
+                    disabled={index === selected.items.length - 1}
                     onClick={() => move(index, 1)}
+                    type='button'
                   >
-                    <ArrowDownward />
-                  </IconButton>
-                  <IconButton
-                    size='sm'
+                    <FigmaIcon name='chevron_down' size={16} />
+                  </button>
+                  <button
                     aria-label={t('routines.editTask', { name: item.name })}
+                    className='btn btn-ghost btn-icon'
                     onClick={() => setTaskEditor(item)}
+                    type='button'
                   >
-                    <Edit />
-                  </IconButton>
-                  <Button
-                    size='sm'
-                    color='danger'
-                    variant='plain'
+                    <FigmaIcon name='edit' size={16} />
+                  </button>
+                  <button
+                    className='btn btn-ghost btn-sm'
                     onClick={() => removeTask(item)}
+                    type='button'
                   >
+                    <FigmaIcon name='trash' size={13} />
                     {t('routines.remove')}
-                  </Button>
-                </Stack>
-              </Stack>
-            </Card>
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
-        </Stack>
+        </div>
       </AppModal>
       <PackDialog
         open={packEditor !== null}
@@ -834,7 +935,7 @@ const RoutinesView = () => {
         assets={assets}
         busy={mutation.isPending}
       />
-    </Box>
+    </div>
   )
 }
 

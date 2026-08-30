@@ -47,6 +47,8 @@ const paths = {
   chevron_right: 'M9 18l6-6-6-6',
   chevron_down: 'M6 9l6 6 6-6',
   copy: 'M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z',
+  play: 'M8 5v14l11-7z',
+  archive: 'M4 3h16v4H4z|M5 7v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7|M10 12h4',
 }
 
 export const LogoMark = ({ size = 28, sovereign = false }) =>

@@ -1,4 +1,3 @@
-import { Textarea } from '@mui/joy'
 import { useState } from 'react'
 
 import ModalActions from '../../../components/common/ModalActions'
@@ -34,13 +33,14 @@ function TextModal({
         />
       }
     >
-      <Textarea
+      <textarea
         autoFocus
+        className='input'
         placeholder='Type in here…'
         value={text}
         onChange={event => setText(event.target.value)}
-        minRows={3}
-        maxRows={8}
+        rows={3}
+        style={{ resize: 'vertical' }}
       />
     </ResponsiveModal>
   )

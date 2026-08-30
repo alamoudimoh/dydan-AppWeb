@@ -1,9 +1,8 @@
 import './SmartTaskTitleInput.css'
 
-import { CameraEnhance, Mic, PhotoFilter } from '@mui/icons-material'
-import { IconButton, Tooltip, useColorScheme } from '@mui/joy'
 import { useEffect, useRef, useState } from 'react'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import AutocompleteDropdown from '../TestView/AutocompleteDropdown'
 const renderHighlightedText = (text, cursorPosition) => {
   const parts = []
@@ -61,7 +60,6 @@ const SmartTaskTitleInput = ({
   suggestions,
   value,
 }) => {
-  const { mode, setMode } = useColorScheme()
   const titleInputRef = useRef(null)
   const photoInputRef = useRef(null)
   const [cursorPosition, setCursorPosition] = useState(value?.length)
@@ -234,6 +232,13 @@ const SmartTaskTitleInput = ({
     (showVoiceButton ? 1 : 0)
   const showActionButtons = visibleButtonCount > 0
   const ACTION_BUTTONS_WIDTH = `${visibleButtonCount * 2.5}rem`
+  const actionButtonStyle = {
+    borderRadius: 'var(--r-full)',
+    height: '2rem',
+    minHeight: 0,
+    padding: 0,
+    width: '2rem',
+  }
 
   return (
     <div>
@@ -264,7 +269,7 @@ const SmartTaskTitleInput = ({
             lineHeight: 'inherit',
             backgroundColor: 'transparent',
             color: 'transparent',
-            caretColor: mode === 'dark' ? '#fff' : '#000',
+            caretColor: 'var(--t-primary)',
             border: 'none',
             outline: 'none',
           }}
@@ -315,18 +320,16 @@ const SmartTaskTitleInput = ({
           >
             {showPhotoButtons && onPhotoSelected && (
               <>
-                <Tooltip title='Select photo' placement='top' size='sm'>
-                  <IconButton
-                    size='sm'
-                    variant='plain'
-                    color='neutral'
-                    aria-label='Select photo'
-                    onClick={() => photoInputRef.current?.click()}
-                    sx={{ borderRadius: 'xl' }}
-                  >
-                    <PhotoFilter fontSize='small' />
-                  </IconButton>
-                </Tooltip>
+                <button
+                  aria-label='Select photo'
+                  className='btn btn-ghost btn-icon'
+                  onClick={() => photoInputRef.current?.click()}
+                  style={actionButtonStyle}
+                  title='Select photo'
+                  type='button'
+                >
+                  <FigmaIcon name='copy' size={16} />
+                </button>
                 <input
                   ref={photoInputRef}
                   type='file'
@@ -337,32 +340,28 @@ const SmartTaskTitleInput = ({
               </>
             )}
             {showPhotoButtons && onScanClick && (
-              <Tooltip title='Scan to create task' placement='top' size='sm'>
-                <IconButton
-                  size='sm'
-                  variant='plain'
-                  color='neutral'
-                  aria-label='Scan to create task'
-                  onClick={onScanClick}
-                  sx={{ borderRadius: 'xl' }}
-                >
-                  <CameraEnhance fontSize='small' />
-                </IconButton>
-              </Tooltip>
+              <button
+                aria-label='Scan to create task'
+                className='btn btn-ghost btn-icon'
+                onClick={onScanClick}
+                style={actionButtonStyle}
+                title='Scan to create task'
+                type='button'
+              >
+                <FigmaIcon name='search' size={16} />
+              </button>
             )}
             {showVoiceButton && (
-              <Tooltip title='Speak to create tasks' placement='top' size='sm'>
-                <IconButton
-                  size='sm'
-                  variant='plain'
-                  color='neutral'
-                  aria-label='Speak to create tasks'
-                  onClick={onVoiceClick}
-                  sx={{ borderRadius: 'xl' }}
-                >
-                  <Mic fontSize='small' />
-                </IconButton>
-              </Tooltip>
+              <button
+                aria-label='Speak to create tasks'
+                className='btn btn-ghost btn-icon'
+                onClick={onVoiceClick}
+                style={actionButtonStyle}
+                title='Speak to create tasks'
+                type='button'
+              >
+                <FigmaIcon name='activity' size={16} />
+              </button>
             )}
           </span>
         )}
