@@ -29,14 +29,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../components/common/AppModal'
-import EmptyState from '../../components/common/EmptyState'
-import PageHeader from '../../components/common/PageHeader'
-import QueryLoadingView from '../../components/common/QueryLoadingView'
-import SectionCard from '../../components/common/SectionCard'
 import { useRoutineMutation, useRoutines } from '../../queries/RoutineQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
-import { pageShellSx, pageStackSpacing } from '../../theme/appLayout'
+import { pageShellSx } from '../../theme/appLayout'
 import { GetAllCircleMembers, GetAssets, GetMeters } from '../../utils/Fetcher'
 import {
   EFFECTIVE_ROLES,
@@ -568,7 +564,7 @@ const ApplyDialog = ({
 const RoutinesView = () => {
   const { t } = useTranslation('chores')
   const [includeArchived, setIncludeArchived] = useState(false)
-  const { data, error, isLoading, refetch } = useRoutines(includeArchived)
+  const { data } = useRoutines(includeArchived)
   const mutation = useRoutineMutation()
   const { showError, showSuccess } = useNotification()
   const [selected, setSelected] = useState(null)
@@ -579,7 +575,6 @@ const RoutinesView = () => {
   const [assets, setAssets] = useState([])
   const [meters, setMeters] = useState([])
   const { data: userProfile } = useUserProfile()
-  const [legacyMode] = useState(false)
   const packs = data?.res || []
 
   const circleMembers = normalizeCircleMembers(members)
@@ -716,93 +711,6 @@ const RoutinesView = () => {
         }}
         packs={packs}
       />
-
-      {legacyMode && (
-        <Stack spacing={pageStackSpacing}>
-          <PageHeader
-            title={t('routines.title')}
-            subtitle={t('routines.subtitle')}
-            action={
-              <Button
-                startDecorator={<Add />}
-                onClick={() => setPackEditor({})}
-              >
-                {t('routines.newRoutine')}
-              </Button>
-            }
-          />
-          <Checkbox
-            label={t('routines.showArchived')}
-            checked={includeArchived}
-            onChange={event => setIncludeArchived(event.target.checked)}
-          />
-          {isLoading && <QueryLoadingView />}
-          {error && (
-            <EmptyState
-              variant='error'
-              size='sm'
-              title={t('common:errors.title')}
-              description={error.message}
-              primaryAction={{
-                label: t('common:retry'),
-                onClick: () => refetch(),
-              }}
-            />
-          )}
-          {!isLoading && packs.length === 0 && (
-            <EmptyState
-              title={t('routines.noRoutinesTitle')}
-              description={t('routines.noRoutinesDescription')}
-            />
-          )}
-          <Stack spacing={1.5}>
-            {packs.map(pack => (
-              <SectionCard key={pack.id}>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={1.5}
-                  alignItems={{ sm: 'center' }}
-                >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Stack direction='row' spacing={1} alignItems='center'>
-                      <Typography level='title-lg'>{pack.name}</Typography>
-                      {!pack.isActive && (
-                        <Chip color='neutral'>{t('routines.archived')}</Chip>
-                      )}
-                    </Stack>
-                    {pack.description && (
-                      <Typography level='body-sm'>
-                        {pack.description}
-                      </Typography>
-                    )}
-                    <Typography level='body-xs'>
-                      {t('routines.countTasks', {
-                        count: pack.items?.length || 0,
-                      })}
-                    </Typography>
-                  </Box>
-                  <Stack direction='row' spacing={1} flexWrap='wrap'>
-                    <Button variant='soft' onClick={() => setSelected(pack)}>
-                      {t('routines.open')}
-                    </Button>
-                    {pack.isActive && (
-                      <Button
-                        startDecorator={<PlayArrow />}
-                        onClick={() => {
-                          setSelected(pack)
-                          setApplying(true)
-                        }}
-                      >
-                        {t('routines.useRoutine')}
-                      </Button>
-                    )}
-                  </Stack>
-                </Stack>
-              </SectionCard>
-            ))}
-          </Stack>
-        </Stack>
-      )}
 
       <AppModal
         open={Boolean(selected) && !applying}

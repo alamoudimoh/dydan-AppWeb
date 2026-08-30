@@ -317,7 +317,6 @@ const Goals = () => {
   const rewardMutation = useRewardMutation()
   const [open, setOpen] = useState(false)
   const [creatingReward, setCreatingReward] = useState(false)
-  const [legacyMode] = useState(false)
   const [form, setForm] = useState({
     name: '',
     metricType: 'TASK_COMPLETIONS',
@@ -422,7 +421,7 @@ const Goals = () => {
     }
   }
 
-  if (!legacyMode && !open) {
+  if (!open) {
     return (
       <>
         <FigmaGoalsScreen
