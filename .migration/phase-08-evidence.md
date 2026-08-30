@@ -1,7 +1,7 @@
 # Phase 8 Execution Evidence
 
-Status: WAVE 5 COMPLETE (pre-merge). Covered-route closure reached; full local gate
-green on branch `migration/figma-p08-remove-joy-final-parity`.
+Status: COMPLETE AND MERGED. Covered-route closure reached; full local gate green
+and post-merge verified on develop (`59fc0f5`).
 
 ## Authority
 
@@ -92,3 +92,49 @@ npm run build       -> vite build ok; PWA precache 268 entries
 
 En-dash note: the reproducible `rg` audit counts are taken from the branch SHA
 above; the post-merge worktree re-run is recorded in the terminal report.
+
+## Post-merge verification and smoke closure
+
+Merge history: PR #46 (Wave 5 + evidence) merged `45ebfd1`; PR #47 (evidence
+prettier normalize `f5a62cb`) merged `e4270fc`.
+
+At `e4270fc` the Playwright smoke suite reported `160 passed, 2 failed`:
+
+- `e2e/figma-phase5.spec.js` — `/activities` heading assertion
+  (`getByRole('heading', { name: 'Activity' })` not found)
+- `smoke: /activities` (thrown in `e2e/helpers/smokeRunner.js`)
+
+Both shared one root cause: Wave 2 removed the default `import React` from
+`src/views/User/UserActivities.jsx`, but the file still calls `React.useState`
+(12 sites). The lazy `/activities` chunk then threw on first render
+`ReferenceError: React is not defined`, the route crashed to the ErrorBoundary,
+and no heading (and no content) rendered. Reproduced via a fixture probe
+(`pageerror` capture) and proven non-flaky by re-running the phase-5 spec green
+at the pre-merge base (`29873c3`) and red at `e4270fc`.
+
+Fix `61d4a3f` restored `import React, { useEffect, useMemo, useState } from
+'react'` (commit `fix(views): restore React import in UserActivities
+(activities route crash)`). PR #48 was auto-closed as merged. GitHub merge was
+not available to the automation token (review-gated), so the merge commit was
+pushed directly to `develop`: `59fc0f5`.
+
+Final verification at `59fc0f5` (fresh worktree):
+
+```text
+npm run typecheck   -> tsc --noEmit, clean
+npm run lint        -> eslint 0 errors (1813 warnings; same accepted rule set),
+                       prettier -c clean
+node --test         -> 187 passed, 0 failed
+npm run test:ui     -> 30 files, 130 passed
+npm run build       -> vite build ok; PWA precache 268 entries
+npm run test:smoke  -> 162 passed, 0 failed (phase-5 headings + /activities fixed)
+e2e/smoke.arabic.spec.js -> 11 passed (Arabic RTL baseline; dir=rtl,
+                       lang=ar-SA, Arabic copy on /login / /family /shopping
+                       /chores /calendar /routines /settings profile|account
+                       |localization)
+```
+
+Repo-wide audit at `59fc0f5` unchanged: 147 files (134 non-test) retain
+`@(mui/(joy|material)|emotion/(react|styled))`; none is reachable from the
+covered `//family`, `//maintenance`, `//routines`, `//chores`, `//my/chores`
+presentation.
