@@ -1,4 +1,3 @@
-import { Box, Container, Sheet, Typography } from '@mui/joy'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,44 +7,18 @@ const PaymentCancelledView = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/chores')
-    }, 5000)
+    const timer = setTimeout(() => navigate('/chores'), 5000)
     return () => clearTimeout(timer)
   }, [navigate])
 
   return (
-    <Container component='main' maxWidth='xs'>
-      <Box
-        sx={{
-          marginTop: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Sheet
-          sx={{
-            mt: 1,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: 2,
-            borderRadius: '8px',
-            boxShadow: 'md',
-          }}
-        >
-          <Logo />
-          <Typography level='h2' sx={{ mt: 2, mb: 1 }}>
-            Payment has been cancelled
-          </Typography>
-          <Typography level='body-md' sx={{ mb: 2 }}>
-            You will be redirected to the main page shortly.
-          </Typography>
-        </Sheet>
-      </Box>
-    </Container>
+    <main className='payment-status'>
+      <section className='card payment-status__card' aria-live='polite'>
+        <Logo />
+        <h1>Payment has been cancelled</h1>
+        <p>You will be redirected to the main page shortly.</p>
+      </section>
+    </main>
   )
 }
 

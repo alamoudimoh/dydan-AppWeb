@@ -18,7 +18,6 @@ import { useAuth } from '../../hooks/useAuth.jsx'
 import { useResource } from '../../queries/ResourceQueries'
 import { useUserProfile } from '../../queries/UserQueries.jsx'
 import { useNotification } from '../../service/NotificationProvider'
-import { productTypeScale } from '../../theme/typography.js'
 import { apiClient } from '../../utils/ApiClient'
 import { getPendingInvite } from '../../utils/PendingInvite'
 import {
@@ -36,56 +35,30 @@ import {
   SocialButton,
 } from './AuthFields'
 import AuthShell from './AuthShell'
-import { authButtonSx } from './authStyles'
 import MFAVerificationModal from './MFAVerificationModal'
 
 const SegmentedControl = ({ onChange, options, value }) => (
-  <Box
-    role='tablist'
-    sx={theme => ({
-      display: 'flex',
-      p: 0.5,
-      gap: 0.5,
-      borderRadius: theme.radius.lg,
-      bgcolor: 'neutral.softBg',
-      mb: 2.5,
-    })}
-  >
+  <div className='auth-segmented' role='tablist'>
     {options.map(option => {
       const selected = option.value === value
       return (
-        <Box
+        <button
           key={option.value}
-          component='button'
           type='button'
           role='tab'
           aria-selected={selected}
           onClick={() => onChange(option.value)}
-          sx={theme => ({
-            flex: 1,
-            border: 'none',
-            cursor: 'pointer',
-            borderRadius: theme.radius.sm,
-            py: 1,
-            fontSize: productTypeScale.bodySmall.fontSize,
-            fontFamily: 'inherit',
-            fontWeight: 600,
-            color: selected ? 'text.primary' : 'text.secondary',
-            bgcolor: selected ? 'background.surface' : 'transparent',
-            boxShadow: selected ? 'xs' : 'none',
-            transition: 'background-color 180ms ease, color 180ms ease',
-            '&:focus-visible': {
-              outline: '2px solid',
-              outlineColor: 'primary.500',
-              outlineOffset: '2px',
-            },
-          })}
+          className={
+            selected
+              ? 'auth-segmented__option active'
+              : 'auth-segmented__option'
+          }
         >
           {option.label}
-        </Box>
+        </button>
       )
     })}
-  </Box>
+  </div>
 )
 
 const LoginView = () => {
@@ -502,12 +475,7 @@ const LoginView = () => {
             )}
           </Box>
 
-          <Button
-            fullWidth
-            size='lg'
-            sx={{ ...authButtonSx, mt: 1 }}
-            onClick={getUserProfileAndNavigateToHome}
-          >
+          <Button fullWidth size='lg' onClick={getUserProfileAndNavigateToHome}>
             {t('auth.continueAs', { name: displayName })}
           </Button>
           <Button
@@ -515,7 +483,6 @@ const LoginView = () => {
             size='lg'
             variant='plain'
             color='neutral'
-            sx={authButtonSx}
             onClick={() => apiClient.handleLogout()}
           >
             {t('auth.useDifferentAccount')}
@@ -594,7 +561,7 @@ const LoginView = () => {
             </Box>
           </Box>
 
-          <AuthSubmitButton loading={isSubmitting} sx={{ mt: 3 }}>
+          <AuthSubmitButton loading={isSubmitting}>
             {loginType === 'sub'
               ? t('auth.signInAsSubAccount')
               : t('auth.signIn')}

@@ -1,12 +1,9 @@
-import { Alert, Box, Input, Link, Stack, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../components/common/ModalActions'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
-import { productTypeScale } from '../../theme/typography.js'
 import { VerifyMFA } from '../../utils/Fetcher'
-import { authInputSx } from './authStyles'
 
 const MFAVerificationModal = ({
   onClose,
@@ -99,67 +96,42 @@ const MFAVerificationModal = ({
         />
       }
     >
-      <Stack spacing={2.5}>
-        <Box>
-          <Typography
-            component='label'
-            htmlFor='mfa-code'
-            level='body-sm'
-            sx={{ display: 'block', fontWeight: 600, mb: 0.75 }}
-          >
+      <div className='auth-stack'>
+        <label className='auth-field' htmlFor='mfa-code'>
+          <span className='auth-field__label'>
             {isBackupCode
               ? t('auth.mfaBackupCodeLabel')
               : t('auth.mfaVerificationCodeLabel')}
-          </Typography>
-          <Input
+          </span>
+          <input
             id='mfa-code'
-            size='lg'
+            className='input auth-input auth-mfa-input'
             placeholder={
               isBackupCode ? t('auth.mfaBackupCodePlaceholder') : '000000'
             }
             value={verificationCode}
             onChange={e => setVerificationCode(e.target.value)}
             onKeyDown={handleKeyDown}
-            error={Boolean(error)}
+            aria-invalid={Boolean(error)}
             autoFocus
-            sx={{
-              ...authInputSx,
-              // Targets the inner <input>; styling the root leaves the text
-              // itself unaligned.
-              '& input': {
-                textAlign: 'center',
-                letterSpacing: isBackupCode ? 'normal' : '0.4em',
-                fontVariantNumeric: 'tabular-nums',
-                fontSize: productTypeScale.metric.fontSize,
-              },
-            }}
-            slotProps={{
-              input: {
-                maxLength: isBackupCode ? 50 : 6,
-                inputMode: isBackupCode ? 'text' : 'numeric',
-                pattern: isBackupCode ? undefined : '[0-9]*',
-                autoComplete: isBackupCode ? 'off' : 'one-time-code',
-              },
-            }}
+            maxLength={isBackupCode ? 50 : 6}
+            inputMode={isBackupCode ? 'text' : 'numeric'}
+            pattern={isBackupCode ? undefined : '[0-9]*'}
+            autoComplete={isBackupCode ? 'off' : 'one-time-code'}
+            style={{ letterSpacing: isBackupCode ? 'normal' : '0.4em' }}
           />
-        </Box>
+        </label>
 
         {error && (
-          <Alert
-            color='danger'
-            variant='soft'
-            sx={theme => ({ borderRadius: theme.radius.row })}
-          >
+          <div className='auth-alert' role='alert'>
             {error}
-          </Alert>
+          </div>
         )}
 
-        <Box sx={{ textAlign: 'center' }}>
-          <Link
-            component='button'
+        <div className='auth-copy'>
+          <button
+            className='auth-link'
             type='button'
-            level='body-sm'
-            underline='hover'
             onClick={() => {
               setIsBackupCode(!isBackupCode)
               setVerificationCode('')
@@ -169,18 +141,13 @@ const MFAVerificationModal = ({
             {isBackupCode
               ? t('auth.mfaUseAuthApp')
               : t('auth.mfaUseBackupCode')}
-          </Link>
-        </Box>
+          </button>
+        </div>
 
         {isBackupCode && (
-          <Typography
-            level='body-xs'
-            sx={{ textAlign: 'center', color: 'text.secondary' }}
-          >
-            {t('auth.mfaBackupOneTime')}
-          </Typography>
+          <p className='auth-copy'>{t('auth.mfaBackupOneTime')}</p>
         )}
-      </Stack>
+      </div>
     </ResponsiveModal>
   )
 }

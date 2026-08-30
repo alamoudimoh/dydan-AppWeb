@@ -1,14 +1,17 @@
 import MarkEmailReadOutlined from '@mui/icons-material/MarkEmailReadOutlined'
-import { Box, Button, Link, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useNotification } from '../../service/NotificationProvider'
 import { ResetPassword } from '../../utils/Fetcher'
-import { AuthSubmitButton, AuthTextField, LegalLinks } from './AuthFields'
+import {
+  AuthButton,
+  AuthSubmitButton,
+  AuthTextField,
+  LegalLinks,
+} from './AuthFields'
 import AuthShell from './AuthShell'
-import { authButtonSx } from './authStyles'
 
 const isInvalidEmail = email =>
   !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
@@ -22,23 +25,14 @@ const ForgotPasswordView = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { showError, showNotification } = useNotification()
 
-  const handleSubmit = async e => {
-    e?.preventDefault()
-
-    if (!email) {
-      setEmailError(t('auth.emailRequired'))
-      return
-    }
-
-    if (isInvalidEmail(email)) {
-      setEmailError(t('auth.emailInvalid'))
-      return
-    }
+  const handleSubmit = async event => {
+    event.preventDefault()
+    if (!email) return setEmailError(t('auth.emailRequired'))
+    if (isInvalidEmail(email)) return setEmailError(t('auth.emailInvalid'))
 
     setIsSubmitting(true)
     try {
       const response = await ResetPassword(email)
-
       if (response.ok) {
         setResetStatusOk(true)
         showNotification({
@@ -53,7 +47,7 @@ const ForgotPasswordView = () => {
           message: t('auth.resetFailedMessage'),
         })
       }
-    } catch (error) {
+    } catch {
       setResetStatusOk(false)
       showError({
         title: t('auth.resetFailed'),
@@ -61,21 +55,6 @@ const ForgotPasswordView = () => {
       })
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  // Validate on blur/submit only; flagging a half-typed address as invalid on
-  // every keystroke reads as the form yelling at you mid-word.
-  const handleEmailChange = e => {
-    setEmail(e.target.value)
-    if (emailError) {
-      setEmailError(null)
-    }
-  }
-
-  const handleEmailBlur = () => {
-    if (email && isInvalidEmail(email)) {
-      setEmailError(t('auth.emailInvalid'))
     }
   }
 
@@ -87,27 +66,15 @@ const ForgotPasswordView = () => {
         footer={<LegalLinks />}
         logoSize={0}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+        <div className='auth-stack'>
           <MarkEmailReadOutlined
+            className='auth-status-icon'
             fontSize='large'
-            sx={{ color: 'primary.plainColor', mb: 2 }}
           />
-          <Button
-            fullWidth
-            size='lg'
-            variant='solid'
-            sx={authButtonSx}
-            onClick={() => navigate('/login')}
-          >
+          <AuthButton onClick={() => navigate('/login')} variant='primary'>
             {t('auth.backToSignIn')}
-          </Button>
-        </Box>
+          </AuthButton>
+        </div>
       </AuthShell>
     )
   }
@@ -119,11 +86,7 @@ const ForgotPasswordView = () => {
       footer={<LegalLinks />}
       logoSize={0}
     >
-      <Box
-        component='form'
-        onSubmit={handleSubmit}
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-      >
+      <form className='auth-form' onSubmit={handleSubmit}>
         <AuthTextField
           label={t('auth.emailAddress')}
           id='email'
@@ -134,31 +97,29 @@ const ForgotPasswordView = () => {
           autoFocus
           value={email}
           error={emailError}
-          onChange={handleEmailChange}
-          onBlur={handleEmailBlur}
+          onChange={event => {
+            setEmail(event.target.value)
+            if (emailError) setEmailError(null)
+          }}
+          onBlur={() => {
+            if (email && isInvalidEmail(email))
+              setEmailError(t('auth.emailInvalid'))
+          }}
         />
-
-        <AuthSubmitButton loading={isSubmitting} sx={{ mt: 1 }}>
+        <AuthSubmitButton loading={isSubmitting}>
           {t('auth.sendResetLink')}
         </AuthSubmitButton>
-      </Box>
-
-      <Typography
-        level='body-sm'
-        sx={{ mt: 3, textAlign: 'center', color: 'text.secondary' }}
-      >
+      </form>
+      <p className='auth-copy auth-copy--spaced'>
         {t('auth.rememberedPassword')}{' '}
-        <Link
-          component='button'
+        <button
+          className='auth-link'
           type='button'
-          level='body-sm'
-          fontWeight={600}
-          underline='hover'
           onClick={() => navigate('/login')}
         >
           {t('auth.backToSignIn')}
-        </Link>
-      </Typography>
+        </button>
+      </p>
     </AuthShell>
   )
 }
