@@ -1,36 +1,10 @@
-import {
-  AddRounded,
-  CheckCircleOutline,
-  FolderOutlined,
-  HistoryRounded,
-  InboxOutlined,
-  LabelOutlined,
-  PersonOutline,
-  SearchRounded,
-  SettingsOutlined,
-} from '@mui/icons-material'
-import {
-  Box,
-  Chip,
-  CircularProgress,
-  Divider,
-  Input,
-  List,
-  ListItemButton,
-  ListItemContent,
-  ListItemDecorator,
-  Typography,
-} from '@mui/joy'
 import Fuse from 'fuse.js'
 import PropTypes from 'prop-types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
-import EmptyState from '../components/common/EmptyState'
-import QueryLoadingView from '../components/common/QueryLoadingView'
-import { formatSearchPlaceholder } from '../config/AppBranding'
+import FigmaIcon from '../components/FigmaIcon'
 import { STORAGE_KEYS } from '../utils/storageKeys'
 import {
   readMigratedLocalStorageJSON,
@@ -56,45 +30,36 @@ const GROUP_LABELS = {
   settings: 'Settings',
   actions: 'Quick actions',
 }
-
 const ICONS = {
-  tasks: <CheckCircleOutline />,
-  history: <HistoryRounded />,
-  projects: <FolderOutlined />,
-  labels: <LabelOutlined />,
-  people: <PersonOutline />,
-  settings: <SettingsOutlined />,
-  actions: <AddRounded />,
+  actions: 'plus',
+  history: 'activity',
+  labels: 'tag',
+  people: 'users',
+  projects: 'projects',
+  settings: 'settings',
+  tasks: 'tasks',
 }
-
 const QUICK_ACTIONS = [
   {
     id: 'action:create',
     provider: 'actions',
-    title: 'Create a task',
-    subtitle: 'Quick action',
     route: '/chores/create',
+    subtitle: 'Quick action',
+    title: 'Create a task',
   },
   {
     id: 'action:tasks',
     provider: 'actions',
-    title: 'View all tasks',
-    subtitle: 'Navigation',
     route: '/chores',
-  },
-  {
-    id: 'action:archived',
-    provider: 'actions',
-    title: 'View archived tasks',
     subtitle: 'Navigation',
-    route: '/archived',
+    title: 'View all tasks',
   },
   {
     id: 'action:settings',
     provider: 'actions',
-    title: 'Open settings',
-    subtitle: 'Navigation',
     route: '/settings',
+    subtitle: 'Navigation',
+    title: 'Open settings',
   },
 ]
 
@@ -102,85 +67,61 @@ const readRecents = () => readMigratedLocalStorageJSON(RECENTS_KEY, [])
 
 const saveRecent = result => {
   if (result.provider === 'actions') return
-  const recent = {
-    id: result.id,
-    provider: result.provider,
-    route: result.route,
-    title: result.title,
-    subtitle: result.subtitle,
-  }
   writeLocalStorageJSON(
     RECENTS_KEY,
-    [recent, ...readRecents().filter(item => item.id !== result.id)].slice(
-      0,
-      6,
-    ),
+    [
+      {
+        id: result.id,
+        provider: result.provider,
+        route: result.route,
+        subtitle: result.subtitle,
+        title: result.title,
+      },
+      ...readRecents().filter(item => item.id !== result.id),
+    ].slice(0, 6),
   )
 }
 
-const Highlight = ({ query, text }) => {
-  if (!text || !query.trim()) return text || null
-  const words = query.trim().split(/\s+/).filter(Boolean)
-  const escaped = words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-  if (!escaped.length) return text
-  const pattern = new RegExp(`(${escaped.join('|')})`, 'ig')
-  const isMatch = new RegExp(`^(${escaped.join('|')})$`, 'i')
-  return String(text)
-    .split(pattern)
-    .map((part, index) =>
-      isMatch.test(part) ? (
-        <Box
-          component='mark'
-          key={index}
-          sx={{ bgcolor: 'warning.softBg', color: 'inherit', borderRadius: 2 }}
-        >
-          {part}
-        </Box>
-      ) : (
-        part
-      ),
-    )
-}
-
-const SearchContainer = ({ children, onClose, presentation }) => {
-  if (presentation === 'page') {
-    return (
-      <Box
-        component='main'
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: 'calc(100dvh - 56px)',
-          minHeight: 0,
-          overflow: 'hidden',
-          bgcolor: 'background.body',
-        }}
-      >
-        {children}
-      </Box>
-    )
-  }
-
-  return (
+const SearchContainer = ({ children, onClose, presentation }) =>
+  presentation === 'page' ? (
+    <main className='figma-search-page'>{children}</main>
+  ) : (
     <AppModal
-      open
-      onClose={onClose}
+      contentSx={{ p: 0 }}
       disableRestoreFocus
-      title='Search'
-      size='lg'
       maxHeight='min(720px, calc(100dvh - 48px))'
-      contentSx={{
-        p: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-      sx={{ height: 'min(720px, calc(100dvh - 48px))' }}
+      onClose={onClose}
+      open
+      size='lg'
+      title='Search'
     >
       {children}
     </AppModal>
   )
-}
+
+const ResultRow = ({ onSelect, result, selected }) => (
+  <button
+    className={`task-row figma-search-row w-full text-start ${selected ? 'figma-search-row-selected' : ''}`}
+    onClick={() => onSelect(result)}
+    type='button'
+  >
+    <FigmaIcon
+      name={ICONS[result.provider] || 'search'}
+      size={18}
+      style={{ color: result.color || 'var(--t-muted)', flexShrink: 0 }}
+    />
+    <span className='min-w-0 flex-1'>
+      <span className='text-primary block font-medium' style={{ fontSize: 14 }}>
+        {result.title}
+      </span>
+      {(result.subtitle || result.body) && (
+        <span className='text-faint block' style={{ fontSize: 11 }}>
+          {[result.subtitle, result.body].filter(Boolean).join(' · ')}
+        </span>
+      )}
+    </span>
+  </button>
+)
 
 const GlobalSearchPalette = ({
   documents,
@@ -189,17 +130,17 @@ const GlobalSearchPalette = ({
   onClose,
   presentation = 'modal',
 }) => {
-  const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const focusInputRef = useCallback(node => {
-    if (node) requestAnimationFrame(() => node.focus())
-  }, [])
   const [query, setQuery] = useState(initialQuery || '')
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [recents] = useState(readRecents)
-  const selectedResultRef = useRef(null)
+  const inputRef = useRef(null)
+  const recents = useMemo(() => readRecents(), [])
 
-  const searchIndexes = useMemo(
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const indexes = useMemo(
     () =>
       new Map(
         GROUPS.filter(group => group !== 'actions').map(group => [
@@ -207,7 +148,6 @@ const GlobalSearchPalette = ({
           new Fuse(
             documents.filter(item => item.provider === group),
             {
-              threshold: 0.38,
               distance: 120,
               ignoreLocation: true,
               includeScore: true,
@@ -220,6 +160,7 @@ const GlobalSearchPalette = ({
                       { name: 'body', weight: 0.17 },
                       { name: 'subtitle', weight: 0.08 },
                     ],
+              threshold: 0.38,
             },
           ),
         ]),
@@ -229,56 +170,33 @@ const GlobalSearchPalette = ({
 
   const results = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase()
-    if (!normalized) {
-      const currentById = new Map(documents.map(item => [item.id, item]))
-      const recentResults = recents
-        .map(item => currentById.get(item.id) || item)
-        .filter(item => item.provider !== 'history' || currentById.has(item.id))
-      return [...recentResults, ...QUICK_ACTIONS]
-    }
-
-    const grouped = GROUPS.filter(group => group !== 'actions').flatMap(group =>
-      (searchIndexes.get(group)?.search(normalized, { limit: 7 }) || [])
-        .map(match => {
-          const title = match.item.title?.toLocaleLowerCase() ?? ''
-          let score = match.score ?? 1
-
-          if (group !== 'history') {
-            if (title === normalized) {
-              score -= 1
-            } else if (title.startsWith(normalized)) {
-              score -= 0.15
-            } else if (title.includes(normalized)) {
-              score -= 0.08
-            }
-          }
-
-          return { ...match.item, score }
-        })
-        .sort((a, b) => a.score - b.score),
+    if (!normalized) return []
+    const matches = GROUPS.filter(group => group !== 'actions').flatMap(group =>
+      (indexes.get(group)?.search(normalized, { limit: 7 }) || []).map(
+        match => ({
+          ...match.item,
+          score: match.score ?? 1,
+        }),
+      ),
     )
-    grouped.push({
+    matches.push({
       id: 'action:filter-tasks',
       provider: 'actions',
-      title: `Show tasks matching “${query.trim()}”`,
-      subtitle: 'Filter the task list',
       route: `/chores?search=${encodeURIComponent(query.trim())}`,
+      subtitle: 'Filter the task list',
+      title: `Show tasks matching “${query.trim()}”`,
     })
-    return grouped
-  }, [documents, query, recents, searchIndexes])
+    return matches.sort((a, b) => a.score - b.score)
+  }, [indexes, query])
 
-  useEffect(() => {
-    selectedResultRef.current?.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-    })
-  }, [selectedIndex, results])
-
-  const selectResult = result => {
-    saveRecent(result)
-    navigate(result.route)
-    if (presentation === 'modal') onClose()
-  }
+  const selectResult = useCallback(
+    result => {
+      saveRecent(result)
+      navigate(result.route)
+      if (presentation === 'modal') onClose()
+    },
+    [navigate, onClose, presentation],
+  )
 
   const onInputKeyDown = event => {
     if (event.key === 'ArrowDown') {
@@ -296,153 +214,110 @@ const GlobalSearchPalette = ({
     }
   }
 
+  const byProvider = GROUPS.map(provider => ({
+    provider,
+    results: results.filter(result => result.provider === provider),
+  })).filter(group => group.results.length)
   return (
     <SearchContainer onClose={onClose} presentation={presentation}>
-      <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
-        <Input
-          autoFocus
-          slotProps={{
-            input: {
-              ref: focusInputRef,
-              'aria-label':
-                'Search tasks, history, projects, labels and settings',
-            },
-          }}
-          value={query}
-          onChange={event => {
-            setQuery(event.target.value)
-            setSelectedIndex(0)
-          }}
-          onKeyDown={onInputKeyDown}
-          placeholder={formatSearchPlaceholder()}
-          startDecorator={<SearchRounded />}
-          endDecorator={
-            isLoading ? (
-              <CircularProgress size='sm' />
-            ) : presentation === 'modal' ? (
-              <Chip size='sm' variant='outlined'>
-                Esc
-              </Chip>
-            ) : null
-          }
-          sx={{
-            '--Input-minHeight': '48px',
-            fontSize: 'md',
-            borderRadius: 'lg',
-          }}
-        />
-        <Typography
-          level='body-xs'
-          sx={{ color: 'text.tertiary', mt: 1, px: 0.5 }}
-        >
-          Searching content available on this device
-        </Typography>
-      </Box>
-      <Divider />
-
-      <Box
-        sx={{
-          overflowY: 'auto',
-          flex: 1,
-          pb: 'var(--safe-area-inset-bottom, 0px)',
-        }}
-      >
-        {isLoading && !query.trim() && <QueryLoadingView size='sm' />}
-        {!isLoading && query.trim() && results.length === 1 && (
-          <EmptyState
-            variant='no-results'
-            size='sm'
-            icon={<InboxOutlined />}
-            title={t('search.noDirectMatchesTitle')}
-            description={t('search.noDirectMatchesDescription')}
-          />
-        )}
-
-        <List aria-live='polite' sx={{ px: 1, py: 1 }}>
-          {results.map((result, index) => {
-            const hasQuery = Boolean(query.trim())
-            const showHeading = hasQuery
-              ? index === 0 || result.provider !== results[index - 1].provider
-              : index === 0 ||
-                (result.provider === 'actions' &&
-                  results[index - 1].provider !== 'actions')
-            return (
-              <Box key={result.id}>
-                {showHeading && (
-                  <Typography
-                    level='body-xs'
-                    sx={{
-                      color: 'text.tertiary',
-                      fontWeight: 'lg',
-                      px: 1.5,
-                      pt: index ? 2 : 0.5,
-                      pb: 0.5,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                    }}
-                  >
-                    {!query.trim() && result.provider !== 'actions'
-                      ? 'Recent'
-                      : GROUP_LABELS[result.provider]}
-                  </Typography>
-                )}
-                <ListItemButton
-                  ref={index === selectedIndex ? selectedResultRef : null}
-                  selected={index === selectedIndex}
-                  onMouseMove={() => setSelectedIndex(index)}
-                  onClick={() => selectResult(result)}
-                  sx={{
-                    borderRadius: 'md',
-                    py: 1.1,
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <ListItemDecorator
-                    sx={{ mt: 0.25, color: result.color || 'text.secondary' }}
-                  >
-                    {ICONS[result.provider]}
-                  </ListItemDecorator>
-                  <ListItemContent>
-                    <Typography
-                      level='title-sm'
-                      sx={{ overflowWrap: 'anywhere' }}
-                    >
-                      <Highlight query={query} text={result.title} />
-                    </Typography>
-                    <Typography
-                      level='body-xs'
-                      sx={{ color: 'text.secondary' }}
-                      noWrap
-                    >
-                      {[result.subtitle, result.body]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </ListItemContent>
-                </ListItemButton>
-              </Box>
-            )
-          })}
-        </List>
-      </Box>
-      <Divider />
-      <Box
-        sx={{
-          display: { xs: 'none', sm: 'flex' },
-          gap: 2,
-          px: 2,
-          py: 1,
-          color: 'text.tertiary',
-        }}
-      >
-        <Typography level='body-xs'>↑↓ Navigate</Typography>
-        <Typography level='body-xs'>↵ Open</Typography>
-        <Typography level='body-xs' sx={{ ms: 'auto' }}>
-          {query.trim()
-            ? `${Math.max(0, results.length - 1)} results`
-            : 'Type to search'}
-        </Typography>
-      </Box>
+      <div className='figma-search-wrap'>
+        <div className='px-4 pb-4 pt-2 md:px-7'>
+          <div className='card figma-search-input flex items-center gap-3 px-4'>
+            <FigmaIcon
+              name='search'
+              size={18}
+              style={{ color: 'var(--t-muted)' }}
+            />
+            <input
+              aria-label='Search tasks, history, projects, labels and settings'
+              className='text-primary flex-1 bg-transparent py-4 outline-none'
+              onChange={event => {
+                setQuery(event.target.value)
+                setSelectedIndex(0)
+              }}
+              onKeyDown={onInputKeyDown}
+              placeholder='Search tasks, projects, routines, shopping...'
+              ref={inputRef}
+              value={query}
+            />
+            {isLoading && (
+              <span className='figma-search-loading' aria-label='Loading' />
+            )}
+            {query && (
+              <button
+                aria-label='Clear search'
+                className='btn btn-ghost btn-icon'
+                onClick={() => {
+                  setQuery('')
+                  setSelectedIndex(0)
+                }}
+                type='button'
+              >
+                <FigmaIcon name='x' size={15} />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className='px-4 md:px-7'>
+          {!query.trim() && (
+            <div className='empty-state py-16'>
+              <div style={{ fontSize: 48 }}>🔍</div>
+              <div className='text-primary font-bold' style={{ fontSize: 16 }}>
+                Search everything
+              </div>
+              <div className='text-muted' style={{ fontSize: 13 }}>
+                Tasks, projects, routines, shopping items
+              </div>
+              {recents.length > 0 && (
+                <div className='text-faint' style={{ fontSize: 11 }}>
+                  Recent searches are available when you start typing.
+                </div>
+              )}
+            </div>
+          )}
+          {query.trim() && results.length === 1 && (
+            <div className='empty-state py-16'>
+              <div style={{ fontSize: 48 }}>🤷</div>
+              <div className='text-primary font-bold'>
+                Nothing found for &quot;{query}&quot;
+              </div>
+              <div className='text-muted' style={{ fontSize: 13 }}>
+                Try a different search term
+              </div>
+              <button
+                className='btn btn-primary mt-4'
+                onClick={() => navigate('/chores/create')}
+                type='button'
+              >
+                <FigmaIcon name='plus' size={14} />
+                Create a task
+              </button>
+            </div>
+          )}
+          {byProvider.map(group => (
+            <div className='mb-5' key={group.provider}>
+              <div className='section-label' style={{ padding: '0 0 8px' }}>
+                {GROUP_LABELS[group.provider]} ({group.results.length})
+              </div>
+              <div className='card overflow-hidden'>
+                {group.results.map(result => (
+                  <ResultRow
+                    key={result.id}
+                    onSelect={selectResult}
+                    result={result}
+                    selected={results.indexOf(result) === selectedIndex}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+          {query.trim() && results.length > 1 && (
+            <span className='sr-only' aria-live='polite'>
+              {results.length - 1} results
+            </span>
+          )}
+        </div>
+      </div>
     </SearchContainer>
   )
 }
@@ -452,12 +327,11 @@ SearchContainer.propTypes = {
   onClose: PropTypes.func.isRequired,
   presentation: PropTypes.oneOf(['modal', 'page']).isRequired,
 }
-
-Highlight.propTypes = {
-  query: PropTypes.string.isRequired,
-  text: PropTypes.string,
+ResultRow.propTypes = {
+  onSelect: PropTypes.func.isRequired,
+  result: PropTypes.object.isRequired,
+  selected: PropTypes.bool.isRequired,
 }
-
 GlobalSearchPalette.propTypes = {
   documents: PropTypes.arrayOf(PropTypes.object).isRequired,
   initialQuery: PropTypes.string,

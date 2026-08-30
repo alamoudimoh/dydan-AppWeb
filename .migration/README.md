@@ -1,38 +1,38 @@
 # Phase
 
-Phase 5 — `migration/figma-p05-organize-household`: exact Figma organize/household screens.
+Phase 6 — `migration/figma-p06-search-settings-system`: remaining authoritative Figma surfaces and explicit non-Figma classification.
 
 # Prerequisites
 
-Fetch/prune; verify Phases 1–4 merged; rebase latest `origin/develop`, resolving planning/base drift only. Figma overrides `design-reference/` and current production presentation.
+Fetch/prune; verify Phases 1–5 merged; rebase latest `origin/develop`, resolving planning/base drift only. Figma wins; `design-reference/` is not authority.
 
 # Authoritative Figma Baseline
 
-Imported `design-source/figma-make/` at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, identical to `DayDanProductExperience` `7131b76979e49351db8ecbc33db6648a75139572`.
+`design-source/figma-make/` at app `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, identical to dedicated `7131b76979e49351db8ecbc33db6648a75139572`.
 
 # Exact Figma Stack
 
-React 19, Vite 8, plugin-react 6, Tailwind 4/@tailwindcss-vite 4, TS 5.7, oxfmt; reuse actual JSX/classes.
+React 19/Vite 8/plugin-react 6/Tailwind 4 + `@tailwindcss/vite`/TS 5.7/oxfmt.
 
 # Figma Source Files
 
-`src/screens/{ProjectsScreen,RoutinesScreen,ShoppingScreen,GoalsScreen,MaintenanceScreen,ActivityScreen}.tsx`, `src/App.tsx`, `src/data.ts`, `src/index.css`.
+`src/screens/{SearchScreen,SettingsScreen,ErrorScreen}.tsx`, `src/App.tsx`, `src/index.css`, `src/data.ts`.
 
 # Production Targets
 
-`src/views/Projects/{ProjectView,ProjectQueries}.js*`, `Routines/{RoutinesView,RoutineQueries}.js*`, `ShoppingLists/{ShoppingListsView,ShoppingListDetail,ShoppingListQueries}.js*`, `Maintenance/**`, `User/UserActivities.jsx`, `FamilyProgress/FamilyProgress.jsx`, `History/**`, `Rewards/**`, `src/queries/**`, `src/contexts/RouterContext.jsx`.
+`src/search/{GlobalSearchPage,GlobalSearchPalette,GlobalSearchContext}.jsx`, `src/views/Settings/**`, `src/views/{Error,Notifications/NotificationsView}.jsx`, `src/components/{ErrorBoundary,RealTimeSettings,SSESettings,SSEConnectionStatus}.jsx`, `src/contexts/{Router,Theme,Localization,SSE}Context.jsx`.
 
 # Existing Behavior That Must Be Preserved
 
-Project/routine/shopping CRUD, list item mutations, archival, chores linkage, maintenance assets/history/meters, household permissions, activity history, React Query cache/invalidation, SSE, offline, auth, i18n and existing routes.
+Search index/navigation/keyboard shortcut, settings permissions and persistence, account/session/MFA/API token/storage/developer controls, error recovery/reporting, Sentry/OpenReplay, SSE, auth, i18n, Capacitor settings/native effects.
 
 # Required Implementation
 
-Port each listed Figma screen structure/classes and wire real models/mutations. Map Projects `/projects`, Routines `/routines`, Shopping `/shopping` and detail, Maintenance `/maintenance`/assets, Activity `/activities`; evaluate Goals against existing FamilyProgress/points/rewards semantics. If a Figma screen covers only part of a product route, preserve remaining behavior using exact Figma shared primitives, not invented layout.
+Port Figma Search, Settings and Error DOM/classes directly, then wire real callbacks/data. Build an audited route inventory from `RouterContext.jsx`: classify every remaining production-only surface A Figma shared-shell sufficient, B exact reusable Figma primitive composition, or C `no authoritative Figma design — OWNER DESIGN INPUT REQUIRED`. Put the classification in the execution PR/evidence; for C do not invent a design.
 
 # Forbidden Substitutions
 
-No MUI Joy equivalents, `sx`, mock data, removal of detail/CRUD/permission/offline flows, design-reference override or approximate layouts.
+No new design for category C; no Joy setting/search/error imitation; no `sx`; no altered permission/error/reporting behavior; no design-reference override.
 
 # Dependency Changes
 
@@ -40,28 +40,63 @@ None expected.
 
 # Tests
 
-Add query/mutation and permission tests; Playwright CRUD/list/detail/activity fixtures; run `npm test`, build, smoke and `./scripts/verify.sh`.
+Search keyboard/result tests; settings permission/persistence tests; error boundary/retry/report tests; Playwright search/settings/error paths; full build/smoke/`./scripts/verify.sh`.
 
 # Visual Acceptance
 
-For all six Figma screens, compare 1440×900/390×844 × DayDan/Sovereign × LTR/RTL with populated, empty, error and permission states. Match cards, rows, typography, icons, controls, responsive density and shell.
+Compare Search, Settings and Error Figma/prod at 1440×900 and 390×844, DayDan/Sovereign × LTR/RTL, including query/results, setting groups, loading/error/retry. Validate exact hierarchy/density/control styling; screen parity is not “no overflow.”
 
 # RTL / Arabic
 
-Use Figma logical layout and Arabic content for every screen/detail form.
+Arabic query, results, setting labels and direction must retain product translations and Figma layout.
 
 # Capacitor / Native
 
-Check touch CRUD, scrolling, file/asset pathways, offline/reconnect and Android sync.
+Exercise settings with native side effects, search keyboard and error reporting on web build plus Android sync.
 
 # Completion Criteria
 
-Every authoritative screen is direct Figma implementation with real behavior and visual matrix pass.
+Authoritative screens pass visual parity, behavior works, and every unrepresented production surface has A/B/C evidence with no C invention.
 
 # Final Evidence
 
-Report source/route mapping, behavior inventory, tests, screenshots and constraints.
+Report classification table, mappings, behavior tests, screenshot pairs and owner-input blockers.
 
 # GitHub Actions / Merge Policy
 
 GitHub Actions are NOT an authoritative merge gate for DayDan; they are intentionally disabled/unavailable as a required validation mechanism. COMPLETE LOCAL VERIFICATION in a clean isolated worktree is authoritative. Do not stop because Actions are red before steps, record zero executed steps, skip downstream jobs, lack runners, or have account/billing/infrastructure failures. Report this as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS`. Investigate only concrete reproducible repository-code/test failures. Merge after dependency install, typecheck, unit/component tests, lint/format, DayDan/Sovereign builds, required browser/visual Figma parity, Arabic/RTL, Capacitor, `scripts/verify.sh`, PR review and no regression; Actions green is not required. After merge, fetch, create a NEW detached clean worktree at `origin/develop`, rerun all applicable local verification, and confirm it is clean.
+
+# Binding Authority, Closure PR Authorization, and Figma Consistency Invariant
+
+1. The owner explicitly pre-authorizes creation, push, review, merge, and post-merge verification of narrowly scoped closure branches/PRs for any concrete in-scope regression found before, during, or after this phase. No additional authorization is required.
+2. Any prior `do not create another branch/PR` wording only forbids unnecessary duplicate implementation work; it never prohibits a necessary closure branch/PR.
+3. If a repository-action guard, prior prompt, or stale planning sentence conflicts with this authorization, this latest README controls the phase execution. Do not return an authority-conflict blocker.
+4. Any active build/test/reference/verification configuration that fails because it retained superseded Phase 1 tooling automatically becomes in-scope. Fix it narrowly; never skip the gate. `design-reference/` is not visual authority, but executable reference tooling must remain compatible with the Figma runtime whenever repository verification executes it.
+5. Preserve the repo-wide Phase 1 runtime invariant: no active executable path may regress to React 18 assumptions, `@vitejs/plugin-react-swc`, Tailwind 3/PostCSS integration, or substituted runtime tooling. Scan active configs/scripts/tests before completion and fix stale references.
+6. For Figma-covered Search/Settings/Error presentation, Figma is exact authority: use the actual DOM/classes/assets/tokens/control composition. No equivalent library, closest icon, approximate spacing, or workaround is acceptable. Category C remains no-invention territory.
+7. A needed closure PR is work, not a blocker. `NOT COMPLETE` is allowed only after all normal in-repository remediation is exhausted.
+
+# Autonomous End-to-End Execution Contract
+
+When the owner says `Execute Phase 6`, this README is the complete execution contract. Work autonomously from start to terminal completion.
+
+1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work in isolated worktrees without touching the dirty primary checkout or `daydan-server`.
+2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. Wait/poll for running commands and continue.
+3. Any test/build/lint/typecheck/visual failure must be reproduced, root-caused, fixed in scope, covered where appropriate, and rerun. Continue until the full applicable gate is green or a genuinely external blocker remains after reasonable remediation is exhausted.
+4. Complete missing prior-phase post-merge verification first if necessary; fix any concrete regression through a narrow closure branch/PR, merge, reverify, then continue without asking the owner.
+5. Complete all executable A/B work, local verification, exact Figma parity, review passes, commit, push, PR, full diff review, merge, fetch final `origin/develop`, fresh detached worktree, and complete post-merge verification. Category C never authorizes invented UI.
+6. GitHub Actions is informational/non-gating. Never wait for it or ask for an override.
+7. Do not ask routine implementation questions. For category C, continue and finish every independent executable task first. Only after exhausting Figma/repository evidence and all A/B work may unresolved C items become a terminal owner-design blocker; return them once as a consolidated exact list with source/route evidence and the minimum design decision required.
+8. Earlier wording such as `stop`, `request owner input`, or `report owner-input blocker` means terminal handling only after all independent executable work is finished, never an early progress response.
+9. Return exactly one terminal report: `PHASE 6 COMPLETE` with evidence when no unresolved C blocker prevents completion, or `NOT COMPLETE` only for concrete unresolved owner-design/external blockers after all other work and remediation are exhausted. Do not start Phase 7.
+
+# Mandatory Execution-Start and No-Early-Termination Rule
+
+1. Checkout, fetch, rebase, branch preparation, README review, inventory, classification, planning, or listing remaining work are PREPARATION ONLY and never a terminal outcome.
+2. After prerequisites are satisfied, immediately perform all executable code migration in `Required Implementation`. If implementation has not yet happened, START AND COMPLETE IT instead of returning status.
+3. A terminal response saying `implementation has not yet been performed`, `phase has not started`, `migration remains outstanding`, `not migrated`, `not verified`, or equivalent is INVALID.
+4. `NOT COMPLETE` may not be used because A/B implementation, tests, parity verification, PR, or merge are pending. Those are mandatory work items.
+5. Complete all A/B surfaces and all other repository work before any Category C item can become a terminal owner-design blocker. Do not use Category C as an excuse to stop the executable portion early.
+6. Continue until Figma-covered Search/Settings/Error work is implemented literally, all A/B work is completed, in-repo regressions are fixed, local gates pass, PR is merged, and clean post-merge verification passes.
+7. Only a genuinely external blocker or unresolved Category C owner-design decision that cannot be derived from authoritative Figma/repository evidence may terminate as `NOT COMPLETE`, after every independent executable item is finished.
+8. Literal Figma fidelity is mandatory for all covered presentation: no reinterpretation, simplification, approximation, substitution, or postponement.

@@ -1,81 +1,84 @@
 import { Component } from 'react'
 import { withTranslation } from 'react-i18next'
 
-/**
- * Standalone error boundary that renders a fallback UI when a React child
- * throws during render. Works independently of Sentry configuration.
- */
+import FigmaIcon from './FigmaIcon'
+
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { error: null, hasError: false }
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+    return { error, hasError: true }
   }
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo)
   }
 
-  handleGoHome = () => {
-    window.location.href = '/'
+  retry = () => {
+    this.setState({ error: null, hasError: false })
+  }
+
+  goHome = () => {
+    window.location.assign('/chores')
   }
 
   render() {
-    if (this.state.hasError) {
-      const { t } = this.props
-      return (
-        <div
-          style={{
-            padding: '2rem',
-            textAlign: 'center',
-            fontFamily: 'system-ui, sans-serif',
-          }}
-        >
-          <h2 style={{ marginBottom: '1rem' }}>
-            {t('errorBoundary.title', 'Something went wrong')}
-          </h2>
-          <p style={{ color: '#666', marginBottom: '1rem' }}>
-            {t(
-              'errorBoundary.message',
-              'An unexpected error occurred. Please try refreshing the page.',
-            )}
-          </p>
-          <div
-            style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}
-          >
+    if (!this.state.hasError) return this.props.children
+    const { t } = this.props
+    return (
+      <div className='figma-error-wrap'>
+        <div className='px-4 pt-6 md:px-7'>
+          <div className='card figma-error-card mb-5 p-6'>
+            <div className='flex items-start gap-4'>
+              <div className='figma-error-icon'>
+                <FigmaIcon
+                  name='error'
+                  size={24}
+                  style={{ color: 'var(--sig-over)' }}
+                />
+              </div>
+              <div>
+                <h2
+                  className='text-primary mb-1 font-bold'
+                  style={{ fontSize: 18 }}
+                >
+                  {t('errorBoundary.title', 'Something went wrong')}
+                </h2>
+                <div className='text-muted figma-error-message'>
+                  {t(
+                    'errorBoundary.message',
+                    'An unexpected error occurred. Your data is safe - please try again.',
+                  )}
+                </div>
+                <div className='badge figma-error-badge mt-2'>
+                  RUNTIME_ERROR
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className='mb-5 flex flex-col gap-3'>
             <button
-              onClick={this.handleGoHome}
-              style={{
-                padding: '0.5rem 1rem',
-                cursor: 'pointer',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                background: '#f5f5f5',
-              }}
+              className='btn btn-primary figma-error-action'
+              onClick={this.retry}
+              type='button'
             >
-              {t('errorBoundary.goHome', 'Go to Home')}
+              <FigmaIcon name='repeat' size={16} />
+              {t('errorBoundary.refresh', 'Retry')}
             </button>
             <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '0.5rem 1rem',
-                cursor: 'pointer',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                background: '#f5f5f5',
-              }}
+              className='btn btn-secondary figma-error-action'
+              onClick={this.goHome}
+              type='button'
             >
-              {t('errorBoundary.refresh', 'Refresh Page')}
+              {t('errorBoundary.goHome', 'Dismiss and continue')}
             </button>
           </div>
         </div>
-      )
-    }
-
-    return this.props.children
+      </div>
+    )
   }
 }
 
