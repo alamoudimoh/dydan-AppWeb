@@ -1,47 +1,11 @@
-import {
-  AccountCircle,
-  Api,
-  BugReport,
-  ChevronRight,
-  Circle,
-  Code,
-  FamilyRestroom,
-  Feedback,
-  Language,
-  Notifications,
-  Palette,
-  Person,
-  Security,
-  Settings,
-  Star,
-  Storage,
-  ViewSidebar,
-} from '@mui/icons-material'
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemContent,
-  ListItemDecorator,
-  Stack,
-  Typography,
-} from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import PageHeader from '../../components/common/PageHeader'
-import SectionCard from '../../components/common/SectionCard'
-import { useUserProfile } from '../../queries/UserQueries'
-import { useCircleMembers } from '../../queries/UserQueries'
-import { pageShellSx } from '../../theme/appLayout'
-import { isPlusAccount } from '../../utils/Helpers'
+import FigmaIcon from '../../components/FigmaIcon'
+import { APP_BRAND_ID } from '../../config/AppBranding'
+import { useLocalization } from '../../contexts/LocalizationContext'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import {
   hasPermission,
   resolveEffectiveRole,
@@ -50,355 +14,444 @@ import {
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 
+const Section = ({ children, title }) => (
+  <section className='mb-6'>
+    <div className='section-label' style={{ padding: '0 0 8px' }}>
+      {title}
+    </div>
+    <div className='card overflow-hidden'>{children}</div>
+  </section>
+)
+
+const Row = ({ action, icon, label, onClick, sub, toggle }) => (
+  <div className='figma-settings-row'>
+    {icon && (
+      <FigmaIcon
+        name={icon}
+        size={18}
+        style={{ color: 'var(--t-muted)', flexShrink: 0 }}
+      />
+    )}
+    <div className='min-w-0 flex-1'>
+      <div className='text-primary font-medium' style={{ fontSize: 14 }}>
+        {label}
+      </div>
+      {sub && (
+        <div className='text-muted' style={{ fontSize: 12, marginTop: 1 }}>
+          {sub}
+        </div>
+      )}
+    </div>
+    {toggle ||
+      (action && (
+        <button
+          className={
+            action.danger
+              ? 'btn btn-ghost btn-sm text-sig-over'
+              : 'btn btn-ghost btn-sm text-brand'
+          }
+          onClick={onClick}
+          type='button'
+        >
+          {action.label}
+        </button>
+      ))}
+  </div>
+)
+
+const Toggle = ({ checked, label, onChange }) => (
+  <button
+    aria-label={label}
+    aria-pressed={checked}
+    className={`figma-settings-toggle ${checked ? 'on' : ''}`}
+    onClick={onChange}
+    type='button'
+  >
+    <span />
+  </button>
+)
+
 const SettingsOverview = () => {
-  const { t } = useTranslation('settings')
   const navigate = useNavigate()
+  const { t } = useTranslation('settings')
+  const { isRTL, setLanguage } = useLocalization()
   const { data: userProfile } = useUserProfile()
   const { data: circleMembersData } = useCircleMembers()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
-  const effectiveRole = resolveEffectiveRole(
-    userProfile,
-    circleMembersData?.res || [],
-  )
+  const members = circleMembersData?.res || []
+  const role = resolveEffectiveRole(userProfile, members)
+  const can = setting =>
+    !SETTINGS_PERMISSIONS[setting] ||
+    hasPermission(role, SETTINGS_PERMISSIONS[setting])
+  const displayName =
+    userProfile?.displayName || userProfile?.username || 'DayDan member'
+  const email = userProfile?.email || userProfile?.username || ''
+  const initials = displayName
+    .split(/\s+/)
+    .map(part => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+  const isSolo = !members.length
 
-  const settingsCards = [
-    {
-      id: 'profile',
-      title: t('overview.sections.profile.title'),
-      description: t('overview.sections.profile.description'),
-      icon: <Person />,
-    },
-    {
-      id: 'circle',
-      title: t('overview.sections.circle.title'),
-      description: t('overview.sections.circle.description'),
-      icon: <Circle />,
-    },
-    {
-      id: 'account',
-      title: t('overview.sections.account.title'),
-      description: t('overview.sections.account.description'),
-      icon: <AccountCircle />,
-    },
-    {
-      id: 'subaccounts',
-      title: t('overview.sections.subaccounts.title'),
-      description: t('overview.sections.subaccounts.description'),
-      icon: <FamilyRestroom />,
-    },
-    {
-      id: 'notifications',
-      title: t('overview.sections.notifications.title'),
-      description: t('overview.sections.notifications.description'),
-      icon: <Notifications />,
-    },
-    {
-      id: 'mfa',
-      title: t('overview.sections.mfa.title'),
-      description: t('overview.sections.mfa.description'),
-      icon: <Security />,
-    },
-    {
-      id: 'apitokens',
-      title: t('overview.sections.apitokens.title'),
-      description: t('overview.sections.apitokens.description'),
-      icon: <Api />,
-    },
-    {
-      id: 'storage',
-      title: t('overview.sections.storage.title'),
-      description: t('overview.sections.storage.description'),
-      icon: <Storage />,
-    },
-    {
-      id: 'sidepanel',
-      title: t('overview.sections.sidepanel.title'),
-      description: t('overview.sections.sidepanel.description'),
-      icon: <ViewSidebar />,
-    },
-    {
-      id: 'theme',
-      title: t('overview.sections.theme.title'),
-      description: t('overview.sections.theme.description'),
-      icon: <Palette />,
-    },
-    {
-      id: 'localization',
-      title: t('overview.sections.localization.title'),
-      description: t('overview.sections.localization.description'),
-      icon: <Language />,
-      isBeta: true,
-    },
-    {
-      id: 'advanced',
-      title: t('overview.sections.advanced.title'),
-      description: t('overview.sections.advanced.description'),
-      icon: <Settings />,
-    },
-    {
-      id: 'developer',
-      title: t('overview.sections.developer.title'),
-      description: t('overview.sections.developer.description'),
-      icon: <Code />,
-    },
-    {
-      id: 'feedback',
-      title: t('overview.sections.feedback.title'),
-      description: t('overview.sections.feedback.description'),
-      icon: <Feedback />,
-      onSelect: () => setFeedbackOpen(true),
-    },
-    {
-      id: 'bugreport',
-      title: t('overview.sections.bugReport.title'),
-      description: t('overview.sections.bugReport.description'),
-      icon: <BugReport />,
-      onSelect: () => setBugReportOpen(true),
-    },
-  ]
-
-  const handleCardClick = setting => {
-    if (setting.onSelect) {
-      setting.onSelect()
-      return
-    }
-    navigate(`/settings/${setting.id}`)
-  }
-
-  const getAvailableSettings = () => {
-    return settingsCards.filter(setting => {
-      const permission = SETTINGS_PERMISSIONS[setting.id]
-      return !permission || hasPermission(effectiveRole, permission)
-    })
-  }
+  const settingsAction = (setting, label, danger = false) =>
+    can(setting) ? { danger, label } : null
 
   return (
-    <Box sx={pageShellSx}>
-      <PageHeader
-        title={t('overview.title')}
-        subtitle={t('overview.subtitle')}
-      />
-
-      {/* Upgrade Card - Only show if user is not a Plus member */}
-      {userProfile &&
-        hasPermission(effectiveRole, SETTINGS_PERMISSIONS.account) &&
-        !isPlusAccount(userProfile) && (
-          <Box sx={{ mb: 3 }}>
-            <Card
-              variant='outlined'
-              sx={{
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                backgroundColor: 'primary.solidBg',
-                border: 'none',
-                color: 'primary.solidColor',
-                '&:hover': {
-                  boxShadow: 'xl',
-                  transform: 'translateY(-3px)',
-                },
-              }}
-              onClick={() => navigate('/settings/account')}
-            >
-              <CardContent sx={{ p: { xs: 1.5, md: 3 } }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: { xs: 1.5, md: 2 },
-                    textAlign: { xs: 'center', md: 'left' },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexDirection: { xs: 'column', md: 'row' },
-                      gap: { xs: 1, md: 3 },
-                      width: { xs: '100%', md: 'auto' },
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        '--Avatar-size': { xs: '36px', md: '60px' },
-                        background: 'var(--joy-palette-neutral-800)',
-                        backdropFilter: 'blur(10px)',
-                      }}
-                    >
-                      <Star
-                        sx={{
-                          fontSize: { xs: 18, md: 30 },
-                          color: 'primary.solidColor',
-                        }}
-                      />
-                    </Avatar>
-                    <Box>
-                      <Typography
-                        level='title-lg'
-                        sx={{
-                          color: 'primary.solidColor',
-                          mb: { xs: 0.25, md: 0.5 },
-                          fontWeight: 'bold',
-                          fontSize: { xs: '0.95rem', md: '1.25rem' },
-                        }}
-                      >
-                        {t('overview.upgrade.title')}
-                      </Typography>
-                      <Typography
-                        level='body-md'
-                        sx={{
-                          color: 'var(--joy-palette-neutral-100)',
-                          mb: { xs: 0.5, md: 1 },
-                          fontSize: { xs: '0.75rem', md: '1rem' },
-                          lineHeight: { xs: 1.3, md: 1.5 },
-                        }}
-                      >
-                        {t('overview.upgrade.description')}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: { xs: 'none', sm: 'flex' },
-                          flexWrap: 'wrap',
-                          gap: 1,
-                          fontSize: '0.875rem',
-                          color: 'var(--joy-palette-neutral-200)',
-                        }}
-                      >
-                        <span>• {t('overview.upgrade.features.richText')}</span>
-                        <span>
-                          • {t('overview.upgrade.features.notifications')}
-                        </span>
-                        <span>
-                          • {t('overview.upgrade.features.apiIntegrations')}
-                        </span>
-                        <span>
-                          • {t('overview.upgrade.features.advancedAutomation')}
-                        </span>
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Button
-                    variant='solid'
-                    size='sm'
-                    sx={{
-                      bgcolor: 'var(--joy-palette-neutral-800)',
-                      color: 'white',
-                      border: '1px solid var(--joy-palette-neutral-500)',
-                      backdropFilter: 'blur(10px)',
-                      px: { xs: 1.5, md: 3 },
-                      py: { xs: 0.5, md: 1.5 },
-                      fontWeight: 'bold',
-                      minWidth: { xs: '80px', md: '120px' },
-                      width: { xs: '100%', md: 'auto' },
-                      fontSize: { xs: '0.75rem', md: '0.875rem' },
-                      '&:hover': {
-                        bgcolor: 'var(--joy-palette-neutral-700)',
-                        transform: 'scale(1.05)',
-                      },
-                    }}
-                    onClick={e => {
-                      e.stopPropagation()
-                      navigate('/settings/account')
-                    }}
-                  >
-                    {t('overview.upgrade.button')}
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        )}
-
-      <SectionCard sx={{ p: { xs: 1, sm: 1.5 } }}>
-        <List
-          sx={{
-            '--List-gap': '0px',
-            '--ListItem-paddingY': '16px',
-            '--ListItem-paddingX': '20px',
-          }}
-        >
-          {getAvailableSettings().map((setting, index) => (
-            <ListItem key={setting.id} sx={{ p: 0 }}>
-              <ListItemButton
-                onClick={() => handleCardClick(setting)}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'background.level1',
-                  },
-                  py: 2.5,
-                  px: 3,
-                  borderRadius: 'lg',
-                  mb: 1,
-                }}
+    <div className='figma-settings-wrap'>
+      <div className='page-header pb-5'>
+        <div>
+          <h1
+            className='text-primary'
+            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
+          >
+            {t('overview.title')}
+          </h1>
+          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+            {t('figmaOverview.subtitle')}
+          </div>
+        </div>
+      </div>
+      <div className='px-4 md:px-7'>
+        <Section title={t('figmaOverview.profile')}>
+          <div className='figma-settings-profile'>
+            <div className='avatar figma-settings-avatar'>{initials}</div>
+            <div className='flex-1'>
+              <div className='text-primary font-bold' style={{ fontSize: 16 }}>
+                {displayName}
+              </div>
+              <div className='text-muted' style={{ fontSize: 13 }}>
+                {email}
+              </div>
+              <div
+                className='badge bg-brand-faint text-brand mt-1'
+                style={{ fontSize: 11 }}
               >
-                <ListItemDecorator>
-                  <Avatar
-                    variant='soft'
-                    color='neutral'
-                    sx={{ '--Avatar-size': '48px' }}
-                  >
-                    {setting.icon}
-                  </Avatar>
-                </ListItemDecorator>
-                <ListItemContent sx={{ ms: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography level='title-md' sx={{ fontWeight: 'lg' }}>
-                      {setting.title}
-                    </Typography>
-                    {setting.isBeta && (
-                      <Chip
-                        variant='outlined'
-                        size='sm'
-                        sx={{
-                          height: '20px',
-                          fontSize: '0.65rem',
-                          fontWeight: 'bold',
-                          color: 'warning.main',
-                          borderColor: 'warning.main',
-                        }}
-                      >
-                        Early Access
-                      </Chip>
+                {role}
+              </div>
+            </div>
+            <button
+              className='btn btn-secondary btn-sm'
+              onClick={() => navigate('/settings/profile')}
+              type='button'
+            >
+              {t('figmaOverview.edit')}
+            </button>
+          </div>
+          <Row
+            action={settingsAction('profile', t('figmaOverview.change'))}
+            icon='user'
+            label={t('figmaOverview.displayName')}
+            onClick={() => navigate('/settings/profile')}
+            sub={displayName}
+          />
+          {can('account') && (
+            <>
+              <Row
+                action={settingsAction('account', t('figmaOverview.change'))}
+                icon='mail'
+                label={t('figmaOverview.email')}
+                onClick={() => navigate('/settings/account')}
+                sub={email}
+              />
+              <Row
+                action={settingsAction('account', t('figmaOverview.update'))}
+                icon='lock'
+                label={t('accountSettings.password')}
+                onClick={() => navigate('/settings/account')}
+                sub={t('figmaOverview.passwordHelp')}
+              />
+            </>
+          )}
+        </Section>
+
+        <Section title={t('figmaOverview.appearance')}>
+          <div className='figma-settings-theme-block'>
+            <div
+              className='text-primary mb-3 font-medium'
+              style={{ fontSize: 14 }}
+            >
+              {t('figmaOverview.theme')}
+            </div>
+            <div className='grid grid-cols-2 gap-3'>
+              {['daydan', 'sovereign'].map(item => (
+                <button
+                  className={`figma-theme-choice ${APP_BRAND_ID === item ? 'selected' : ''}`}
+                  key={item}
+                  onClick={() => navigate('/settings/theme')}
+                  type='button'
+                >
+                  <span className='mb-2 flex items-center gap-2'>
+                    <span
+                      className='figma-theme-swatch'
+                      style={{
+                        background: item === 'daydan' ? '#4326EA' : '#1A1A1A',
+                      }}
+                    />
+                    <span
+                      className='text-primary font-bold'
+                      style={{ fontSize: 13 }}
+                    >
+                      {item === 'daydan' ? 'DayDan' : 'Sovereign'}
+                    </span>
+                    {APP_BRAND_ID === item && (
+                      <FigmaIcon
+                        name='check'
+                        size={13}
+                        style={{ color: 'var(--brand)' }}
+                      />
                     )}
-                  </Box>
-                  <Typography
-                    level='body-sm'
-                    color='neutral'
-                    sx={{ lineHeight: 1.4 }}
+                  </span>
+                  <span className='text-muted block' style={{ fontSize: 11 }}>
+                    {item === 'daydan'
+                      ? 'Momentum Violet + Flow Aqua'
+                      : 'Onyx + Golden Yellow'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className='figma-settings-theme-block'>
+            <div
+              className='text-primary mb-3 font-medium'
+              style={{ fontSize: 14 }}
+            >
+              {t('figmaOverview.defaultView')}
+            </div>
+            <div className='view-toggle figma-view-toggle'>
+              {['focus', 'quest'].map(item => (
+                <button
+                  className={`view-toggle-btn ${item === 'focus' ? 'active' : ''}`}
+                  key={item}
+                  onClick={() => navigate('/settings/sidepanel')}
+                  type='button'
+                >
+                  {item === 'focus' ? '⚡ Focus' : '✨ Quest'}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Row
+            icon='rtl'
+            label={t('figmaOverview.rtl')}
+            sub={t('figmaOverview.rtlHelp')}
+            toggle={
+              <Toggle
+                checked={isRTL}
+                label={t('figmaOverview.rtl')}
+                onChange={() => setLanguage(isRTL ? 'en' : 'ar-SA')}
+              />
+            }
+          />
+        </Section>
+
+        {can('circle') &&
+          (isSolo ? (
+            <Section title={t('figmaOverview.circle')}>
+              <div className='figma-settings-solo'>
+                <div className='mb-4 flex items-center gap-4'>
+                  <div style={{ fontSize: 40 }}>🏠</div>
+                  <div>
+                    <div
+                      className='text-primary font-bold'
+                      style={{ fontSize: 15 }}
+                    >
+                      {t('figmaOverview.currentlySolo')}
+                    </div>
+                    <div
+                      className='text-muted'
+                      style={{ fontSize: 13, marginTop: 2 }}
+                    >
+                      {t('figmaOverview.soloHelp')}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className='btn btn-primary btn-sm'
+                  onClick={() => navigate('/settings/circle')}
+                  type='button'
+                >
+                  {t('figmaOverview.inviteSomeone')}
+                </button>
+              </div>
+            </Section>
+          ) : (
+            <Section title={t('figmaOverview.household')}>
+              <Row
+                action={settingsAction('circle', t('figmaOverview.manage'))}
+                icon='users'
+                label={t('figmaOverview.members')}
+                onClick={() => navigate('/settings/circle')}
+                sub={t('figmaOverview.activeMembers', {
+                  count: members.length,
+                })}
+              />
+              <div className='figma-settings-members'>
+                {members.map(member => (
+                  <div
+                    className='flex items-center gap-3'
+                    key={member.id || member.userId}
                   >
-                    {setting.description}
-                  </Typography>
-                </ListItemContent>
-                <ChevronRight
-                  sx={{ color: 'text.tertiary', fontSize: '20px' }}
-                />
-              </ListItemButton>
-            </ListItem>
+                    <div className='avatar figma-settings-member-avatar'>
+                      {(member.displayName || member.username || '?')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                    <div className='flex-1'>
+                      <div
+                        className='text-primary font-medium'
+                        style={{ fontSize: 13 }}
+                      >
+                        {member.displayName || member.username}
+                      </div>
+                      <div className='text-faint' style={{ fontSize: 11 }}>
+                        {member.role} · {member.email || member.username}
+                      </div>
+                    </div>
+                    {String(member.userId) === String(userProfile?.id) ? (
+                      <span
+                        className='badge bg-brand-faint text-brand'
+                        style={{ fontSize: 10 }}
+                      >
+                        {t('circleSettings.you')}
+                      </span>
+                    ) : (
+                      <button
+                        className='btn btn-ghost btn-sm text-sig-over'
+                        onClick={() => navigate('/settings/circle')}
+                        type='button'
+                      >
+                        {t('figmaOverview.manage')}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Row
+                action={{ label: t('figmaOverview.invite') }}
+                icon='plus'
+                label={t('figmaOverview.inviteMember')}
+                onClick={() => navigate('/settings/circle')}
+                sub={t('figmaOverview.inviteHelp')}
+              />
+            </Section>
           ))}
-        </List>
-      </SectionCard>
 
+        <Section title={t('overview.sections.notifications.title')}>
+          {[
+            [
+              'taskReminders',
+              t('figmaOverview.taskReminders'),
+              t('figmaOverview.taskRemindersHelp'),
+            ],
+            [
+              'routineNudges',
+              t('figmaOverview.routineNudges'),
+              t('figmaOverview.routineNudgesHelp'),
+            ],
+            [
+              'familyActivity',
+              t('figmaOverview.familyActivity'),
+              t('figmaOverview.familyActivityHelp'),
+            ],
+            [
+              'rewards',
+              t('figmaOverview.rewardsAvailable'),
+              t('figmaOverview.rewardsAvailableHelp'),
+            ],
+            [
+              'weeklySummary',
+              t('figmaOverview.weeklySummary'),
+              t('figmaOverview.weeklySummaryHelp'),
+            ],
+          ].map(([key, label, sub]) => (
+            <Row
+              key={key}
+              label={label}
+              sub={sub}
+              toggle={
+                <Toggle
+                  checked={key === 'taskReminders'}
+                  label={label}
+                  onChange={() => navigate('/settings/notifications')}
+                />
+              }
+            />
+          ))}
+          <Row
+            action={{ label: t('figmaOverview.details') }}
+            icon='settings'
+            label={t('figmaOverview.devicePush')}
+            onClick={() => navigate('/settings/notifications')}
+            sub={t('figmaOverview.devicePushHelp')}
+          />
+        </Section>
+
+        <Section title={t('figmaOverview.privacy')}>
+          <Row
+            action={settingsAction('circle', t('figmaOverview.manage'))}
+            icon='eye'
+            label={t('figmaOverview.activityVisible')}
+            onClick={() => navigate('/settings/circle')}
+            sub={t('figmaOverview.activityVisibleHelp')}
+          />
+          <Row
+            action={{ label: t('figmaOverview.export') }}
+            icon='download'
+            label={t('figmaOverview.exportData')}
+            onClick={() => navigate('/settings/storage')}
+            sub={t('figmaOverview.exportHelp')}
+          />
+          {can('account') && (
+            <Row
+              action={{ danger: true, label: t('figmaOverview.delete') }}
+              icon='trash'
+              label={t('accountSettings.deleteAccount')}
+              onClick={() => navigate('/settings/account')}
+              sub={t('figmaOverview.deleteHelp')}
+            />
+          )}
+        </Section>
+
+        <Section title={t('figmaOverview.support')}>
+          <Row
+            action={{ label: t('figmaOverview.open') }}
+            icon='help'
+            label={t('figmaOverview.help')}
+            onClick={() =>
+              window.open(
+                'https://github.com/donetick/donetick',
+                '_blank',
+                'noopener,noreferrer',
+              )
+            }
+          />
+          <Row
+            action={{ label: t('figmaOverview.open') }}
+            icon='error'
+            label={t('figmaOverview.report')}
+            onClick={() => setBugReportOpen(true)}
+            sub={t('figmaOverview.reportHelp')}
+          />
+          <Row
+            action={{ label: t('figmaOverview.feedback') }}
+            icon='info'
+            label={t('figmaOverview.about')}
+            onClick={() => setFeedbackOpen(true)}
+            sub={`Version ${import.meta.env.VITE_APP_VERSION || '2.4.1'}`}
+          />
+        </Section>
+      </div>
       <FeedbackModal
-        open={feedbackOpen}
         onClose={() => setFeedbackOpen(false)}
+        open={feedbackOpen}
       />
-
-      {/* No error to pass: the report is about something the user saw, not
-          something the app threw, so the modal collects diagnostics only. */}
       <ErrorReportModal
-        open={bugReportOpen}
         onClose={() => setBugReportOpen(false)}
+        open={bugReportOpen}
       />
-    </Box>
+    </div>
   )
 }
 

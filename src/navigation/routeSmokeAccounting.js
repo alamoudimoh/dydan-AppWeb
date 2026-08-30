@@ -54,7 +54,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     // Full-screen search palette replaces the app navigation shell.
     nav: false,
     fullscreen: true,
-    text: /searching content available on this device/i,
+    text: /search everything/i,
   },
   '/archived': {
     status: 'covered',

@@ -1,365 +1,202 @@
-import {
-  BugReportRounded,
-  CloudOffRounded,
-  ContentCopyRounded,
-  ErrorRounded,
-  ExpandMoreRounded,
-  HomeRounded,
-  LockRounded,
-  RefreshRounded,
-  SearchOffRounded,
-} from '@mui/icons-material'
-import { Box, Button, IconButton, Snackbar, Typography } from '@mui/joy'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link, useRouteError } from 'react-router-dom'
+import { useRouteError } from 'react-router-dom'
 
+import FigmaIcon from '../components/FigmaIcon'
 import { useClipboardCopy } from '../hooks/useClipboardCopy.js'
 import {
   collectErrorReport,
   formatErrorReport,
+  SUBMIT_RESULT,
+  submitErrorReport,
 } from '../service/ErrorReportService'
 import ErrorReportModal from './Modals/ErrorReportModal'
 
-const getErrorKind = error => {
-  if (!error)
-    return { label: 'Unknown Error', color: 'danger', Icon: ErrorRounded }
-  const status = error?.status ?? error?.response?.status
-  if (status === 404)
-    return {
-      label: '404 · Not Found',
-      color: 'warning',
-      Icon: SearchOffRounded,
-    }
-  if (status === 401 || status === 403)
-    return {
-      label: `${status} · Unauthorized`,
-      color: 'warning',
-      Icon: LockRounded,
-    }
-  if (status >= 500)
-    return {
-      label: `${status} · Server Error`,
-      color: 'danger',
-      Icon: CloudOffRounded,
-    }
-  if (error?.name === 'TypeError')
-    return { label: 'Runtime Error', color: 'danger', Icon: BugReportRounded }
-  if (error?.name === 'SyntaxError')
-    return { label: 'Syntax Error', color: 'danger', Icon: BugReportRounded }
-  return { label: 'Unexpected Error', color: 'danger', Icon: ErrorRounded }
+const safeMessage = error => {
+  const message = error?.message ?? error?.statusText
+  return !message || message === '[object Object]'
+    ? "We couldn't sync your last action. Your data is safe - this is a temporary issue."
+    : message
 }
 
-const safeMessage = error => {
-  const msg = error?.message ?? error?.statusText
-  if (!msg || msg === '[object Object]') return null
-  return msg
+const errorCode = error => {
+  const status = error?.status ?? error?.response?.status
+  return status ? `REQUEST_ERROR_${status}` : 'SYNC_CONFLICT_409'
 }
 
 const Error = () => {
-  const { t } = useTranslation('common')
   const error = useRouteError()
-  const [showDetails, setShowDetails] = useState(false)
+  const [report, setReport] = useState(null)
+  const [reported, setReported] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
-  const [reportText, setReportText] = useState('')
-  const {
-    copied,
-    copy: handleCopy,
-    copyFailed,
-  } = useClipboardCopy(() => reportText, 2500)
+  const [showDetails, setShowDetails] = useState(false)
+  const [showPayload, setShowPayload] = useState(false)
+  const reportText = report ? formatErrorReport(report) : ''
+  const { copied, copy } = useClipboardCopy(() => reportText)
 
-  const { Icon, color } = getErrorKind(error)
-  const message = safeMessage(error)
-
-  // The same bundle the report modal sends, so what the user copies and what
-  // we receive can never disagree.
   useEffect(() => {
     let active = true
-    collectErrorReport({ error }).then(report => {
-      if (active) setReportText(formatErrorReport(report))
-    })
+    collectErrorReport({ error }).then(value => active && setReport(value))
     return () => {
       active = false
     }
   }, [error])
 
+  const goHome = () => {
+    window.location.assign('/chores')
+  }
+
+  const sendReport = async () => {
+    if (!report) return
+    const result = await submitErrorReport({ description: '', report })
+    if (result.result === SUBMIT_RESULT.SENT) {
+      setReported(true)
+      window.setTimeout(goHome, 2000)
+      return
+    }
+    // The modal preserves the existing self-hosted/offline GitHub fallback.
+    setReportOpen(true)
+  }
+
+  if (reported) {
+    return (
+      <div className='figma-error-sent'>
+        <div style={{ fontSize: 56 }}>✅</div>
+        <div className='text-primary mt-4 font-bold' style={{ fontSize: 20 }}>
+          Report sent - thank you!
+        </div>
+        <div className='text-muted figma-error-sent-copy mt-2'>
+          We review every report and use them to improve DayDan. Returning you
+          home now.
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        minHeight: '100dvh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 3,
-        py: 6,
-        maxWidth: 440,
-        mx: 'auto',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Decorative dots */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '14%',
-          left: '6%',
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          bgcolor: `${color}.100`,
-          opacity: 0.7,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '22%',
-          right: '8%',
-          width: 9,
-          height: 9,
-          borderRadius: '50%',
-          bgcolor: `${color}.200`,
-        }}
-      />
-
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '28%',
-          right: '6%',
-          width: 7,
-          height: 7,
-          borderRadius: '50%',
-          bgcolor: `${color}.100`,
-        }}
-      />
-
-      {/* Icon with concentric rings */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: 4,
-        }}
-      >
-        <Box
-          sx={{
-            width: 172,
-            height: 172,
-            borderRadius: '50%',
-            border: '1.5px solid',
-            borderColor: `${color}.100`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Box
-            sx={{
-              width: 128,
-              height: 128,
-              borderRadius: '50%',
-              border: '1.5px solid',
-              borderColor: `${color}.200`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Box
-              sx={{
-                width: 84,
-                height: 84,
-                borderRadius: '50%',
-                bgcolor: `${color}.50`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Icon sx={{ fontSize: 42, color: `${color}.500` }} />
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Title */}
-      <Typography
-        level='h3'
-        fontWeight={700}
-        textAlign='center'
-        sx={{ mb: 1.5 }}
-      >
-        {t('errors.title')}
-      </Typography>
-
-      {/* Error message */}
-      <Typography
-        level='body-sm'
-        textAlign='center'
-        sx={{
-          color: 'text.secondary',
-          mb: 4,
-          maxWidth: 320,
-          minHeight: '2.5em',
-          wordBreak: 'break-word',
-        }}
-      >
-        {message ?? t('errors.defaultMessage')}
-      </Typography>
-
-      {/* Primary CTA */}
-      <Button
-        variant='solid'
-        color='primary'
-        size='lg'
-        startDecorator={<RefreshRounded />}
-        onClick={() => window.location.reload()}
-        sx={{ width: '100%', mb: 1.5 }}
-      >
-        {t('tryAgain')}
-      </Button>
-
-      {/* Reporting is one tap from the failure, where the context is still
-          fresh — asking people to find it in Settings afterwards never works. */}
-      <Button
-        variant='outlined'
-        color='neutral'
-        size='lg'
-        startDecorator={<BugReportRounded />}
-        onClick={() => setReportOpen(true)}
-        sx={{ width: '100%', mb: 2 }}
-      >
-        {t('errors.reportProblem')}
-      </Button>
-
-      {/* Secondary actions */}
-      <Box sx={{ display: 'flex', gap: 3, mb: 5 }}>
-        <Button
-          component={Link}
-          to='/chores'
-          variant='plain'
-          color='neutral'
-          size='lg'
-          startDecorator={<HomeRounded />}
-        >
-          {t('navigation.home')}
-        </Button>
-        <Button
-          component={Link}
-          to='/login'
-          variant='plain'
-          color='neutral'
-          size='lg'
-        >
-          {t('login')}
-        </Button>
-      </Box>
-
-      {/* Report hint + collapsible details */}
-      <Box
-        sx={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography
-          level='body-xs'
-          textAlign='center'
-          sx={{ color: 'text.tertiary', mb: 1.5 }}
-        >
-          {t('errors.reportHint')}
-        </Typography>
-
-        {(error?.stack || message) && (
-          <>
-            <Button
-              variant='plain'
-              color='neutral'
-              size='sm'
-              onClick={() => setShowDetails(v => !v)}
-              endDecorator={
-                <ExpandMoreRounded
-                  sx={{
-                    transition: 'transform 0.2s',
-                    transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)',
-                  }}
-                />
-              }
-              sx={{ mb: 1 }}
-            >
-              {showDetails ? t('errors.hideDetails') : t('errors.showDetails')}
-            </Button>
-
-            {showDetails && (
-              <Box
-                sx={{
-                  position: 'relative',
-                  bgcolor: 'background.level2',
-                  borderRadius: 'sm',
-                  p: 2,
-                  width: '100%',
-                }}
+    <div className='figma-error-wrap'>
+      <div className='px-4 pt-6 md:px-7'>
+        <div className='card figma-error-card mb-5 p-6'>
+          <div className='flex items-start gap-4'>
+            <div className='figma-error-icon'>
+              <FigmaIcon
+                name='error'
+                size={24}
+                style={{ color: 'var(--sig-over)' }}
+              />
+            </div>
+            <div>
+              <h2
+                className='text-primary mb-1 font-bold'
+                style={{ fontSize: 18 }}
               >
-                <IconButton
-                  size='sm'
-                  variant='plain'
-                  color='neutral'
-                  onClick={handleCopy}
-                  sx={{ position: 'absolute', top: 8, right: 8 }}
-                  title={t('copy')}
-                >
-                  <ContentCopyRounded fontSize='small' />
-                </IconButton>
-                <Typography
-                  level='body-xs'
-                  sx={{
-                    fontFamily: 'monospace',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-all',
-                    pr: 4,
-                    color: 'text.secondary',
-                  }}
-                >
-                  {reportText || t('errors.collectingDetails')}
-                </Typography>
-              </Box>
-            )}
-          </>
-        )}
-      </Box>
+                Something went wrong
+              </h2>
+              <div className='text-muted figma-error-message'>
+                {safeMessage(error)}
+              </div>
+              <div className='badge figma-error-badge mt-2'>
+                {errorCode(error)}
+              </div>
+            </div>
+          </div>
+        </div>
 
+        <div className='mb-5 flex flex-col gap-3'>
+          <button
+            className='btn btn-primary figma-error-action'
+            onClick={() => window.location.reload()}
+            type='button'
+          >
+            <FigmaIcon name='repeat' size={16} />
+            Retry
+          </button>
+          <button
+            className='btn btn-secondary figma-error-action'
+            onClick={goHome}
+            type='button'
+          >
+            Dismiss and continue
+          </button>
+        </div>
+
+        <div className='card overflow-hidden'>
+          <button
+            className='figma-error-report-toggle'
+            onClick={() => setShowDetails(value => !value)}
+            type='button'
+          >
+            <span className='flex items-center gap-3'>
+              <FigmaIcon
+                name='info'
+                size={16}
+                style={{ color: 'var(--t-muted)' }}
+              />
+              <span
+                className='text-primary font-medium'
+                style={{ fontSize: 14 }}
+              >
+                Report this problem
+              </span>
+            </span>
+            <FigmaIcon
+              name='chevron_down'
+              size={16}
+              style={{
+                color: 'var(--t-faint)',
+                transform: showDetails ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s',
+              }}
+            />
+          </button>
+          {showDetails && (
+            <div className='figma-error-report-body'>
+              <div className='text-muted figma-error-report-copy'>
+                Sending a report helps us fix this faster. The report contains
+                diagnostic details - no passwords or personal messages.
+              </div>
+              <button
+                className='figma-error-payload-button'
+                onClick={() => setShowPayload(value => !value)}
+                type='button'
+              >
+                <FigmaIcon name='search' size={14} />
+                {showPayload ? 'Hide' : 'Show'} what gets sent
+              </button>
+              {showPayload && (
+                <div className='figma-error-payload'>
+                  <pre>{reportText || 'Collecting diagnostics...'}</pre>
+                </div>
+              )}
+              <div className='flex gap-2'>
+                <button
+                  className='btn btn-primary figma-error-action flex-1'
+                  disabled={!report}
+                  onClick={sendReport}
+                  type='button'
+                >
+                  Send report
+                </button>
+                <button
+                  className='btn btn-secondary'
+                  disabled={!report}
+                  onClick={copy}
+                  title='Copy to clipboard'
+                  type='button'
+                >
+                  <FigmaIcon name={copied ? 'check' : 'copy'} size={14} />
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <ErrorReportModal
-        open={reportOpen}
-        onClose={() => setReportOpen(false)}
         error={error}
+        onClose={() => setReportOpen(false)}
+        open={reportOpen}
       />
-
-      <Snackbar
-        open={copied}
-        autoHideDuration={2500}
-        onClose={() => setCopied(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        size='sm'
-      >
-        {t('errors.detailsCopied')}
-      </Snackbar>
-      <Snackbar
-        open={copyFailed}
-        autoHideDuration={3000}
-        onClose={() => setCopyFailed(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        size='sm'
-        color='danger'
-      >
-        {t('errors.copyFailed')}
-      </Snackbar>
-    </Box>
+    </div>
   )
 }
 
