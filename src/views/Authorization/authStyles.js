@@ -1,7 +1,7 @@
 import { productTypeScale } from '../../theme/typography.js'
 
-// Shared shape for the auth screens so all four stay in one control vocabulary.
-// Values are taken from the product theme tokens to avoid arbitrary sizes.
+// Onboarding and invitation flows remain unrepresented in Figma and retain
+// their existing product styling until an owner-provided design is available.
 export const authInputSx = {
   '--Input-radius': 'var(--product-radius-row)',
   '--Input-focusedThickness': '2px',

@@ -1,48 +1,52 @@
 import { VisibilityOffOutlined, VisibilityOutlined } from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  IconButton,
-  Input,
-  Link,
-  Typography,
-} from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 
-import { productTypeScale } from '../../theme/typography.js'
-import { authButtonSx, authInputSx } from './authStyles'
+export const AuthField = ({ children, error, helper, id, label }) => {
+  const helperId = error || helper ? `${id}-help` : undefined
 
-const labelSx = {
-  fontSize: productTypeScale.button.fontSize,
-  fontWeight: 600,
-  mb: 0.75,
+  return (
+    <div className='auth-field'>
+      <label className='auth-field__label' htmlFor={id}>
+        {label}
+      </label>
+      {children(helperId)}
+      {(error || helper) && (
+        <span
+          id={helperId}
+          className={error ? 'auth-field__error' : 'auth-field__helper'}
+        >
+          {error || helper}
+        </span>
+      )}
+    </div>
+  )
 }
 
-export const AuthField = ({ children, error, helper, label, ...formProps }) => (
-  <FormControl error={Boolean(error)} {...formProps}>
-    <FormLabel sx={labelSx}>{label}</FormLabel>
-    {children}
-    {(error || helper) && (
-      <FormHelperText
-        sx={{
-          fontSize: productTypeScale.bodySmall.fontSize,
-          color: error ? 'danger.plainColor' : 'text.secondary',
-        }}
-      >
-        {error || helper}
-      </FormHelperText>
+export const AuthTextField = ({
+  color: _color,
+  endDecorator,
+  error,
+  helper,
+  label,
+  sx: _sx,
+  ...inputProps
+}) => (
+  <AuthField id={inputProps.id} label={label} error={error} helper={helper}>
+    {helperId => (
+      <span className='auth-input-wrap'>
+        <input
+          className='input auth-input'
+          aria-describedby={helperId}
+          aria-invalid={Boolean(error)}
+          {...inputProps}
+        />
+        {endDecorator && (
+          <span className='auth-input__end'>{endDecorator}</span>
+        )}
+      </span>
     )}
-  </FormControl>
-)
-
-export const AuthTextField = ({ error, helper, label, sx, ...inputProps }) => (
-  <AuthField label={label} error={error} helper={helper}>
-    <Input size='lg' sx={{ ...authInputSx, ...sx }} {...inputProps} />
   </AuthField>
 )
 
@@ -50,7 +54,7 @@ export const AuthPasswordField = ({
   error,
   helper,
   label,
-  sx,
+  sx: _sx,
   ...inputProps
 }) => {
   const { t } = useTranslation('common')
@@ -58,121 +62,83 @@ export const AuthPasswordField = ({
 
   return (
     <AuthField
+      id={inputProps.id}
       label={label ?? t('auth.password')}
       error={error}
       helper={helper}
     >
-      <Input
-        size='lg'
-        type={visible ? 'text' : 'password'}
-        sx={{ ...authInputSx, ...sx }}
-        endDecorator={
-          <IconButton
-            variant='plain'
-            color='neutral'
-            size='sm'
+      {helperId => (
+        <span className='auth-input-wrap'>
+          <input
+            className='input auth-input'
+            type={visible ? 'text' : 'password'}
+            aria-describedby={helperId}
+            aria-invalid={Boolean(error)}
+            {...inputProps}
+          />
+          <button
+            className='auth-input__toggle'
+            type='button'
             tabIndex={-1}
             aria-label={
               visible ? t('auth.hidePassword') : t('auth.showPassword')
             }
-            onClick={() => setVisible(v => !v)}
-            sx={{ borderRadius: 'var(--product-radius-control)' }}
+            onClick={() => setVisible(value => !value)}
           >
             {visible ? (
               <VisibilityOffOutlined fontSize='small' />
             ) : (
               <VisibilityOutlined fontSize='small' />
             )}
-          </IconButton>
-        }
-        {...inputProps}
-      />
+          </button>
+        </span>
+      )}
     </AuthField>
   )
 }
 
-export const AuthSubmitButton = ({ children, sx, ...props }) => (
-  <Button
-    type='submit'
-    size='lg'
-    variant='solid'
-    fullWidth
-    sx={{ ...authButtonSx, ...sx }}
-    {...props}
-  >
-    {children}
-  </Button>
+export const AuthSubmitButton = ({
+  children,
+  loading,
+  startDecorator,
+  sx: _sx,
+  ...props
+}) => (
+  <button className='btn btn-primary auth-submit' type='submit' {...props}>
+    {startDecorator}
+    {loading ? (
+      <span className='auth-spinner' aria-label='Loading' />
+    ) : (
+      children
+    )}
+  </button>
 )
 
-export const SocialButton = ({ children, icon, sx, ...props }) => (
-  <Button
-    type='button'
-    size='lg'
-    variant='outlined'
-    color='neutral'
-    fullWidth
-    startDecorator={icon}
-    sx={{
-      ...authButtonSx,
-      fontWeight: 500,
-      justifyContent: 'center',
-      ...sx,
-    }}
-    {...props}
-  >
+export const SocialButton = ({ children, icon, sx: _sx, ...props }) => (
+  <button className='btn btn-secondary auth-submit' type='button' {...props}>
+    {icon}
     {children}
-  </Button>
+  </button>
+)
+
+export const AuthButton = ({ children, variant = 'secondary', ...props }) => (
+  <button className={`btn btn-${variant} auth-submit`} type='button' {...props}>
+    {children}
+  </button>
 )
 
 export const AuthDivider = ({ children }) => {
   const { t } = useTranslation('common')
-  return (
-    <Box
-      role='separator'
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        my: 2.5,
-        '&::before, &::after': {
-          content: '""',
-          flex: 1,
-          height: '1px',
-          bgcolor: 'divider',
-        },
-      }}
-    >
-      <Typography level='body-xs' sx={{ color: 'text.secondary' }}>
-        {children ?? t('auth.or')}
-      </Typography>
-    </Box>
-  )
+  return <div className='auth-divider'>{children ?? t('auth.or')}</div>
 }
 
 export const LegalLinks = () => {
   const { t } = useTranslation('common')
   return (
-    <Typography
-      level='body-xs'
-      sx={{ textAlign: 'center', color: 'text.secondary' }}
-    >
-      <Link
-        component={RouterLink}
-        to='/privacy'
-        color='neutral'
-        underline='hover'
-      >
-        {t('auth.privacyPolicy')}
-      </Link>
+    <p className='auth-legal'>
+      <RouterLink to='/privacy'>{t('auth.privacyPolicy')}</RouterLink>
       {' · '}
-      <Link
-        component={RouterLink}
-        to='/terms'
-        color='neutral'
-        underline='hover'
-      >
-        {t('auth.termsOfUse')}
-      </Link>
-    </Typography>
+      <RouterLink to='/terms'>{t('auth.termsOfUse')}</RouterLink>
+    </p>
   )
 }

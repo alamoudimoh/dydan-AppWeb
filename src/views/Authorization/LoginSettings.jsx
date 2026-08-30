@@ -3,9 +3,8 @@ import { Preferences } from '@capacitor/preferences'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import WifiIcon from '@mui/icons-material/Wifi'
-import { Alert, Box, Button, CircularProgress, Typography } from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
-import React from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
@@ -18,67 +17,54 @@ import { apiClient } from '../../utils/ApiClient'
 import { logout } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
 import { isAllowedServerURL } from '../../utils/ServerUrlValidation'
-import { AuthSubmitButton, AuthTextField } from './AuthFields'
+import { AuthButton, AuthSubmitButton, AuthTextField } from './AuthFields'
 import AuthShell from './AuthShell'
-import { authButtonSx } from './authStyles'
 
 const CONNECTION_TIMEOUT_MS = 8000
 
 const LoginSettings = () => {
   const { t } = useTranslation('common')
-  const Navigate = useNavigate()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { stopImpersonation } = useImpersonateUser()
   const { clearAuth } = useAuth()
   const { refetch: refetchResource } = useResource()
-  const [serverURL, setServerURL] = React.useState('')
-  const [status, setStatus] = React.useState('idle') // 'idle' | 'testing' | 'success' | 'error'
-  const [errorMessage, setErrorMessage] = React.useState('')
+  const [serverURL, setServerURL] = useState('')
+  const [status, setStatus] = useState('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  React.useEffect(() => {
+  useEffect(() => {
     Preferences.get({ key: 'customServerUrl' }).then(result => {
       setServerURL(result.value || API_URL)
     })
   }, [])
 
-  const isValidURL = url => {
-    return isAllowedServerURL(url, Capacitor.isNativePlatform())
-  }
-
   const testConnection = async url => {
-    const testURL = url.replace(/\/+$/, '') + '/api/v1/resource'
+    const testURL = `${url.replace(/\/+$/, '')}/api/v1/resource`
     const controller = new AbortController()
     const timeoutId = setTimeout(
       () => controller.abort(),
       CONNECTION_TIMEOUT_MS,
     )
-
     try {
       const response = await fetch(testURL, {
         method: 'GET',
         signal: controller.signal,
       })
       clearTimeout(timeoutId)
-      // Any HTTP response (even 401/404) means the server is reachable
-      if (response.status < 500) {
-        return { ok: true }
-      }
-      if (response.status === 503) {
-        return {
-          ok: false,
-          message: t('auth.connectionErrors.startingUp'),
-        }
-      }
+      if (response.status < 500) return { ok: true }
       return {
         ok: false,
-        message: t('auth.connectionErrors.serverError', {
-          status: response.status,
-        }),
+        message:
+          response.status === 503
+            ? t('auth.connectionErrors.startingUp')
+            : t('auth.connectionErrors.serverError', {
+                status: response.status,
+              }),
       }
-    } catch (err) {
+    } catch (error) {
       clearTimeout(timeoutId)
-
-      if (err.name === 'AbortError') {
+      if (error.name === 'AbortError') {
         return {
           ok: false,
           message: t('auth.connectionErrors.timeout', {
@@ -86,57 +72,35 @@ const LoginSettings = () => {
           }),
         }
       }
-
-      // Try no-cors to distinguish CORS misconfiguration from server being down
-      const noCorsController = new AbortController()
-      const noCorsTimeout = setTimeout(() => noCorsController.abort(), 3000)
+      const probeController = new AbortController()
+      const probeTimeout = setTimeout(() => probeController.abort(), 3000)
       try {
         const probe = await fetch(testURL, {
           method: 'GET',
           mode: 'no-cors',
-          signal: noCorsController.signal,
+          signal: probeController.signal,
         })
-        clearTimeout(noCorsTimeout)
+        clearTimeout(probeTimeout)
         if (probe.type === 'opaque') {
-          // Server responded but CORS headers blocked the real request
-          return {
-            ok: false,
-            message: t('auth.connectionErrors.cors'),
-          }
+          return { ok: false, message: t('auth.connectionErrors.cors') }
         }
-        // Opaque is the only expected type for no-cors success; anything else is odd
-      } catch (probeErr) {
-        clearTimeout(noCorsTimeout)
-        if (probeErr.name !== 'AbortError') {
-          // Both normal and no-cors fetch threw immediately → port refused
-          const msg = probeErr.message?.toLowerCase() ?? ''
-          if (
-            msg.includes('getaddrinfo') ||
-            msg.includes('name not resolved') ||
-            msg.includes('err_name')
-          ) {
-            return {
-              ok: false,
-              message: t('auth.connectionErrors.dns'),
-            }
-          }
-          return {
-            ok: false,
-            message: t('auth.connectionErrors.refused'),
-          }
+      } catch (probeError) {
+        clearTimeout(probeTimeout)
+        if (probeError.name === 'AbortError') {
+          return { ok: false, message: t('auth.connectionErrors.unreachable') }
         }
-        // no-cors also timed out → server/host truly unreachable
+        const message = probeError.message?.toLowerCase() ?? ''
         return {
           ok: false,
-          message: t('auth.connectionErrors.unreachable'),
+          message:
+            message.includes('getaddrinfo') ||
+            message.includes('name not resolved') ||
+            message.includes('err_name')
+              ? t('auth.connectionErrors.dns')
+              : t('auth.connectionErrors.refused'),
         }
       }
-
-      // Fallback (should rarely hit)
-      return {
-        ok: false,
-        message: t('auth.connectionErrors.unreachable'),
-      }
+      return { ok: false, message: t('auth.connectionErrors.unreachable') }
     }
   }
 
@@ -144,7 +108,7 @@ const LoginSettings = () => {
     try {
       await logout()
     } catch {
-      // The old server may be unavailable; local credentials still must go.
+      // Clearing local credentials is still mandatory when the old server is down.
     }
     await clearAuth()
     stopImpersonation()
@@ -152,30 +116,28 @@ const LoginSettings = () => {
     await clearWidgetData()
     try {
       await offlineDB.clearAll()
-    } catch (e) {
-      console.error('Error clearing offline data on server change', e)
+    } catch (error) {
+      console.error('Error clearing offline data on server change', error)
     }
     await Preferences.set({ key: 'customServerUrl', value: targetURL })
     await apiClient.init(true)
     refetchResource()
   }
 
-  const handleSave = async e => {
-    e.preventDefault()
-    const trimmedURL = serverURL.trim()
-
-    if (trimmedURL === '') {
+  const handleSave = async event => {
+    event.preventDefault()
+    const targetURL = serverURL.trim()
+    if (!targetURL) {
       try {
         await switchServer(API_URL)
-        Navigate('/login')
+        navigate('/login')
       } catch {
         setStatus('error')
         setErrorMessage(t('auth.clearSessionFailed'))
       }
       return
     }
-
-    if (!isValidURL(trimmedURL)) {
+    if (!isAllowedServerURL(targetURL, Capacitor.isNativePlatform())) {
       setStatus('error')
       setErrorMessage(
         t(
@@ -186,54 +148,46 @@ const LoginSettings = () => {
       )
       return
     }
-
     setStatus('testing')
     setErrorMessage('')
-
-    const result = await testConnection(trimmedURL)
-
+    const result = await testConnection(targetURL)
     if (!result.ok) {
       setStatus('error')
       setErrorMessage(result.message)
       return
     }
-
-    // Never carry credentials across server origins. Revoke against the old
-    // origin first, then clear before persisting or contacting the new origin.
     try {
-      await switchServer(trimmedURL)
+      await switchServer(targetURL)
+      setStatus('success')
+      setTimeout(() => navigate('/login'), 1200)
     } catch {
       setStatus('error')
       setErrorMessage(t('auth.clearSessionFailed'))
-      return
-    }
-    setStatus('success')
-
-    setTimeout(() => {
-      Navigate('/login')
-    }, 1200)
-  }
-
-  const handleURLChange = e => {
-    setServerURL(e.target.value)
-    if (status !== 'idle') {
-      setStatus('idle')
-      setErrorMessage('')
     }
   }
 
   const isTesting = status === 'testing'
+  const message =
+    status === 'error'
+      ? errorMessage
+      : status === 'success'
+        ? t('auth.connectedRedirect')
+        : status === 'testing'
+          ? t('auth.testingConnection')
+          : null
+  const MessageIcon =
+    status === 'error'
+      ? ErrorOutlineIcon
+      : status === 'success'
+        ? CheckCircleOutlineIcon
+        : WifiIcon
 
   return (
     <AuthShell
       title={t('auth.serverSettingsTitle')}
       subtitle={t('auth.serverSettingsSubtitle')}
     >
-      <Box
-        component='form'
-        onSubmit={handleSave}
-        sx={{ display: 'flex', flexDirection: 'column' }}
-      >
+      <form className='auth-form' onSubmit={handleSave}>
         <AuthTextField
           label={t('auth.serverURL')}
           id='serverURL'
@@ -245,96 +199,55 @@ const LoginSettings = () => {
           placeholder={t('auth.serverURLPlaceholder')}
           autoFocus
           value={serverURL}
-          onChange={handleURLChange}
           disabled={isTesting}
-          color={
-            status === 'success'
-              ? 'success'
-              : status === 'error'
-                ? 'danger'
-                : 'neutral'
-          }
+          helper={t('auth.serverURLHelper')}
           endDecorator={
             status === 'success' ? (
-              <CheckCircleOutlineIcon color='success' fontSize='small' />
+              <CheckCircleOutlineIcon />
             ) : status === 'error' ? (
-              <ErrorOutlineIcon color='error' fontSize='small' />
+              <ErrorOutlineIcon />
             ) : null
           }
-          helper={t('auth.serverURLHelper')}
+          onChange={event => {
+            setServerURL(event.target.value)
+            if (status !== 'idle') {
+              setStatus('idle')
+              setErrorMessage('')
+            }
+          }}
         />
-
-        {status === 'error' && (
-          <Alert
-            color='danger'
-            variant='soft'
-            startDecorator={<ErrorOutlineIcon />}
-            sx={theme => ({
-              mt: 2,
-              borderRadius: theme.radius.row,
-              alignItems: 'flex-start',
-            })}
+        {message && (
+          <div
+            className={`auth-alert auth-alert--${
+              status === 'error'
+                ? 'error'
+                : status === 'success'
+                  ? 'success'
+                  : 'neutral'
+            }`}
+            role='status'
           >
-            {errorMessage}
-          </Alert>
+            <MessageIcon fontSize='small' /> {message}
+          </div>
         )}
-
-        {status === 'success' && (
-          <Alert
-            color='success'
-            variant='soft'
-            startDecorator={<CheckCircleOutlineIcon />}
-            sx={theme => ({ mt: 2, borderRadius: theme.radius.row })}
-          >
-            {t('auth.connectedRedirect')}
-          </Alert>
-        )}
-
-        {status === 'testing' && (
-          <Alert
-            color='neutral'
-            variant='soft'
-            startDecorator={<WifiIcon />}
-            sx={theme => ({ mt: 2, borderRadius: theme.radius.row })}
-          >
-            {t('auth.testingConnection')}
-          </Alert>
-        )}
-
-        <AuthSubmitButton
-          loading={isTesting}
-          disabled={status === 'success'}
-          startDecorator={isTesting ? <CircularProgress size='sm' /> : null}
-          sx={{ mt: 3 }}
-        >
+        <AuthSubmitButton disabled={status === 'success'} loading={isTesting}>
           {isTesting
             ? t('auth.testingConnectionButton')
             : t('auth.saveAndConnect')}
         </AuthSubmitButton>
-
-        <Button
-          type='button'
-          fullWidth
-          size='lg'
-          variant='plain'
-          color='neutral'
+        <AuthButton
           disabled={isTesting}
-          sx={{ ...authButtonSx, mt: 1 }}
           onClick={async () => {
             await switchServer(API_URL)
-            Navigate('/login')
+            navigate('/login')
           }}
         >
           {t('auth.resetToDefaultServer')}
-        </Button>
-      </Box>
-
-      <Typography
-        level='body-xs'
-        sx={{ mt: 2.5, textAlign: 'center', color: 'text.secondary' }}
-      >
+        </AuthButton>
+      </form>
+      <p className='auth-copy auth-copy--spaced'>
         {t('auth.serverChangeClearsData')}
-      </Typography>
+      </p>
     </AuthShell>
   )
 }

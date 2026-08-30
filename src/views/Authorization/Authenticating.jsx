@@ -1,9 +1,8 @@
 import { Capacitor } from '@capacitor/core'
-import { Box, Button, LinearProgress } from '@mui/joy'
 import { useEffect, useState } from 'react'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { useAuth } from '../../hooks/useAuth'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -11,8 +10,8 @@ import { apiClient } from '../../utils/ApiClient'
 import { GetUserProfile } from '../../utils/Fetcher'
 import { endOAuthExchange } from '../../utils/OAuthExchangeState'
 import { consumeReturnPath } from '../../utils/ReturnPath'
+import { AuthButton } from './AuthFields'
 import AuthShell from './AuthShell'
-import { authButtonSx } from './authStyles'
 import MFAVerificationModal from './MFAVerificationModal'
 
 const AuthenticationLoading = () => {
@@ -155,31 +154,17 @@ const AuthenticationLoading = () => {
 
   return (
     <AuthShell title={message} subtitle={subMessage}>
-      <Box
-        role='status'
-        aria-live='polite'
-        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-      >
+      <div className='auth-status' role='status' aria-live='polite'>
         {status === 'pending' && (
-          <LinearProgress
-            sx={{ width: '60%', '--LinearProgress-radius': '999px' }}
-          />
+          <div className='auth-progress' aria-label={t('auth.signingIn')} />
         )}
 
         {status === 'error' && (
-          <Button
-            component={Link}
-            to='/login'
-            size='lg'
-            variant='soft'
-            color='neutral'
-            fullWidth
-            sx={authButtonSx}
-          >
+          <AuthButton variant='secondary' onClick={() => Navigate('/login')}>
             {t('auth.backToSignIn')}
-          </Button>
+          </AuthButton>
         )}
-      </Box>
+      </div>
 
       <MFAVerificationModal
         open={mfaModalOpen}
