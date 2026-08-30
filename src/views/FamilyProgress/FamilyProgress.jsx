@@ -24,7 +24,7 @@ import {
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { pageShellSx } from '../../theme/appLayout'
 import { sxToStyle } from '../../theme/sxToStyle'
-import { RewardEditor } from '../Rewards/RewardsView'
+import { RewardEditor } from '../Rewards/RewardEditor'
 import FigmaGoalsScreen from './FigmaGoalsScreen'
 
 const Metric = ({ label, value }) => (

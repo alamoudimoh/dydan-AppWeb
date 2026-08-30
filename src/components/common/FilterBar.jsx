@@ -1,17 +1,7 @@
-import { Check, FilterList, Tune } from '@mui/icons-material'
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Chip,
-  Divider,
-  Input,
-  Typography,
-} from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import AppModal from './AppModal'
 import ActiveFilterChips from './filter/ActiveFilterChips'
 import ModalActions from './ModalActions'
@@ -140,6 +130,52 @@ const fmtDisplayDate = iso => {
   return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+// ── Chip styling (Figma token palette) ───────────────────────────────────────
+
+const CHIP_COLORS = {
+  danger: { soft: 'var(--sig-over-bg)', solid: 'var(--sig-over)' },
+  neutral: { soft: 'var(--surface-2)', solid: 'var(--surface-3)' },
+  primary: { soft: 'var(--brand-faint)', solid: 'var(--brand)' },
+  warning: { soft: 'var(--sig-due-bg)', solid: 'var(--sig-due)' },
+}
+
+const chipStyle = (color, selected) => {
+  const tokens = CHIP_COLORS[color] || CHIP_COLORS.primary
+  return {
+    background: selected ? tokens.solid : tokens.soft,
+    border: `1px solid ${selected ? tokens.solid : 'var(--line)'}`,
+    color: selected ? 'var(--brand-contrast)' : tokens.solid,
+  }
+}
+
+const selectableChipBase = {
+  cursor: 'pointer',
+  transition: 'all 0.15s ease',
+  userSelect: 'none',
+  alignItems: 'center',
+  lineHeight: 1.2,
+}
+
+const selectableChip = (color, selected) => ({
+  ...selectableChipBase,
+  ...chipStyle(color, selected),
+})
+
+const sectionBadgeChip = {
+  ...chipStyle('primary', true),
+  ...selectableChipBase,
+  fontSize: '0.7rem',
+  marginInlineStart: 'auto',
+  minHeight: 22,
+  padding: '2px 6px',
+}
+
+const modalCountChip = {
+  ...chipStyle('primary', true),
+  minHeight: 22,
+  padding: '2px 6px',
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 const FilterBar = ({
@@ -171,47 +207,6 @@ const FilterBar = ({
   }).length
 
   const hasActive = activeFilterCount > 0
-
-  const selectableChipSx = {
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    userSelect: 'none',
-    alignItems: 'center',
-    '& .MuiChip-startDecorator': {
-      display: 'flex',
-      alignItems: 'center',
-      me: 0.5,
-    },
-    '& .MuiChip-label': {
-      lineHeight: 1.2,
-    },
-    '&:hover': { opacity: 0.85 },
-  }
-
-  const sectionBadgeChipSx = {
-    ms: 'auto',
-    fontSize: '0.7rem',
-    minHeight: 22,
-    py: 0.25,
-    px: 0.75,
-    alignItems: 'center',
-    '& .MuiChip-label': {
-      lineHeight: 1.2,
-      px: 0,
-    },
-  }
-
-  const modalCountChipSx = {
-    ms: 0.5,
-    minHeight: 22,
-    py: 0.25,
-    px: 0.75,
-    alignItems: 'center',
-    '& .MuiChip-label': {
-      lineHeight: 1.2,
-      px: 0,
-    },
-  }
 
   // ── Chip labels for inline bar ─────────────────────────────────────────────
 
@@ -297,49 +292,100 @@ const FilterBar = ({
     }
   }
 
+  // ── Render helper: selectable option chip ──────────────────────────────────
+
+  const renderOptionChip = ({
+    avatar,
+    color,
+    icon,
+    isSelected,
+    key,
+    label,
+    onClick,
+  }) => (
+    <span
+      key={key}
+      className='badge'
+      role='button'
+      tabIndex={0}
+      aria-pressed={isSelected}
+      onClick={onClick}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      style={selectableChip(
+        (isSelected ? color : null) ?? 'neutral',
+        isSelected,
+      )}
+    >
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={label}
+          style={{
+            borderRadius: '50%',
+            height: 20,
+            objectFit: 'cover',
+            width: 20,
+          }}
+        />
+      ) : isSelected ? (
+        <FigmaIcon name='check' size={14} />
+      ) : (
+        (icon ?? null)
+      )}
+      {label}
+    </span>
+  )
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <>
       {/* ── Inline bar ─────────────────────────────────────── */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          flexWrap: 'wrap',
-          mb: 2,
-        }}
+      <div
+        className='flex items-center gap-1 flex-wrap'
+        style={{ marginBottom: 16 }}
       >
-        <Badge
-          badgeContent={activeFilterCount || null}
-          color='primary'
-          size='sm'
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          sx={{ display: 'flex', alignItems: 'center' }}
+        <span
+          className='relative inline-flex items-center'
+          style={{ alignItems: 'center' }}
         >
-          <Button
-            size='md'
-            variant={hasActive ? 'solid' : 'outlined'}
-            color={hasActive ? 'primary' : 'neutral'}
-            startDecorator={<FilterList sx={{ fontSize: 16 }} />}
+          <button
+            type='button'
+            className={hasActive ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setIsOpen(true)}
-            sx={{
-              borderRadius: 'xl',
-              py: 0.5,
-              px: 1,
-              gap: 0.5,
+            style={{
               alignItems: 'center',
-              '& .MuiButton-startDecorator': {
-                display: 'flex',
-                alignItems: 'center',
-                me: 0.5,
-              },
+              borderRadius: 'var(--r-lg)',
+              gap: 4,
+              minHeight: 0,
+              padding: '4px 8px',
             }}
           >
+            <FigmaIcon name='bars' size={16} />
             {t('filters.filters')}
-          </Button>
-        </Badge>
+          </button>
+          {activeFilterCount > 0 && (
+            <span
+              className='badge bg-brand'
+              aria-label={String(activeFilterCount)}
+              style={{
+                color: 'var(--brand-contrast)',
+                minWidth: 18,
+                padding: '2px 5px',
+                position: 'absolute',
+                top: -6,
+                insetInlineEnd: -6,
+              }}
+            >
+              {activeFilterCount}
+            </span>
+          )}
+        </span>
 
         <ActiveFilterChips
           chips={filterDefs
@@ -357,7 +403,7 @@ const FilterBar = ({
           maxVisible={2}
           chipSize='md'
         />
-      </Box>
+      </div>
 
       {/* ── Bottom sheet ────────────────────────────────────── */}
       <AppModal
@@ -365,20 +411,18 @@ const FilterBar = ({
         isMobile
         onClose={() => setIsOpen(false)}
         title={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tune sx={{ fontSize: 20 }} />
+          <span className='flex items-center gap-2'>
+            <FigmaIcon name='bars' size={20} />
             {t('filters.filters')}
             {hasActive && (
-              <Chip
-                size='sm'
-                variant='solid'
-                color='primary'
-                sx={modalCountChipSx}
+              <span
+                className='badge bg-brand'
+                style={{ color: 'var(--brand-contrast)', ...modalCountChip }}
               >
                 {activeFilterCount}
-              </Chip>
+              </span>
             )}
-          </Box>
+          </span>
         }
         footer={
           <ModalActions
@@ -398,161 +442,125 @@ const FilterBar = ({
           />
         }
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div className='flex flex-col' style={{ gap: 0 }}>
           {filterDefs.map((def, idx) => (
-            <Box key={def.id}>
-              {idx > 0 && <Divider sx={{ my: 2.5 }} />}
+            <div key={def.id}>
+              {idx > 0 && (
+                <div
+                  style={{
+                    borderTop: '1px solid var(--line)',
+                    margin: '20px 0',
+                  }}
+                />
+              )}
 
               {/* Section header */}
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}
+              <div
+                className='flex items-center gap-1'
+                style={{ marginBottom: 12 }}
               >
                 {def.icon && (
-                  <Box
-                    sx={{
-                      color: 'text.secondary',
-                      display: 'flex',
-                      alignItems: 'center',
-                      '& svg': { fontSize: 18 },
-                    }}
-                  >
+                  <span className='flex items-center text-muted'>
                     {def.icon}
-                  </Box>
+                  </span>
                 )}
-                <Typography level='title-sm' sx={{ fontWeight: 600 }}>
+                <span
+                  className='text-primary'
+                  style={{ fontSize: 14, fontWeight: 600 }}
+                >
                   {def.label}
-                </Typography>
+                </span>
 
                 {/* active badge in header */}
                 {def.type === 'multi-select' &&
                   (activeFilters[def.id]?.length ?? 0) > 0 && (
-                    <Chip
-                      size='sm'
-                      variant='solid'
-                      color='primary'
-                      sx={sectionBadgeChipSx}
-                    >
+                    <span className='badge' style={sectionBadgeChip}>
                       {t('filters.selected', {
                         count: activeFilters[def.id].length,
                       })}
-                    </Chip>
+                    </span>
                   )}
                 {def.type === 'single-select' &&
-                  activeFilters[def.id] != null &&
+                  activeFilters[def.id] !== null &&
                   (() => {
                     const opt = def.options?.find(
                       o => o.value === activeFilters[def.id],
                     )
                     return opt ? (
-                      <Chip
-                        size='sm'
-                        variant='solid'
-                        color='primary'
-                        sx={sectionBadgeChipSx}
-                      >
+                      <span className='badge' style={sectionBadgeChip}>
                         {opt.label}
-                      </Chip>
+                      </span>
                     ) : null
                   })()}
                 {def.type === 'date-range' && getActiveChipLabel(def) && (
-                  <Chip
-                    size='sm'
-                    variant='solid'
-                    color='primary'
-                    sx={sectionBadgeChipSx}
-                  >
+                  <span className='badge' style={sectionBadgeChip}>
                     {getActiveChipLabel(def)}
-                  </Chip>
+                  </span>
                 )}
-              </Box>
+              </div>
 
               {/* multi-select */}
               {def.type === 'multi-select' && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className='flex flex-wrap gap-2'>
                   {def.options?.map(opt => {
                     const isSelected = (activeFilters[def.id] || []).includes(
                       opt.value,
                     )
-                    return (
-                      <Chip
-                        key={opt.value}
-                        variant={isSelected ? 'solid' : 'soft'}
-                        color={
-                          isSelected ? (opt.color ?? 'primary') : 'neutral'
-                        }
-                        startDecorator={
-                          opt.avatar ? (
-                            <Avatar
-                              src={opt.avatar}
-                              alt={opt.label}
-                              sx={{ '--Avatar-size': '20px' }}
-                            />
-                          ) : isSelected ? (
-                            <Check sx={{ fontSize: 14 }} />
-                          ) : (
-                            (opt.icon ?? null)
-                          )
-                        }
-                        onClick={() => handleMultiToggle(def.id, opt.value)}
-                        sx={selectableChipSx}
-                      >
-                        {opt.label}
-                      </Chip>
-                    )
+                    return renderOptionChip({
+                      key: opt.value,
+                      isSelected,
+                      color: opt.color ?? 'primary',
+                      onClick: () => handleMultiToggle(def.id, opt.value),
+                      avatar: opt.avatar,
+                      label: opt.label,
+                      icon: opt.icon,
+                    })
                   })}
-                </Box>
+                </div>
               )}
 
               {/* single-select */}
               {def.type === 'single-select' && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className='flex flex-wrap gap-2'>
                   {def.options?.map(opt => {
                     const isSelected = activeFilters[def.id] === opt.value
-                    return (
-                      <Chip
-                        key={opt.value}
-                        variant={isSelected ? 'solid' : 'soft'}
-                        color={
-                          isSelected ? (opt.color ?? 'primary') : 'neutral'
-                        }
-                        startDecorator={
-                          opt.avatar ? (
-                            <Avatar
-                              src={opt.avatar}
-                              alt={opt.label}
-                              sx={{ '--Avatar-size': '20px' }}
-                            />
-                          ) : isSelected ? (
-                            <Check sx={{ fontSize: 14 }} />
-                          ) : (
-                            (opt.icon ?? null)
-                          )
-                        }
-                        onClick={() => handleSingleToggle(def.id, opt.value)}
-                        sx={selectableChipSx}
-                      >
-                        {opt.label}
-                      </Chip>
-                    )
+                    return renderOptionChip({
+                      key: opt.value,
+                      isSelected,
+                      color: opt.color ?? 'primary',
+                      onClick: () => handleSingleToggle(def.id, opt.value),
+                      avatar: opt.avatar,
+                      label: opt.label,
+                      icon: opt.icon,
+                    })
                   })}
-                </Box>
+                </div>
               )}
 
               {/* boolean */}
               {def.type === 'boolean' && (
-                <Chip
-                  variant={activeFilters[def.id] ? 'solid' : 'soft'}
-                  color={activeFilters[def.id] ? 'primary' : 'neutral'}
-                  startDecorator={
-                    activeFilters[def.id] ? (
-                      <Check sx={{ fontSize: 14 }} />
-                    ) : null
-                  }
+                <span
+                  role='button'
+                  tabIndex={0}
+                  aria-pressed={Boolean(activeFilters[def.id])}
+                  className='badge'
                   onClick={() => handleBoolToggle(def.id)}
-                  sx={selectableChipSx}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleBoolToggle(def.id)
+                    }
+                  }}
+                  style={selectableChip(
+                    activeFilters[def.id] ? 'primary' : 'neutral',
+                    Boolean(activeFilters[def.id]),
+                  )}
                 >
+                  {activeFilters[def.id] && (
+                    <FigmaIcon name='check' size={14} />
+                  )}
                   {def.label}
-                </Chip>
+                </span>
               )}
 
               {/* date-range */}
@@ -560,79 +568,76 @@ const FilterBar = ({
                 (() => {
                   const val = activeFilters[def.id] || {}
                   return (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1.5,
-                      }}
-                    >
+                    <div className='flex flex-col' style={{ gap: 12 }}>
                       {/* Preset chips */}
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      <div className='flex flex-wrap gap-2'>
                         {DATE_RANGE_PRESETS.map(preset => {
                           const isSelected = val.preset === preset.value
                           return (
-                            <Chip
+                            <span
                               key={preset.value}
-                              variant={isSelected ? 'solid' : 'soft'}
-                              color={isSelected ? 'primary' : 'neutral'}
-                              startDecorator={
-                                isSelected ? (
-                                  <Check sx={{ fontSize: 14 }} />
-                                ) : null
-                              }
+                              className='badge'
+                              role='button'
+                              tabIndex={0}
+                              aria-pressed={isSelected}
                               onClick={() =>
                                 handleDateRangePreset(def.id, preset.value)
                               }
-                              sx={selectableChipSx}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  handleDateRangePreset(def.id, preset.value)
+                                }
+                              }}
+                              style={selectableChip(
+                                isSelected ? 'primary' : 'neutral',
+                                isSelected,
+                              )}
                             >
+                              {isSelected && (
+                                <FigmaIcon name='check' size={14} />
+                              )}
                               {presetLabel(preset)}
-                            </Chip>
+                            </span>
                           )
                         })}
-                      </Box>
+                      </div>
 
                       {/* Custom date inputs */}
-                      <Box
-                        sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-                      >
-                        <Input
+                      <div className='flex items-center' style={{ gap: 4 }}>
+                        <input
                           type='date'
-                          size='sm'
+                          className='input'
                           value={toInputDate(val.from)}
+                          max={toInputDate(val.to) || undefined}
                           onChange={e =>
                             handleDateRangeInput(def.id, 'from', e.target.value)
                           }
-                          slotProps={{
-                            input: { max: toInputDate(val.to) || undefined },
-                          }}
-                          sx={{ flex: 1, fontSize: '0.8rem' }}
+                          style={{ flex: 1, fontSize: '0.8rem', minHeight: 30 }}
                         />
-                        <Typography
-                          level='body-xs'
-                          sx={{ color: 'text.tertiary', flexShrink: 0 }}
+                        <span
+                          className='text-faint'
+                          style={{ flexShrink: 0, fontSize: 12 }}
                         >
                           –
-                        </Typography>
-                        <Input
+                        </span>
+                        <input
                           type='date'
-                          size='sm'
+                          className='input'
                           value={toInputDate(val.to)}
+                          min={toInputDate(val.from) || undefined}
                           onChange={e =>
                             handleDateRangeInput(def.id, 'to', e.target.value)
                           }
-                          slotProps={{
-                            input: { min: toInputDate(val.from) || undefined },
-                          }}
-                          sx={{ flex: 1, fontSize: '0.8rem' }}
+                          style={{ flex: 1, fontSize: '0.8rem', minHeight: 30 }}
                         />
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   )
                 })()}
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       </AppModal>
     </>
   )

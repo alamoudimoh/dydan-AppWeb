@@ -1,19 +1,10 @@
-import {
-  Add,
-  CalendarMonth,
-  CloudOff,
-  EditCalendar,
-  PriorityHigh,
-  Style,
-} from '@mui/icons-material'
-import { Box, Container } from '@mui/joy'
-import { useMediaQuery } from '@mui/material'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import EmptyState from '../../components/common/EmptyState'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
 import { useFilter } from '../../hooks/useFilter'
 import { useChores } from '../../queries/ChoreQueries'
@@ -47,16 +38,15 @@ import { useCustomFilters } from './hooks/useCustomFilters'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useMultiSelect } from './hooks/useMultiSelect'
 import { useProjectFilter } from './hooks/useProjectFilter'
+import { INSIGHT_FILTER_DEFS } from './insightFilterDefs'
 import {
   canScheduleNotification,
   scheduleChoreNotification,
 } from './LocalNotificationScheduler'
-import { INSIGHT_FILTER_DEFS } from './SmartInsightsCard'
 
 const MyChores = () => {
   const { data: userProfile, isLoading: isUserProfileLoading } =
     useUserProfile()
-  const isLargeScreen = useMediaQuery(theme => theme.breakpoints.up('md'))
   const { showError, showSuccess, showUndo, showWarning } = useNotification()
   const { t } = useTranslation('chores')
 
@@ -195,7 +185,7 @@ const MyChores = () => {
         id: 'status',
         label: t('list.dueDate'),
         type: 'single-select',
-        icon: <CalendarMonth />,
+        icon: <FigmaIcon name='calendar' size={16} />,
         options: [
           { value: 'Overdue', label: t('list.overdue'), color: 'danger' },
           { value: 'Due today', label: t('list.dueToday'), color: 'warning' },
@@ -235,7 +225,7 @@ const MyChores = () => {
         id: 'priority',
         label: t('priority'),
         type: 'multi-select',
-        icon: <PriorityHigh />,
+        icon: <FigmaIcon name='flag' size={16} />,
         options: Priorities.map(p => ({
           value: p.value,
           label: p.name,
@@ -250,19 +240,18 @@ const MyChores = () => {
               id: 'label',
               label: t('list.labels'),
               type: 'multi-select',
-              icon: <Style />,
+              icon: <FigmaIcon name='tag' size={16} />,
               options: userLabels.map(l => ({
                 value: l.id,
                 label: l.name,
                 icon: (
-                  <Box
-                    component='span'
-                    sx={{
+                  <span
+                    style={{
                       display: 'inline-block',
                       width: 10,
                       height: 10,
                       borderRadius: '50%',
-                      bgcolor: l.color || ENTITY_COLOR_FALLBACK,
+                      background: l.color || ENTITY_COLOR_FALLBACK,
                       flexShrink: 0,
                     }}
                   />
@@ -1008,11 +997,11 @@ const MyChores = () => {
   // Show error state when API is unreachable
   if (choresError || membersError) {
     return (
-      <Container maxWidth='md'>
+      <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
         <EmptyState
           variant='error'
           fullHeight
-          icon={<CloudOff />}
+          icon={<FigmaIcon name='error' size={22} />}
           title={t('list.cantReachDayDan')}
           description={
             choresErrorDetails?.message || t('list.loadErrorDescription')
@@ -1025,7 +1014,7 @@ const MyChores = () => {
             },
           }}
         />
-      </Container>
+      </div>
     )
   }
 
