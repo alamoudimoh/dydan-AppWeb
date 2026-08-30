@@ -10,7 +10,6 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import sortDestructureKeys from 'eslint-plugin-sort-destructure-keys'
-import tailwind from 'eslint-plugin-tailwindcss'
 import globals from 'globals'
 
 export default [
@@ -51,7 +50,6 @@ export default [
       'sort-destructure-keys/sort-destructure-keys': 'error',
     },
   },
-  ...tailwind.configs['flat/recommended'],
   ...queryPlugin.configs['flat/recommended'],
   eslintConfigPrettier, // Disable any rules that conflict with prettier
   eslintPluginPrettierRecommended,

@@ -1,4 +1,3 @@
-/* eslint-disable tailwindcss/no-custom-classname -- Quill requires ql-* format classes. */
 import './RichTextEditor.css'
 
 import imageCompression from 'browser-image-compression'
