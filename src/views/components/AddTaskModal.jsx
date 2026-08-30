@@ -1,6 +1,3 @@
-import { Add } from '@mui/icons-material'
-import { Box, Button, Typography } from '@mui/joy'
-import { useMediaQuery } from '@mui/material'
 import { useQueryClient } from '@tanstack/react-query'
 import * as chrono from 'chrono-node'
 import moment from 'moment'
@@ -9,6 +6,7 @@ import { flushSync } from 'react-dom'
 
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
 import ModalActions from '../../components/common/ModalActions'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useDocumentScanner } from '../../hooks/useDocumentScanner'
 import { useFileUpload } from '../../hooks/useFileUpload'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
@@ -168,9 +166,27 @@ const POINTS_SUGGESTIONS = {
 // parse so a fast type-then-Enter never creates from stale parsed state.
 const PARSE_DEBOUNCE_MS = 150
 
+const useSmallViewport = () => {
+  const [isSmall, setIsSmall] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 639px)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)')
+    const update = () => setIsSmall(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  return isSmall
+}
+
 const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
   const { ResponsiveModal } = useResponsiveModal()
-  const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'))
+  const isMobile = useSmallViewport()
   const pickerEmptyDisplay = isMobile ? 'icon' : 'icon-text'
   const { data: userLabels, isLoading: userLabelsLoading } = useLabels()
   const { data: circleMembers, isLoading: isCircleMembersLoading } =
@@ -1119,9 +1135,9 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
         title='Create new task'
         footer={
           <ModalActions>
-            <Button
-              variant='outlined'
-              color='neutral'
+            <button
+              type='button'
+              className='btn btn-secondary'
               onClick={handleCloseModal}
             >
               Cancel
@@ -1132,14 +1148,15 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                   withCtrl={false}
                 />
               )}
-            </Button>
+            </button>
             {showVoice && (
-              <Button
-                variant='solid'
-                color='primary'
-                loading={creatingVoiceTasks}
+              <button
+                type='button'
+                className='btn btn-primary'
                 disabled={
-                  voiceState.segments.length === 0 || voiceState.isListening
+                  creatingVoiceTasks ||
+                  voiceState.segments.length === 0 ||
+                  voiceState.isListening
                 }
                 onClick={handleVoiceConfirm}
               >
@@ -1148,43 +1165,42 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                   : voiceState.segments.length > 1
                     ? `Create ${voiceState.segments.length} Tasks`
                     : 'Use Task'}
-              </Button>
+              </button>
             )}
             {showScan && scanState.primaryAction && (
-              <Button
-                variant='solid'
-                color='primary'
-                startDecorator={scanState.primaryAction.icon}
+              <button
+                type='button'
+                className='btn btn-primary'
                 onClick={scanState.primaryAction.onClick}
               >
+                {scanState.primaryAction.icon}
                 {scanState.primaryAction.label}
-              </Button>
+              </button>
             )}
             {showScan && scanState.phase === 'processing' && (
-              <Button variant='solid' color='primary' loading disabled>
+              <button type='button' className='btn btn-primary' disabled>
                 Processing
-              </Button>
+              </button>
             )}
             {!showScan && !showVoice && (
-              <Button
-                variant='solid'
-                color='primary'
-                loading={isAttachingScan}
+              <button
+                type='button'
+                className='btn btn-primary'
                 disabled={!taskTitle.trim() || isAttachingScan}
                 onClick={submitChore}
               >
-                Create
+                {isAttachingScan ? 'Creating…' : 'Create'}
                 {showKeyboardShortcuts && (
                   <KeyboardShortcutHint shortcut='Enter' sx={{ ms: 1 }} />
                 )}
-              </Button>
+              </button>
             )}
           </ModalActions>
         }
       >
         {!showScan && !showVoice && (
           <>
-            <Box sx={{ mt: 1 }}>
+            <div style={{ marginTop: 8 }}>
               {/* <Box
                 sx={{
                   display: 'flex',
@@ -1277,17 +1293,17 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                 }}
                 suggestions={smartInputSuggestions}
               />
-            </Box>
+            </div>
 
-            <Box
-              sx={{
-                paddingTop: 2,
-                paddingBottom: 1,
+            <div
+              style={{
+                paddingTop: 16,
+                paddingBottom: 8,
                 display: 'flex',
                 flexDirection: 'row',
-                gap: 1.5,
+                gap: 12,
                 overflowX: 'auto',
-                '&::-webkit-scrollbar': { display: 'none' },
+                scrollbarWidth: 'none',
                 flexWrap: isMobile ? 'nowrap' : 'wrap',
               }}
             >
@@ -1358,63 +1374,45 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                 onClear={() => setNotificationMetadata({ templates: [] })}
                 emptyDisplay={pickerEmptyDisplay}
               />
-            </Box>
+            </div>
 
-            <Box
-              sx={{
-                mt: 1,
+            <div
+              style={{
+                marginTop: 8,
                 display: 'flex',
                 flexDirection: 'row',
-                gap: 1.5,
+                gap: 12,
                 flexWrap: 'wrap',
                 alignItems: 'center',
               }}
             >
               {!hasDescription && (
-                <Button
-                  size='sm'
-                  variant='outlined'
-                  color='neutral'
+                <button
+                  type='button'
+                  className='btn btn-secondary'
                   onClick={() => setHasDescription(true)}
-                  endDecorator={
-                    showKeyboardShortcuts && (
-                      <KeyboardShortcutHint shortcut='E' />
-                    )
-                  }
-                  sx={{
-                    borderRadius: '128px',
-                    minHeight: 40,
-                    px: 1.25,
-                    gap: 1,
-                    transition: 'all 0.25s ease-in-out',
-                  }}
+                  style={{ borderRadius: 128, minHeight: 40 }}
                 >
-                  <Add sx={{ fontSize: 20 }} />
-                  <Typography level='body-sm'>Description</Typography>
-                </Button>
+                  <FigmaIcon name='plus' size={20} />
+                  Description
+                  {showKeyboardShortcuts && (
+                    <KeyboardShortcutHint shortcut='E' />
+                  )}
+                </button>
               )}
               {!hasSubTasks && (
-                <Button
-                  size='sm'
-                  variant='outlined'
-                  color='neutral'
+                <button
+                  type='button'
+                  className='btn btn-secondary'
                   onClick={() => setHasSubTasks(true)}
-                  endDecorator={
-                    showKeyboardShortcuts && (
-                      <KeyboardShortcutHint shortcut='J' />
-                    )
-                  }
-                  sx={{
-                    borderRadius: '128px',
-                    minHeight: 40,
-                    px: 1.25,
-                    gap: 1,
-                    transition: 'all 0.25s ease-in-out',
-                  }}
+                  style={{ borderRadius: 128, minHeight: 40 }}
                 >
-                  <Add sx={{ fontSize: 20 }} />
-                  <Typography level='body-sm'>Subtasks</Typography>
-                </Button>
+                  <FigmaIcon name='plus' size={20} />
+                  Subtasks
+                  {showKeyboardShortcuts && (
+                    <KeyboardShortcutHint shortcut='J' />
+                  )}
+                </button>
               )}
               <AdvancedOptionsTrigger
                 open={showAdvanced}
@@ -1429,7 +1427,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                 }
                 emptyDisplay={pickerEmptyDisplay}
               />
-            </Box>
+            </div>
 
             <AdvancedOptionsSection
               open={showAdvanced}
@@ -1453,8 +1451,8 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
             />
 
             {hasDescription && (
-              <Box>
-                <Typography level='body-sm'>Description:</Typography>
+              <div>
+                <p style={{ margin: '0 0 6px', fontSize: 14 }}>Description:</p>
                 <div>
                   <RichTextEditor
                     ref={richTextEditorRef}
@@ -1464,18 +1462,18 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                     draftId={draftId}
                   />
                 </div>
-              </Box>
+              </div>
             )}
             {hasSubTasks && (
-              <Box>
-                <Typography level='body-sm'>Subtasks:</Typography>
+              <div>
+                <p style={{ margin: '0 0 6px', fontSize: 14 }}>Subtasks:</p>
                 <SubTasks
                   editMode={true}
                   tasks={subTasks ? subTasks : []}
                   setTasks={setSubTasks}
                   shouldFocus={true}
                 />
-              </Box>
+              </div>
             )}
           </>
         )}

@@ -1,28 +1,35 @@
-import { Chip } from '@mui/joy'
 import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
 
-/**
- * A component that displays keyboard shortcut hints as small chips
- * Only visible on non-mobile devices
- * Supports platform-specific shortcuts (Cmd on Mac, Ctrl on Windows) and Shift key
- */
 function KeyboardShortcutHint({
   shortcut,
   show = true,
   sx = {},
-  withCmd = true, // Legacy prop for backward compatibility
+  withCmd = true,
   withCtrl,
   withShift = false,
   ...props
 }) {
-  if (!show) return null
+  const [isDesktop, setIsDesktop] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 768px)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 768px)')
+    const update = () => setIsDesktop(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  if (!show || !isDesktop) return null
 
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
   const modifierKey = isMac ? '⌘' : 'Ctrl'
 
-  // Build the shortcut display string
   let displayShortcut = ''
-  // Support both withCmd and withCtrl for backward compatibility
   const shouldShowModifier = withCmd || withCtrl
   if (shouldShowModifier) {
     displayShortcut += modifierKey
@@ -34,32 +41,33 @@ function KeyboardShortcutHint({
     displayShortcut += (displayShortcut ? ' + ' : '') + shortcut
   }
 
+  const spacing = value => `${value * 0.25}rem`
+  const marginStyle = {}
+  if (sx.mt !== undefined) marginStyle.marginTop = spacing(sx.mt)
+  if (sx.me !== undefined) marginStyle.marginInlineEnd = spacing(sx.me)
+  if (sx.ms !== undefined) marginStyle.marginInlineStart = spacing(sx.ms)
+  if (sx.mb !== undefined) marginStyle.marginBottom = spacing(sx.mb)
+
   return (
-    <Chip
-      size='sm'
-      variant='outlined'
-      color='neutral'
-      sx={{
+    <span
+      className='badge'
+      style={{
         fontSize: '0.75rem',
         maxHeight: '1.5rem',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         fontWeight: '500',
         letterSpacing: '0.025em',
-        border: '1px solid',
-        borderColor: 'neutral.300',
-        // backgroundColor: 'background.surface',
-        color: 'text.secondary',
-        borderRadius: '8px',
-        px: 0.5,
-        py: 0.125,
+        border: '1px solid var(--line)',
+        color: 'var(--t-muted)',
+        borderRadius: 'var(--r-sm)',
+        padding: '0.125rem 0.5rem',
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-        display: { xs: 'none', md: 'inline-flex' }, // Hide on mobile
-        ...sx,
+        ...marginStyle,
       }}
       {...props}
     >
       {displayShortcut}
-    </Chip>
+    </span>
   )
 }
 
@@ -67,7 +75,7 @@ KeyboardShortcutHint.propTypes = {
   shortcut: PropTypes.string.isRequired,
   show: PropTypes.bool,
   withCmd: PropTypes.bool,
-  withCtrl: PropTypes.bool, // Legacy prop for backward compatibility
+  withCtrl: PropTypes.bool,
   withShift: PropTypes.bool,
   sx: PropTypes.object,
 }

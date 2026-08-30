@@ -1,30 +1,159 @@
-import {
-  Bedtime,
-  EventNote,
-  LightMode,
-  NextWeek,
-  NightsStay,
-  Today,
-  WbSunny,
-  WbTwilight,
-  Weekend,
-} from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Checkbox,
-  Input,
-  List,
-  ListItem,
-  Typography,
-} from '@mui/joy'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
 import Calendar from 'react-calendar'
 
 import ModalActions from '../../components/common/ModalActions'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
+
+const sectionLabelStyle = {
+  color: 'var(--t-muted)',
+  font: '700 11px/1.2 var(--font-ui)',
+  letterSpacing: '0.05em',
+  margin: '0 0 6px',
+  textTransform: 'uppercase',
+}
+
+const quickOptionStyle = selected => ({
+  alignItems: 'center',
+  background: selected ? 'var(--brand-faint)' : 'var(--surface-2)',
+  border: `1px solid ${selected ? 'var(--brand)' : 'var(--line)'}`,
+  borderRadius: 'var(--r-full)',
+  color: selected ? 'var(--brand)' : 'var(--t-primary)',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  font: '700 12px var(--font-ui)',
+  gap: 4,
+  minHeight: 32,
+  padding: '5px 10px',
+})
+
+const toggleStyle = selected => ({
+  background: selected ? 'var(--brand-faint)' : 'transparent',
+  border: `1px solid ${selected ? 'var(--brand)' : 'transparent'}`,
+  borderRadius: 'var(--r-sm)',
+  color: selected ? 'var(--brand)' : 'var(--t-muted)',
+  cursor: 'pointer',
+  font: '700 12px var(--font-ui)',
+  minHeight: 30,
+  padding: '5px 11px',
+})
+
+const calendarStyles = `
+  [data-due-date-calendar] .react-calendar {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  [data-due-date-calendar] .react-calendar__viewContainer {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  [data-due-date-calendar] .react-calendar__month-view,
+  [data-due-date-calendar] .react-calendar__year-view,
+  [data-due-date-calendar] .react-calendar__decade-view,
+  [data-due-date-calendar] .react-calendar__century-view {
+    flex: 1;
+  }
+  [data-due-date-calendar] .react-calendar__navigation {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  [data-due-date-calendar] .react-calendar__navigation button {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: var(--r-sm);
+    color: var(--t-primary);
+    cursor: pointer;
+    display: flex;
+    font: 600 14px var(--font-ui);
+    justify-content: center;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0 8px;
+  }
+  [data-due-date-calendar] .react-calendar__navigation button:hover {
+    background: var(--surface-2);
+  }
+  [data-due-date-calendar] .react-calendar__navigation button:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+  [data-due-date-calendar] .react-calendar__navigation__label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  [data-due-date-calendar] .react-calendar__navigation__prev-button,
+  [data-due-date-calendar] .react-calendar__navigation__next-button {
+    font-size: 28px;
+  }
+  [data-due-date-calendar] .react-calendar__navigation__prev2-button,
+  [data-due-date-calendar] .react-calendar__navigation__next2-button {
+    font-size: 22px;
+  }
+  [data-due-date-calendar] .react-calendar__month-view__weekdays__weekday {
+    color: var(--t-muted);
+    font: 600 11px var(--font-ui);
+    letter-spacing: 0.04em;
+    padding: 4px 0;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  [data-due-date-calendar] .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+  }
+  [data-due-date-calendar] .react-calendar__tile {
+    align-items: center;
+    background: none;
+    border: 0;
+    color: var(--t-primary);
+    cursor: pointer;
+    display: flex;
+    font: 13px var(--font-ui);
+    justify-content: center;
+  }
+  [data-due-date-calendar] .react-calendar__tile:hover {
+    background: var(--surface-2);
+  }
+  [data-due-date-calendar] .react-calendar__month-view__days .react-calendar__tile {
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+  [data-due-date-calendar] .react-calendar__year-view .react-calendar__tile,
+  [data-due-date-calendar] .react-calendar__decade-view .react-calendar__tile,
+  [data-due-date-calendar] .react-calendar__century-view .react-calendar__tile {
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    padding: 10px 4px;
+  }
+  [data-due-date-calendar] .react-calendar__tile--now {
+    background: none !important;
+    border: 1.5px solid var(--brand) !important;
+    color: var(--brand) !important;
+    font-weight: 700;
+  }
+  [data-due-date-calendar] .react-calendar__tile--active,
+  [data-due-date-calendar] .react-calendar__tile--active:hover {
+    background: var(--brand) !important;
+    color: var(--brand-contrast) !important;
+    font-weight: 700;
+  }
+  [data-due-date-calendar] .react-calendar__month-view__days__day--neighboringMonth {
+    color: var(--t-faint);
+  }
+  [data-due-date-calendar] .react-calendar__month-view__days,
+  [data-due-date-calendar] .react-calendar__month-view__weekdays {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+  }
+`
 
 // Split a date-ish value (ISO string / Date) into the parts this picker edits.
 export const splitDueDate = value => {
@@ -127,11 +256,6 @@ const DueDatePickerModal = ({
         ? 'islamic'
         : 'gregory'
 
-  const pillListSx = {
-    '--List-gap': '8px',
-    '--ListItem-radius': '20px',
-  }
-
   const handleQuickSchedule = option => {
     setLocalDueDateOnly(toDateKey(getQuickScheduleDate(option)))
   }
@@ -190,283 +314,128 @@ const DueDatePickerModal = ({
         />
       }
     >
-      <Box sx={{ fontFamily: 'var(--joy-fontFamily-body)', maxWidth: 360 }}>
+      <div style={{ fontFamily: 'var(--font-ui)', maxWidth: 360 }}>
         {/* Date shortcuts */}
-        <Typography
-          level='body-xs'
-          sx={{
-            mb: 0.75,
-            color: 'text.tertiary',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+        <p style={sectionLabelStyle}>Quick date</p>
+        <div
+          aria-label='Quick date'
+          role='group'
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8,
+            marginBottom: 12,
           }}
         >
-          Quick date
-        </Typography>
-        <List orientation='horizontal' wrap sx={{ ...pillListSx, mb: 1.5 }}>
           {[
             {
               key: 'today',
               label: 'Today',
-              icon: <Today sx={{ fontSize: 14 }} />,
+              icon: 'today',
             },
             {
               key: 'tomorrow',
               label: 'Tomorrow',
-              icon: <WbSunny sx={{ fontSize: 14 }} />,
+              icon: 'today',
             },
             {
               key: 'weekend',
               label: 'Weekend',
-              icon: <Weekend sx={{ fontSize: 14 }} />,
+              icon: 'home',
             },
             {
               key: 'next-week',
               label: 'Next week',
-              icon: <NextWeek sx={{ fontSize: 14 }} />,
+              icon: 'calendar',
             },
             {
               key: 'next-month',
               label: 'Next month',
-              icon: <EventNote sx={{ fontSize: 14 }} />,
+              icon: 'calendar',
             },
           ].map(opt => {
             const dateStr = toDateKey(getQuickScheduleDate(opt.key))
             return (
-              <ListItem key={opt.key}>
-                <Checkbox
-                  checked={localDueDateOnly === dateStr}
-                  onClick={() => handleQuickSchedule(opt.key)}
-                  overlay
-                  disableIcon
-                  variant='soft'
-                  label={
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                      }}
-                    >
-                      {opt.icon}
-                      {opt.label}
-                    </Box>
-                  }
-                />
-              </ListItem>
+              <button
+                aria-pressed={localDueDateOnly === dateStr}
+                key={opt.key}
+                onClick={() => handleQuickSchedule(opt.key)}
+                style={quickOptionStyle(localDueDateOnly === dateStr)}
+                type='button'
+              >
+                <FigmaIcon name={opt.icon} size={14} />
+                {opt.label}
+              </button>
             )
           })}
-        </List>
+        </div>
 
         {/* Time shortcuts */}
-        <Typography
-          level='body-xs'
-          sx={{
-            mb: 0.75,
-            color: 'text.tertiary',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+        <p style={sectionLabelStyle}>Quick time</p>
+        <div
+          aria-label='Quick time'
+          role='group'
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8,
+            marginBottom: 12,
           }}
         >
-          Quick time
-        </Typography>
-        <List orientation='horizontal' wrap sx={{ ...pillListSx, mb: 1.5 }}>
           {[
             {
               time: '09:00',
               label: 'Morning',
-              icon: <LightMode sx={{ fontSize: 14 }} />,
+              icon: 'today',
             },
             {
               time: '12:00',
               label: 'Noon',
-              icon: <WbSunny sx={{ fontSize: 14 }} />,
+              icon: 'today',
             },
             {
               time: '15:00',
               label: 'Afternoon',
-              icon: <WbTwilight sx={{ fontSize: 14 }} />,
+              icon: 'today',
             },
             {
               time: '18:00',
               label: 'Evening',
-              icon: <NightsStay sx={{ fontSize: 14 }} />,
+              icon: 'home',
             },
             {
               time: '22:00',
               label: 'Night',
-              icon: <Bedtime sx={{ fontSize: 14 }} />,
+              icon: 'home',
             },
           ].map(opt => (
-            <ListItem key={opt.time}>
-              <Checkbox
-                checked={localUseCustomTime && localDueTime === opt.time}
-                onClick={() => handleQuickTime(opt.time)}
-                overlay
-                disableIcon
-                variant='soft'
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {opt.icon}
-                    {opt.label}
-                  </Box>
-                }
-              />
-            </ListItem>
+            <button
+              aria-pressed={localUseCustomTime && localDueTime === opt.time}
+              key={opt.time}
+              onClick={() => handleQuickTime(opt.time)}
+              style={quickOptionStyle(
+                localUseCustomTime && localDueTime === opt.time,
+              )}
+              type='button'
+            >
+              <FigmaIcon name={opt.icon} size={14} />
+              {opt.label}
+            </button>
           ))}
-        </List>
+        </div>
 
-        <Box
-          sx={{
-            mb: 1.5,
-            borderRadius: 'md',
-            border: '1px solid',
-            borderColor: 'neutral.outlinedBorder',
-            bgcolor: 'background.surface',
-            p: 1,
-            // Fix the height so switching views (month/year/decade) doesn't
-            // cause layout shift — month view with 6 rows is the tallest.
-            minHeight: 300,
+        <style>{calendarStyles}</style>
+        <div
+          data-due-date-calendar
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            borderRadius: 'var(--r-md)',
             display: 'flex',
             flexDirection: 'column',
-            '& .react-calendar': {
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-            },
-            '& .react-calendar__viewContainer': {
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-            },
-            '& .react-calendar__month-view, & .react-calendar__year-view, & .react-calendar__decade-view, & .react-calendar__century-view':
-              {
-                flex: 1,
-              },
-            // Navigation row
-            '& .react-calendar__navigation': {
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              mb: 1,
-            },
-            // All nav buttons — large tap targets
-            '& .react-calendar__navigation button': {
-              background: 'none',
-              border: 'none',
-              borderRadius: '8px',
-              color: 'var(--joy-palette-text-primary)',
-              fontFamily: 'var(--joy-fontFamily-body)',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              minHeight: '40px',
-              minWidth: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 8px',
-              transition: 'background 0.15s',
-              '&:hover': {
-                backgroundColor: 'var(--joy-palette-neutral-softBg)',
-              },
-              '&:disabled': {
-                opacity: 0.35,
-                cursor: 'default',
-              },
-            },
-            // Label button (month/year text) takes remaining space
-            '& .react-calendar__navigation__label': {
-              flex: 1,
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              letterSpacing: '0.01em',
-            },
-            // Prev/next arrow buttons — slightly larger icon feel
-            '& .react-calendar__navigation__prev-button, & .react-calendar__navigation__next-button':
-              {
-                fontSize: '1.75rem',
-              },
-            '& .react-calendar__navigation__prev2-button, & .react-calendar__navigation__next2-button':
-              {
-                fontSize: '1.4rem',
-              },
-            // Weekday headers
-            '& .react-calendar__month-view__weekdays__weekday': {
-              fontSize: '0.7rem',
-              fontWeight: 600,
-              color: 'var(--joy-palette-text-tertiary)',
-              textAlign: 'center',
-              padding: '4px 0',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            },
-            '& .react-calendar__month-view__weekdays__weekday abbr': {
-              textDecoration: 'none',
-            },
-            // All tiles — shared base
-            '& .react-calendar__tile': {
-              border: 'none',
-              background: 'none',
-              color: 'var(--joy-palette-text-primary)',
-              fontFamily: 'var(--joy-fontFamily-body)',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'background 0.15s',
-              '&:hover': {
-                background: 'var(--joy-palette-neutral-softBg)',
-              },
-            },
-            // Day tiles only — circular
-            '& .react-calendar__month-view__days .react-calendar__tile': {
-              aspectRatio: '1',
-              borderRadius: '50%',
-            },
-            // Month tiles (year view) — pill shape, no huge circle
-            '& .react-calendar__year-view .react-calendar__tile': {
-              borderRadius: '8px',
-              padding: '10px 4px',
-              fontSize: '0.875rem',
-            },
-            // Year tiles (decade view) — pill shape
-            '& .react-calendar__decade-view .react-calendar__tile': {
-              borderRadius: '8px',
-              padding: '10px 4px',
-              fontSize: '0.875rem',
-            },
-            // Century tiles — pill shape
-            '& .react-calendar__century-view .react-calendar__tile': {
-              borderRadius: '8px',
-              padding: '10px 4px',
-              fontSize: '0.875rem',
-            },
-            '& .react-calendar__tile--now': {
-              border:
-                '1.5px solid var(--joy-palette-primary-solidBg) !important',
-              color: 'var(--joy-palette-primary-solidBg) !important',
-              fontWeight: 700,
-              background: 'none !important',
-            },
-            '& .react-calendar__tile--active, & .react-calendar__tile--active:hover':
-              {
-                background: 'var(--joy-palette-primary-solidBg) !important',
-                color: 'var(--joy-palette-primary-solidColor) !important',
-                fontWeight: 700,
-              },
-            '& .react-calendar__month-view__days__day--neighboringMonth': {
-              color: 'var(--joy-palette-text-tertiary)',
-            },
-            '& .react-calendar__month-view__days': {
-              display: 'grid !important',
-              gridTemplateColumns: 'repeat(7, 1fr) !important',
-            },
-            '& .react-calendar__month-view__weekdays': {
-              display: 'grid !important',
-              gridTemplateColumns: 'repeat(7, 1fr) !important',
-            },
+            marginBottom: 12,
+            minHeight: 300,
+            padding: 8,
           }}
         >
           <Calendar
@@ -495,49 +464,51 @@ const DueDatePickerModal = ({
               ][date.getMonth()]
             }
           />
-        </Box>
-        <Typography
-          level='body-xs'
-          sx={{
-            mb: 0.5,
-            mt: 0.5,
-            color: 'text.tertiary',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          Custom time
-        </Typography>
-        <Input
-          type='time'
-          size='sm'
-          value={localUseCustomTime ? localDueTime || '' : ''}
+        </div>
+        <p style={sectionLabelStyle}>Custom time</p>
+        <input
+          aria-label='Custom time'
           disabled={!localDueDateOnly}
           onChange={handleLocalTimeInputChange}
-          sx={{ maxWidth: 200, mb: 1 }}
-          slotProps={{ input: { style: { fontFamily: 'inherit' } } }}
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            borderRadius: 'var(--r-sm)',
+            color: 'var(--t-primary)',
+            font: '14px var(--font-ui)',
+            marginBottom: 8,
+            maxWidth: 200,
+            minHeight: 32,
+            padding: '4px 8px',
+          }}
+          type='time'
+          value={localUseCustomTime ? localDueTime || '' : ''}
         />
-        <Box sx={{ display: 'flex', gap: 0.75, mb: 0.5 }}>
-          <Button
-            size='sm'
-            variant={!localUseCustomTime ? 'soft' : 'plain'}
-            color='neutral'
+        <div
+          aria-label='Time precision'
+          role='group'
+          style={{ display: 'flex', gap: 6, marginBottom: 4 }}
+        >
+          <button
+            aria-pressed={!localUseCustomTime}
             disabled={!localDueDateOnly}
             onClick={() => setLocalUseCustomTime(false)}
+            style={toggleStyle(!localUseCustomTime)}
+            type='button'
           >
             Anytime
-          </Button>
-          <Button
-            size='sm'
-            variant={localUseCustomTime ? 'soft' : 'plain'}
-            color='neutral'
+          </button>
+          <button
+            aria-pressed={localUseCustomTime}
             disabled={!localDueDateOnly}
             onClick={() => setLocalUseCustomTime(true)}
+            style={toggleStyle(localUseCustomTime)}
+            type='button'
           >
             Specific time
-          </Button>
-        </Box>
-      </Box>
+          </button>
+        </div>
+      </div>
     </ResponsiveModal>
   )
 }

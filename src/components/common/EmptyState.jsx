@@ -1,9 +1,11 @@
-import { Box, Button, Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
+import { sxToStyle } from '../../theme/sxToStyle'
+
 /**
- * The single empty/error surface for the app.
+ * The single empty/error surface for the app, rendered with the Figma
+ * `.empty-state` and `.btn` vocabulary.
  *
  * variant drives the tone, the icon tile color and the a11y role:
  *   - 'empty'      nothing exists yet. Teach the feature, offer the way in.
@@ -16,60 +18,67 @@ import { Link } from 'react-router-dom'
 
 const TONES = {
   empty: {
-    tileBg: 'primary.softHoverBg',
-    halo: 'primary.softBg',
-    iconColor: 'primary.softColor',
+    tile: 'var(--brand-faint)',
+    iconColor: 'var(--brand)',
     role: 'status',
   },
   'no-results': {
-    tileBg: 'neutral.softHoverBg',
-    halo: 'neutral.softBg',
-    iconColor: 'neutral.softColor',
+    tile: 'var(--surface-2)',
+    iconColor: 'var(--t-muted)',
     role: 'status',
   },
   error: {
-    tileBg: 'danger.softHoverBg',
-    halo: 'danger.softBg',
-    iconColor: 'danger.softColor',
+    tile: 'var(--sig-over-bg)',
+    iconColor: 'var(--sig-over)',
     role: 'alert',
   },
 }
 
 const SIZES = {
-  sm: {
-    tile: 48,
-    icon: '1.375rem',
-    halo: 6,
-    py: 5,
-    title: 'title-sm',
-    titleSize: '1rem',
-  },
-  md: {
-    tile: 68,
-    icon: '1.875rem',
-    halo: 10,
-    py: 8,
-    title: 'title-md',
-    titleSize: '1.25rem',
-  },
+  sm: { tile: 48, icon: '1.375rem', py: 40, minWidth: 0 },
+  md: { tile: 68, icon: '1.875rem', py: 64, minWidth: 148 },
 }
 
-const ActionButton = ({ action, ...buttonProps }) => {
-  const { label, onClick, to, ...rest } = action
-  return (
-    <Button
-      {...buttonProps}
-      {...rest}
-      onClick={onClick}
-      {...(to ? { component: Link, to } : {})}
-    >
+const ActionButton = ({ action, className, minWidth, ...buttonProps }) => {
+  const { endDecorator, label, onClick, ref, startDecorator, to, ...rest } =
+    action
+
+  let emphasis = className
+  if ((rest.color ?? 'primary') === 'danger') emphasis += ' btn-danger'
+
+  const content = (
+    <>
+      {startDecorator}
       {label}
-    </Button>
+      {endDecorator}
+    </>
+  )
+
+  if (to) {
+    return (
+      <Link to={to} className={emphasis} style={{ minWidth }} {...rest}>
+        {content}
+      </Link>
+    )
+  }
+  return (
+    <button
+      ref={ref}
+      type='button'
+      className={emphasis}
+      onClick={onClick}
+      style={{ minWidth }}
+      {...rest}
+    >
+      {content}
+    </button>
   )
 }
 
 ActionButton.propTypes = {
   action: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  minWidth: PropTypes.number,
 }
 
 const EmptyState = ({
@@ -86,123 +95,81 @@ const EmptyState = ({
 }) => {
   const tone = TONES[variant] || TONES.empty
   const dimensions = SIZES[size] || SIZES.md
-  const buttonSize = size === 'sm' ? 'sm' : 'md'
 
   return (
-    <Box
+    <div
       role={tone.role}
       aria-live={variant === 'error' ? 'assertive' : 'polite'}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        gap: 0.75,
-        px: 3,
-        py: dimensions.py,
-        ...(fullHeight && { minHeight: '55vh' }),
-        animation: 'dt-empty-state-in 200ms cubic-bezier(0.16, 1, 0.3, 1)',
-        '@keyframes dt-empty-state-in': {
-          from: { opacity: 0, transform: 'translateY(4px)' },
-          to: { opacity: 1, transform: 'none' },
-        },
-        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-        ...sx,
+      className='empty-state'
+      style={{
+        ...(fullHeight ? { minHeight: '55vh' } : null),
+        ...sxToStyle(sx),
       }}
       {...rest}
     >
       {icon && (
-        <Box
+        <span
           aria-hidden='true'
-          sx={{
-            // Two concentric tints: a wide, pale halo with a deeper medallion
-            // inside it, so the icon reads as an object rather than a chip.
-            width: dimensions.tile + dimensions.halo * 2,
-            height: dimensions.tile + dimensions.halo * 2,
-            mb: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '50%',
-            bgcolor: tone.halo,
+          className='flex items-center justify-center rounded-full'
+          style={{
+            width: dimensions.tile + 16,
+            height: dimensions.tile + 16,
+            marginBottom: 8,
+            background: tone.tile,
+            opacity: 0.45,
           }}
         >
-          <Box
-            sx={{
+          <span
+            className='flex items-center justify-center rounded-full'
+            style={{
               width: dimensions.tile,
               height: dimensions.tile,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%',
-              bgcolor: tone.tileBg,
+              background: tone.tile,
               color: tone.iconColor,
-              '& > svg': { fontSize: dimensions.icon },
+              fontSize: dimensions.icon,
+              opacity: 1,
             }}
           >
             {icon}
-          </Box>
-        </Box>
+          </span>
+        </span>
       )}
 
-      <Typography
-        level={dimensions.title}
-        sx={{
-          color: 'text.primary',
-          fontSize: dimensions.titleSize,
-          fontWeight: 'lg',
-          letterSpacing: '-0.01em',
-          textWrap: 'balance',
-        }}
+      <h2
+        className='text-primary text-balance font-bold tracking-tight'
+        style={{ fontSize: size === 'sm' ? '1rem' : '1.25rem', margin: 0 }}
       >
         {title}
-      </Typography>
+      </h2>
 
       {description && (
-        <Typography
-          level='body-sm'
-          sx={{
-            color: 'text.secondary',
-            maxWidth: '38ch',
-            lineHeight: 1.55,
-            textWrap: 'pretty',
-          }}
-        >
+        <p className='text-muted text-sm' style={{ maxWidth: '38ch' }}>
           {description}
-        </Typography>
+        </p>
       )}
 
       {(primaryAction || secondaryAction) && (
-        <Box
-          sx={{
-            mt: 1.5,
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 1,
-          }}
+        <div
+          className='flex flex-wrap items-center justify-center gap-2'
+          style={{ marginTop: 12 }}
         >
           {primaryAction && (
             <ActionButton
               action={primaryAction}
-              variant='solid'
-              color='primary'
-              size={buttonSize}
-              sx={{ minWidth: size === 'sm' ? 0 : 148 }}
+              className='btn btn-primary'
+              minWidth={dimensions.minWidth}
             />
           )}
           {secondaryAction && (
             <ActionButton
               action={secondaryAction}
-              variant='plain'
-              color='neutral'
-              size={buttonSize}
+              className='btn btn-ghost'
+              minWidth={0}
             />
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 
@@ -216,12 +183,18 @@ EmptyState.propTypes = {
     onClick: PropTypes.func,
     to: PropTypes.string,
     startDecorator: PropTypes.node,
+    endDecorator: PropTypes.node,
+    color: PropTypes.string,
+    ref: PropTypes.object,
   }),
   secondaryAction: PropTypes.shape({
     label: PropTypes.node.isRequired,
     onClick: PropTypes.func,
     to: PropTypes.string,
     startDecorator: PropTypes.node,
+    endDecorator: PropTypes.node,
+    color: PropTypes.string,
+    ref: PropTypes.object,
   }),
   size: PropTypes.oneOf(['sm', 'md']),
   fullHeight: PropTypes.bool,

@@ -17,39 +17,13 @@
  *   <ChoreToolbar ... />
  */
 
-import {
-  ArrowDropDown,
-  CalendarMonth,
-  Check,
-  CheckBox,
-  CheckBoxOutlineBlank,
-  FilterList,
-  Save,
-  Sort,
-  Tune,
-  ViewAgenda,
-  ViewComfy,
-  ViewModule,
-} from '@mui/icons-material'
-import {
-  Badge,
-  Box,
-  Button,
-  ButtonGroup,
-  Chip,
-  Divider,
-  IconButton,
-  Input,
-  Menu,
-  MenuItem,
-  Typography,
-} from '@mui/joy'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../../components/common/AppModal'
 import ActiveFilterChips from '../../../components/common/filter/ActiveFilterChips'
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
+import FigmaIcon from '../../../components/FigmaIcon'
 import { Z_INDEX } from '../../../constants/zIndex'
 import { FILTER_COLORS } from '../../../utils/Colors'
 import Priorities from '../../../utils/Priorities'
@@ -67,70 +41,117 @@ import SearchBar from './SearchBar'
 
 // ─── sub-components for the Display sheet ────────────────────────────────────
 
+const CHIP_COLORS = {
+  danger: { soft: 'var(--sig-over-bg)', solid: 'var(--sig-over)' },
+  neutral: { soft: 'var(--surface-2)', solid: 'var(--surface-3)' },
+  primary: { soft: 'var(--brand-faint)', solid: 'var(--brand)' },
+  warning: { soft: 'var(--sig-due-bg)', solid: 'var(--sig-due)' },
+}
+
+const chipStyle = (color, selected) => {
+  const tokens = CHIP_COLORS[color] || CHIP_COLORS.primary
+  return {
+    background: selected ? tokens.solid : tokens.soft,
+    border: `1px solid ${selected ? tokens.solid : 'var(--line)'}`,
+    color: selected ? 'var(--brand-contrast)' : tokens.solid,
+  }
+}
+
+const ToolbarChip = ({
+  children,
+  color = 'neutral',
+  selected = false,
+  startDecorator,
+  style,
+  ...props
+}) => (
+  <button
+    type='button'
+    className='badge'
+    aria-pressed={props['aria-pressed'] ?? selected}
+    style={{
+      ...chipStyle(color, selected),
+      cursor: 'pointer',
+      font: '700 12px var(--font-ui)',
+      minHeight: 28,
+      padding: '5px 10px',
+      transition: 'all 0.15s ease',
+      userSelect: 'none',
+      ...style,
+    }}
+    {...props}
+  >
+    {startDecorator}
+    {children}
+  </button>
+)
+
+const ToolbarIconButton = ({ active = false, children, style, ...props }) => (
+  <button
+    type='button'
+    className={`btn btn-icon ${active ? 'btn-primary' : 'btn-secondary'}`}
+    style={{
+      borderRadius: '50%',
+      height: 32,
+      minHeight: 32,
+      padding: 6,
+      width: 32,
+      ...style,
+    }}
+    {...props}
+  >
+    {children}
+  </button>
+)
+
 const SectionHeader = ({ badge, icon, label }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+  <div className='flex items-center gap-2' style={{ marginBottom: 12 }}>
     {icon && (
-      <Box
-        sx={{
-          color: 'text.secondary',
-          display: 'flex',
-          alignItems: 'center',
-          '& svg': { fontSize: 18 },
-        }}
-      >
+      <span className='text-muted flex' aria-hidden='true'>
         {icon}
-      </Box>
+      </span>
     )}
-    <Typography level='title-sm' fontWeight={600}>
+    <span className='text-primary' style={{ fontSize: 14, fontWeight: 600 }}>
       {label}
-    </Typography>
+    </span>
     {badge != null && (
-      <Chip
-        size='sm'
-        variant='solid'
-        color='primary'
-        sx={{ ms: 'auto', fontSize: '0.7rem', height: 20 }}
+      <span
+        className='badge bg-brand'
+        style={{ color: 'var(--brand-contrast)', marginInlineStart: 'auto' }}
       >
         {badge}
-      </Chip>
+      </span>
     )}
-  </Box>
+  </div>
 )
 
 const OptionChips = ({ multi, onToggle, options, selected }) => (
-  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+  <div className='flex flex-wrap gap-2'>
     {options.map(opt => {
       const isSelected = multi
         ? (selected || []).includes(opt.value)
         : selected === opt.value
       return (
-        <Chip
+        <ToolbarChip
           key={opt.value}
-          variant={isSelected ? 'solid' : 'soft'}
+          selected={isSelected}
           color={isSelected ? (opt.color ?? 'primary') : 'neutral'}
           startDecorator={
             opt.icon != null ? (
               isSelected ? (
-                <Check sx={{ fontSize: 14 }} />
+                <FigmaIcon name='check' size={14} />
               ) : (
                 opt.icon
               )
             ) : undefined
           }
           onClick={() => onToggle(opt.value)}
-          sx={{
-            py: 0.64,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            userSelect: 'none',
-            '&:hover': { opacity: 0.85 },
-          }}
         >
           {opt.label}
-        </Chip>
+        </ToolbarChip>
       )
     })}
-  </Box>
+  </div>
 )
 
 // ─── main component ───────────────────────────────────────────────────────────
@@ -236,7 +257,55 @@ const ChoreToolbar = ({
   const [saveMenuAnchorEl, setSaveMenuAnchorEl] = useState(null)
   const [editingSavedFilter, setEditingSavedFilter] = useState(null)
   const saveMenuRef = useRef(null)
+  const saveMenuContainerRef = useRef(null)
+  const saveMenuFirstItemRef = useRef(null)
   const activeConditions = selectionsToConditions(localSelections)
+
+  useEffect(() => {
+    if (!saveMenuAnchorEl) return undefined
+
+    saveMenuFirstItemRef.current?.focus()
+    const closeMenu = event => {
+      if (!saveMenuContainerRef.current?.contains(event.target)) {
+        setSaveMenuAnchorEl(null)
+      }
+    }
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setSaveMenuAnchorEl(null)
+        saveMenuRef.current?.focus()
+        return
+      }
+
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        const menuItems = Array.from(
+          saveMenuContainerRef.current?.querySelectorAll(
+            '[role="menuitem"]:not(:disabled)',
+          ) || [],
+        )
+        const currentIndex = menuItems.indexOf(document.activeElement)
+        const nextIndex =
+          event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? menuItems.length - 1
+              : (currentIndex +
+                  (event.key === 'ArrowDown' ? 1 : -1) +
+                  menuItems.length) %
+                menuItems.length
+        event.preventDefault()
+        menuItems[nextIndex]?.focus()
+      }
+    }
+
+    document.addEventListener('mousedown', closeMenu)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', closeMenu)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [saveMenuAnchorEl])
 
   // ── badge counts ─────────────────────────────────────────────────────────────
 
@@ -549,30 +618,26 @@ const ChoreToolbar = ({
     {
       value: 'default',
       label: t('toolbar.cards'),
-      icon: <ViewAgenda sx={{ fontSize: 16 }} />,
+      icon: <FigmaIcon name='tasks' size={16} />,
     },
     {
       value: 'compact',
       label: t('toolbar.compact'),
-      icon: <ViewComfy sx={{ fontSize: 16 }} />,
+      icon: <FigmaIcon name='bars' size={16} />,
     },
     {
       value: 'calendar',
       label: t('toolbar.calendar'),
-      icon: <CalendarMonth sx={{ fontSize: 16 }} />,
+      icon: <FigmaIcon name='calendar' size={16} />,
     },
   ]
 
   return (
     <>
       {/* ── Row 1: main toolbar ─────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          justifyContent: 'space-between',
-        }}
+      <div
+        className='flex items-center gap-1'
+        style={{ justifyContent: 'space-between' }}
       >
         {/* Search takes available space */}
         {!hideSearch && (
@@ -586,24 +651,32 @@ const ChoreToolbar = ({
         )}
 
         {/* Filter button */}
-        <Badge
-          badgeContent={totalActiveCount || null}
-          color='primary'
-          size='sm'
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <IconButton
-            variant={hasAnyActive ? 'solid' : 'outlined'}
-            color={hasAnyActive ? 'primary' : 'neutral'}
-            size='sm'
-            sx={{ height: 32, width: 32, borderRadius: '50%' }}
+        <span className='relative inline-flex'>
+          <ToolbarIconButton
+            active={hasAnyActive}
             onClick={openFilterSheet}
             aria-label={t('toolbar.filters')}
             title={t('toolbar.filters')}
           >
-            <FilterList />
-          </IconButton>
-        </Badge>
+            <FigmaIcon name='bars' size={17} />
+          </ToolbarIconButton>
+          {totalActiveCount > 0 && (
+            <span
+              className='badge bg-brand'
+              aria-label={String(totalActiveCount)}
+              style={{
+                color: 'var(--brand-contrast)',
+                minWidth: 18,
+                padding: '2px 5px',
+                position: 'absolute',
+                top: -6,
+                insetInlineEnd: -6,
+              }}
+            >
+              {totalActiveCount}
+            </span>
+          )}
+        </span>
 
         {/* Project selector */}
         {!filterActive &&
@@ -618,31 +691,24 @@ const ChoreToolbar = ({
           )}
 
         {/* Display button — View + Group combined */}
-        <IconButton
-          variant='outlined'
-          color='neutral'
-          size='sm'
-          sx={{ height: 32, width: 32, borderRadius: '50%' }}
+        <ToolbarIconButton
           onClick={() => setDisplaySheetOpen(true)}
           aria-label={t('toolbar.viewAndGroupOptions')}
           title={t('toolbar.viewAndGroup')}
         >
           {viewMode === 'calendar' ? (
-            <CalendarMonth />
+            <FigmaIcon name='calendar' size={17} />
           ) : viewMode === 'compact' ? (
-            <ViewModule />
+            <FigmaIcon name='bars' size={17} />
           ) : (
-            <ViewAgenda />
+            <FigmaIcon name='tasks' size={17} />
           )}
-        </IconButton>
+        </ToolbarIconButton>
 
         {/* Multiselect */}
-        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-          <IconButton
-            variant={isMultiSelectMode ? 'solid' : 'outlined'}
-            color={isMultiSelectMode ? 'primary' : 'neutral'}
-            size='sm'
-            sx={{ height: 32, width: 32, borderRadius: '50%' }}
+        <span className='relative inline-flex'>
+          <ToolbarIconButton
+            active={isMultiSelectMode}
             onClick={onToggleMultiSelect}
             aria-label={
               isMultiSelectMode
@@ -655,15 +721,28 @@ const ChoreToolbar = ({
                 : t('toolbar.multiSelectShortcut')
             }
           >
-            {isMultiSelectMode ? <CheckBox /> : <CheckBoxOutlineBlank />}
-          </IconButton>
+            {isMultiSelectMode ? (
+              <FigmaIcon name='check' size={17} />
+            ) : (
+              <span
+                aria-hidden='true'
+                style={{
+                  border: '2px solid currentColor',
+                  borderRadius: 3,
+                  display: 'block',
+                  height: 15,
+                  width: 15,
+                }}
+              />
+            )}
+          </ToolbarIconButton>
           <KeyboardShortcutHint
             shortcut='S'
             show={showKeyboardShortcuts}
             sx={{ position: 'absolute', top: -8, right: -8, zIndex: 1000 }}
           />
-        </Box>
-      </Box>
+        </span>
+      </div>
 
       {/* ── Row 2: pinned filters quick access ──────────────────────────────── */}
       {/* Stays visible even while a saved filter is active (it self-highlights)
@@ -711,64 +790,55 @@ const ChoreToolbar = ({
         }}
         maxHeight='92vh'
         title={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tune sx={{ fontSize: 20 }} />
+          <span className='flex items-center gap-2'>
+            <FigmaIcon name='bars' size={20} />
             {t('toolbar.filters')}
             {hasAnyActive && (
-              <Chip size='sm' variant='solid' color='primary' sx={{ ms: 0.5 }}>
+              <span
+                className='badge bg-brand'
+                style={{ color: 'var(--brand-contrast)' }}
+              >
                 {totalActiveCount}
-              </Chip>
+              </span>
             )}
-          </Box>
+          </span>
         }
         footer={
           savingFilter ? (
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 1,
-                width: '100%',
-                alignItems: 'center',
-              }}
-            >
-              <Input
-                size='sm'
+            <div className='flex items-center gap-2' style={{ width: '100%' }}>
+              <input
+                className='input'
                 placeholder={t('toolbar.filterNamePlaceholder')}
                 value={saveFilterName}
                 onChange={e => setSaveFilterName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSaveFilter()}
                 autoFocus
-                sx={{ flex: 1 }}
+                style={{ flex: 1, minHeight: 30, padding: '5px 10px' }}
               />
-              <Button
-                size='sm'
+              <button
+                type='button'
+                className='btn btn-primary btn-sm'
                 onClick={handleSaveFilter}
                 disabled={!saveFilterName.trim()}
               >
                 {t('toolbar.save')}
-              </Button>
-              <Button
-                size='sm'
-                variant='plain'
-                color='neutral'
+              </button>
+              <button
+                type='button'
+                className='btn btn-ghost btn-sm'
                 onClick={() => setSavingFilter(false)}
               >
                 {t('toolbar.cancel')}
-              </Button>
-            </Box>
+              </button>
+            </div>
           ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 1,
-              }}
+            <div
+              className='flex items-center gap-2'
+              style={{ justifyContent: 'space-between' }}
             >
-              <Button
-                variant='plain'
-                color='danger'
-                size='sm'
+              <button
+                type='button'
+                className='btn btn-danger btn-sm'
                 disabled={!hasAnyActive && activeConditions.length === 0}
                 onClick={() => {
                   setLocalSelections(defaultSelections())
@@ -778,81 +848,113 @@ const ChoreToolbar = ({
                 }}
               >
                 {t('toolbar.clearAll')}
-              </Button>
+              </button>
 
               {activeConditions.length > 0 ? (
-                <>
-                  <ButtonGroup variant='solid' color='primary'>
-                    <Button
+                <div className='relative flex gap-2' ref={saveMenuContainerRef}>
+                  <div className='flex'>
+                    <button
+                      type='button'
+                      className='btn btn-primary btn-sm'
                       onClick={() => {
                         setSaveMenuAnchorEl(null)
                         setFilterSheetOpen(false)
                       }}
-                      sx={{ minWidth: 140 }}
+                      style={{
+                        borderRadius: 'var(--r-md) 0 0 var(--r-md)',
+                        minWidth: 140,
+                      }}
                     >
                       {resultCount != null
                         ? t('toolbar.showResults', { count: resultCount })
                         : t('toolbar.done')}
-                    </Button>
-                    <IconButton
+                    </button>
+                    <button
+                      type='button'
+                      className='btn btn-primary btn-icon'
                       ref={saveMenuRef}
                       aria-label={t('toolbar.moreSaveOptions')}
+                      aria-expanded={Boolean(saveMenuAnchorEl)}
+                      aria-haspopup='menu'
                       onClick={e => setSaveMenuAnchorEl(e.currentTarget)}
-                    >
-                      <ArrowDropDown />
-                    </IconButton>
-                  </ButtonGroup>
-
-                  <Menu
-                    anchorEl={saveMenuAnchorEl}
-                    open={Boolean(saveMenuAnchorEl)}
-                    onClose={() => setSaveMenuAnchorEl(null)}
-                    placement='top-end'
-                    sx={{ zIndex: Z_INDEX.MODAL_CONTENT + 10 }}
-                  >
-                    <MenuItem
-                      onClick={handleUpdateFilter}
-                      disabled={!editingSavedFilter}
-                    >
-                      <Save sx={{ fontSize: 16, me: 1 }} />
-                      {t('toolbar.saveFilter')}
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        setSaveMenuAnchorEl(null)
-                        setSaveFilterName(
-                          editingSavedFilter
-                            ? t('toolbar.filterCopy', {
-                                name: editingSavedFilter.name,
-                              })
-                            : '',
-                        )
-                        setSavingFilter(true)
+                      style={{
+                        borderInlineStart:
+                          '1px solid color-mix(in srgb, var(--brand-contrast) 30%, transparent)',
+                        borderRadius: '0 var(--r-md) var(--r-md) 0',
+                        minHeight: 30,
                       }}
                     >
-                      <Save sx={{ fontSize: 16, me: 1 }} />
-                      {t('toolbar.saveAsNewFilter')}
-                    </MenuItem>
-                  </Menu>
-                </>
+                      <FigmaIcon name='chevron_down' size={16} />
+                    </button>
+                  </div>
+
+                  {saveMenuAnchorEl && (
+                    <div
+                      role='menu'
+                      aria-label={t('toolbar.moreSaveOptions')}
+                      className='card'
+                      style={{
+                        bottom: 'calc(100% + 8px)',
+                        minWidth: 200,
+                        padding: 4,
+                        position: 'absolute',
+                        insetInlineEnd: 0,
+                        zIndex: Z_INDEX.MODAL_CONTENT + 10,
+                      }}
+                    >
+                      <button
+                        ref={saveMenuFirstItemRef}
+                        type='button'
+                        role='menuitem'
+                        className='btn btn-ghost btn-sm'
+                        onClick={handleUpdateFilter}
+                        disabled={!editingSavedFilter}
+                        style={{ justifyContent: 'flex-start', width: '100%' }}
+                      >
+                        <FigmaIcon name='check' size={16} />
+                        {t('toolbar.saveFilter')}
+                      </button>
+                      <button
+                        type='button'
+                        role='menuitem'
+                        className='btn btn-ghost btn-sm'
+                        onClick={() => {
+                          setSaveMenuAnchorEl(null)
+                          setSaveFilterName(
+                            editingSavedFilter
+                              ? t('toolbar.filterCopy', {
+                                  name: editingSavedFilter.name,
+                                })
+                              : '',
+                          )
+                          setSavingFilter(true)
+                        }}
+                        style={{ justifyContent: 'flex-start', width: '100%' }}
+                      >
+                        <FigmaIcon name='plus' size={16} />
+                        {t('toolbar.saveAsNewFilter')}
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <Button
-                  variant='solid'
-                  color='primary'
+                <button
+                  type='button'
+                  className='btn btn-primary btn-sm'
                   onClick={() => {
                     setSaveMenuAnchorEl(null)
                     setFilterSheetOpen(false)
                   }}
-                  sx={{ minWidth: 140 }}
+                  style={{ minWidth: 140 }}
                 >
                   {t('toolbar.done')}
-                </Button>
+                </button>
               )}
-            </Box>
+            </div>
           )
         }
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div className='flex flex-col'>
           {/* Full advanced filter content */}
           <FilterBuilderContent
             selections={localSelections}
@@ -865,49 +967,51 @@ const ChoreToolbar = ({
           {/* Saved filters section */}
           {savedFilters.length > 0 && (
             <>
-              <Divider sx={{ my: 2.5 }} />
-              <Typography level='title-sm' fontWeight={600} sx={{ mb: 1.5 }}>
+              <div
+                className='border-line'
+                style={{ borderTop: '1px solid var(--line)', margin: '20px 0' }}
+              />
+              <div
+                className='text-primary'
+                style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}
+              >
                 {t('toolbar.savedFilters')}
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              </div>
+              <div className='flex flex-wrap gap-2'>
                 {savedFilters.map(filter => {
                   const isActive = activeFilterId === filter.id
                   return (
-                    <Chip
+                    <ToolbarChip
                       key={filter.id}
-                      variant={isActive ? 'solid' : 'soft'}
-                      color='neutral'
+                      selected={isActive}
+                      color={isActive ? 'primary' : 'neutral'}
                       startDecorator={
                         isActive ? (
-                          <Check sx={{ fontSize: 14 }} />
+                          <FigmaIcon name='check' size={14} />
                         ) : (
-                          <Chip size='sm' variant='plain' color='neutral'>
+                          <span className='badge bg-surface-3 text-muted'>
                             {filter.count ?? 0}
-                          </Chip>
+                          </span>
                         )
                       }
                       onClick={() => {
                         onSavedFilterClick?.(filter.id)
                         if (!isActive) setFilterSheetOpen(false)
                       }}
-                      sx={{
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                        userSelect: 'none',
-                        '&:hover': { opacity: 0.85 },
-                        ...(filter.color && !isActive
+                      style={
+                        filter.color && !isActive
                           ? { borderColor: filter.color }
-                          : {}),
-                      }}
+                          : undefined
+                      }
                     >
                       {filter.name}
-                    </Chip>
+                    </ToolbarChip>
                   )
                 })}
-              </Box>
+              </div>
             </>
           )}
-        </Box>
+        </div>
       </AppModal>
 
       {/* ── Display bottom sheet (View + Group + Assignee + Project) ──────────── */}
@@ -916,55 +1020,53 @@ const ChoreToolbar = ({
         isMobile
         onClose={() => setDisplaySheetOpen(false)}
         title={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ViewAgenda sx={{ fontSize: 20 }} />
+          <span className='flex items-center gap-2'>
+            <FigmaIcon name='tasks' size={20} />
             {t('toolbar.display')}
-          </Box>
+          </span>
         }
         footer={
-          <Button
+          <button
+            type='button'
+            className='btn btn-primary btn-sm'
             onClick={() => setDisplaySheetOpen(false)}
-            sx={{ minWidth: 140 }}
+            style={{ minWidth: 140 }}
           >
             {t('toolbar.done')}
-          </Button>
+          </button>
         }
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div className='flex flex-col'>
           {/* View section */}
           <SectionHeader label={t('toolbar.view')} />
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className='flex flex-wrap gap-2'>
             {viewOptions.map(opt => (
-              <Chip
+              <ToolbarChip
                 key={opt.value}
-                variant={viewMode === opt.value ? 'solid' : 'soft'}
+                selected={viewMode === opt.value}
                 color={viewMode === opt.value ? 'primary' : 'neutral'}
                 startDecorator={
                   viewMode === opt.value ? (
-                    <Check sx={{ fontSize: 14 }} />
+                    <FigmaIcon name='check' size={14} />
                   ) : (
                     opt.icon
                   )
                 }
                 onClick={() => onToggleViewMode?.(opt.value)}
-                sx={{
-                  py: 0.64,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  userSelect: 'none',
-                  '&:hover': { opacity: 0.85 },
-                }}
               >
                 {opt.label}
-              </Chip>
+              </ToolbarChip>
             ))}
-          </Box>
+          </div>
 
-          <Divider sx={{ my: 2.5 }} />
+          <div
+            className='border-line'
+            style={{ borderTop: '1px solid var(--line)', margin: '20px 0' }}
+          />
 
           {/* Group by section */}
           <SectionHeader
-            icon={<Sort />}
+            icon={<FigmaIcon name='bars' size={18} />}
             label={t('toolbar.groupBy')}
             badge={
               selectedGroupBy !== 'default'
@@ -972,30 +1074,26 @@ const ChoreToolbar = ({
                 : null
             }
           />
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className='flex flex-wrap gap-2'>
             {groupByOptions.map(opt => (
-              <Chip
+              <ToolbarChip
                 key={opt.value}
-                variant={selectedGroupBy === opt.value ? 'solid' : 'soft'}
+                selected={selectedGroupBy === opt.value}
                 color={selectedGroupBy === opt.value ? 'primary' : 'neutral'}
                 onClick={() => onGroupBySelect?.(opt.value)}
-                sx={{
-                  py: 0.64,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  userSelect: 'none',
-                  '&:hover': { opacity: 0.85 },
-                }}
               >
                 {opt.label}
-              </Chip>
+              </ToolbarChip>
             ))}
-          </Box>
+          </div>
 
           {/* Show tasks for section */}
-          <Divider sx={{ my: 2.5 }} />
+          <div
+            className='border-line'
+            style={{ borderTop: '1px solid var(--line)', margin: '20px 0' }}
+          />
           <SectionHeader
-            icon={<FilterList />}
+            icon={<FigmaIcon name='bars' size={18} />}
             label={t('toolbar.showTasksFor')}
             badge={
               selectedAssigneeFilter !== 'anyone'
@@ -1010,7 +1108,7 @@ const ChoreToolbar = ({
             multi={false}
             onToggle={v => onAssigneeFilterChange?.(v)}
           />
-        </Box>
+        </div>
       </AppModal>
     </>
   )

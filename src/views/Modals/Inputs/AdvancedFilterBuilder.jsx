@@ -1,9 +1,8 @@
-import { Save } from '@mui/icons-material'
-import { Box, Button, Chip, Divider, Input, Typography } from '@mui/joy'
 import { useEffect, useMemo, useState } from 'react'
 
 import AppModal from '../../../components/common/AppModal'
 import ModalActions from '../../../components/common/ModalActions'
+import FigmaIcon from '../../../components/FigmaIcon'
 import { FILTER_COLORS } from '../../../utils/Colors'
 import { applyFilter } from '../../../utils/FilterEngine'
 import FilterBuilderContent, {
@@ -106,123 +105,155 @@ const AdvancedFilterBuilder = ({
       onClose={onClose}
       maxHeight='92vh'
       title={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {editingFilter ? 'Edit Filter' : 'New Filter'}
           {activeConditionCount > 0 && (
-            <Chip size='sm' variant='solid' color='primary'>
+            <span
+              className='badge'
+              style={{ background: 'var(--brand)', color: 'white' }}
+            >
               {activeConditionCount} condition
               {activeConditionCount !== 1 ? 's' : ''}
-            </Chip>
+            </span>
           )}
-        </Box>
+        </div>
       }
       footer={
-        <Box
-          sx={{
+        <div
+          style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 1,
+            gap: 8,
           }}
         >
-          {/* Preview */}
-          <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             {conditions.length > 0 ? (
               <>
-                <Chip size='sm' variant='soft' color='neutral'>
+                <span
+                  className='badge'
+                  style={{
+                    background: 'var(--surface-2)',
+                    color: 'var(--t-secondary)',
+                  }}
+                >
                   {previewCount} task{previewCount !== 1 ? 's' : ''}
-                </Chip>
+                </span>
                 {previewOverdueCount > 0 && (
-                  <Chip size='sm' variant='solid' color='danger'>
+                  <span
+                    className='badge'
+                    style={{ background: 'var(--sig-overdue)', color: 'white' }}
+                  >
                     {previewOverdueCount} overdue
-                  </Chip>
+                  </span>
                 )}
               </>
             ) : (
-              <Typography level='body-xs' sx={{ color: 'text.tertiary' }}>
+              <span style={{ color: 'var(--t-muted)', fontSize: 12 }}>
                 Add conditions to preview
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
 
-          {/* Actions */}
           <ModalActions>
-            <Button variant='outlined' color='neutral' onClick={onClose}>
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={onClose}
+            >
               Cancel
-            </Button>
-            <Button
-              variant='solid'
-              color='primary'
-              startDecorator={<Save sx={{ fontSize: 16 }} />}
+            </button>
+            <button
+              type='button'
+              className='btn btn-primary'
               onClick={handleSave}
             >
+              <FigmaIcon name='check' size={16} />
               Save Filter
-            </Button>
+            </button>
           </ModalActions>
-        </Box>
+        </div>
       }
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {/* Name */}
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            level='body-xs'
-            sx={{ mb: 0.75, color: 'text.secondary', fontWeight: 600 }}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginBottom: 16 }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: 6,
+              color: 'var(--t-secondary)',
+              fontSize: 12,
+              fontWeight: 600,
+            }}
           >
             Filter Name
-          </Typography>
-          <Input
+          </label>
+          <input
+            className='input'
             placeholder='e.g. Overdue tasks for Alice'
             value={filterName}
             onChange={e => {
               setFilterName(e.target.value)
               setError('')
             }}
-            error={!!error}
             autoFocus
           />
           {error && (
-            <Typography level='body-xs' color='danger' sx={{ mt: 0.5 }}>
+            <p
+              style={{
+                margin: '4px 0 0',
+                color: 'var(--sig-overdue)',
+                fontSize: 12,
+              }}
+            >
               {error}
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
 
-        {/* Color */}
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            level='body-xs'
-            sx={{ mb: 0.75, color: 'text.secondary', fontWeight: 600 }}
+        <div style={{ marginBottom: 16 }}>
+          <p
+            style={{
+              margin: '0 0 6px',
+              color: 'var(--t-secondary)',
+              fontSize: 12,
+              fontWeight: 600,
+            }}
           >
             Color
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {FILTER_COLORS.map(c => (
-              <Box
+              <button
+                type='button'
                 key={c.value}
                 title={c.name}
                 onClick={() => setFilterColor(c.value)}
-                sx={{
+                aria-pressed={filterColor === c.value}
+                style={{
                   width: 26,
                   height: 26,
+                  border: 0,
                   borderRadius: '50%',
                   background: c.value,
                   cursor: 'pointer',
                   outline:
                     filterColor === c.value
-                      ? '3px solid var(--joy-palette-primary-500)'
+                      ? '3px solid var(--brand)'
                       : '2px solid transparent',
-                  outlineOffset: '2px',
-                  transition: 'all 0.15s ease',
+                  outlineOffset: 2,
+                  transition: 'transform 0.15s ease',
                   flexShrink: 0,
-                  '&:hover': { transform: 'scale(1.2)' },
                 }}
               />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        <Divider sx={{ mb: 2.5 }} />
+        <hr
+          className='border-line'
+          style={{ width: '100%', margin: '0 0 20px' }}
+        />
 
         <FilterBuilderContent
           selections={selections}
@@ -231,7 +262,7 @@ const AdvancedFilterBuilder = ({
           labels={labels}
           projects={projects}
         />
-      </Box>
+      </div>
     </AppModal>
   )
 }

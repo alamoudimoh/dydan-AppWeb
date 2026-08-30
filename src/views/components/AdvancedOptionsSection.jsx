@@ -1,23 +1,6 @@
-import {
-  Add,
-  Approval,
-  HourglassTop,
-  Lock,
-  MoreHoriz,
-  People,
-  Remove,
-  Timer,
-} from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  IconButton,
-  Input,
-  Option,
-  Select,
-  Switch,
-  Typography,
-} from '@mui/joy'
+import { useId } from 'react'
+
+import FigmaIcon from '../../components/FigmaIcon'
 
 const STRATEGY_OPTIONS = [
   { value: 'keep_last_assigned', label: 'Keep same assignee' },
@@ -27,40 +10,67 @@ const STRATEGY_OPTIONS = [
 ]
 
 const FieldRow = ({ children, description, label, onLabelClick }) => (
-  <Box
-    sx={{
+  <div
+    style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: 2,
-      py: 0.75,
+      gap: 16,
+      padding: '6px 0',
     }}
   >
-    <Box
-      sx={{
-        minWidth: 0,
-        flex: '1 1 auto',
-        cursor: onLabelClick ? 'pointer' : undefined,
-        userSelect: onLabelClick ? 'none' : undefined,
-      }}
-      onClick={onLabelClick}
+    {onLabelClick ? (
+      <button
+        type='button'
+        onClick={onLabelClick}
+        style={{
+          minWidth: 0,
+          flex: '1 1 auto',
+          padding: 0,
+          border: 0,
+          background: 'transparent',
+          color: 'inherit',
+          cursor: 'pointer',
+          font: 'inherit',
+          textAlign: 'start',
+        }}
+      >
+        <span style={{ display: 'block', fontSize: 14, fontWeight: 600 }}>
+          {label}
+        </span>
+        {description && (
+          <span
+            className='text-muted'
+            style={{ display: 'block', marginTop: 2, fontSize: 12 }}
+          >
+            {description}
+          </span>
+        )}
+      </button>
+    ) : (
+      <div style={{ minWidth: 0, flex: '1 1 auto' }}>
+        <span style={{ display: 'block', fontSize: 14, fontWeight: 600 }}>
+          {label}
+        </span>
+        {description && (
+          <span
+            className='text-muted'
+            style={{ display: 'block', marginTop: 2, fontSize: 12 }}
+          >
+            {description}
+          </span>
+        )}
+      </div>
+    )}
+    <div
+      style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8 }}
     >
-      <Typography level='body-sm' fontWeight='md'>
-        {label}
-      </Typography>
-      {description && (
-        <Typography level='body-xs' textColor='text.tertiary' sx={{ mt: 0.25 }}>
-          {description}
-        </Typography>
-      )}
-    </Box>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
       {children}
-    </Box>
-  </Box>
+    </div>
+  </div>
 )
 
-// Trigger button — place this inside the chip/action row
+// Trigger button - place this inside the chip/action row
 export const AdvancedOptionsTrigger = ({
   activeCount = 0,
   emptyDisplay = 'icon-text',
@@ -68,73 +78,78 @@ export const AdvancedOptionsTrigger = ({
   open,
 }) => {
   const showLabel = emptyDisplay === 'icon-text' || open || activeCount > 0
+  const isActive = open || activeCount > 0
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         position: 'relative',
         display: 'inline-flex',
         alignItems: 'center',
       }}
     >
-      <Button
-        size='sm'
-        variant={open || activeCount > 0 ? 'soft' : 'outlined'}
-        color='neutral'
+      <button
+        type='button'
+        className='btn btn-secondary'
         onClick={onToggle}
-        sx={{
+        aria-expanded={open}
+        style={{
           minHeight: 40,
-          borderRadius: '128px',
-          px: showLabel ? 1.25 : 0.75,
-          gap: showLabel ? 1 : 0,
+          padding: showLabel ? '8px 10px' : '8px 6px',
+          borderRadius: 128,
+          gap: showLabel ? 8 : 0,
+          background: isActive ? 'var(--brand-faint)' : undefined,
+          borderColor: isActive ? 'var(--brand)' : undefined,
           transition: 'all 0.25s ease-in-out',
         }}
       >
-        <MoreHoriz sx={{ fontSize: 20 }} />
-        <Typography
-          level='body-sm'
-          sx={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+        <span aria-hidden='true' style={{ fontSize: 20, lineHeight: 1 }}>
+          ...
+        </span>
+        <span
+          style={{
             maxWidth: showLabel ? 120 : 0,
+            overflow: 'hidden',
             opacity: showLabel ? 1 : 0,
             transform: showLabel ? 'translateX(0)' : 'translateX(-4px)',
             transition:
               'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
+            whiteSpace: 'nowrap',
           }}
         >
           More
-        </Typography>
-      </Button>
+        </span>
+      </button>
 
       {activeCount > 0 && (
-        <Box
-          sx={{
+        <span
+          className='badge'
+          style={{
             position: 'absolute',
             top: -6,
             right: -8,
+            display: 'flex',
             width: 16,
             height: 16,
-            borderRadius: '50%',
-            bgcolor: 'primary.solidBg',
-            color: 'primary.solidColor',
-            fontSize: 10,
-            fontWeight: 700,
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            padding: 0,
+            borderRadius: '50%',
+            background: 'var(--brand)',
+            color: 'var(--brand-contrast)',
+            fontSize: 10,
+            fontWeight: 700,
             pointerEvents: 'none',
           }}
         >
           {activeCount}
-        </Box>
+        </span>
       )}
-    </Box>
+    </div>
   )
 }
 
-// Panel — place this as a sibling below the description/subtask sections
+// Panel - place this as a sibling below the description/subtask sections
 const AdvancedOptionsSection = ({
   assignStrategy,
   completionWindow,
@@ -153,6 +168,7 @@ const AdvancedOptionsSection = ({
   points,
   requireApproval,
 }) => {
+  const id = useId()
   const displayPoints = points <= 0 ? 0 : points
 
   const handleDecrement = () => {
@@ -174,8 +190,8 @@ const AdvancedOptionsSection = ({
   }
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: 'grid',
         gridTemplateRows: open ? '1fr' : '0fr',
         opacity: open ? 1 : 0,
@@ -183,18 +199,16 @@ const AdvancedOptionsSection = ({
           'grid-template-rows 0.25s ease-in-out, opacity 0.2s ease-in-out',
       }}
     >
-      <Box sx={{ overflow: 'hidden' }}>
-        <Box
-          sx={{
-            mt: 2,
-            px: 2,
-            py: 1,
-            borderRadius: 'md',
-            border: '1px solid',
-            borderColor: 'neutral.outlinedBorder',
-            bgcolor: 'background.level1',
+      <div style={{ overflow: 'hidden' }}>
+        <div
+          className='card'
+          style={{
             display: 'flex',
             flexDirection: 'column',
+            marginTop: 16,
+            padding: '8px 16px',
+            background: 'var(--surface-2)',
+            boxShadow: 'none',
           }}
         >
           {/* Points */}
@@ -202,38 +216,36 @@ const AdvancedOptionsSection = ({
             label='Points'
             description='Award points for completing this task'
           >
-            <IconButton
-              size='sm'
-              variant='outlined'
-              color='neutral'
+            <button
+              type='button'
+              className='btn btn-secondary btn-icon btn-sm'
               onClick={handleDecrement}
               disabled={displayPoints === 0}
+              aria-label='Decrease points'
+              style={{ opacity: displayPoints === 0 ? 0.5 : 1 }}
             >
-              <Remove sx={{ fontSize: 16 }} />
-            </IconButton>
-            <Input
+              <span aria-hidden='true'>-</span>
+            </button>
+            <input
+              id={`${id}-points`}
+              className='input'
               type='number'
-              size='sm'
               value={displayPoints === 0 ? '' : displayPoints}
               placeholder='0'
+              min={0}
+              max={9999}
+              aria-label='Points'
               onChange={handlePointsInput}
-              sx={{ width: 64 }}
-              slotProps={{
-                input: {
-                  min: 0,
-                  max: 9999,
-                  style: { textAlign: 'center' },
-                },
-              }}
+              style={{ width: 64, padding: '5px 8px', textAlign: 'center' }}
             />
-            <IconButton
-              size='sm'
-              variant='outlined'
-              color='neutral'
+            <button
+              type='button'
+              className='btn btn-secondary btn-icon btn-sm'
               onClick={handleIncrement}
+              aria-label='Increase points'
             >
-              <Add sx={{ fontSize: 16 }} />
-            </IconButton>
+              <FigmaIcon name='plus' size={16} />
+            </button>
           </FieldRow>
 
           {/* Require approval */}
@@ -242,10 +254,14 @@ const AdvancedOptionsSection = ({
             description='Task needs admin sign-off before it can be closed'
             onLabelClick={() => onRequireApprovalChange(!requireApproval)}
           >
-            <Switch
-              size='sm'
+            <input
+              id={`${id}-require-approval`}
+              type='checkbox'
+              role='switch'
               checked={requireApproval}
               onChange={e => onRequireApprovalChange(e.target.checked)}
+              aria-label='Require approval'
+              style={{ width: 32, height: 18, accentColor: 'var(--brand)' }}
             />
           </FieldRow>
 
@@ -261,96 +277,127 @@ const AdvancedOptionsSection = ({
               hasAssignees ? () => onIsPrivateChange(!isPrivate) : undefined
             }
           >
-            <Switch
-              size='sm'
+            <input
+              id={`${id}-limited-visibility`}
+              type='checkbox'
+              role='switch'
               checked={isPrivate}
               disabled={!hasAssignees}
               onChange={e => onIsPrivateChange(e.target.checked)}
+              aria-label='Limited visibility'
+              style={{ width: 32, height: 18, accentColor: 'var(--brand)' }}
             />
           </FieldRow>
 
-          {/* Assignment strategy — only shown when there are multiple assignees */}
+          {/* Assignment strategy - only shown when there are multiple assignees */}
           {hasMultipleAssignees && (
             <FieldRow
               label='Assign strategy'
               description='How to pick the next assignee each recurrence'
             >
-              <Select
-                size='sm'
+              <select
+                id={`${id}-assign-strategy`}
+                className='input'
                 value={assignStrategy}
-                onChange={(_, v) => onAssignStrategyChange(v)}
-                sx={{ minWidth: 190 }}
+                aria-label='Assign strategy'
+                onChange={e => onAssignStrategyChange(e.target.value)}
+                style={{ minWidth: 190, padding: '5px 8px' }}
               >
                 {STRATEGY_OPTIONS.map(opt => (
-                  <Option key={opt.value} value={opt.value}>
+                  <option key={opt.value} value={opt.value}>
                     {opt.label}
-                  </Option>
+                  </option>
                 ))}
-              </Select>
+              </select>
             </FieldRow>
           )}
 
-          {/* Completion window and deadline — only when due date set */}
+          {/* Completion window and deadline - only when due date set */}
           {hasDueDate ? (
             <>
               <FieldRow
                 label='Available from'
                 description='Hours before the due date the task becomes available'
               >
-                <Input
-                  type='number'
-                  size='sm'
-                  placeholder='—'
-                  value={completionWindow > -1 ? completionWindow : ''}
-                  onChange={e => {
-                    const v = parseInt(e.target.value)
-                    onCompletionWindowChange(isNaN(v) ? -1 : Math.max(0, v))
-                  }}
-                  endDecorator={
-                    <Typography level='body-xs' textColor='text.tertiary'>
-                      hrs
-                    </Typography>
-                  }
-                  sx={{ width: 96 }}
-                  slotProps={{ input: { min: 0 } }}
-                />
+                <div style={{ position: 'relative', width: 96 }}>
+                  <input
+                    id={`${id}-completion-window`}
+                    className='input'
+                    type='number'
+                    placeholder='-'
+                    value={completionWindow > -1 ? completionWindow : ''}
+                    min={0}
+                    aria-label='Hours before due date'
+                    onChange={e => {
+                      const v = parseInt(e.target.value)
+                      onCompletionWindowChange(isNaN(v) ? -1 : Math.max(0, v))
+                    }}
+                    style={{ padding: '5px 30px 5px 8px' }}
+                  />
+                  <span
+                    className='text-muted'
+                    aria-hidden='true'
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 8,
+                      fontSize: 12,
+                      pointerEvents: 'none',
+                      transform: 'translateY(-50%)',
+                    }}
+                  >
+                    hrs
+                  </span>
+                </div>
               </FieldRow>
 
               <FieldRow
                 label='Expires after'
                 description='Hours after the due date when the task can no longer be completed'
               >
-                <Input
-                  type='number'
-                  size='sm'
-                  placeholder='—'
-                  value={deadlineOffset > -1 ? deadlineOffset : ''}
-                  onChange={e => {
-                    const v = parseInt(e.target.value)
-                    onDeadlineOffsetChange(isNaN(v) ? -1 : Math.max(0, v))
-                  }}
-                  endDecorator={
-                    <Typography level='body-xs' textColor='text.tertiary'>
-                      hrs
-                    </Typography>
-                  }
-                  sx={{ width: 96 }}
-                  slotProps={{ input: { min: 0 } }}
-                />
+                <div style={{ position: 'relative', width: 96 }}>
+                  <input
+                    id={`${id}-deadline-offset`}
+                    className='input'
+                    type='number'
+                    placeholder='-'
+                    value={deadlineOffset > -1 ? deadlineOffset : ''}
+                    min={0}
+                    aria-label='Hours after due date'
+                    onChange={e => {
+                      const v = parseInt(e.target.value)
+                      onDeadlineOffsetChange(isNaN(v) ? -1 : Math.max(0, v))
+                    }}
+                    style={{ padding: '5px 30px 5px 8px' }}
+                  />
+                  <span
+                    className='text-muted'
+                    aria-hidden='true'
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 8,
+                      fontSize: 12,
+                      pointerEvents: 'none',
+                      transform: 'translateY(-50%)',
+                    }}
+                  >
+                    hrs
+                  </span>
+                </div>
               </FieldRow>
             </>
           ) : (
-            <Typography
-              level='body-xs'
-              textColor='text.tertiary'
-              sx={{ my: 0.5, fontStyle: 'italic' }}
+            <p
+              className='text-muted'
+              style={{ margin: '4px 0', fontSize: 12, fontStyle: 'italic' }}
             >
               Set a due date to configure completion window and deadline.
-            </Typography>
+            </p>
           )}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }
 

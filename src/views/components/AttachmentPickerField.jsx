@@ -1,24 +1,7 @@
-import {
-  AttachFile,
-  Close,
-  DeleteOutline,
-  DocumentScanner,
-  Image,
-  InsertDriveFile,
-  PhotoCamera,
-} from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  Sheet,
-  Typography,
-} from '@mui/joy'
-import { ClickAwayListener, Popper } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
-import { Z_INDEX } from '../../constants/zIndex'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useDocumentScanner } from '../../hooks/useDocumentScanner'
 import { useFileUpload } from '../../hooks/useFileUpload'
 import { useNotification } from '../../service/NotificationProvider'
@@ -43,7 +26,10 @@ const AttachmentPickerField = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [menuPosition, setMenuPosition] = useState(null)
   const buttonRef = useRef(null)
+  const menuRef = useRef(null)
+  const menuId = useId()
   const { uploadFile } = useFileUpload({ entityType, entityId, draftId })
   const { isNativeScanner, scanDocument } = useDocumentScanner()
   const { showError } = useNotification()
@@ -61,6 +47,57 @@ const AttachmentPickerField = ({
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handlePointerDown = event => {
+      if (
+        !buttonRef.current?.contains(event.target) &&
+        !menuRef.current?.contains(event.target)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const positionMenu = () => {
+      const button = buttonRef.current
+      const menu = menuRef.current
+      if (!button || !menu) return
+
+      const triggerRect = button.getBoundingClientRect()
+      const maxWidth = Math.min(320, window.innerWidth - 16)
+      const menuWidth = Math.min(menu.offsetWidth || 240, maxWidth)
+      const menuHeight = menu.offsetHeight || 120
+      const top =
+        triggerRect.top - menuHeight - 8 >= 8
+          ? triggerRect.top - menuHeight - 8
+          : triggerRect.bottom + 8
+
+      setMenuPosition({
+        left: Math.max(
+          8,
+          Math.min(triggerRect.left, window.innerWidth - menuWidth - 8),
+        ),
+        top,
+      })
+    }
+
+    positionMenu()
+    window.addEventListener('resize', positionMenu)
+    window.addEventListener('scroll', positionMenu, true)
+    return () => {
+      window.removeEventListener('resize', positionMenu)
+      window.removeEventListener('scroll', positionMenu, true)
+    }
+  }, [attachments.length, isOpen, isUploading])
 
   const upload = async file => {
     setIsUploading(true)
@@ -140,254 +177,255 @@ const AttachmentPickerField = ({
     setIsOpen(false)
   }
 
+  const handleToggle = () => {
+    if (!isOpen) setMenuPosition(null)
+    setIsOpen(!isOpen)
+  }
+
   const isEmpty = attachments.length === 0
   const shouldShowLabel = !isEmpty || emptyDisplay === 'icon-text'
 
   return (
     <>
-      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <Button
+      <div
+        style={{ alignItems: 'center', display: 'flex', position: 'relative' }}
+      >
+        <button
           ref={buttonRef}
-          size='sm'
-          variant={isEmpty ? 'outlined' : 'soft'}
-          color='neutral'
-          onClick={() => setIsOpen(prev => !prev)}
-          sx={{
-            borderRadius: '128px',
+          aria-controls={isOpen ? menuId : undefined}
+          aria-expanded={isOpen}
+          aria-haspopup='dialog'
+          aria-label={
+            isUploading
+              ? 'Uploading attachment'
+              : isEmpty
+                ? 'Add attachments'
+                : `${attachments.length} attachments`
+          }
+          className='btn btn-secondary'
+          onClick={handleToggle}
+          style={{
+            alignItems: 'center',
+            background: isEmpty ? 'var(--surface)' : 'var(--surface-2)',
+            borderRadius: 'var(--r-full)',
+            display: 'inline-flex',
+            gap: shouldShowLabel ? 8 : 0,
+            justifyContent: 'flex-start',
             minHeight: 40,
             minWidth: 'min-content',
-            px: shouldShowLabel ? 1.25 : 0.75,
-            gap: shouldShowLabel ? 1 : 0,
-            justifyContent: 'flex-start',
-            whiteSpace: 'nowrap',
+            padding: shouldShowLabel ? '8px 10px' : '8px 6px',
             transition: 'all 0.25s ease-in-out',
+            whiteSpace: 'nowrap',
           }}
+          type='button'
         >
           {isUploading ? (
-            <CircularProgress
-              size='sm'
-              sx={{ '--CircularProgress-size': '16px' }}
+            <span
+              aria-label='Uploading attachment'
+              role='status'
+              style={{
+                animation: 'spin 0.7s linear infinite',
+                border: '2px solid currentColor',
+                borderRightColor: 'transparent',
+                borderRadius: '50%',
+                display: 'inline-block',
+                height: 16,
+                width: 16,
+              }}
             />
           ) : (
-            <AttachFile sx={{ fontSize: '20px' }} />
+            <FigmaIcon name='archive' size={20} />
           )}
-          <Typography
-            level='body-sm'
-            sx={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+          <span
+            aria-hidden='true'
+            style={{
+              font: '14px var(--font-ui)',
               maxWidth: shouldShowLabel ? 180 : 0,
               opacity: shouldShowLabel ? 1 : 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
               transition:
                 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
+              whiteSpace: 'nowrap',
             }}
           >
             {isEmpty
               ? 'Attachments'
               : `${attachments.length} file${attachments.length !== 1 ? 's' : ''}`}
-          </Typography>
-        </Button>
+          </span>
+        </button>
         {!isEmpty && onClear && (
-          <IconButton
-            size='sm'
-            variant='soft'
-            color='danger'
+          <button
+            aria-label='Clear attachments'
+            className='btn btn-danger btn-icon'
             onClick={handleClear}
-            sx={{
-              position: 'absolute',
-              top: -12,
-              right: -16,
-              zIndex: 10,
-              maxHeight: 18,
-              maxWidth: 18,
+            style={{
               borderRadius: '50%',
-              '&:hover': { bgcolor: 'danger.softBg' },
+              height: 30,
+              padding: 6,
+              position: 'absolute',
+              right: -18,
+              top: -18,
+              width: 30,
+              zIndex: 10,
+            }}
+            type='button'
+          >
+            <FigmaIcon name='x' size={18} />
+          </button>
+        )}
+      </div>
+
+      {isOpen &&
+        createPortal(
+          <div
+            ref={menuRef}
+            id={menuId}
+            role='dialog'
+            aria-label='Attachments'
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--line)',
+              borderRadius: 'var(--r-md)',
+              boxShadow: 'var(--shadow-sm)',
+              left: menuPosition?.left ?? 8,
+              maxWidth: 'calc(100vw - 16px)',
+              minWidth: 240,
+              padding: 8,
+              position: 'fixed',
+              top: menuPosition?.top ?? 8,
+              visibility: menuPosition ? 'visible' : 'hidden',
+              width: 320,
+              zIndex: 2101,
             }}
           >
-            <Close sx={{ fontSize: '18px' }} />
-          </IconButton>
-        )}
-      </Box>
-
-      {isOpen && (
-        <Popper
-          open={isOpen}
-          anchorEl={buttonRef.current}
-          placement='top-start'
-          modifiers={[
-            { name: 'offset', options: { offset: [0, 8] } },
-            {
-              name: 'flip',
-              options: { fallbackPlacements: ['bottom-start', 'top-start'] },
-            },
-          ]}
-          sx={{ zIndex: Z_INDEX.MODAL_CLOSE_BUTTON + 1 }}
-        >
-          <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-            <Sheet
-              variant='outlined'
-              sx={{
-                minWidth: 240,
-                maxWidth: 320,
-                p: 1,
-                borderRadius: 'md',
-                boxShadow: 'lg',
-                bgcolor: 'background.popup',
-              }}
-            >
-              {attachments.length > 0 && (
-                <Box
-                  sx={{
-                    mb: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.5,
-                  }}
-                >
-                  {attachments.map((attachment, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: 'flex',
+            {attachments.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                  marginBottom: 8,
+                }}
+              >
+                {attachments.map((attachment, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      alignItems: 'center',
+                      display: 'flex',
+                      gap: 8,
+                      padding: 4,
+                    }}
+                  >
+                    {isImageAttachment(attachment) && (
+                      <img
+                        src={attachment.url}
+                        alt={attachment.name}
+                        style={{
+                          background: 'var(--surface-2)',
+                          borderRadius: 'var(--r-sm)',
+                          flexShrink: 0,
+                          height: 36,
+                          objectFit: 'cover',
+                          width: 36,
+                        }}
+                        onError={e => {
+                          e.target.style.display = 'none'
+                          e.target.nextSibling.style.display = 'flex'
+                        }}
+                      />
+                    )}
+                    <div
+                      style={{
+                        display: isImageAttachment(attachment)
+                          ? 'none'
+                          : 'flex',
+                        width: 36,
+                        height: 36,
                         alignItems: 'center',
-                        gap: 1,
-                        p: 0.5,
-                        borderRadius: 'sm',
-                        '&:hover': { bgcolor: 'background.level1' },
+                        justifyContent: 'center',
+                        borderRadius: 'var(--r-sm)',
+                        background: 'var(--surface-2)',
+                        flexShrink: 0,
                       }}
                     >
-                      {isImageAttachment(attachment) && (
-                        <Box
-                          component='img'
-                          src={attachment.url}
-                          alt={attachment.name}
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            objectFit: 'cover',
-                            borderRadius: 'sm',
-                            flexShrink: 0,
-                            bgcolor: 'background.level2',
-                          }}
-                          onError={e => {
-                            e.target.style.display = 'none'
-                            e.target.nextSibling.style.display = 'flex'
-                          }}
-                        />
-                      )}
-                      <Box
-                        sx={{
-                          display: isImageAttachment(attachment)
-                            ? 'none'
-                            : 'flex',
-                          width: 36,
-                          height: 36,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: 'sm',
-                          bgcolor: 'background.level2',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {isImageAttachment(attachment) ? (
-                          <Image
-                            sx={{ fontSize: 20, color: 'text.tertiary' }}
-                          />
-                        ) : (
-                          <InsertDriveFile
-                            sx={{ fontSize: 20, color: 'text.tertiary' }}
-                          />
-                        )}
-                      </Box>
-                      <Typography
-                        level='body-xs'
-                        sx={{
-                          flex: 1,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {attachment.name}
-                      </Typography>
-                      <IconButton
-                        size='sm'
-                        variant='plain'
-                        color='danger'
-                        onClick={() => handleRemove(index)}
-                        sx={{ flexShrink: 0 }}
-                      >
-                        <DeleteOutline sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              {isUploading ? (
-                <Button
-                  fullWidth
-                  size='sm'
-                  variant='outlined'
-                  color='neutral'
-                  disabled
-                  startDecorator={
-                    <CircularProgress
-                      size='sm'
-                      sx={{ '--CircularProgress-size': '14px' }}
-                    />
-                  }
-                >
-                  Uploading…
-                </Button>
-              ) : (
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  {canTakePhoto && (
-                    <Button
-                      size='sm'
-                      variant='outlined'
-                      color='neutral'
-                      sx={{ flex: 1 }}
-                      startDecorator={
-                        isNativeScanner ? (
-                          <DocumentScanner sx={{ fontSize: 16 }} />
-                        ) : (
-                          <PhotoCamera sx={{ fontSize: 16 }} />
-                        )
-                      }
-                      onClick={handleScan}
+                      <FigmaIcon name='archive' size={20} />
+                    </div>
+                    <span
+                      style={{
+                        flex: 1,
+                        font: '12px var(--font-ui)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
                     >
-                      {isNativeScanner ? 'Scan' : 'Photo'}
-                    </Button>
-                  )}
-                  <Button
-                    size='sm'
-                    variant='outlined'
-                    color='neutral'
-                    sx={{ flex: 1 }}
-                    startDecorator={<Image sx={{ fontSize: 16 }} />}
-                    onClick={() => handlePickFile({ accept: 'image/*' })}
+                      {attachment.name}
+                    </span>
+                    <button
+                      aria-label={`Remove ${attachment.name || 'attachment'}`}
+                      className='btn btn-danger btn-icon'
+                      onClick={() => handleRemove(index)}
+                      style={{
+                        borderRadius: 'var(--r-sm)',
+                        flexShrink: 0,
+                        minHeight: 30,
+                        padding: 5,
+                      }}
+                      type='button'
+                    >
+                      <FigmaIcon name='trash' size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isUploading ? (
+              <button
+                aria-busy='true'
+                className='btn btn-secondary btn-sm'
+                disabled
+                style={{ justifyContent: 'center', width: '100%' }}
+                type='button'
+              >
+                Uploading…
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 4 }}>
+                {canTakePhoto && (
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={handleScan}
+                    style={{ flex: 1, justifyContent: 'center' }}
+                    type='button'
                   >
-                    Image
-                  </Button>
-                  <Button
-                    size='sm'
-                    variant='outlined'
-                    color='neutral'
-                    sx={{ flex: 1 }}
-                    startDecorator={<AttachFile sx={{ fontSize: 16 }} />}
-                    onClick={() => handlePickFile()}
-                  >
-                    File
-                  </Button>
-                </Box>
-              )}
-            </Sheet>
-          </ClickAwayListener>
-        </Popper>
-      )}
+                    {isNativeScanner ? 'Scan' : 'Photo'}
+                  </button>
+                )}
+                <button
+                  className='btn btn-secondary btn-sm'
+                  onClick={() => handlePickFile({ accept: 'image/*' })}
+                  style={{ flex: 1, justifyContent: 'center' }}
+                  type='button'
+                >
+                  Image
+                </button>
+                <button
+                  className='btn btn-secondary btn-sm'
+                  onClick={() => handlePickFile()}
+                  style={{ flex: 1, justifyContent: 'center' }}
+                  type='button'
+                >
+                  File
+                </button>
+              </div>
+            )}
+          </div>,
+          document.body,
+        )}
     </>
   )
 }

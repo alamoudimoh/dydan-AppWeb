@@ -1,25 +1,9 @@
-import {
-  Check,
-  Delete,
-  Edit,
-  MoreVert,
-  Settings,
-  Star,
-  StarBorder,
-} from '@mui/icons-material'
-import {
-  Box,
-  Chip,
-  IconButton,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@mui/joy'
-import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import FigmaIcon from '../../../components/FigmaIcon'
 import { getTextColorFromBackgroundColor } from '../../../utils/Colors'
 
 const CustomFilterChips = ({
@@ -35,6 +19,29 @@ const CustomFilterChips = ({
   const [menuAnchor, setMenuAnchor] = useState(null)
   const [selectedFilter, setSelectedFilter] = useState(null)
 
+  const handleMenuClose = () => {
+    setMenuAnchor(null)
+    setSelectedFilter(null)
+  }
+
+  useEffect(() => {
+    if (!menuAnchor) return undefined
+
+    const closeMenu = event => {
+      if (!event.target.closest('[data-filter-menu]')) handleMenuClose()
+    }
+    const closeOnEscape = event => {
+      if (event.key === 'Escape') handleMenuClose()
+    }
+
+    document.addEventListener('mousedown', closeMenu)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeMenu)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [menuAnchor])
+
   if (filters.length === 0) return null
 
   const handleContextMenu = (event, filter) => {
@@ -44,231 +51,259 @@ const CustomFilterChips = ({
     setSelectedFilter(filter)
   }
 
-  const handleMenuClose = () => {
-    setMenuAnchor(null)
-    setSelectedFilter(null)
-  }
-
   const handleDelete = () => {
-    if (selectedFilter) {
-      onFilterDelete(selectedFilter.id)
-    }
+    if (selectedFilter) onFilterDelete(selectedFilter.id)
     handleMenuClose()
   }
 
   const handlePin = () => {
-    if (selectedFilter) {
-      onFilterPin(selectedFilter.id)
-    }
+    if (selectedFilter) onFilterPin(selectedFilter.id)
     handleMenuClose()
   }
 
   const handleEdit = () => {
-    if (selectedFilter && onFilterEdit) {
-      onFilterEdit(selectedFilter)
-    }
+    if (selectedFilter && onFilterEdit) onFilterEdit(selectedFilter)
     handleMenuClose()
   }
 
   const pinnedFilters = filters
-    .filter(f => f.isPinned)
+    .filter(filter => filter.isPinned)
     .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
+  const menuPosition = menuAnchor?.getBoundingClientRect()
 
   if (pinnedFilters.length === 0) return null
 
   return (
-    <Box sx={{ position: 'relative' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 0.75,
-          overflowX: 'auto',
-          py: 1,
-          pr: 2,
-          '&::-webkit-scrollbar': {
-            display: 'none',
-          },
-          scrollbarWidth: 'none', // Firefox
-          msOverflowStyle: 'none', // IE and Edge
-        }}
+    <div className='relative'>
+      <div
+        className='flex gap-2 overflow-x-auto py-2 pr-2'
+        style={{ scrollbarWidth: 'none' }}
       >
         {pinnedFilters.map(filter => {
           const isActive = activeFilterId === filter.id
           const hasWarning = !filter.isValid
-          const badgeColor = filter.color || 'var(--joy-palette-neutral-400)'
+          const badgeColor = filter.color || 'var(--t-faint)'
           const badgeTextColor = filter.color
             ? getTextColorFromBackgroundColor(filter.color)
-            : '#ffffff'
+            : 'var(--brand-contrast)'
           const displayCount = filter.count > 99 ? '99+' : (filter.count ?? 0)
+          const taskCount = t('filters.filterTasksCount', {
+            count: filter.count ?? 0,
+          })
+          const overdueCount =
+            filter.overdueCount > 0
+              ? ` (${t('filters.filterOverdueCount', {
+                  count: filter.overdueCount,
+                })})`
+              : ''
+          const tooltip = hasWarning
+            ? t('filters.filterHasIssues', {
+                issues: filter.validationIssues?.join(', '),
+              })
+            : `${filter.description ? `${filter.description} - ` : ''}${taskCount}${overdueCount}`
 
           return (
-            <Tooltip
+            <div
+              className='badge flex-shrink-0'
               key={filter.id}
-              title={
-                hasWarning
-                  ? t('filters.filterHasIssues', {
-                      issues: filter.validationIssues?.join(', '),
-                    })
-                  : `${filter.description ? filter.description + ' - ' : ''}${t('filters.filterTasksCount', { count: filter.count ?? 0 })}${filter.overdueCount > 0 ? ` (${t('filters.filterOverdueCount', { count: filter.overdueCount })})` : ''}`
-              }
-              placement='bottom'
+              style={{
+                background: hasWarning
+                  ? 'var(--sig-due-bg)'
+                  : isActive
+                    ? 'var(--brand)'
+                    : 'var(--surface)',
+                border: `1px solid ${hasWarning ? 'var(--sig-due)' : isActive ? 'var(--brand)' : 'var(--line)'}`,
+                color: hasWarning
+                  ? 'var(--sig-due)'
+                  : isActive
+                    ? 'var(--brand-contrast)'
+                    : 'var(--t-primary)',
+                fontSize: 13,
+                fontWeight: isActive ? 700 : 600,
+                height: 32,
+                padding: 0,
+              }}
+              title={tooltip}
             >
-              <Chip
-                variant={isActive ? 'solid' : 'outlined'}
-                color={
-                  hasWarning ? 'warning' : isActive ? 'primary' : 'neutral'
-                }
-                size='md'
-                onClick={() => !hasWarning && onFilterClick(filter.id)}
-                sx={{
+              <button
+                aria-pressed={isActive}
+                className='flex min-w-0 items-center gap-1'
+                disabled={hasWarning}
+                onClick={() => onFilterClick(filter.id)}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'inherit',
                   cursor: hasWarning ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.15s ease, color 0.15s ease',
-                  px: 1,
-                  height: 32,
-                  flexShrink: 0,
-                  fontWeight: isActive ? 600 : 500,
-                  '&:hover': {
-                    backgroundColor: isActive
-                      ? undefined
-                      : 'neutral.softHoverBg',
-                  },
+                  font: 'inherit',
+                  height: '100%',
+                  padding: '0 4px 0 8px',
                 }}
-                startDecorator={
-                  !hasWarning && (
-                    <Box
-                      sx={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: '50%',
-                        bgcolor: badgeColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {isActive ? (
-                        <Check
-                          sx={{ fontSize: '0.85rem', color: badgeTextColor }}
-                        />
-                      ) : (
-                        <Typography
-                          level='body-xs'
-                          sx={{
-                            fontSize: '0.65rem',
-                            lineHeight: 1,
-                            color: badgeTextColor,
-                          }}
-                        >
-                          {displayCount}
-                        </Typography>
-                      )}
-                    </Box>
-                  )
-                }
-                endDecorator={
-                  <IconButton
-                    size='sm'
-                    variant='plain'
-                    color='neutral'
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleContextMenu(e, filter)
-                    }}
-                    sx={{
-                      '--IconButton-size': '20px',
-                      ms: 0.25,
-                      opacity: 0.6,
-                      '&:hover': { opacity: 1, backgroundColor: 'transparent' },
+                type='button'
+              >
+                {!hasWarning && (
+                  <span
+                    className='flex flex-shrink-0 items-center justify-center rounded-full'
+                    style={{
+                      background: badgeColor,
+                      color: badgeTextColor,
+                      fontSize: isActive ? 14 : 10,
+                      height: 20,
+                      lineHeight: 1,
+                      width: 20,
                     }}
                   >
-                    <MoreVert sx={{ fontSize: '0.95rem' }} />
-                  </IconButton>
-                }
-              >
-                <Typography
-                  level='body-sm'
-                  fontWeight='inherit'
-                  sx={{
-                    whiteSpace: 'nowrap',
+                    {isActive ? (
+                      <FigmaIcon name='check' size={14} />
+                    ) : (
+                      displayCount
+                    )}
+                  </span>
+                )}
+                <span
+                  style={{
                     maxWidth: 100,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    color: 'inherit',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {filter.name}
-                </Typography>
-              </Chip>
-            </Tooltip>
+                </span>
+              </button>
+              <button
+                aria-expanded={
+                  menuAnchor?.dataset.filterId === String(filter.id)
+                }
+                aria-haspopup='menu'
+                aria-label={t('list.moreOptions')}
+                data-filter-id={filter.id}
+                data-filter-menu
+                onClick={event => handleContextMenu(event, filter)}
+                style={{
+                  alignItems: 'center',
+                  background: 'transparent',
+                  border: 0,
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  height: '100%',
+                  justifyContent: 'center',
+                  opacity: 0.6,
+                  padding: 0,
+                  width: 24,
+                }}
+                type='button'
+              >
+                <span
+                  style={{ fontSize: 16, lineHeight: 1 }}
+                  aria-hidden='true'
+                >
+                  &#8942;
+                </span>
+              </button>
+            </div>
           )
         })}
 
-        <IconButton
-          variant='outlined'
-          color='neutral'
-          size='sm'
-          sx={{ borderRadius: 24, flexShrink: 0 }}
-          onClick={e => {
-            e.preventDefault()
-            e.stopPropagation()
+        <button
+          aria-label={t('toolbar.filters')}
+          className='btn btn-secondary btn-icon shrink-0'
+          onClick={event => {
+            event.preventDefault()
+            event.stopPropagation()
             navigate('/filters')
           }}
+          style={{
+            borderRadius: 'var(--r-full)',
+            height: 32,
+            minHeight: 32,
+            width: 32,
+          }}
+          title={t('toolbar.filters')}
+          type='button'
         >
-          <Settings sx={{ fontSize: '1.1rem' }} />
-        </IconButton>
-      </Box>
+          <FigmaIcon name='settings' size={17} />
+        </button>
+      </div>
 
-      {/* Fade hint that more chips are scrollable off the trailing edge */}
-      <Box
-        sx={{
+      <div
+        aria-hidden='true'
+        style={{
+          background: 'linear-gradient(to right, transparent, var(--surface))',
+          bottom: 0,
+          insetInlineEnd: 0,
           pointerEvents: 'none',
           position: 'absolute',
           top: 0,
-          insetInlineEnd: 0,
-          bottom: 0,
           width: 24,
-          background:
-            'linear-gradient(to right, transparent, var(--joy-palette-background-surface, #fff))',
         }}
       />
 
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-        placement='bottom-start'
-      >
-        {selectedFilter && (
-          <>
-            <MenuItem onClick={handlePin}>
-              {selectedFilter.isPinned ? (
-                <>
-                  <StarBorder sx={{ me: 1 }} />
-                  {t('filters.unpinFilter')}
-                </>
-              ) : (
-                <>
-                  <Star sx={{ me: 1 }} />
-                  {t('filters.pinFilter')}
-                </>
-              )}
-            </MenuItem>
-            {onFilterEdit && (
-              <MenuItem onClick={handleEdit}>
-                <Edit sx={{ me: 1 }} />
-                {t('filters.editFilter')}
-              </MenuItem>
-            )}
-            <MenuItem onClick={handleDelete} color='danger'>
-              <Delete sx={{ me: 1 }} />
-              {t('filters.deleteFilter')}
-            </MenuItem>
-          </>
-        )}
-      </Menu>
-    </Box>
+      {selectedFilter && menuPosition && (
+        <div
+          data-filter-menu
+          role='menu'
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            borderRadius: 'var(--r-md)',
+            boxShadow: 'var(--shadow-sm)',
+            left: menuPosition.left,
+            minWidth: 180,
+            padding: 4,
+            position: 'fixed',
+            top: menuPosition.bottom + 4,
+            zIndex: 1300,
+          }}
+        >
+          <button
+            className='btn btn-ghost btn-sm w-full justify-start'
+            onClick={handlePin}
+            role='menuitem'
+            style={{ border: 0 }}
+            type='button'
+          >
+            <FigmaIcon name='star' size={16} />
+            {selectedFilter.isPinned
+              ? t('filters.unpinFilter')
+              : t('filters.pinFilter')}
+          </button>
+          {onFilterEdit && (
+            <button
+              className='btn btn-ghost btn-sm w-full justify-start'
+              onClick={handleEdit}
+              role='menuitem'
+              style={{ border: 0 }}
+              type='button'
+            >
+              <FigmaIcon name='edit' size={16} />
+              {t('filters.editFilter')}
+            </button>
+          )}
+          <button
+            className='btn btn-ghost btn-sm w-full justify-start'
+            onClick={handleDelete}
+            role='menuitem'
+            style={{ border: 0, color: 'var(--sig-over)' }}
+            type='button'
+          >
+            <FigmaIcon name='trash' size={16} />
+            {t('filters.deleteFilter')}
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
 export default CustomFilterChips
+
+CustomFilterChips.propTypes = {
+  activeFilterId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  filters: PropTypes.array,
+  onFilterClick: PropTypes.func.isRequired,
+  onFilterDelete: PropTypes.func.isRequired,
+  onFilterEdit: PropTypes.func,
+  onFilterPin: PropTypes.func.isRequired,
+}

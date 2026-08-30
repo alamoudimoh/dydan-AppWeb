@@ -1,52 +1,87 @@
-import {
-  Archive,
-  ArrowBack,
-  Cancel,
-  CopyAll,
-  Delete,
-  DriveFileMove,
-  Edit,
-  ManageSearch,
-  MoreTime,
-  MoreVert,
-  NextWeek,
-  Nfc,
-  NoteAdd,
-  Notifications,
-  RecordVoiceOver,
-  SwitchAccessShortcut,
-  Today,
-  Unarchive,
-  Update,
-  ViewCarousel,
-  WbSunny,
-  Weekend,
-} from '@mui/icons-material'
-import {
-  Avatar,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemContent,
-  ListItemDecorator,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@mui/joy'
-import { useMediaQuery } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../../components/common/AppModal'
+import FigmaIcon from '../../components/FigmaIcon'
 import LABEL_COLORS, {
   getTextColorFromBackgroundColor,
 } from '../../utils/Colors'
 import { isOfficialDayDanInstanceSync } from '../../utils/FeatureToggle'
 import { getIconComponent } from '../../utils/ProjectIcons'
 import { useProjects } from '../Projects/ProjectQueries'
+
+const useSmallViewport = () => {
+  const [isSmall, setIsSmall] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 639px)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)')
+    const update = () => setIsSmall(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  return isSmall
+}
+
+const menuIcon = (name, size = 18) => <FigmaIcon name={name} size={size} />
+
+const skipIcon = (
+  <svg
+    width='18'
+    height='18'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M4 5v14l9-7z' />
+    <path d='M20 5v14' />
+  </svg>
+)
+
+const weekendIcon = (
+  <svg
+    width='18'
+    height='18'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M3 10h18' />
+    <path d='M5 10l1 10h12l1-10' />
+    <path d='M8 20v-6h8v6' />
+    <path d='M12 3c-1.5-1.5-4.5-.5-5 2 1.5 1 1.5 2.5 1.5 3h7s0-1.5 1.5-3c-.5-2.5-3.5-3.5-5-2z' />
+  </svg>
+)
+
+const backIcon = (
+  <svg
+    width='18'
+    height='18'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M19 12H5' />
+    <path d='M12 19l-7-7 7-7' />
+  </svg>
+)
 
 const ChoreActionMenu = ({
   chore,
@@ -62,16 +97,19 @@ const ChoreActionMenu = ({
   onOpen,
   onWriteNFC,
   sx = {},
-  variant = 'soft',
 }) => {
-  const [anchorEl, setAnchorEl] = React.useState(null)
+  const [anchorEl, setAnchorEl] = useState(null)
   const [isOfficialInstance, setIsOfficialInstance] = useState(false)
   const [showProjectPicker, setShowProjectPicker] = useState(false)
-  const menuRef = React.useRef(null)
+  const menuRef = useRef(null)
+  const containerRef = useRef(null)
+  const triggerRef = useRef(null)
   const navigate = useNavigate()
   const { data: projects = [] } = useProjects()
-  // Phone-only condition (matches AddTaskModal.jsx) — tablets/desktop keep the Menu
-  const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
+  // Phone-only condition (matches AddTaskModal.jsx) — tablets/desktop keep the
+  // absolutely-positioned menu.
+  const isSmallScreen = useSmallViewport()
+  const menuOpen = Boolean(anchorEl)
 
   useEffect(() => {
     try {
@@ -82,10 +120,24 @@ const ChoreActionMenu = ({
     }
   }, [])
 
+  // Focus the first action when the desktop menu opens, and return focus to
+  // the trigger when it closes.
+  useEffect(() => {
+    if (menuOpen && !isSmallScreen) {
+      const first = menuRef.current?.querySelector('[role="menuitem"]')
+      first?.focus()
+    }
+    if (!menuOpen && !isSmallScreen) {
+      if (document.activeElement === containerRef.current) {
+        triggerRef.current?.focus()
+      }
+    }
+  }, [menuOpen, isSmallScreen])
+
   useEffect(() => {
     if (isSmallScreen) {
       // AppModal owns its own backdrop/escape close behavior on small screens.
-      if (anchorEl && onOpen) {
+      if (menuOpen && onOpen) {
         onOpen()
       }
       return
@@ -93,22 +145,31 @@ const ChoreActionMenu = ({
 
     const handleMenuOutsideClick = event => {
       if (
-        anchorEl &&
-        !anchorEl.contains(event.target) &&
-        !menuRef.current?.contains(event.target)
+        menuOpen &&
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
       ) {
         handleMenuClose()
       }
     }
 
     document.addEventListener('mousedown', handleMenuOutsideClick)
-    if (anchorEl && onOpen) {
+    if (menuOpen && onOpen) {
       onOpen()
     }
     return () => {
       document.removeEventListener('mousedown', handleMenuOutsideClick)
     }
   }, [anchorEl, onOpen, isSmallScreen])
+
+  const handleMenuKeyDown = event => {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      event.stopPropagation()
+      handleMenuClose()
+      triggerRef.current?.focus()
+    }
+  }
 
   const handleMenuOpen = event => {
     event.stopPropagation()
@@ -237,20 +298,31 @@ const ChoreActionMenu = ({
     const bg = color || LABEL_COLORS[0].value
     const IconComponent = getIconComponent(icon || 'FolderOpen')
     return (
-      <Avatar size='sm' sx={{ width: 22, height: 22, backgroundColor: bg }}>
+      <span
+        style={{
+          alignItems: 'center',
+          backgroundColor: bg,
+          borderRadius: '50%',
+          display: 'flex',
+          flexShrink: 0,
+          height: 22,
+          justifyContent: 'center',
+          width: 22,
+        }}
+      >
         <IconComponent
-          sx={{ fontSize: 13, color: getTextColorFromBackgroundColor(bg) }}
+          sx={{ color: getTextColorFromBackgroundColor(bg), fontSize: 13 }}
         />
-      </Avatar>
+      </span>
     )
   }
 
-  // Shared action list, rendered as MenuItems on large screens and as a
-  // ListItemButton list inside an AppModal sheet on small screens.
+  // Shared action list, rendered as menu buttons on large screens and as a
+  // button stack inside an AppModal sheet on small screens.
   const actionItems = [
     {
       key: 'completeNote',
-      icon: <NoteAdd />,
+      icon: menuIcon('edit'),
       label: 'Complete with note',
       onClick: () => {
         onCompleteWithNote?.()
@@ -259,7 +331,7 @@ const ChoreActionMenu = ({
     },
     {
       key: 'completePast',
-      icon: <Update />,
+      icon: menuIcon('repeat'),
       label: 'Complete in past',
       onClick: () => {
         onCompleteWithPastDate?.()
@@ -268,13 +340,13 @@ const ChoreActionMenu = ({
     },
     {
       key: 'skip',
-      icon: <SwitchAccessShortcut />,
+      icon: skipIcon,
       label: 'Skip to next due date',
       onClick: handleSkip,
     },
     {
       key: 'delegate',
-      icon: <RecordVoiceOver />,
+      icon: menuIcon('users'),
       label: 'Delegate to someone else',
       onClick: () => {
         onChangeAssignee?.()
@@ -283,7 +355,7 @@ const ChoreActionMenu = ({
     },
     isOfficialInstance && {
       key: 'nudge',
-      icon: <Notifications />,
+      icon: menuIcon('bell'),
       label: 'Send nudge',
       onClick: () => {
         onNudge?.()
@@ -293,7 +365,7 @@ const ChoreActionMenu = ({
     { key: 'divider-1', type: 'divider' },
     {
       key: 'history',
-      icon: <ManageSearch />,
+      icon: menuIcon('search'),
       label: 'History',
       onClick: handleHistory,
     },
@@ -302,7 +374,7 @@ const ChoreActionMenu = ({
     { key: 'divider-3', type: 'divider' },
     {
       key: 'changeDueDate',
-      icon: <MoreTime />,
+      icon: menuIcon('calendar'),
       label: 'Change due date',
       onClick: () => {
         onChangeDueDate?.()
@@ -311,212 +383,366 @@ const ChoreActionMenu = ({
     },
     {
       key: 'writeNfc',
-      icon: <Nfc />,
+      icon: menuIcon('tag'),
       label: 'Write to NFC',
       onClick: () => {
         onWriteNFC?.()
         handleMenuClose()
       },
     },
-    { key: 'edit', icon: <Edit />, label: 'Edit', onClick: handleEdit },
-    { key: 'clone', icon: <CopyAll />, label: 'Clone', onClick: handleClone },
-    { key: 'view', icon: <ViewCarousel />, label: 'View', onClick: handleView },
+    { key: 'edit', icon: menuIcon('edit'), label: 'Edit', onClick: handleEdit },
+    {
+      key: 'clone',
+      icon: menuIcon('copy'),
+      label: 'Clone',
+      onClick: handleClone,
+    },
+    {
+      key: 'view',
+      icon: menuIcon('eye'),
+      label: 'View',
+      onClick: handleView,
+    },
     {
       key: 'archive',
-      icon: chore.isActive ? <Archive /> : <Unarchive />,
+      icon: menuIcon('archive'),
       label: chore.isActive ? 'Archive' : 'Unarchive',
       onClick: handleArchive,
       color: 'neutral',
     },
     projects.length > 0 && {
       key: 'moveToProject',
-      icon: <DriveFileMove />,
+      icon: menuIcon('projects'),
       label: 'Move to project',
       onClick: () => setShowProjectPicker(true),
     },
     { key: 'divider-4', type: 'divider' },
     {
       key: 'delete',
-      icon: <Delete />,
+      icon: menuIcon('trash'),
       label: 'Delete',
       onClick: handleDelete,
       color: 'danger',
     },
   ].filter(Boolean)
 
+  const quickScheduleButton = (title, icon, option) => (
+    <button
+      className='btn btn-ghost btn-sm'
+      title={title}
+      aria-label={title}
+      type='button'
+      onClick={event => {
+        event.stopPropagation()
+        handleQuickSchedule(option)
+      }}
+      style={{
+        alignItems: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        minHeight: 34,
+        minWidth: 34,
+        padding: 0,
+      }}
+    >
+      {icon}
+    </button>
+  )
+
   const quickScheduleButtons = (
     <>
-      <Tooltip title='Today' placement='top'>
-        <IconButton
-          size='sm'
-          onClick={e => {
-            e.stopPropagation()
-            handleQuickSchedule('today')
-          }}
-        >
-          <Today />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title='Tomorrow' placement='top'>
-        <IconButton
-          size='sm'
-          onClick={e => {
-            e.stopPropagation()
-            handleQuickSchedule('tomorrow')
-          }}
-        >
-          <WbSunny />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title='Weekend' placement='top'>
-        <IconButton
-          size='sm'
-          onClick={e => {
-            e.stopPropagation()
-            handleQuickSchedule('weekend')
-          }}
-        >
-          <Weekend />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title='Next week' placement='top'>
-        <IconButton
-          size='sm'
-          onClick={e => {
-            e.stopPropagation()
-            handleQuickSchedule('next-week')
-          }}
-        >
-          <NextWeek />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title='Remove due date' placement='top'>
-        <IconButton
-          size='sm'
-          color='neutral'
-          onClick={e => {
-            e.stopPropagation()
-            handleQuickSchedule('remove')
-          }}
-        >
-          <Cancel />
-        </IconButton>
-      </Tooltip>
+      {quickScheduleButton('Today', menuIcon('today', 16), 'today')}
+      {quickScheduleButton('Tomorrow', menuIcon('calendar', 16), 'tomorrow')}
+      {quickScheduleButton('Weekend', weekendIcon, 'weekend')}
+      {quickScheduleButton('Next week', menuIcon('repeat', 16), 'next-week')}
+      {quickScheduleButton(
+        'Remove due date',
+        <FigmaIcon name='x' size={16} />,
+        'remove',
+      )}
     </>
   )
 
   const quickScheduleRowSx = {
-    display: 'flex',
-    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 1,
-    px: 1.5,
-    py: 1,
+    display: 'flex',
+    gap: 8,
+    justifyContent: 'space-around',
+    padding: '8px 12px',
   }
 
   const renderMenuActionItems = () =>
     actionItems.map(item => {
-      if (item.type === 'divider') return <Divider key={item.key} />
+      if (item.type === 'divider') {
+        return <hr key={item.key} className='border-line' />
+      }
       if (item.type === 'quickSchedule') {
         return (
-          <MenuItem
+          <div
             key={item.key}
-            sx={{
+            role='none'
+            style={{
               ...quickScheduleRowSx,
               cursor: 'default',
-              '&:hover': { backgroundColor: 'transparent' },
             }}
-            onClick={e => e.stopPropagation()}
+            onClick={event => event.stopPropagation()}
           >
             {quickScheduleButtons}
-          </MenuItem>
+          </div>
         )
       }
       return (
-        <MenuItem
+        <button
           key={item.key}
-          color={item.color}
-          onClick={e => {
-            e.stopPropagation()
+          type='button'
+          role='menuitem'
+          className='btn btn-ghost'
+          style={{
+            alignItems: 'center',
+            border: 0,
+            borderRadius: 'var(--r-sm)',
+            color:
+              item.color === 'danger' ? 'var(--sig-over)' : 'var(--t-primary)',
+            cursor: 'pointer',
+            display: 'flex',
+            font: '500 14px var(--font-ui)',
+            gap: 10,
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            textAlign: 'start',
+            width: '100%',
+          }}
+          onClick={event => {
+            event.stopPropagation()
             item.onClick()
           }}
         >
-          {item.icon}
-          {item.label}
-        </MenuItem>
+          <span
+            style={{
+              alignItems: 'center',
+              color: item.color ? 'currentColor' : 'var(--t-muted)',
+              display: 'flex',
+              flexShrink: 0,
+            }}
+          >
+            {item.icon}
+          </span>
+          <span>{item.label}</span>
+        </button>
       )
     })
 
   const renderModalActionItems = () =>
     actionItems.map(item => {
-      if (item.type === 'divider') return <Divider key={item.key} />
+      if (item.type === 'divider')
+        return <hr key={item.key} className='border-line' />
       if (item.type === 'quickSchedule') {
         return (
-          <ListItem key={item.key} sx={quickScheduleRowSx}>
+          <div key={item.key} style={quickScheduleRowSx}>
             {quickScheduleButtons}
-          </ListItem>
+          </div>
         )
       }
       return (
-        <ListItem key={item.key}>
-          <ListItemButton color={item.color} onClick={() => item.onClick()}>
-            <ListItemDecorator>{item.icon}</ListItemDecorator>
-            <ListItemContent>{item.label}</ListItemContent>
-          </ListItemButton>
-        </ListItem>
+        <button
+          key={item.key}
+          className='btn btn-ghost'
+          style={{
+            alignItems: 'center',
+            border: 0,
+            borderRadius: 'var(--r-sm)',
+            color:
+              item.color === 'danger' ? 'var(--sig-over)' : 'var(--t-primary)',
+            cursor: 'pointer',
+            display: 'flex',
+            font: '500 14px var(--font-ui)',
+            gap: 10,
+            justifyContent: 'flex-start',
+            padding: '10px 12px',
+            textAlign: 'start',
+            width: '100%',
+          }}
+          onClick={() => item.onClick()}
+        >
+          <span
+            style={{
+              alignItems: 'center',
+              color: item.color ? 'currentColor' : 'var(--t-muted)',
+              display: 'flex',
+              flexShrink: 0,
+            }}
+          >
+            {item.icon}
+          </span>
+          <span>{item.label}</span>
+        </button>
       )
     })
 
   const renderModalProjectPicker = () => (
-    <List>
-      <ListItem>
-        <ListItemButton
-          onClick={() =>
-            handleMoveToProject({ id: null, name: 'Default Project' })
-          }
-        >
-          <ListItemDecorator>
-            {renderProjectAvatar(LABEL_COLORS[0].value, 'FolderOpen')}
-          </ListItemDecorator>
-          <ListItemContent>Default Project</ListItemContent>
-        </ListItemButton>
-      </ListItem>
+    <>
+      <button
+        type='button'
+        className='btn btn-ghost'
+        style={{
+          alignItems: 'center',
+          border: 0,
+          borderRadius: 'var(--r-sm)',
+          color: 'var(--t-primary)',
+          cursor: 'pointer',
+          display: 'flex',
+          font: '500 14px var(--font-ui)',
+          gap: 10,
+          justifyContent: 'flex-start',
+          padding: '10px 12px',
+          textAlign: 'start',
+          width: '100%',
+        }}
+        onClick={() =>
+          handleMoveToProject({ id: null, name: 'Default Project' })
+        }
+      >
+        {renderProjectAvatar(LABEL_COLORS[0].value, 'FolderOpen')}
+        <span>Default Project</span>
+      </button>
       {projects.map(project => (
-        <ListItem key={project.id}>
-          <ListItemButton onClick={() => handleMoveToProject(project)}>
-            <ListItemDecorator>
-              {renderProjectAvatar(project.color, project.icon)}
-            </ListItemDecorator>
-            <ListItemContent>{project.name}</ListItemContent>
-          </ListItemButton>
-        </ListItem>
+        <button
+          key={project.id}
+          type='button'
+          className='btn btn-ghost'
+          style={{
+            alignItems: 'center',
+            border: 0,
+            borderRadius: 'var(--r-sm)',
+            color: 'var(--t-primary)',
+            cursor: 'pointer',
+            display: 'flex',
+            font: '500 14px var(--font-ui)',
+            gap: 10,
+            justifyContent: 'flex-start',
+            padding: '10px 12px',
+            textAlign: 'start',
+            width: '100%',
+          }}
+          onClick={() => handleMoveToProject(project)}
+        >
+          {renderProjectAvatar(project.color, project.icon)}
+          <span>{project.name}</span>
+        </button>
       ))}
-    </List>
+    </>
   )
 
-  return (
+  const renderProjectPickerItems = () => (
     <>
-      <IconButton
-        variant={variant}
-        color='success'
+      <button
+        type='button'
+        role='menuitem'
+        className='btn btn-ghost'
+        style={{
+          alignItems: 'center',
+          border: 0,
+          borderRadius: 'var(--r-sm)',
+          color: 'var(--t-primary)',
+          cursor: 'pointer',
+          display: 'flex',
+          font: '600 14px var(--font-ui)',
+          gap: 10,
+          justifyContent: 'flex-start',
+          padding: '8px 12px',
+          textAlign: 'start',
+          width: '100%',
+        }}
+        onClick={event => {
+          event.stopPropagation()
+          handleMoveToProject({ id: null, name: 'Default Project' })
+        }}
+      >
+        {renderProjectAvatar(LABEL_COLORS[0].value, 'FolderOpen')}
+        <span>Default Project</span>
+      </button>
+      {projects.map(project => (
+        <button
+          key={project.id}
+          type='button'
+          role='menuitem'
+          className='btn btn-ghost'
+          style={{
+            alignItems: 'center',
+            border: 0,
+            borderRadius: 'var(--r-sm)',
+            color: 'var(--t-primary)',
+            cursor: 'pointer',
+            display: 'flex',
+            font: '500 14px var(--font-ui)',
+            gap: 10,
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            textAlign: 'start',
+            width: '100%',
+          }}
+          onClick={event => {
+            event.stopPropagation()
+            handleMoveToProject(project)
+          }}
+        >
+          {renderProjectAvatar(project.color, project.icon)}
+          <span>{project.name}</span>
+        </button>
+      ))}
+    </>
+  )
+
+  const menuStyle = {
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
+    borderRadius: 'var(--r-md)',
+    boxShadow: 'var(--shadow-lg)',
+    insetInlineEnd: 0,
+    marginTop: 6,
+    minWidth: 220,
+    padding: 6,
+    position: 'absolute',
+    top: '100%',
+    zIndex: 1000,
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ display: 'inline-flex', position: 'relative' }}
+    >
+      <button
+        ref={triggerRef}
+        type='button'
+        aria-haspopup='menu'
+        aria-expanded={menuOpen}
+        aria-label='Chore actions'
         onClick={handleMenuOpen}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        sx={{
+        className='btn btn-ghost btn-icon'
+        style={{
+          alignItems: 'center',
           borderRadius: '50%',
-          width: 25,
+          display: 'flex',
           height: 25,
-          position: 'relative',
+          justifyContent: 'center',
           left: -10,
+          minHeight: 25,
+          minWidth: 25,
+          padding: 0,
+          position: 'relative',
+          width: 25,
           ...sx,
         }}
       >
-        <MoreVert />
-      </IconButton>
+        <FigmaIcon name='bars' />
+      </button>
 
       {isSmallScreen ? (
         <AppModal
-          open={Boolean(anchorEl)}
+          open={menuOpen}
           onClose={handleMenuClose}
           title={showProjectPicker ? 'Move to project' : chore?.name}
           mobilePresentation='sheet'
@@ -524,86 +750,82 @@ const ChoreActionMenu = ({
           contentSx={{ px: 0, pb: 1 }}
         >
           {showProjectPicker && (
-            <MenuItem
+            <button
+              type='button'
+              className='btn btn-ghost'
+              style={{
+                alignItems: 'center',
+                border: 0,
+                borderRadius: 'var(--r-sm)',
+                color: 'var(--t-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                font: '600 14px var(--font-ui)',
+                gap: 8,
+                justifyContent: 'flex-start',
+                margin: '4px 16px 8px',
+                padding: '8px 12px',
+                textAlign: 'start',
+              }}
               onClick={() => setShowProjectPicker(false)}
-              sx={{ gap: 1, mx: 2, mb: 1 }}
             >
-              <ArrowBack fontSize='small' />
-              <Typography level='body-sm' fontWeight={600}>
-                Back
-              </Typography>
-            </MenuItem>
+              {backIcon}
+              <span>Back</span>
+            </button>
           )}
-          <List sx={{ '--ListItem-radius': '8px', px: 1 }}>
+          <div style={{ padding: '0 8px' }}>
             {showProjectPicker
               ? renderModalProjectPicker()
               : renderModalActionItems()}
-          </List>
+          </div>
         </AppModal>
       ) : (
-        <Menu
-          size='md'
-          ref={menuRef}
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          sx={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-          }}
-        >
-          {showProjectPicker ? (
-            <>
-              <MenuItem
-                onClick={e => {
-                  e.stopPropagation()
-                  setShowProjectPicker(false)
-                }}
-                sx={{ gap: 1 }}
-              >
-                <ArrowBack fontSize='small' />
-                <Typography level='body-sm' fontWeight={600}>
-                  Move to project
-                </Typography>
-              </MenuItem>
-              <Divider />
-              <MenuItem
-                onClick={e => {
-                  e.stopPropagation()
-                  handleMoveToProject({ id: null, name: 'Default Project' })
-                }}
-              >
-                <ListItemDecorator>
-                  {renderProjectAvatar(LABEL_COLORS[0].value, 'FolderOpen')}
-                </ListItemDecorator>
-                <ListItemContent>
-                  <Typography level='body-sm'>Default Project</Typography>
-                </ListItemContent>
-              </MenuItem>
-              {projects.map(project => (
-                <MenuItem
-                  key={project.id}
-                  onClick={e => {
-                    e.stopPropagation()
-                    handleMoveToProject(project)
+        menuOpen && (
+          <div
+            ref={menuRef}
+            role='menu'
+            aria-label={showProjectPicker ? 'Move to project' : 'Chore actions'}
+            style={menuStyle}
+            onKeyDown={handleMenuKeyDown}
+          >
+            {showProjectPicker ? (
+              <>
+                <button
+                  type='button'
+                  role='none'
+                  className='btn btn-ghost'
+                  style={{
+                    alignItems: 'center',
+                    border: 0,
+                    borderRadius: 'var(--r-sm)',
+                    color: 'var(--t-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    font: '600 14px var(--font-ui)',
+                    gap: 8,
+                    justifyContent: 'flex-start',
+                    padding: '8px 12px',
+                    textAlign: 'start',
+                    width: '100%',
+                  }}
+                  onClick={event => {
+                    event.stopPropagation()
+                    setShowProjectPicker(false)
                   }}
                 >
-                  <ListItemDecorator>
-                    {renderProjectAvatar(project.color, project.icon)}
-                  </ListItemDecorator>
-                  <ListItemContent>
-                    <Typography level='body-sm'>{project.name}</Typography>
-                  </ListItemContent>
-                </MenuItem>
-              ))}
-            </>
-          ) : (
-            renderMenuActionItems()
-          )}
-        </Menu>
+                  {backIcon}
+                  <span>Move to project</span>
+                </button>
+                <hr className='border-line' />
+                {renderProjectPickerItems()}
+              </>
+            ) : (
+              renderMenuActionItems()
+            )}
+          </div>
+        )
       )}
-    </>
+    </div>
   )
 }
 

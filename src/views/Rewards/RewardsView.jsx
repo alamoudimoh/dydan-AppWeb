@@ -7,17 +7,12 @@ import {
   CardContent,
   Chip,
   Divider,
-  FormControl,
-  FormLabel,
-  Input,
   Stack,
-  Textarea,
   Typography,
 } from '@mui/joy'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import AppModal from '../../components/common/AppModal'
 import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
@@ -33,77 +28,13 @@ import {
   pageShellSx,
   pageStackSpacing,
 } from '../../theme/appLayout'
+import { RewardEditor } from './RewardEditor'
 
 const statusColor = {
   pending: 'warning',
   approved: 'success',
   rejected: 'danger',
   cancelled: 'neutral',
-}
-
-export function RewardEditor({ mutation, onClose, reward }) {
-  const { t } = useTranslation('common')
-  const [name, setName] = useState(reward?.name || '')
-  const [description, setDescription] = useState(reward?.description || '')
-  const [cost, setCost] = useState(reward?.costPoints || '')
-  const valid =
-    name.trim() && Number.isInteger(Number(cost)) && Number(cost) > 0
-  const save = async () => {
-    await mutation.mutateAsync({
-      path: reward ? `/rewards/${reward.id}` : '/rewards',
-      method: reward ? 'put' : 'post',
-      data: {
-        name: name.trim(),
-        description: description.trim(),
-        costPoints: Number(cost),
-        ...(reward && { isActive: reward.isActive }),
-      },
-    })
-    onClose()
-  }
-
-  return (
-    <AppModal
-      open
-      onClose={onClose}
-      title={reward ? t('rewards.editReward') : t('rewards.createReward')}
-      description={t('rewards.rewardDescription')}
-      footer={
-        <Stack direction='row' justifyContent='flex-end' spacing={1}>
-          <Button variant='plain' color='neutral' onClick={onClose}>
-            {t('cancel')}
-          </Button>
-          <Button onClick={save} disabled={!valid || mutation.isPending}>
-            {t('rewards.saveReward')}
-          </Button>
-        </Stack>
-      }
-    >
-      <Stack spacing={2}>
-        <FormControl required>
-          <FormLabel>{t('rewards.name')}</FormLabel>
-          <Input value={name} onChange={event => setName(event.target.value)} />
-        </FormControl>
-        <FormControl>
-          <FormLabel>{t('rewards.description')}</FormLabel>
-          <Textarea
-            minRows={2}
-            value={description}
-            onChange={event => setDescription(event.target.value)}
-          />
-        </FormControl>
-        <FormControl required>
-          <FormLabel>{t('rewards.pointCost')}</FormLabel>
-          <Input
-            type='number'
-            slotProps={{ input: { min: 1, step: 1 } }}
-            value={cost}
-            onChange={event => setCost(event.target.value)}
-          />
-        </FormControl>
-      </Stack>
-    </AppModal>
-  )
 }
 
 export default function RewardsView() {

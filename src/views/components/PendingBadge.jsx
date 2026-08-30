@@ -1,16 +1,8 @@
-import { Close, CloudSync } from '@mui/icons-material'
-import {
-  Box,
-  IconButton,
-  List,
-  ListItem,
-  ListItemContent,
-  Typography,
-} from '@mui/joy'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import ModalActions from '../../components/common/ModalActions'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 import { commandQueue } from '../../utils/CommandQueue'
 
@@ -39,6 +31,27 @@ const formatCommandLabel = commandType => {
   )
 }
 
+const spacing = value => `${value * 0.25}rem`
+
+const CloudSyncIcon = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25' />
+    <path d='M8 16h8' />
+    <path d='m8 16 3-3' />
+    <path d='m8 16 3 3' />
+  </svg>
+)
+
 function PendingBadge({ commands, size = 'sm', sx = {} }) {
   const { ResponsiveModal } = useResponsiveModal()
   const queryClient = useQueryClient()
@@ -52,6 +65,15 @@ function PendingBadge({ commands, size = 'sm', sx = {} }) {
 
   const stopEvent = e => {
     e.stopPropagation()
+  }
+
+  const marginStyle = () => {
+    const style = {}
+    if (sx.mt !== undefined) style.marginTop = spacing(sx.mt)
+    if (sx.me !== undefined) style.marginInlineEnd = spacing(sx.me)
+    if (sx.ms !== undefined) style.marginInlineStart = spacing(sx.ms)
+    if (sx.mb !== undefined) style.marginBottom = spacing(sx.mb)
+    return style
   }
 
   const invalidatePending = async () => {
@@ -106,38 +128,36 @@ function PendingBadge({ commands, size = 'sm', sx = {} }) {
   const isXs = size === 'xs'
 
   return (
-    <Box data-no-chore-nav='true' sx={{ mt: isXs ? 0 : 0.5, ...sx }}>
-      <IconButton
-        variant='soft'
-        color='warning'
-        size='sm'
+    <div
+      data-no-chore-nav='true'
+      style={isXs ? { ...marginStyle(), marginTop: 0 } : marginStyle()}
+    >
+      <button
+        type='button'
+        className='btn btn-icon'
         onClick={handleOpen}
         onMouseDown={stopEvent}
         onPointerDown={stopEvent}
         aria-label={pendingSyncLabel}
         title={pendingSyncLabel}
-        sx={{
+        style={{
           borderRadius: '50%',
-          ...(isXs && {
-            width: 18,
-            height: 18,
-            minWidth: 18,
-            minHeight: 18,
-            p: 0.25,
-          }),
+          minWidth: isXs ? 18 : 28,
+          minHeight: isXs ? 18 : 28,
+          width: isXs ? 18 : 28,
+          height: isXs ? 18 : 28,
+          padding: isXs ? 1 : 4,
+          background: 'var(--sig-due-bg)',
+          color: 'var(--sig-due)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: 'none',
+          cursor: 'pointer',
         }}
       >
-        {/* <Badge
-          badgeContent={commands.length}
-          size='sm'
-          color='warning'
-          sx={{
-            '& .MuiBadge-badge': { fontSize: 10, minWidth: 16, height: 16 },
-          }}
-        > */}
-        <CloudSync sx={{ fontSize: isXs ? 14 : 16 }} />
-        {/* </Badge> */}
-      </IconButton>
+        <CloudSyncIcon size={isXs ? 14 : 16} />
+      </button>
 
       <ResponsiveModal
         open={isOpen}
@@ -157,48 +177,63 @@ function PendingBadge({ commands, size = 'sm', sx = {} }) {
           />
         }
       >
-        <Typography level='body-sm' sx={{ color: 'text.tertiary', mb: 1.5 }}>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: spacing(1.5),
+            color: 'var(--t-muted)',
+            fontSize: 13,
+          }}
+        >
           {commands.length} action{commands.length > 1 ? 's' : ''} waiting to be
           synced.
-        </Typography>
+        </p>
 
-        <List sx={{ '--List-gap': '8px', p: 0, mb: 1 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing(0.5),
+            marginBottom: spacing(1),
+          }}
+        >
           {commands.map(cmd => (
-            <ListItem
+            <div
               key={cmd.id}
-              sx={{
+              style={{
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                p: 1,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 'md',
+                gap: spacing(1),
+                padding: spacing(1),
+                border: '1px solid var(--line)',
+                borderRadius: 'var(--r-md)',
               }}
             >
-              <ListItemContent>
-                <Typography level='body-sm' sx={{ fontWeight: 600 }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>
                   {formatCommandLabel(cmd.commandType)}
-                </Typography>
-                <Typography level='body-xs' sx={{ color: 'text.tertiary' }}>
+                </p>
+                <span style={{ fontSize: 11, color: 'var(--t-muted)' }}>
                   {new Date(cmd.createdAt).toLocaleString()}
-                </Typography>
-              </ListItemContent>
+                </span>
+              </div>
 
-              <IconButton
+              <button
+                type='button'
+                className='btn btn-ghost btn-icon'
                 aria-label={`Cancel ${formatCommandLabel(cmd.commandType)}`}
-                variant='plain'
-                color='danger'
-                size='sm'
                 onClick={e => handleUndo(e, cmd.id)}
                 disabled={Boolean(cancelingIds[cmd.id]) || isCancelingAll}
+                style={{ color: 'var(--sig-over)' }}
               >
-                <Close sx={{ fontSize: 14 }} />
-              </IconButton>
-            </ListItem>
+                <FigmaIcon name='x' size={14} />
+              </button>
+            </div>
           ))}
-        </List>
+        </div>
       </ResponsiveModal>
-    </Box>
+    </div>
   )
 }
 

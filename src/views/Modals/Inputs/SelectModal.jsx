@@ -1,4 +1,3 @@
-import { Option, Select } from '@mui/joy'
 import { useState } from 'react'
 
 import ModalActions from '../../../components/common/ModalActions'
@@ -17,7 +16,7 @@ function SelectModal({
   const [selected, setSelected] = useState(null)
 
   const handleSave = () => {
-    onSave(options.find(item => item.id === selected))
+    onSave(options.find(item => String(item.id) === selected))
     onClose()
   }
 
@@ -33,23 +32,26 @@ function SelectModal({
           primary={{
             label: 'Save',
             onClick: handleSave,
-            disabled: selected == null,
+            disabled: selected === null,
           }}
         />
       }
     >
-      <Select
+      <select
         autoFocus
-        placeholder={placeholder}
-        value={selected}
-        onChange={(_, value) => setSelected(value)}
+        className='input'
+        value={selected ?? ''}
+        onChange={event => setSelected(event.target.value)}
       >
+        <option value='' disabled>
+          {placeholder}
+        </option>
         {options.map(item => (
-          <Option value={item.id} key={item[displayKey]}>
+          <option value={String(item.id)} key={item[displayKey]}>
             {item[displayKey]}
-          </Option>
+          </option>
         ))}
-      </Select>
+      </select>
     </ResponsiveModal>
   )
 }

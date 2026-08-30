@@ -1,8 +1,7 @@
-import { Close, NotificationsNone } from '@mui/icons-material'
-import { Box, Button, IconButton, Typography } from '@mui/joy'
 import { useEffect, useRef, useState } from 'react'
 
 import ModalActions from '../../components/common/ModalActions'
+import FigmaIcon from '../../components/FigmaIcon'
 import NotificationTemplate from '../../components/NotificationTemplate'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 
@@ -69,64 +68,78 @@ const NotificationPickerField = ({
 
   return (
     <>
-      <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <Button
-          size={size}
-          variant={hasNotifications ? 'soft' : 'outlined'}
-          color='neutral'
+      <div
+        style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+      >
+        <button
+          aria-expanded={isOpen}
+          aria-label={displayLabel}
+          className='btn btn-secondary'
           onClick={() => setIsOpen(true)}
-          sx={{
-            minHeight: 40,
-            borderRadius: '128px',
-            minWidth: 'min-content',
-            px: shouldShowLabel ? 1.25 : 0.75,
-            gap: shouldShowLabel ? 1 : 0,
+          style={{
+            alignItems: 'center',
+            background: hasNotifications ? 'var(--brand-faint)' : undefined,
+            borderColor: hasNotifications ? 'var(--brand)' : undefined,
+            color: hasNotifications ? 'var(--brand)' : undefined,
+            display: 'inline-flex',
+            fontSize: size === 'lg' ? 15 : size === 'sm' ? 12 : 14,
+            gap: shouldShowLabel ? 8 : 0,
             justifyContent: 'flex-start',
-            whiteSpace: 'nowrap',
+            minHeight: 40,
+            minWidth: 'min-content',
+            padding: shouldShowLabel ? '8px 10px' : '8px 6px',
+            borderRadius: 128,
             transition: 'all 0.25s ease-in-out',
+            whiteSpace: 'nowrap',
           }}
+          type='button'
         >
-          <NotificationsNone sx={{ fontSize: '20px' }} />
-          <Typography
-            level='body-sm'
-            sx={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+          <FigmaIcon name='bell' size={20} />
+          <span
+            style={{
+              color: 'var(--t-primary)',
+              font: '14px var(--font-ui)',
               maxWidth: shouldShowLabel ? 220 : 0,
               opacity: shouldShowLabel ? 1 : 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
               transition:
                 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
+              whiteSpace: 'nowrap',
             }}
           >
             {displayLabel}
-          </Typography>
-        </Button>
+          </span>
+        </button>
 
         {hasNotifications && onClear && (
-          <IconButton
+          <button
             aria-label='Remove reminders'
-            size='sm'
-            variant='soft'
-            color='danger'
+            className='btn btn-danger'
             onClick={e => {
               e.stopPropagation()
               onClear?.()
             }}
-            sx={{
-              position: 'absolute',
-              top: -18,
-              right: -18,
-              zIndex: 10,
+            style={{
+              alignItems: 'center',
               borderRadius: '50%',
-              '&:hover': { bgcolor: 'danger.softBg' },
+              display: 'inline-flex',
+              height: 32,
+              justifyContent: 'center',
+              padding: 0,
+              position: 'absolute',
+              right: -18,
+              top: -18,
+              zIndex: 10,
+              width: 32,
             }}
+            type='button'
           >
-            <Close sx={{ fontSize: '18px' }} />
-          </IconButton>
+            <FigmaIcon name='x' size={18} />
+          </button>
         )}
-      </Box>
+      </div>
 
       <ResponsiveModal
         open={isOpen}

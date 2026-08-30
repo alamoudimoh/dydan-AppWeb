@@ -1,8 +1,7 @@
-import { CalendarMonth, Close } from '@mui/icons-material'
-import { Box, Button, IconButton, Typography } from '@mui/joy'
 import moment from 'moment'
 import { useMemo, useState } from 'react'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import DueDatePickerModal from './DueDatePickerModal'
 
 const DueDatePickerField = ({
@@ -49,71 +48,71 @@ const DueDatePickerField = ({
 
   return (
     <>
-      <Box
-        sx={{
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-        }}
+      <div
+        style={{ alignItems: 'center', display: 'flex', position: 'relative' }}
       >
-        <Button
-          size={size}
-          variant={hasDueDate ? 'soft' : 'outlined'}
-          color='neutral'
+        <button
+          aria-expanded={isOpen}
+          aria-haspopup='dialog'
+          aria-label={hasDueDate ? `Due date: ${dueDateLabel}` : 'Set due date'}
+          className={`btn btn-ghost ${size === 'lg' ? 'btn-lg' : size === 'sm' ? 'btn-sm' : ''}`}
           onClick={() => setIsOpen(true)}
-          sx={{
-            minHeight: 40,
-            borderRadius: '128px',
-            minWidth: 'min-content',
-            px: shouldShowLabel ? 1.25 : 0.75,
-            gap: shouldShowLabel ? 1 : 0,
+          style={{
+            background: hasDueDate ? 'var(--surface-2)' : 'var(--surface)',
+            border: `1px solid ${hasDueDate ? 'transparent' : 'var(--line)'}`,
+            borderRadius: 'var(--r-full)',
+            color: 'var(--t-primary)',
+            gap: shouldShowLabel ? 8 : 0,
             justifyContent: 'flex-start',
-            whiteSpace: 'nowrap',
+            minHeight: 40,
+            minWidth: 'min-content',
+            padding: shouldShowLabel ? '8px 10px' : '8px 6px',
             transition: 'all 0.25s ease-in-out',
+            whiteSpace: 'nowrap',
           }}
+          type='button'
         >
-          <CalendarMonth sx={{ fontSize: '20px' }} />
-          <Typography
-            level='body-sm'
-            sx={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+          <FigmaIcon name='calendar' size={20} />
+          <span
+            aria-hidden='true'
+            style={{
               maxWidth: shouldShowLabel ? 220 : 0,
               opacity: shouldShowLabel ? 1 : 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
               transition:
                 'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
+              whiteSpace: 'nowrap',
             }}
           >
             {dueDateLabel}
-          </Typography>
-        </Button>
+          </span>
+        </button>
         {hasDueDate && onClear && (
-          <IconButton
+          <button
             aria-label='Clear due date'
-            size='sm'
-            variant='soft'
-            color='danger'
+            className='btn btn-danger btn-icon'
             onClick={e => {
               e.stopPropagation()
               onClear?.()
             }}
-            sx={{
+            style={{
+              borderRadius: '50%',
+              insetInlineEnd: -18,
+              minHeight: 30,
+              padding: 6,
               position: 'absolute',
               top: -18,
-              right: -18,
+              width: 30,
               zIndex: 10,
-              borderRadius: '50%',
-              '&:hover': {
-                bgcolor: 'danger.softBg',
-              },
             }}
+            type='button'
           >
-            <Close sx={{ fontSize: '18px' }} />
-          </IconButton>
+            <FigmaIcon name='x' size={18} />
+          </button>
         )}
-      </Box>
+      </div>
 
       <DueDatePickerModal
         open={isOpen}

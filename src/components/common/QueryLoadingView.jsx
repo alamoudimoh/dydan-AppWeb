@@ -1,26 +1,30 @@
-import { Box, CircularProgress, Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 
-import { inlineLoadingSx } from '../../theme/appLayout'
+import { sxToStyle } from '../../theme/sxToStyle'
 
+/**
+ * Centered inline loading state rendered with the Figma skeleton vocabulary.
+ * No Joy thermostat: a couple of shimmer bars plus an optional label.
+ */
 const QueryLoadingView = ({ label, size = 'md', sx }) => (
-  <Box
-    sx={{
-      ...inlineLoadingSx,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      ...sx,
-    }}
+  <div
+    role='status'
+    aria-label={label || 'Loading'}
+    className='flex flex-col items-center justify-center gap-3 px-6 py-12'
+    style={sxToStyle(sx)}
   >
-    <CircularProgress size={size} aria-label={label || undefined} />
-    {label && (
-      <Typography level='body-sm' sx={{ mt: 1.5, color: 'text.secondary' }}>
-        {label}
-      </Typography>
-    )}
-  </Box>
+    <div className='flex w-full max-w-72 flex-col gap-2' aria-hidden='true'>
+      <div
+        className='skeleton'
+        style={{ height: size === 'sm' ? 10 : 14, width: '100%' }}
+      />
+      <div
+        className='skeleton'
+        style={{ height: size === 'sm' ? 10 : 14, width: '72%' }}
+      />
+    </div>
+    {label && <p className='text-muted text-sm'>{label}</p>}
+  </div>
 )
 
 QueryLoadingView.propTypes = {

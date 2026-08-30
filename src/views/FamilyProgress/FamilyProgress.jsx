@@ -1,40 +1,13 @@
-import {
-  Add,
-  Archive,
-  CheckCircle,
-  Edit,
-  Flag,
-  Groups,
-  Insights,
-  Work,
-} from '@mui/icons-material'
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Chip,
-  FormControl,
-  FormLabel,
-  Input,
-  LinearProgress,
-  Option,
-  Select,
-  Stack,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-  Typography,
-} from '@mui/joy'
 import PropTypes from 'prop-types'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
+import EmptyState from '../../components/common/EmptyState'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
+import FigmaIcon from '../../components/FigmaIcon'
 import { useChores } from '../../queries/ChoreQueries'
 import {
   useGoalMutation,
@@ -49,24 +22,23 @@ import {
   useRewards,
 } from '../../queries/RewardQueries'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
-import {
-  inlineErrorAlertSx,
-  pageShellSx,
-  pageStackSpacing,
-  sectionCardSx,
-} from '../../theme/appLayout'
-import { RewardEditor } from '../Rewards/RewardsView'
+import { pageShellSx } from '../../theme/appLayout'
+import { sxToStyle } from '../../theme/sxToStyle'
+import { RewardEditor } from '../Rewards/RewardEditor'
 import FigmaGoalsScreen from './FigmaGoalsScreen'
 
 const Metric = ({ label, value }) => (
-  <Box sx={{ minWidth: 72 }}>
-    <Typography level='h3' sx={{ fontFamily: 'JetBrains Mono, monospace' }}>
+  <div style={{ minWidth: 72 }}>
+    <div
+      className='text-primary font-mono'
+      style={{ fontSize: 22, fontWeight: 700 }}
+    >
       {value ?? 0}
-    </Typography>
-    <Typography level='body-xs' textColor='text.tertiary'>
+    </div>
+    <div className='text-muted' style={{ fontSize: 12 }}>
       {label}
-    </Typography>
-  </Box>
+    </div>
+  </div>
 )
 
 Metric.propTypes = {
@@ -74,57 +46,64 @@ Metric.propTypes = {
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 }
 
+const Field = ({ children, label }) => (
+  <label className='block'>
+    <span
+      className='section-label'
+      style={{ display: 'block', padding: '0 0 6px' }}
+    >
+      {label}
+    </span>
+    {children}
+  </label>
+)
+
 const Workload = () => {
   const { t } = useTranslation()
   const [range, setRange] = useState('week')
   const [category, setCategory] = useState('')
   const { data, error, isLoading } = useWorkload(range, '', category)
   if (isLoading) return <QueryLoadingView />
-  if (error)
-    return (
-      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
-        {error.message}
-      </Alert>
-    )
+  if (error) return <EmptyState variant='error' title={error.message} />
   return (
-    <Stack spacing={2}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-        <Select
-          value={range}
-          onChange={(_, value) => setRange(value)}
+    <div className='flex flex-col gap-4'>
+      <div className='flex flex-wrap gap-2'>
+        <select
           aria-label={t('familyProgress.workloadRange')}
+          className='input'
+          value={range}
+          onChange={event => setRange(event.target.value)}
         >
-          <Option value='today'>{t('familyProgress.today')}</Option>
-          <Option value='week'>{t('familyProgress.thisWeek')}</Option>
-          <Option value='30d'>{t('familyProgress.next30Days')}</Option>
-        </Select>
-        <Select
-          value={category}
-          onChange={(_, value) => setCategory(value || '')}
-          placeholder={t('familyProgress.allCategories')}
+          <option value='today'>{t('familyProgress.today')}</option>
+          <option value='week'>{t('familyProgress.thisWeek')}</option>
+          <option value='30d'>{t('familyProgress.next30Days')}</option>
+        </select>
+        <select
           aria-label={t('familyProgress.categoryFilter')}
+          className='input'
+          value={category}
+          onChange={event => setCategory(event.target.value)}
         >
-          <Option value=''>{t('familyProgress.allCategories')}</Option>
+          <option value=''>{t('familyProgress.allCategories')}</option>
           {data?.categories
             ?.filter(x => x.categoryId)
             .map(x => (
-              <Option key={x.categoryId} value={String(x.categoryId)}>
+              <option key={x.categoryId} value={String(x.categoryId)}>
                 {x.name}
-              </Option>
+              </option>
             ))}
-        </Select>
-      </Stack>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))',
-          gap: 1.5,
-        }}
+        </select>
+      </div>
+      <div
+        className='grid gap-2'
+        style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))' }}
       >
         {data.members.map(member => (
-          <Card key={member.userId} variant='soft'>
-            <Typography level='title-md'>{member.name}</Typography>
-            <Stack direction='row' spacing={2} flexWrap='wrap'>
+          <div key={member.userId} className='card p-4'>
+            <div className='text-primary font-bold' style={{ fontSize: 14 }}>
+              {member.name}
+            </div>
+            <div className='flex flex-wrap gap-4'>
               <Metric label={t('familyProgress.today')} value={member.today} />
               <Metric
                 label={t('familyProgress.overdue')}
@@ -134,45 +113,51 @@ const Workload = () => {
                 label={t('familyProgress.upcoming')}
                 value={member.upcoming}
               />
-            </Stack>
-            <Stack spacing={0.5}>
+            </div>
+            <div className='mt-2 flex flex-col gap-1'>
               {data.tasks
-                .filter(t => t.assignedTo === member.userId)
+                .filter(task => task.assignedTo === member.userId)
                 .slice(0, 6)
                 .map(task => (
-                  <Link key={task.id} to={`/chores/${task.id}`}>
+                  <Link
+                    key={task.id}
+                    style={{ color: 'var(--brand)', fontSize: 13 }}
+                    to={`/chores/${task.id}`}
+                  >
                     {task.name}
                   </Link>
                 ))}
-            </Stack>
-          </Card>
+            </div>
+          </div>
         ))}
         {data.canViewFamily && (
-          <Card variant='soft'>
-            <Typography level='title-md'>
+          <div className='card p-4'>
+            <div className='text-primary font-bold' style={{ fontSize: 14 }}>
               {t('familyProgress.unassigned')}
-            </Typography>
+            </div>
             <Metric
               label={t('familyProgress.activeTasks')}
               value={data.unassigned}
             />
-          </Card>
+          </div>
         )}
-      </Box>
+      </div>
       <SectionCard title={t('familyProgress.workByCategory')}>
-        <Stack spacing={1}>
+        <div className='flex flex-col gap-1'>
           {data.categories.map(row => (
-            <Box
+            <div
+              className='flex items-center justify-between'
               key={row.categoryId || 'none'}
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
             >
-              <Typography>{row.name}</Typography>
-              <Chip>{row.count}</Chip>
-            </Box>
+              <span className='text-primary' style={{ fontSize: 13 }}>
+                {row.name}
+              </span>
+              <span className='badge'>{row.count}</span>
+            </div>
           ))}
-        </Stack>
+        </div>
       </SectionCard>
-    </Stack>
+    </div>
   )
 }
 
@@ -181,34 +166,28 @@ const Reports = () => {
   const [range, setRange] = useState('30d')
   const { data, error, isLoading } = useReport(range)
   if (isLoading) return <QueryLoadingView />
-  if (error)
-    return (
-      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
-        {error.message}
-      </Alert>
-    )
+  if (error) return <EmptyState variant='error' title={error.message} />
   return (
-    <Stack spacing={2}>
-      <Select
-        value={range}
-        onChange={(_, value) => setRange(value)}
+    <div className='flex flex-col gap-4'>
+      <select
         aria-label={t('familyProgress.reportRange')}
+        className='input'
+        style={{ alignSelf: 'flex-start' }}
+        value={range}
+        onChange={event => setRange(event.target.value)}
       >
-        <Option value='week'>{t('familyProgress.thisWeek')}</Option>
-        <Option value='7d'>{t('familyProgress.sevenDays')}</Option>
-        <Option value='30d'>{t('familyProgress.thirtyDays')}</Option>
-        <Option value='90d'>{t('familyProgress.ninetyDays')}</Option>
-        <Option value='month'>{t('familyProgress.thisMonth')}</Option>
-      </Select>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))',
-          gap: 1.5,
-        }}
+        <option value='week'>{t('familyProgress.thisWeek')}</option>
+        <option value='7d'>{t('familyProgress.sevenDays')}</option>
+        <option value='30d'>{t('familyProgress.thirtyDays')}</option>
+        <option value='90d'>{t('familyProgress.ninetyDays')}</option>
+        <option value='month'>{t('familyProgress.thisMonth')}</option>
+      </select>
+      <div
+        className='grid gap-2'
+        style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}
       >
         <SectionCard title={t('familyProgress.completion')}>
-          <Stack direction='row' spacing={2} flexWrap='wrap'>
+          <div className='flex flex-wrap gap-4'>
             <Metric
               label={t('familyProgress.completedTasks')}
               value={data.completed}
@@ -217,10 +196,10 @@ const Reports = () => {
               label={t('familyProgress.currentlyOverdue')}
               value={data.overdue}
             />
-          </Stack>
+          </div>
         </SectionCard>
         <SectionCard title={t('familyProgress.points')}>
-          <Stack direction='row' spacing={2}>
+          <div className='flex flex-wrap gap-4'>
             <Metric
               label={t('familyProgress.earned')}
               value={data.points.earned}
@@ -233,10 +212,10 @@ const Reports = () => {
               label={t('familyProgress.available')}
               value={data.points.available}
             />
-          </Stack>
+          </div>
         </SectionCard>
         <SectionCard title={t('familyProgress.maintenance')}>
-          <Stack direction='row' spacing={2}>
+          <div className='flex flex-wrap gap-4'>
             <Metric
               label={t('familyProgress.completed')}
               value={data.maintenance.completed}
@@ -249,56 +228,69 @@ const Reports = () => {
               label={t('familyProgress.approaching')}
               value={data.maintenance.approaching}
             />
-          </Stack>
+          </div>
         </SectionCard>
-      </Box>
+      </div>
       <SectionCard title={t('familyProgress.deterministicInsights')}>
-        {data.insights.map(text => (
-          <Typography key={text}>{text}</Typography>
-        ))}
+        <div className='flex flex-col gap-1'>
+          {data.insights.map(text => (
+            <span className='text-primary' key={text} style={{ fontSize: 13 }}>
+              {text}
+            </span>
+          ))}
+        </div>
       </SectionCard>
       <SectionCard title={t('familyProgress.completedByCategory')}>
-        {data.categories.map(row => (
-          <Box
-            key={row.id || 'none'}
-            sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}
-          >
-            <Typography>{row.name}</Typography>
-            <Chip>{row.count}</Chip>
-          </Box>
-        ))}
+        <div className='flex flex-col gap-1'>
+          {data.categories.map(row => (
+            <div
+              className='flex items-center justify-between'
+              key={row.id || 'none'}
+            >
+              <span className='text-primary' style={{ fontSize: 13 }}>
+                {row.name}
+              </span>
+              <span className='badge'>{row.count}</span>
+            </div>
+          ))}
+        </div>
       </SectionCard>
       {data.canViewFamily && (
         <SectionCard title={t('familyProgress.completedByMember')}>
-          {data.members.map(row => (
-            <Box
-              key={row.id}
-              sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}
-            >
-              <Typography>{row.name}</Typography>
-              <Chip>{row.count}</Chip>
-            </Box>
-          ))}
+          <div className='flex flex-col gap-1'>
+            {data.members.map(row => (
+              <div className='flex items-center justify-between' key={row.id}>
+                <span className='text-primary' style={{ fontSize: 13 }}>
+                  {row.name}
+                </span>
+                <span className='badge'>{row.count}</span>
+              </div>
+            ))}
+          </div>
         </SectionCard>
       )}
       <SectionCard title={t('familyProgress.rewardActivity')}>
         {data.rewards.length ? (
-          data.rewards.map(row => (
-            <Box
-              key={row.status}
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <Typography>{t(`rewards.status_${row.status}`)}</Typography>
-              <Chip>{row.count}</Chip>
-            </Box>
-          ))
+          <div className='flex flex-col gap-1'>
+            {data.rewards.map(row => (
+              <div
+                className='flex items-center justify-between'
+                key={row.status}
+              >
+                <span className='text-primary' style={{ fontSize: 13 }}>
+                  {t(`rewards.status_${row.status}`)}
+                </span>
+                <span className='badge'>{row.count}</span>
+              </div>
+            ))}
+          </div>
         ) : (
-          <Typography textColor='text.tertiary'>
+          <span className='text-muted' style={{ fontSize: 13 }}>
             {t('familyProgress.noRewardActivity')}
-          </Typography>
+          </span>
         )}
       </SectionCard>
-    </Stack>
+    </div>
   )
 }
 
@@ -317,7 +309,6 @@ const Goals = () => {
   const rewardMutation = useRewardMutation()
   const [open, setOpen] = useState(false)
   const [creatingReward, setCreatingReward] = useState(false)
-  const [legacyMode] = useState(false)
   const [form, setForm] = useState({
     name: '',
     metricType: 'TASK_COMPLETIONS',
@@ -349,25 +340,16 @@ const Goals = () => {
   if (isLoading) return <QueryLoadingView />
   if (isError) {
     return (
-      <Alert
-        color='danger'
-        variant='soft'
-        sx={inlineErrorAlertSx}
-        endDecorator={
-          <Button size='sm' variant='soft' onClick={() => refetch()}>
-            {t('familyProgress.retry')}
-          </Button>
-        }
-      >
-        {error?.message || t('familyProgress.goalsLoadError')}
-      </Alert>
+      <EmptyState
+        variant='error'
+        title={error?.message || t('familyProgress.goalsLoadError')}
+        primaryAction={{ label: t('familyProgress.retry'), onClick: refetch }}
+      />
     )
   }
   if (!data) {
     return (
-      <Alert color='danger' variant='soft' sx={inlineErrorAlertSx}>
-        {t('familyProgress.goalsLoadError')}
-      </Alert>
+      <EmptyState variant='error' title={t('familyProgress.goalsLoadError')} />
     )
   }
   const submit = e => {
@@ -422,7 +404,7 @@ const Goals = () => {
     }
   }
 
-  if (!legacyMode && !open) {
+  if (!open) {
     return (
       <>
         <FigmaGoalsScreen
@@ -460,10 +442,10 @@ const Goals = () => {
   }
 
   return (
-    <Stack spacing={2}>
+    <div className='flex flex-col gap-3'>
       {data.canManage && (
-        <Button
-          startDecorator={<Add />}
+        <button
+          className='btn btn-ghost'
           onClick={() => {
             setForm({
               name: '',
@@ -474,118 +456,147 @@ const Goals = () => {
             })
             setOpen(!open)
           }}
-          sx={{ alignSelf: 'flex-start' }}
+          style={{ alignSelf: 'flex-start' }}
+          type='button'
         >
+          <FigmaIcon name='plus' size={14} />
           {t('familyProgress.createGoal')}
-        </Button>
+        </button>
       )}
       {open && (
-        <Card component='form' onSubmit={submit}>
-          <Stack spacing={1.5}>
-            <FormControl>
-              <FormLabel>{t('familyProgress.name')}</FormLabel>
-              <Input
+        <div className='card' style={{ padding: 16 }}>
+          <form className='flex flex-col gap-3' onSubmit={submit}>
+            <Field label={t('familyProgress.name')}>
+              <input
+                className='input'
                 required
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>{t('familyProgress.metric')}</FormLabel>
-              <Select
+            </Field>
+            <Field label={t('familyProgress.metric')}>
+              <select
+                className='input'
                 value={form.metricType}
-                onChange={(_, v) => setForm({ ...form, metricType: v })}
+                onChange={e => setForm({ ...form, metricType: e.target.value })}
               >
-                <Option value='TASK_COMPLETIONS'>
+                <option value='TASK_COMPLETIONS'>
                   {t('familyProgress.taskCompletions')}
-                </Option>
-                <Option value='CATEGORY_COMPLETIONS'>
+                </option>
+                <option value='CATEGORY_COMPLETIONS'>
                   {t('familyProgress.categoryCompletions')}
-                </Option>
-                <Option value='POINTS_EARNED'>
+                </option>
+                <option value='POINTS_EARNED'>
                   {t('familyProgress.pointsEarned')}
-                </Option>
-              </Select>
-            </FormControl>
+                </option>
+              </select>
+            </Field>
             {form.metricType === 'CATEGORY_COMPLETIONS' && (
-              <FormControl>
-                <FormLabel>{t('familyProgress.category')}</FormLabel>
-                <Select
+              <Field label={t('familyProgress.category')}>
+                <select
+                  className='input'
                   required
                   value={form.categoryId || ''}
-                  onChange={(_, value) =>
-                    setForm({ ...form, categoryId: Number(value) })
+                  onChange={e =>
+                    setForm({ ...form, categoryId: Number(e.target.value) })
                   }
                 >
+                  <option value='' disabled>
+                    —
+                  </option>
                   {workload?.categories
                     ?.filter(row => row.categoryId)
                     .map(row => (
-                      <Option
+                      <option
                         key={row.categoryId}
                         value={String(row.categoryId)}
                       >
                         {row.name}
-                      </Option>
+                      </option>
                     ))}
-                </Select>
-              </FormControl>
+                </select>
+              </Field>
             )}
-            <FormControl>
-              <FormLabel>{t('familyProgress.target')}</FormLabel>
-              <Input
-                type='number'
+            <Field label={t('familyProgress.target')}>
+              <input
+                className='input'
                 min='1'
                 required
+                type='number'
                 value={form.target}
                 onChange={e =>
                   setForm({ ...form, target: Number(e.target.value) })
                 }
               />
-            </FormControl>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <FormControl>
-                <FormLabel>{t('familyProgress.start')}</FormLabel>
-                <Input
+            </Field>
+            <div className='flex flex-col gap-3 sm:flex-row'>
+              <Field label={t('familyProgress.start')}>
+                <input
+                  className='input'
                   type='date'
                   value={form.startDate}
                   onChange={e =>
                     setForm({ ...form, startDate: e.target.value })
                   }
                 />
-              </FormControl>
-              <FormControl>
-                <FormLabel>{t('familyProgress.end')}</FormLabel>
-                <Input
+              </Field>
+              <Field label={t('familyProgress.end')}>
+                <input
+                  className='input'
                   type='date'
                   value={form.endDate}
                   onChange={e => setForm({ ...form, endDate: e.target.value })}
                 />
-              </FormControl>
-            </Stack>
+              </Field>
+            </div>
             {mutation.error && (
-              <Alert color='danger'>{mutation.error.message}</Alert>
+              <div
+                className='text-sig-over'
+                role='alert'
+                style={{ fontSize: 13 }}
+              >
+                {mutation.error.message}
+              </div>
             )}
-            <Button type='submit' loading={mutation.isPending}>
+            <button
+              className='btn btn-primary'
+              disabled={mutation.isPending}
+              type='submit'
+            >
               {form.id
                 ? t('familyProgress.updateGoal')
                 : t('familyProgress.saveGoal')}
-            </Button>
-          </Stack>
-        </Card>
+            </button>
+          </form>
+        </div>
       )}
       {!data.goals.length && (
-        <Alert variant='soft'>{t('familyProgress.noGoals')}</Alert>
+        <div className='card text-muted' style={{ fontSize: 13, padding: 16 }}>
+          {t('familyProgress.noGoals')}
+        </div>
       )}
       {data.goals.map(goal => (
-        <Card key={goal.id} variant='outlined' sx={sectionCardSx}>
-          <Stack direction='row' justifyContent='space-between'>
-            <Typography level='title-md'>{goal.name}</Typography>
-            <Chip
-              color={goal.status === 'COMPLETED' ? 'success' : 'neutral'}
-              startDecorator={
-                goal.status === 'COMPLETED' ? <CheckCircle /> : null
-              }
+        <div key={goal.id} className='card' style={{ padding: 16 }}>
+          <div className='flex items-center justify-between gap-2'>
+            <div className='text-primary font-bold' style={{ fontSize: 15 }}>
+              {goal.name}
+            </div>
+            <span
+              className='badge'
+              style={{
+                background:
+                  goal.status === 'COMPLETED'
+                    ? 'var(--sig-done-bg)'
+                    : 'var(--surface-2)',
+                color:
+                  goal.status === 'COMPLETED'
+                    ? 'var(--sig-done)'
+                    : 'var(--t-muted)',
+              }}
             >
+              {goal.status === 'COMPLETED' && (
+                <FigmaIcon name='check' size={12} />
+              )}
               {t(
                 `familyProgress.${
                   goal.status === 'COMPLETED'
@@ -593,22 +604,42 @@ const Goals = () => {
                     : goal.status.toLowerCase()
                 }`,
               )}
-            </Chip>
-          </Stack>
-          <Typography>
+            </span>
+          </div>
+          <div className='text-muted mt-1' style={{ fontSize: 13 }}>
             {t('familyProgress.goalProgress', {
               progress: goal.progress,
               target: goal.target,
             })}
-          </Typography>
-          <LinearProgress
-            determinate
-            value={goal.percent}
+          </div>
+          <div
             aria-label={t('familyProgress.goalProgressLabel', {
               name: goal.name,
             })}
-          />
-          <Typography level='body-xs'>
+            role='progressbar'
+            style={{
+              background: 'var(--surface-2)',
+              borderRadius: 'var(--r-sm)',
+              height: 8,
+              marginTop: 8,
+              overflow: 'hidden',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                background:
+                  goal.status === 'COMPLETED'
+                    ? 'var(--sig-done)'
+                    : 'var(--brand)',
+                borderRadius: 'var(--r-sm)',
+                height: '100%',
+                transition: 'width 0.3s ease',
+                width: `${Math.min(100, Math.max(0, goal.percent))}%`,
+              }}
+            />
+          </div>
+          <div className='text-muted mt-1' style={{ fontSize: 12 }}>
             {t(
               `familyProgress.${
                 goal.metricType === 'TASK_COMPLETIONS'
@@ -618,82 +649,104 @@ const Goals = () => {
                     : 'pointsEarned'
               }`,
             )}
-          </Typography>
+          </div>
           {data.canManage && goal.status === 'ACTIVE' && (
-            <Stack direction='row' spacing={1}>
-              <Button
-                size='sm'
-                variant='outlined'
-                startDecorator={<Edit />}
+            <div className='mt-2 flex gap-2'>
+              <button
+                className='btn btn-sm btn-ghost'
                 onClick={() => editGoal(goal)}
+                type='button'
               >
+                <FigmaIcon name='edit' size={13} />
                 {t('edit')}
-              </Button>
-              <Button
-                size='sm'
-                variant='plain'
-                color='neutral'
-                startDecorator={<Archive />}
+              </button>
+              <button
+                className='btn btn-sm btn-ghost'
+                disabled={mutation.isPending}
                 onClick={() => archiveGoal(goal)}
-                loading={mutation.isPending}
+                type='button'
               >
+                <FigmaIcon name='archive' size={13} />
                 {t('familyProgress.archive')}
-              </Button>
-            </Stack>
+              </button>
+            </div>
           )}
-        </Card>
+        </div>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 export default function FamilyProgress() {
   const { t } = useTranslation()
   const { data: streak } = useStreak()
+  const [tab, setTab] = useState(0)
   return (
-    <Box sx={pageShellSx}>
-      <Stack spacing={pageStackSpacing}>
-        <PageHeader
-          icon={<Groups />}
-          title={t('familyProgress.title')}
-          subtitle={t('familyProgress.subtitle')}
-        />
-        <Card variant='soft' color='primary' sx={sectionCardSx}>
-          <Stack direction='row' spacing={3}>
-            <Metric
-              label={t('familyProgress.currentStreak')}
-              value={t('familyProgress.days', { count: streak?.current || 0 })}
-            />
-            <Metric
-              label={t('familyProgress.bestStreak')}
-              value={t('familyProgress.days', { count: streak?.best || 0 })}
-            />
-          </Stack>
-          <Typography level='body-xs'>{streak?.rule}</Typography>
-        </Card>
-        <Tabs defaultValue={0}>
-          <TabList sx={{ overflowX: 'auto' }}>
-            <Tab>
-              <Work /> {t('familyProgress.workload')}
-            </Tab>
-            <Tab>
-              <Insights /> {t('familyProgress.insights')}
-            </Tab>
-            <Tab>
-              <Flag /> {t('familyProgress.goals')}
-            </Tab>
-          </TabList>
-          <TabPanel value={0}>
-            <Workload />
-          </TabPanel>
-          <TabPanel value={1}>
-            <Reports />
-          </TabPanel>
-          <TabPanel value={2}>
-            <Goals />
-          </TabPanel>
-        </Tabs>
-      </Stack>
-    </Box>
+    <div style={sxToStyle(pageShellSx)}>
+      <PageHeader
+        icon={<FigmaIcon name='flag' size={28} />}
+        title={t('familyProgress.title')}
+        subtitle={t('familyProgress.subtitle')}
+      />
+      <div className='card' style={{ marginTop: 16 }}>
+        <div className='flex flex-wrap gap-6 p-4'>
+          <Metric
+            label={t('familyProgress.currentStreak')}
+            value={t('familyProgress.days', {
+              count: streak?.current || 0,
+            })}
+          />
+          <Metric
+            label={t('familyProgress.bestStreak')}
+            value={t('familyProgress.days', { count: streak?.best || 0 })}
+          />
+        </div>
+        <div
+          className='border-line text-muted border-t px-4 py-3'
+          style={{ fontSize: 12 }}
+        >
+          {streak?.rule}
+        </div>
+      </div>
+      <div
+        className='view-toggle'
+        role='tablist'
+        style={{ margin: '16px 0', maxWidth: '100%', width: 'fit-content' }}
+      >
+        <button
+          aria-selected={tab === 0}
+          className={`view-toggle-btn ${tab === 0 ? 'active' : ''}`}
+          onClick={() => setTab(0)}
+          role='tab'
+          type='button'
+        >
+          <FigmaIcon name='users' size={14} />
+          {t('familyProgress.workload')}
+        </button>
+        <button
+          aria-selected={tab === 1}
+          className={`view-toggle-btn ${tab === 1 ? 'active' : ''}`}
+          onClick={() => setTab(1)}
+          role='tab'
+          type='button'
+        >
+          <FigmaIcon name='activity' size={14} />
+          {t('familyProgress.insights')}
+        </button>
+        <button
+          aria-selected={tab === 2}
+          className={`view-toggle-btn ${tab === 2 ? 'active' : ''}`}
+          onClick={() => setTab(2)}
+          role='tab'
+          type='button'
+        >
+          <FigmaIcon name='flag' size={14} />
+          {t('familyProgress.goals')}
+        </button>
+      </div>
+      {tab === 0 && <Workload />}
+      {tab === 1 && <Reports />}
+      {tab === 2 && <Goals />}
+    </div>
   )
 }

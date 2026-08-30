@@ -1,9 +1,21 @@
-import { Close } from '@mui/icons-material'
-import { Box, Button, IconButton, Sheet, Typography } from '@mui/joy'
-import { ClickAwayListener, Popper } from '@mui/material'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 
+import FigmaIcon from '../../components/FigmaIcon'
 import { Z_INDEX } from '../../constants/zIndex'
+
+const menuPositionStyle = placement => {
+  switch (placement) {
+    case 'top-end':
+      return { bottom: 'calc(100% + 8px)', insetInlineEnd: 0 }
+    case 'bottom-start':
+      return { top: 'calc(100% + 8px)', insetInlineStart: 0 }
+    case 'bottom-end':
+      return { top: 'calc(100% + 8px)', insetInlineEnd: 0 }
+    case 'top-start':
+    default:
+      return { bottom: 'calc(100% + 8px)', insetInlineStart: 0 }
+  }
+}
 
 const BaseOptionPicker = ({
   emptyDisplay = 'icon',
@@ -37,18 +49,28 @@ const BaseOptionPicker = ({
     onOpenChange?.(nextValue)
   }
   const buttonRef = useRef(null)
+  const wrapperRef = useRef(null)
+  const menuId = useId()
 
   useEffect(() => {
     if (!isOpen) return
 
-    const handleEscape = event => {
-      if (event.key === 'Escape') {
+    const handlePointerDown = event => {
+      if (!wrapperRef.current?.contains(event.target)) {
         setIsOpen(false)
       }
     }
+    const handleEscape = event => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+        buttonRef.current?.focus()
+      }
+    }
 
+    document.addEventListener('mousedown', handlePointerDown)
     document.addEventListener('keydown', handleEscape)
     return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen])
@@ -92,6 +114,7 @@ const BaseOptionPicker = ({
 
     onChange?.(selectedValue)
     setIsOpen(false)
+    buttonRef.current?.focus()
   }
 
   const isSelected = item => {
@@ -108,159 +131,160 @@ const BaseOptionPicker = ({
   }
 
   return (
-    <>
-      <Box
-        sx={{
-          position: 'relative',
-          display: 'flex',
+    <div
+      ref={wrapperRef}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <button
+        ref={buttonRef}
+        type='button'
+        className='btn btn-secondary'
+        aria-controls={isOpen ? menuId : undefined}
+        aria-expanded={isOpen}
+        aria-haspopup='listbox'
+        onClick={() => setIsOpen(prev => !prev)}
+        style={{
           alignItems: 'center',
+          background: isEmpty
+            ? 'var(--surface)'
+            : triggerColor
+              ? `${triggerColor}20`
+              : 'var(--surface-2)',
+          border: isEmpty
+            ? '1px solid var(--line)'
+            : triggerColor
+              ? `1px solid ${triggerColor}`
+              : '1px solid transparent',
+          borderRadius: 'var(--r-full)',
+          color: triggerColor || 'var(--t-primary)',
+          display: 'inline-flex',
+          gap: shouldShowLabel ? 8 : 0,
+          justifyContent: 'flex-start',
+          minHeight: 40,
+          minWidth: 'min-content',
+          padding: shouldShowLabel ? '8px 10px' : '8px 6px',
+          transition: 'all 0.25s ease-in-out',
+          whiteSpace: 'nowrap',
         }}
       >
-        <Button
-          ref={buttonRef}
-          size={'sm'}
-          variant={isEmpty ? 'outlined' : 'soft'}
-          color='neutral'
-          onClick={() => setIsOpen(prev => !prev)}
-          sx={{
-            borderRadius: '128px',
-            minHeight: 40,
-            minWidth: 'min-content',
-            px: shouldShowLabel ? 1.25 : 0.75,
-            gap: shouldShowLabel ? 1 : 0,
-            justifyContent: 'flex-start',
+        {renderTriggerIcon?.({ selectedItems, isEmpty })}
+        <span
+          style={{
+            maxWidth: shouldShowLabel ? 180 : 0,
+            opacity: shouldShowLabel ? 1 : 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
+            transition:
+              'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
             whiteSpace: 'nowrap',
-            transition: 'all 0.25s ease-in-out',
-            backgroundColor: triggerColor ? `${triggerColor}20` : undefined,
-            borderColor: triggerColor || undefined,
-            color: triggerColor || undefined,
-            '&:hover': {
-              backgroundColor: triggerColor ? `${triggerColor}28` : undefined,
-              borderColor: triggerColor || undefined,
-            },
           }}
         >
-          {renderTriggerIcon?.({ selectedItems, isEmpty })}
-          <Typography
-            level='body-sm'
-            sx={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: shouldShowLabel ? 180 : 0,
-              opacity: shouldShowLabel ? 1 : 0,
-              transform: shouldShowLabel ? 'translateX(0)' : 'translateX(-4px)',
-              transition:
-                'max-width 0.25s ease-in-out, opacity 0.2s ease-in-out, transform 0.25s ease-in-out',
-            }}
-          >
-            {triggerText}
-          </Typography>
-        </Button>
-        {!isEmpty && onClear && (
-          <IconButton
-            size='sm'
-            variant='soft'
-            color='danger'
-            onClick={handleClear}
-            sx={{
-              position: 'absolute',
-              top: -12,
-              right: -16,
-              zIndex: 10,
-              maxHeight: 18,
-              maxWidth: 18,
-              borderRadius: '50%',
-              '&:hover': {
-                bgcolor: 'danger.softBg',
-              },
-            }}
-          >
-            <Close sx={{ fontSize: '18px' }} />
-          </IconButton>
-        )}
-      </Box>
-
-      {isOpen && (
-        <Popper
-          open={isOpen}
-          anchorEl={buttonRef.current}
-          placement={placement}
-          modifiers={[
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 8],
-              },
-            },
-            {
-              name: 'flip',
-              options: {
-                fallbackPlacements: ['bottom-start', 'top-start'],
-              },
-            },
-          ]}
-          sx={{ zIndex: Z_INDEX.MODAL_CLOSE_BUTTON + 1 }}
+          {triggerText}
+        </span>
+      </button>
+      {!isEmpty && onClear && (
+        <button
+          type='button'
+          className='btn btn-danger btn-icon'
+          aria-label='Clear selection'
+          title='Clear selection'
+          onClick={handleClear}
+          style={{
+            borderRadius: '50%',
+            insetInlineEnd: -18,
+            minHeight: 30,
+            padding: 6,
+            position: 'absolute',
+            top: -18,
+            width: 30,
+            zIndex: 10,
+          }}
         >
-          <ClickAwayListener onClickAway={() => setIsOpen(false)}>
-            <Sheet
-              variant='outlined'
-              sx={{
-                minWidth: menuMinWidth,
-                maxHeight: menuMaxHeight,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                p: 0.75,
-                borderRadius: 'md',
-                boxShadow: 'lg',
-                bgcolor: 'background.popup',
-              }}
-            >
-              {items.map((item, index) => {
-                const optionValue = getItemValue(item)
-                const selected = isSelected(item)
-                const itemColor = getItemColor ? getItemColor(item) : undefined
-
-                return (
-                  <Button
-                    key={optionValue ?? index}
-                    variant={selected ? 'soft' : 'plain'}
-                    color='neutral'
-                    onClick={() => handleSelect(optionValue)}
-                    sx={{
-                      width: '100%',
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      gap: 1,
-                      whiteSpace: 'nowrap',
-                      mb: index === items.length - 1 ? 0 : 0.5,
-                      color: selected
-                        ? itemColor || 'text.primary'
-                        : 'text.primary',
-                    }}
-                  >
-                    {renderItemStart?.({ item, selected })}
-                    <Typography
-                      level='body-sm'
-                      sx={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {getItemLabel(item)}
-                    </Typography>
-                  </Button>
-                )
-              })}
-              {menuFooter && (
-                <Box sx={{ mt: items.length > 0 ? 0.5 : 0 }}>{menuFooter}</Box>
-              )}
-            </Sheet>
-          </ClickAwayListener>
-        </Popper>
+          <FigmaIcon name='x' size={18} />
+        </button>
       )}
-    </>
+      {isOpen && (
+        <div
+          id={menuId}
+          role='listbox'
+          className='card'
+          aria-label={emptyLabel}
+          style={{
+            ...menuPositionStyle(placement),
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            borderRadius: 'var(--r-md)',
+            boxShadow: 'var(--shadow-lg)',
+            maxHeight: menuMaxHeight,
+            minWidth: menuMinWidth,
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            padding: 6,
+            position: 'absolute',
+            zIndex: Z_INDEX.MODAL_CLOSE_BUTTON + 1,
+          }}
+        >
+          {items.map((item, index) => {
+            const optionValue = getItemValue(item)
+            const selected = isSelected(item)
+            const itemColor = getItemColor ? getItemColor(item) : undefined
+
+            return (
+              <button
+                key={optionValue ?? index}
+                type='button'
+                role='option'
+                aria-selected={selected}
+                onClick={() => handleSelect(optionValue)}
+                style={{
+                  alignItems: 'center',
+                  background: selected
+                    ? itemColor
+                      ? `${itemColor}20`
+                      : 'var(--surface-2)'
+                    : 'transparent',
+                  border: 0,
+                  borderRadius: 'var(--r-sm)',
+                  color: selected
+                    ? itemColor || 'var(--t-primary)'
+                    : 'var(--t-primary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  font: '500 14px var(--font-ui)',
+                  gap: 8,
+                  marginBottom: index === items.length - 1 ? 0 : 4,
+                  padding: '8px 10px',
+                  textAlign: 'left',
+                  transition: 'background 0.12s ease',
+                  width: '100%',
+                }}
+              >
+                {renderItemStart?.({ item, selected })}
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {getItemLabel(item)}
+                </span>
+              </button>
+            )
+          })}
+          {menuFooter && (
+            <div style={{ marginTop: items.length > 0 ? 4 : 0 }}>
+              {menuFooter}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
