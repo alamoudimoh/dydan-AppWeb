@@ -1192,6 +1192,24 @@ body {
   max-height: 90dvh;
   overflow-y: auto;
 }
+
+/* AppModal mobile presentations on top of the Figma modal vocabulary. */
+.modal-overlay.appmodal-sheet-overlay { align-items: flex-end; }
+.appmodal-sheet {
+  align-self: flex-end;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.appmodal-fullscreen { border-radius: 0; }
+
+@keyframes appModalEnter {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes appSheetEnter {
+  from { transform: translateY(24px); }
+  to { transform: translateY(0); }
+}
 .drawer-panel {
   position: fixed;
   inset-block: 0;

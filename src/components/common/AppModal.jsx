@@ -1,10 +1,17 @@
-import { Close } from '@mui/icons-material'
-import { Box, Divider, IconButton, Modal, Sheet, Typography } from '@mui/joy'
-import useMediaQuery from '@mui/material/useMediaQuery'
 import PropTypes from 'prop-types'
-import { forwardRef, useId } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
+import { createPortal } from 'react-dom'
 
 import { Z_INDEX } from '../../constants/zIndex'
+import { sxToStyle } from '../../theme/sxToStyle'
+import FigmaIcon from '../FigmaIcon'
 
 const WIDTH_BY_SIZE = {
   sm: 400,
@@ -13,8 +20,13 @@ const WIDTH_BY_SIZE = {
   xl: 840,
 }
 
+const isNarrowViewport = () =>
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-width:599.95px)').matches
+
 /**
- * The app's modal primitive. It owns modal layout, spacing, accessibility,
+ * The app's modal primitive, rendered with the Figma `.modal-overlay` /
+ * `.modal-panel` vocabulary. It owns modal layout, spacing, accessibility,
  * responsive presentation, and motion so feature components only own content.
  */
 const AppModal = forwardRef(
@@ -30,6 +42,7 @@ const AppModal = forwardRef(
       footerSx,
       fullWidth = true,
       isMobile: isMobileProp,
+      keepMounted = false,
       maxHeight = '90dvh',
       mobilePresentation = 'sheet',
       onClose,
@@ -40,200 +53,229 @@ const AppModal = forwardRef(
       size = 'md',
       sx,
       title,
-      unmountDelay = 180,
-      ...modalProps
     },
     ref,
   ) => {
     const generatedId = useId()
-    const detectedMobile = useMediaQuery('(max-width:599.95px)')
+    const [detectedMobile, setDetectedMobile] = useState(isNarrowViewport)
+    const panelRef = useRef(null)
     const isMobile = isMobileProp ?? detectedMobile
     const titleId = title ? `${generatedId}-title` : undefined
     const descriptionId = description ? `${generatedId}-description` : undefined
     const isSheet = isMobile && mobilePresentation === 'sheet'
     const isFullscreen = isMobile && mobilePresentation === 'fullscreen'
-    const enterAnimation = isSheet ? 'appSheetEnter' : 'appModalEnter'
+    const isOpen = Boolean(open)
 
-    const handleClose = (event, reason) => {
-      if (reason === 'backdropClick' && !closeOnBackdrop) return
-      if (reason === 'escapeKeyDown' && !closeOnEscape) return
-      onClose?.(event, reason)
-    }
+    useEffect(() => {
+      if (typeof window.matchMedia !== 'function') return undefined
+      const mql = window.matchMedia('(max-width:599.95px)')
+      const onChange = event => setDetectedMobile(event.matches)
+      mql.addEventListener?.('change', onChange)
+      return () => mql.removeEventListener?.('change', onChange)
+    }, [])
 
-    return (
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        keepMounted
-        sx={{
-          zIndex: Z_INDEX.MODAL_BACKDROP,
-          display: 'flex',
-          alignItems: isSheet ? 'flex-end' : 'center',
-          justifyContent: 'center',
-          p: isMobile ? 0 : 2,
-          '& .MuiModal-backdrop': {
-            backgroundColor: 'var(--joy-palette-background-backdrop)',
-            backdropFilter: backdropBlur ? 'blur(4px)' : 'none',
-          },
+    // Scroll lock + focus management while open.
+    useEffect(() => {
+      if (!isOpen) return undefined
+      const previousOverflow = document.body.style.overflow
+      const previousActive = document.activeElement
+      document.body.style.overflow = 'hidden'
+      const panel = panelRef.current
+      if (panel) panel.focus?.()
+      return () => {
+        document.body.style.overflow = previousOverflow
+        if (previousActive && typeof previousActive.focus === 'function') {
+          previousActive.focus?.()
+        }
+      }
+    }, [isOpen])
+
+    const handleClose = useCallback(
+      (event, reason) => {
+        if (reason === 'backdropClick' && !closeOnBackdrop) return
+        if (reason === 'escapeKeyDown' && !closeOnEscape) return
+        onClose?.(event, reason)
+      },
+      [closeOnBackdrop, closeOnEscape, onClose],
+    )
+
+    // Escape handling.
+    useEffect(() => {
+      if (!isOpen) return undefined
+      const onKeyDown = event => {
+        if (event.key === 'Escape') handleClose(event, 'escapeKeyDown')
+      }
+      window.addEventListener('keydown', onKeyDown)
+      return () => window.removeEventListener('keydown', onKeyDown)
+    }, [isOpen, handleClose])
+
+    const setRefs = useCallback(
+      node => {
+        panelRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      },
+      [ref],
+    )
+
+    const panel = (
+      <div
+        ref={setRefs}
+        className='modal-overlay'
+        role='presentation'
+        data-open={isOpen || undefined}
+        hidden={!isOpen && keepMounted}
+        onClick={event => {
+          if (event.target === event.currentTarget) {
+            handleClose(event, 'backdropClick')
+          }
         }}
-        {...modalProps}
+        style={{
+          zIndex: Z_INDEX.MODAL_BACKDROP,
+          alignItems: isSheet ? 'flex-end' : 'center',
+          padding: isMobile ? 0 : 16,
+          backdropFilter: backdropBlur ? 'blur(3px)' : 'none',
+        }}
       >
-        <Sheet
-          ref={ref}
+        <div
+          className={`modal-panel${isSheet ? ' appmodal-sheet' : ''}${
+            isFullscreen ? ' appmodal-fullscreen' : ''
+          }`}
           role={role}
           aria-modal='true'
           aria-labelledby={titleId}
           aria-describedby={descriptionId}
-          variant='outlined'
-          sx={{
+          tabIndex={-1}
+          style={{
             zIndex: Z_INDEX.MODAL_CONTENT,
-            display: 'flex',
-            flexDirection: 'column',
             width: isFullscreen
               ? '100%'
-              : isSheet
-                ? '100%'
-                : fullWidth
-                  ? `min(calc(100vw - 32px), ${WIDTH_BY_SIZE[size] || WIDTH_BY_SIZE.md}px)`
-                  : 'auto',
+              : fullWidth
+                ? `min(calc(100vw - 32px), ${WIDTH_BY_SIZE[size] || WIDTH_BY_SIZE.md}px)`
+                : 'auto',
             maxWidth: isMobile
               ? 'none'
               : WIDTH_BY_SIZE[size] || WIDTH_BY_SIZE.md,
             height: isFullscreen ? '100dvh' : 'auto',
             maxHeight: isFullscreen ? '100dvh' : maxHeight,
-            overflow: 'hidden',
             borderRadius: isFullscreen
               ? 0
               : isSheet
-                ? 'var(--product-radius-card) var(--product-radius-card) 0 0'
-                : 'var(--product-radius-card)',
-            borderBottom: isSheet ? 0 : undefined,
-            boxShadow: 'lg',
-            outline: 0,
-            pb: isMobile ? 'env(safe-area-inset-bottom)' : 0,
-            animation: open
-              ? `${enterAnimation} ${Math.min(
-                  unmountDelay,
-                  300,
-                )}ms cubic-bezier(0.2, 0.8, 0.2, 1)`
+                ? 'var(--r-lg) var(--r-lg) 0 0'
+                : 'var(--r-2xl)',
+            paddingBottom: isMobile ? 'env(safe-area-inset-bottom)' : 0,
+            animation: isOpen
+              ? `${isSheet ? 'appSheetEnter' : 'appModalEnter'} 180ms cubic-bezier(0.2, 0.8, 0.2, 1)`
               : undefined,
-            '@keyframes appModalEnter': {
-              from: { opacity: 0, transform: 'translateY(8px) scale(0.99)' },
-              to: { opacity: 1, transform: 'translateY(0) scale(1)' },
-            },
-            '@keyframes appSheetEnter': {
-              from: { transform: 'translateY(24px)' },
-              to: { transform: 'translateY(0)' },
-            },
-            '@media (prefers-reduced-motion: reduce)': {
-              animation: 'none',
-            },
-            ...sx,
           }}
         >
           {isSheet && showHandle && (
-            <Box
+            <div
               aria-hidden='true'
-              sx={{ display: 'flex', justifyContent: 'center', pt: 1.25 }}
+              className='flex justify-center'
+              style={{ paddingTop: 10 }}
             >
-              <Box
-                sx={{
+              <div
+                className='rounded-full'
+                style={{
                   width: 36,
                   height: 4,
-                  borderRadius: 999,
-                  bgcolor: 'neutral.300',
+                  background: 'var(--line-strong)',
+                  opacity: 0.4,
                 }}
               />
-            </Box>
+            </div>
           )}
 
           {(title || description || showCloseButton) && (
-            <Box
-              component='header'
-              sx={{
-                position: 'relative',
-                flexShrink: 0,
-                px: { xs: 2, sm: 3 },
-                pt: isSheet && showHandle ? 1.25 : { xs: 2, sm: 2.5 },
-                pb: description ? 1.5 : 2,
+            <header
+              className='relative flex-shrink-0'
+              style={{
+                paddingInlineStart:
+                  sxToStyle(sx)?.paddingInlineStart ?? (isMobile ? 16 : 24),
                 paddingInlineEnd: showCloseButton
-                  ? { xs: 7, sm: 8 }
-                  : { xs: 2, sm: 3 },
+                  ? isMobile
+                    ? 40
+                    : 64
+                  : isMobile
+                    ? 16
+                    : 24,
+                paddingTop: isSheet && showHandle ? 10 : isMobile ? 16 : 20,
+                paddingBottom: description ? 12 : 16,
+                ...sxToStyle(sx),
               }}
             >
               {title && (
-                <Typography
+                <h2
                   id={titleId}
-                  level='title-lg'
-                  sx={{ fontWeight: 650 }}
+                  className='text-primary'
+                  style={{ fontSize: 18, fontWeight: 700, margin: 0 }}
                 >
                   {title}
-                </Typography>
+                </h2>
               )}
               {description && (
-                <Typography
+                <p
                   id={descriptionId}
-                  level='body-sm'
-                  sx={{ color: 'text.tertiary', mt: 0.5 }}
+                  className='text-faint text-sm'
+                  style={{ margin: '4px 0 0' }}
                 >
                   {description}
-                </Typography>
+                </p>
               )}
               {showCloseButton && (
-                <IconButton
+                <button
+                  type='button'
                   aria-label='Close dialog'
-                  variant='plain'
-                  color='neutral'
-                  onClick={handleClose}
-                  sx={{
+                  className='btn btn-ghost btn-icon'
+                  onClick={event => handleClose(event)}
+                  style={{
                     position: 'absolute',
                     top: isSheet && showHandle ? 6 : 12,
-                    insetInlineEnd: { xs: 10, sm: 16 },
-                    borderRadius: '50%',
+                    insetInlineEnd: isMobile ? 8 : 16,
                   }}
                 >
-                  <Close />
-                </IconButton>
+                  <FigmaIcon name='x' size={18} />
+                </button>
               )}
-            </Box>
+            </header>
           )}
 
-          <Box
-            sx={{
-              flex: 1,
-              minHeight: 0,
+          <div
+            className='min-h-0 flex-1'
+            style={{
               overflowY: 'auto',
               overscrollBehavior: 'contain',
-              px: { xs: 2, sm: 3 },
-              pb: { xs: 2.5, sm: 3 },
-              ...contentSx,
+              paddingInlineStart: isMobile ? 16 : 24,
+              paddingInlineEnd: isMobile ? 16 : 24,
+              paddingBlockEnd: isMobile ? 20 : 24,
+              ...sxToStyle(contentSx),
             }}
           >
             {children}
-          </Box>
+          </div>
 
           {footer && (
-            <>
-              <Divider />
-              <Box
-                component='footer'
-                sx={{
-                  flexShrink: 0,
-                  px: { xs: 2, sm: 3 },
-                  py: 2,
-                  bgcolor: 'background.surface',
-                  ...footerSx,
-                }}
-              >
-                {footer}
-              </Box>
-            </>
+            <footer
+              className='shrink-0'
+              style={{
+                borderTop: '1px solid var(--line)',
+                padding: '16px 24px',
+                background: 'var(--surface)',
+                paddingInlineStart: isMobile ? 16 : 24,
+                paddingInlineEnd: isMobile ? 16 : 24,
+                ...sxToStyle(footerSx),
+              }}
+            >
+              {footer}
+            </footer>
           )}
-        </Sheet>
-      </Modal>
+        </div>
+      </div>
     )
+
+    if (!isOpen && !keepMounted) return null
+    return createPortal(panel, document.body)
   },
 )
 
@@ -250,6 +292,7 @@ AppModal.propTypes = {
   footerSx: PropTypes.object,
   fullWidth: PropTypes.bool,
   isMobile: PropTypes.bool,
+  keepMounted: PropTypes.bool,
   maxHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   mobilePresentation: PropTypes.oneOf(['sheet', 'fullscreen', 'dialog']),
   onClose: PropTypes.func,
@@ -260,7 +303,6 @@ AppModal.propTypes = {
   size: PropTypes.oneOf(Object.keys(WIDTH_BY_SIZE)),
   sx: PropTypes.object,
   title: PropTypes.node,
-  unmountDelay: PropTypes.number,
 }
 
 export default AppModal

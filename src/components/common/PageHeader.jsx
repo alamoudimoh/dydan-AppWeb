@@ -1,7 +1,8 @@
-import { Box, Stack, Typography } from '@mui/joy'
 import PropTypes from 'prop-types'
 
-import { pageHeaderSubtitleSx, pageHeaderTitleSx } from '../../theme/appLayout'
+import { sxToStyle } from '../../theme/sxToStyle'
+
+const LEVELS = { h1: 'h1', h2: 'h2', h3: 'h3', h4: 'h4', h5: 'h5', h6: 'h6' }
 
 const PageHeader = ({
   action,
@@ -10,49 +11,44 @@ const PageHeader = ({
   sx,
   title,
   titleLevel = 'h2',
-}) => (
-  <Stack
-    direction={{ xs: 'column', sm: 'row' }}
-    spacing={1.5}
-    alignItems={{ xs: 'stretch', sm: 'flex-start' }}
-    justifyContent='space-between'
-    sx={{ gap: 2, mb: 3, ...sx }}
-  >
-    <Stack
-      direction='row'
-      spacing={1.5}
-      alignItems='flex-start'
-      sx={{ minWidth: 0, flex: 1 }}
-    >
-      {icon && (
-        <Box sx={{ color: 'text.secondary', display: 'flex', mt: 0.25 }}>
-          {icon}
-        </Box>
-      )}
-      <Box sx={{ minWidth: 0 }}>
-        <Typography level={titleLevel} sx={pageHeaderTitleSx}>
-          {title}
-        </Typography>
-        {subtitle && (
-          <Typography level='body-sm' sx={pageHeaderSubtitleSx}>
-            {subtitle}
-          </Typography>
+  ...rest
+}) => {
+  const Heading = LEVELS[titleLevel] || 'h2'
+  return (
+    <header className='page-header' style={sxToStyle(sx)} {...rest}>
+      <div className='flex min-w-0 flex-1 items-start gap-2'>
+        {icon && (
+          <span aria-hidden='true' className='text-muted mt-0.5 flex'>
+            {icon}
+          </span>
         )}
-      </Box>
-    </Stack>
-    {action && (
-      <Box
-        sx={{
-          flexShrink: 0,
-          alignSelf: { xs: 'stretch', sm: 'flex-start' },
-          '& .MuiButton-root': { width: { xs: '100%', sm: 'auto' } },
-        }}
-      >
-        {action}
-      </Box>
-    )}
-  </Stack>
-)
+        <div className='min-w-0'>
+          <Heading
+            className='text-primary'
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              letterSpacing: '-0.01em',
+              margin: 0,
+            }}
+          >
+            {title}
+          </Heading>
+          {subtitle && (
+            <p className='text-muted text-sm' style={{ margin: '2px 0 0' }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+      </div>
+      {action && (
+        <div className='shrink-0 self-start max-sm:w-full max-sm:flex-grow max-sm:[&>*]:w-full'>
+          {action}
+        </div>
+      )}
+    </header>
+  )
+}
 
 PageHeader.propTypes = {
   action: PropTypes.node,
