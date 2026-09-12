@@ -8,7 +8,7 @@ Fetch/prune; verify Phases 1–7 are merged; rebase this branch onto latest `ori
 
 # Authoritative Figma Baseline
 
-`design-source/figma-make/` in DayDan at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, verified identical to `https://github.com/alamoudimoh/DayDanProductExperience` commit `7131b76979e49351db8ecbc33db6648a75139572`.
+`design-source/figma-make/` in DayDan at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, verified identical to `https://github.com/alamoudimoh/DayDan-AppWeb-ProductExperience` commit `7131b76979e49351db8ecbc33db6648a75139572`.
 
 # Final Objective
 
