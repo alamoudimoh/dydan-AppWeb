@@ -30,12 +30,12 @@ Outputs:
 1. `bundle install` — installs fastlane (Ruby gems, local to the repo via `vendor/bundle`)
 2. `./scripts/pull-secrets.sh` — pulls all secrets below from Vaultwarden
 3. `android/local.properties` needs `sdk.dir=<path to Android SDK>` — not pulled from vault, machine-specific. Android Studio creates this automatically; if building headless-only, create it manually.
-4. Export `ASC_ISSUER_ID` (App Store Connect API key issuer ID) — either in your shell profile, or add it to the `Donetick Env Production` vault note so `pull-secrets.sh` delivers it into `.env.production` (which `release.sh` auto-sources).
-5. A working Apple Distribution certificate + the `Donetick App Store(fastline)` provisioning profile must be installed in your keychain / `~/Library/MobileDevice/Provisioning Profiles/` (see "iOS signing model" below) — **not** currently pulled from vault, machine-specific one-time setup.
+4. Export `ASC_ISSUER_ID` (App Store Connect API key issuer ID) — either in your shell profile, or add it to the `Donetick Env Production` vault note so `pull-secrets.sh` delivers it into `.env.production` (which `release.sh` auto-sources). This Vaultwarden item name is retained because the current script queries it exactly.
+5. A working Apple Distribution certificate + the `Donetick App Store(fastline)` provisioning profile must be installed in your keychain / `~/Library/MobileDevice/Provisioning Profiles/` (see "iOS signing model" below) — **not** currently pulled from vault, machine-specific one-time setup. These are the active Apple signing identifiers and must match the configured app.
 
 ## Secrets pulled by `scripts/pull-secrets.sh`
 
-All secrets live in Vaultwarden (`https://www.bitwarden.com`) as Secure Notes, named exactly as below:
+All secrets live in Vaultwarden (`https://www.bitwarden.com`) as Secure Notes, named exactly as below. The `Donetick`-prefixed item names are legacy operational names still required by `scripts/pull-secrets.sh`; do not rename them without updating that script and the vault together.
 
 | Vault item name                      | Written to                                      | Encoding |
 | ------------------------------------ | ----------------------------------------------- | -------- |
@@ -59,7 +59,7 @@ The App target uses **manual signing for Release**, not Automatic. This was a de
 
 **If you ever add/change an entitlement** (new Capability in Signing & Capabilities, e.g. a new permission), the existing provisioning profile becomes stale and exports will fail with an error like `"App.app" requires a provisioning profile with the X feature`. Fix:
 
-1. developer.apple.com → Identifiers → `com.donetick.app` → confirm the new capability is checked
+1. developer.apple.com → Identifiers → `com.donetick.app` → confirm the new capability is checked. This is the active legacy bundle identifier for the mobile app.
 2. developer.apple.com → Profiles → find `Donetick App Store(fastline)` → regenerate it → download
 3. Install it locally: get its UUID (`security cms -D -i <file>.mobileprovision | plutil -extract UUID xml1 -o - -`) and copy to `~/Library/MobileDevice/Provisioning Profiles/<uuid>.mobileprovision`
 
