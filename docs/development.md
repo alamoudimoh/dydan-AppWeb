@@ -31,8 +31,12 @@ npm run test:visual
 The unit/component layer uses Node's test runner and Vitest. Playwright covers
 production route fixtures, Chromium smoke, Firefox/WebKit critical paths,
 visual snapshots, Arabic/RTL behavior, and the alternate Sovereign theme.
-Run the smallest relevant command locally; CI runs the repository verification
-workflow and changed-file formatting/lint checks.
+Complete local verification in a clean worktree is the authoritative merge
+gate. GitHub Actions may run the same checks when runners and account
+infrastructure are available, but its status is informational rather than a
+required merge gate. A workflow that fails before executing repository steps
+because of billing, runner, or account infrastructure is not a repository-code
+failure; concrete test, lint, build, or typecheck failures remain actionable.
 
 ## Native builds
 

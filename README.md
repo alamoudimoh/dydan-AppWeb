@@ -20,6 +20,11 @@ as an independently developed DayDan product.
 - Tasks and chores with recurrence, priorities, labels, projects, subtasks,
   timers, history, attachments, Things, meters, routines, maintenance, and
   shopping lists.
+- Flexible recurrence and assignment strategies, completion restrictions,
+  analytics, points, rewards, and progress tracking.
+- REST API access, realtime synchronization, Home Assistant integration,
+  Telegram/Pushover/Discord notification targets, and webhook-driven
+  automation through DayDan-Server.
 - Home, Today, calendar, activity, history, family progress, rewards, search,
   dashboards, archived work, and notification views.
 - Local and push notifications, device registration, task deep links, voice
@@ -94,8 +99,12 @@ npm run test:visual
 
 `npm test` runs the Node test suite and the targeted Vitest UI suite.
 Playwright covers Chromium, cross-browser, visual, Arabic, and fixture-backed
-production route scenarios. The repository's `scripts/verify.sh` combines the
-required local gates used by CI.
+production route scenarios. The repository's `scripts/verify.sh` combines the required local gates. Local
+verification in a clean worktree is the authoritative merge gate. GitHub
+Actions may execute these checks when infrastructure permits, but is
+informational and non-gating; infrastructure/account failures with zero
+repository steps do not replace investigation of real local test or build
+failures.
 
 ## Contributing
 
