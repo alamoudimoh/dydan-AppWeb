@@ -1,74 +1,109 @@
-![Logo](assets/image.png)
+# DayDan-AppWeb
 
-## DayDan Frontend
+DayDan-AppWeb is the DayDan web application and native mobile client. It
+provides the responsive household experience for DayDan tasks, chores,
+projects, routines, shopping lists, maintenance, meters, rewards, history,
+notifications, and shared circles.
 
-The DayDan frontend is the React/Vite client for DayDan written in javascript with React
+DayDan is a self-hostable task and household coordination product. This
+repository contains the client; the API, persistence, authentication, realtime
+events, notifications, integrations, and deployment image are maintained in
+[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server).
 
-## What is DayDan?
+DayDan originated from the open-source Donetick project and has since evolved
+as an independently developed DayDan product.
 
-An open-source, user-friendly app for managing tasks and chores, featuring customizable options to help you and others stay organized.
+## Product capabilities
 
-## About DayDan
+- Personal and shared circles with members, invitations, assignments, managed
+  child accounts, permissions, and household progress.
+- Tasks and chores with recurrence, priorities, labels, projects, subtasks,
+  timers, history, attachments, Things, meters, routines, maintenance, and
+  shopping lists.
+- Home, Today, calendar, activity, history, family progress, rewards, search,
+  dashboards, archived work, and notification views.
+- Local and push notifications, device registration, task deep links, voice
+  capture, document scanning/OCR, NFC capture, and native quick capture.
+- Light/dark/system themes, responsive layouts, Arabic RTL support, and
+  localized UI bundles.
 
-DayDan is an independently developed, open-source and privacy-focused task management tool for people who want a customizable way to organize chores and shared work.
+The client expects a compatible DayDan-Server API. It does not contain the
+authoritative task database or authentication service.
 
-DayDan originated from the open-source Donetick project and has since evolved as an independently developed DayDan product.
+## Run the web client
 
-## Features
+Requirements: Node.js 22 or newer and npm 9 or newer.
 
-- Task and Chore Management: Easily create, edit, and manage tasks and chores for yourself or your group.
-- Shared To-Do Lists: Create "Circles" to collaborate on tasks with family or your group
-- Assignee Assignment: Assign tasks to specific individuals or rotate them automatically using customizable strategies.
-- Recurring Tasks: Schedule tasks to repeat daily, weekly, monthly, or yearly, with flexible customization options.
-- Progress Tracking: Track the completion status of tasks and view historical data.
+```bash
+npm ci
+npm run dev
+```
 
-## Development Environment
+The Vite development server is exposed on the host. Set
+`VITE_APP_API_URL` only when the API is hosted on a different origin; the
+default production build uses same-origin `/api` URLs.
 
-The full development workflow, including the paired frontend and backend setup, is documented in the [DayDan Server development guide](https://github.com/alamoudimoh/DayDan-Server#development-environment). The frontend repository is [DayDan-AppWeb](https://github.com/alamoudimoh/DayDan-AppWeb).
+Build and preview the production bundle:
 
-## Builds
+```bash
+npm run build
+npm run preview
+```
 
-`npm run build` produces the canonical production bundle. By default the API
-base URL is empty, which makes the app use same-origin relative `/api` URLs —
-safe for self-hosted deployments behind any IP, hostname, or reverse proxy,
-with no rebuild needed when the server address changes.
+For a complete self-hosted deployment, use the Docker Compose instructions in
+[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server#quick-start).
 
-Only set `VITE_APP_API_URL` (e.g. in `.env.production.local` or your CI
-environment) if you host the API on a different origin than the frontend.
+## Client architecture
 
-## Frontend verification gates
+The application is a React 19 and Vite SPA. React Router provides lazy-loaded
+route modules, TanStack Query manages server-backed cache state, and the
+central API client handles requests to DayDan-Server. Server-sent events are
+used for optional realtime updates. Authentication, onboarding, network
+status, PWA updates, error boundaries, navigation, and native lifecycle events
+are coordinated by the application shell.
 
-Production-UI changes must keep Playwright fixture tests green. In addition to
-`e2e/production-ui-phase3.spec.js` (calendar, archived, notifications, meters,
-maintenance, family, rewards, chore detail, shared dialogs), Phase 3 covers the
-Home and Today screens:
+The same codebase is wrapped with Capacitor 8 for Android and iOS. Native
+capabilities include secure credential storage, SQLite-backed offline caching
+and queued synchronization, push/local notifications, speech recognition,
+NFC, document scanning, OCR, sharing, status-bar integration, social login,
+and in-app purchases.
 
-- `e2e/production-ui-home-today.spec.js` exercises `/` (FocusHome) and `/today`
-  (TodayScreen) across the standard viewport/theme/language cases, plus a
-  live-completion round trip on a due-today chore, the family household toggle,
-  and the sidebar `Today` navigation link. Runs are gated by the runtime error
-  guard, which fails on any uncaught error, console error, or unmocked API call.
+Native widgets expose bounded snapshots of actionable tasks and household
+members. They are not full task clients: snapshots are limited in size and
+time window, and widget data is cleared on logout.
+
+More detail is in:
+
+- [Client architecture and security](docs/architecture.md)
+- [Development and verification](docs/development.md)
+- [Mobile and native integrations](docs/mobile.md)
+- [Product implementation evidence](https://github.com/alamoudimoh/DayDan-Server/blob/develop/docs/product-implementation-review.md)
+
+## Verification
+
+Useful checks for client changes:
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run test:smoke
+npm run test:smoke:cross-browser
+npm run test:visual
+```
+
+`npm test` runs the Node test suite and the targeted Vitest UI suite.
+Playwright covers Chromium, cross-browser, visual, Arabic, and fixture-backed
+production route scenarios. The repository's `scripts/verify.sh` combines the
+required local gates used by CI.
 
 ## Contributing
 
-Contributions are welcome! If you would like to contribute to DayDan, please follow these steps:
-
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Make your changes and commit them: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Submit a pull request
-
-## Need Help:
-
-DayDan is a work in progress and has been a fantastic learning experience for me as I've honed my React skills,I'm looking for collaborators to help improve and refine DayDan. Feel free to open PR or suggest changes.
-
-## Plans:
-
-My goal is to expand DayDan by offering a hosted infrastructure option. This will make it even easier for users to access and utilize DayDan's features without the need for self-hosting.
-
-While maintaining DayDan's commitment to open source, this hosted option will provide a seamless, out-of-the-box experience for those who prefer a managed solution.
+Use a focused branch, keep changes scoped to the client, run the relevant
+verification gates, and open a pull request against `develop`. Changes that
+depend on API behavior should be coordinated with
+[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server).
 
 ## License
 
-This project is licensed under the AGPLv3 License. See the [LICENSE](LICENSE) file for more details. I might consider changing it later to something else
+DayDan-AppWeb is licensed under the AGPLv3. See [LICENSE.md](LICENSE.md).
