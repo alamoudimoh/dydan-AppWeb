@@ -10,7 +10,9 @@ An open-source, user-friendly app for managing tasks and chores, featuring custo
 
 ## About DayDan
 
-As an avid for open-source, I was eager to create a solution that could benefit the wider community. DayDan started as a personal project to address my own chore management needs, but it has evolved into bigger tool and decide to open source it for anyone seeking a customizable and privacy-focused task management tool
+DayDan is an independently developed, open-source and privacy-focused task management tool for people who want a customizable way to organize chores and shared work.
+
+DayDan originated from the open-source Donetick project and has since evolved as an independently developed DayDan product.
 
 ## Features
 
@@ -22,7 +24,7 @@ As an avid for open-source, I was eager to create a solution that could benefit 
 
 ## Development Environment
 
-Follow the full instructions here: https://github.com/donetick/donetick?tab=readme-ov-file#development-environment
+The full development workflow, including the paired frontend and backend setup, is documented in the [DayDan Server development guide](https://github.com/alamoudimoh/DayDan-Server#development-environment). The frontend repository is [DayDan-AppWeb](https://github.com/alamoudimoh/DayDan-AppWeb).
 
 ## Builds
 
