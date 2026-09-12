@@ -1,7 +1,6 @@
 # DayDan — Brand Identity Summary for Figma Make
 
 > Condensed from the supplied DayDan brand-identity and color-system HTML references.
-> Some source material still uses the legacy name **Taskier**; for this project, treat those identity rules as **DayDan**.
 
 ## Brand intent
 
@@ -76,7 +75,7 @@ Arabic is a first-class UI language. The product should support real RTL layout 
 - Light and dark application surfaces do **not** create separate logo identities.
 - Accessible supporting tints belong to UI content, not to replacement logo colors.
 
-The legacy Taskier wordmark references in the source should be interpreted as identity guidance for DayDan, not as the product name to display.
+The DayDan wordmark and identity rules described here are the product guidance to use in the application.
 
 ## Accessibility / contrast principles
 
