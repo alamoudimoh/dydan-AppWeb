@@ -46,7 +46,7 @@ export default function FigmaMaintenanceScreen({
             {subtitle}
           </div>
         </div>
-        <button className='btn btn-primary' onClick={onAddItem}>
+        <button type='button' className='btn btn-primary' onClick={onAddItem}>
           <FigmaIcon name='plus' size={14} />
           {t('maintenance.addItem')}
         </button>
@@ -92,7 +92,11 @@ export default function FigmaMaintenanceScreen({
             <div className='text-muted' style={{ fontSize: 13 }}>
               {t('maintenance.noSchedulesDescription')}
             </div>
-            <button className='btn btn-primary mt-3' onClick={onAddItem}>
+            <button
+              type='button'
+              className='btn btn-primary mt-3'
+              onClick={onAddItem}
+            >
               <FigmaIcon name='plus' size={14} />
               {t('maintenance.addItem')}
             </button>
@@ -120,7 +124,7 @@ export default function FigmaMaintenanceScreen({
                   <div className='min-w-0 flex-1'>
                     <div className='flex flex-wrap items-center justify-between gap-2'>
                       <div
-                        className='text-primary font-bold'
+                        className='min-w-0 text-primary font-bold break-words'
                         style={{ fontSize: 15 }}
                       >
                         {item.name}
@@ -138,7 +142,7 @@ export default function FigmaMaintenanceScreen({
                     </div>
                     {item.description && (
                       <div
-                        className='text-muted mb-2'
+                        className='text-muted mb-2 break-words'
                         style={{ fontSize: 12, marginTop: 2 }}
                       >
                         {item.description}
@@ -196,6 +200,7 @@ export default function FigmaMaintenanceScreen({
                   <div className='flex flex-col gap-1'>
                     {item.choreId && (
                       <button
+                        type='button'
                         className='btn btn-sm btn-secondary'
                         onClick={() => onMarkDone(item)}
                       >
@@ -203,6 +208,7 @@ export default function FigmaMaintenanceScreen({
                       </button>
                     )}
                     <button
+                      type='button'
                       className='btn btn-sm btn-ghost'
                       onClick={() => onSchedule(item)}
                     >

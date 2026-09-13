@@ -44,6 +44,7 @@ export default function FigmaActivityScreen({ events, isSolo, onOpenEvent }) {
           {filterLabels.map(item => (
             <button
               key={item.value}
+              type='button'
               className={`btn btn-sm ${filter === item.value ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setFilter(item.value)}
             >
@@ -67,18 +68,15 @@ export default function FigmaActivityScreen({ events, isSolo, onOpenEvent }) {
 
           {filtered.map((item, index) => {
             const isLast = index === filtered.length - 1
-            return (
-              <button
-                key={item.id}
-                className='flex items-start gap-4 px-1 py-4 text-start'
-                style={{
-                  background: 'transparent',
-                  border: 0,
-                  cursor: item.source ? 'pointer' : 'default',
-                  fontFamily: 'var(--font-ui)',
-                }}
-                onClick={() => item.source && onOpenEvent(item.source)}
-              >
+            const rowClass = 'flex items-start gap-4 px-1 py-4 text-start'
+            const rowStyle = {
+              background: 'transparent',
+              border: 0,
+              cursor: item.source ? 'pointer' : 'default',
+              fontFamily: 'var(--font-ui)',
+            }
+            const row = (
+              <>
                 <div className='flex flex-shrink-0 flex-col items-center'>
                   <div
                     style={{
@@ -164,7 +162,22 @@ export default function FigmaActivityScreen({ events, isSolo, onOpenEvent }) {
                     </div>
                   )}
                 </div>
+              </>
+            )
+            return item.source ? (
+              <button
+                key={item.id}
+                type='button'
+                className={rowClass}
+                style={rowStyle}
+                onClick={() => onOpenEvent(item.source)}
+              >
+                {row}
               </button>
+            ) : (
+              <div key={item.id} className={rowClass} style={rowStyle}>
+                {row}
+              </div>
             )
           })}
         </div>

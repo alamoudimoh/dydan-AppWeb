@@ -450,6 +450,7 @@ const Settings = () => {
                       variant='outlined'
                       color='danger'
                       size='sm'
+                      aria-label={t('circleSettings.removeMemberTitle')}
                       onClick={() => {
                         showConfirmation(
                           t('circleSettings.removeMemberConfirm', {

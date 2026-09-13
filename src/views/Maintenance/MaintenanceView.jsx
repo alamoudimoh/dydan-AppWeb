@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import AppModal from '../../components/common/AppModal'
 import EmptyState from '../../components/common/EmptyState'
+import ModalActions from '../../components/common/ModalActions'
 import PageHeader from '../../components/common/PageHeader'
 import QueryLoadingView from '../../components/common/QueryLoadingView'
 import SectionCard from '../../components/common/SectionCard'
@@ -35,22 +36,6 @@ const categories = [
   'Equipment',
   'Other',
 ]
-
-const ModalActions = ({ disabled, onClose, onSave, saveLabel, t }) => (
-  <div className='flex items-center justify-end gap-2'>
-    <button className='btn btn-ghost' onClick={onClose} type='button'>
-      {t('cancel')}
-    </button>
-    <button
-      className='btn btn-primary'
-      disabled={disabled}
-      onClick={onSave}
-      type='button'
-    >
-      {saveLabel}
-    </button>
-  </div>
-)
 
 const ModalField = ({ children, label, required }) => (
   <label className='block'>
@@ -96,11 +81,12 @@ const AssetForm = ({ asset, onClose, onSaved }) => {
       description={t('maintenance.assetDescription')}
       footer={
         <ModalActions
-          t={t}
-          saveLabel={t('maintenance.saveAsset')}
-          disabled={!form.name.trim()}
-          onClose={onClose}
-          onSave={save}
+          secondary={{ label: t('cancel'), onClick: onClose }}
+          primary={{
+            label: t('maintenance.saveAsset'),
+            disabled: !form.name.trim(),
+            onClick: save,
+          }}
         />
       }
     >
@@ -416,11 +402,12 @@ export const AssetDetail = () => {
         title={t('maintenance.linkTitle')}
         footer={
           <ModalActions
-            t={t}
-            saveLabel={t('maintenance.linkAction')}
-            disabled={!link.id}
-            onClose={() => setLinking(false)}
-            onSave={saveLink}
+            secondary={{ label: t('cancel'), onClick: () => setLinking(false) }}
+            primary={{
+              label: t('maintenance.linkAction'),
+              disabled: !link.id,
+              onClick: saveLink,
+            }}
           />
         }
       >
@@ -475,10 +462,14 @@ export const AssetDetail = () => {
         title={t('maintenance.updateTitle', { name: readingMeter?.name })}
         footer={
           <ModalActions
-            t={t}
-            saveLabel={t('maintenance.saveReading')}
-            onClose={() => setReadingMeter(null)}
-            onSave={updateReading}
+            secondary={{
+              label: t('cancel'),
+              onClick: () => setReadingMeter(null),
+            }}
+            primary={{
+              label: t('maintenance.saveReading'),
+              onClick: updateReading,
+            }}
           />
         }
       >

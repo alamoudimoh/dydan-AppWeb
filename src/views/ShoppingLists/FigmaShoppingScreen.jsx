@@ -47,7 +47,11 @@ export default function FigmaShoppingScreen({
       <div className='empty-state'>
         <div style={{ fontSize: 48 }}>🛒</div>
         <div className='text-primary font-bold'>{t('noListsTitle')}</div>
-        <button className='btn btn-primary mt-3' onClick={onNewList}>
+        <button
+          type='button'
+          className='btn btn-primary mt-3'
+          onClick={onNewList}
+        >
           <FigmaIcon name='plus' size={15} />
           {t('createList')}
         </button>
@@ -73,7 +77,7 @@ export default function FigmaShoppingScreen({
             {headerSubtitle}
           </div>
         </div>
-        <button className='btn btn-primary' onClick={onNewList}>
+        <button type='button' className='btn btn-primary' onClick={onNewList}>
           <FigmaIcon name='plus' size={14} />
           {t('createList')}
         </button>
@@ -123,6 +127,7 @@ export default function FigmaShoppingScreen({
               )
             })}
             <button
+              type='button'
               className='text-brand rounded-lg border-2 border-dashed p-3 text-center font-semibold'
               style={{
                 borderColor: 'var(--line)',
@@ -137,7 +142,7 @@ export default function FigmaShoppingScreen({
               <FigmaIcon
                 name='plus'
                 size={13}
-                style={{ display: 'inline', marginRight: 4 }}
+                style={{ display: 'inline', marginInlineEnd: 4 }}
               />
               {t('createList')}
             </button>
@@ -151,7 +156,7 @@ export default function FigmaShoppingScreen({
                 <div className='flex items-center gap-2'>
                   <span style={{ fontSize: 24 }}>{currentList.emoji}</span>
                   <div
-                    className='text-primary font-bold'
+                    className='min-w-0 text-primary font-bold break-words'
                     style={{ fontSize: 20, margin: 0 }}
                   >
                     {currentList.name}
@@ -176,6 +181,7 @@ export default function FigmaShoppingScreen({
               </div>
               {canEdit && done.length > 0 && (
                 <button
+                  type='button'
                   className='btn btn-ghost btn-sm text-muted'
                   onClick={() => onClearDone()}
                 >
@@ -197,6 +203,7 @@ export default function FigmaShoppingScreen({
                   }
                 />
                 <button
+                  type='button'
                   className='btn btn-primary'
                   onClick={() => addItem(currentList.id)}
                   disabled={!newItem.trim()}
@@ -230,6 +237,10 @@ export default function FigmaShoppingScreen({
                       style={{ borderColor: 'var(--line)' }}
                     >
                       <button
+                        type='button'
+                        role='checkbox'
+                        aria-checked={false}
+                        aria-label={t('toggleItem', { item: item.text })}
                         onClick={() => onToggleItem(item)}
                         disabled={!canEdit}
                         style={{
@@ -262,7 +273,7 @@ export default function FigmaShoppingScreen({
                         ) : (
                           <div className='flex items-center gap-2'>
                             <span
-                              className='text-primary'
+                              className='text-primary break-words'
                               style={{ fontSize: 14 }}
                             >
                               {item.text}
@@ -281,7 +292,9 @@ export default function FigmaShoppingScreen({
                       {canEdit && (
                         <>
                           <button
+                            type='button'
                             className='btn btn-ghost btn-icon'
+                            aria-label={t('editItem', { item: item.text })}
                             onClick={() => {
                               setEditingId(item.id)
                               setEditText(item.text)
@@ -290,7 +303,9 @@ export default function FigmaShoppingScreen({
                             <FigmaIcon name='edit' size={13} />
                           </button>
                           <button
+                            type='button'
                             className='btn btn-ghost btn-icon text-sig-over'
+                            aria-label={t('deleteItem', { item: item.text })}
                             onClick={() => onDeleteItem(item)}
                           >
                             <FigmaIcon name='trash' size={13} />
@@ -323,6 +338,10 @@ export default function FigmaShoppingScreen({
                           style={{ borderColor: 'var(--line)', opacity: 0.7 }}
                         >
                           <button
+                            type='button'
+                            role='checkbox'
+                            aria-checked={true}
+                            aria-label={t('toggleItem', { item: item.text })}
                             onClick={() => onToggleItem(item)}
                             disabled={!canEdit}
                             style={{
@@ -345,7 +364,7 @@ export default function FigmaShoppingScreen({
                             />
                           </button>
                           <span
-                            className='text-muted flex-1'
+                            className='text-muted min-w-0 flex-1 break-words'
                             style={{
                               fontSize: 14,
                               textDecoration: 'line-through',
@@ -355,7 +374,9 @@ export default function FigmaShoppingScreen({
                           </span>
                           {canEdit && (
                             <button
+                              type='button'
                               className='btn btn-ghost btn-icon text-sig-over'
+                              aria-label={t('deleteItem', { item: item.text })}
                               onClick={() => onDeleteItem(item)}
                             >
                               <FigmaIcon name='trash' size={13} />
