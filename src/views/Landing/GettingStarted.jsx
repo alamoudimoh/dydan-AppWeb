@@ -1,11 +1,9 @@
 import {
-  AddHome,
   Android,
   Apple,
   AutoAwesome,
   Cloud,
   GitHub,
-  InstallMobile,
   Storage,
 } from '@mui/icons-material'
 import { Box, Button, Card, Container, Grid, Typography } from '@mui/joy'
@@ -168,24 +166,6 @@ const GettingStarted = () => {
           }}
         >
           Github Releases
-        </Button>
-      ),
-    },
-    {
-      title: 'Hassio Addon',
-      icon: <AddHome />,
-      description:
-        'Have Home Assistant? Install DayDan as a Home Assistant Addon with single click',
-      button: (
-        <Button
-          size='lg'
-          fullWidth
-          startDecorator={<InstallMobile />}
-          onClick={() => {
-            window.open(DAYDAN_APP_REPO, '_blank')
-          }}
-        >
-          Add Addon
         </Button>
       ),
     },
