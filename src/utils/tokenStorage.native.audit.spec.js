@@ -1,6 +1,20 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+const store = {}
+vi.stubGlobal('localStorage', {
+  getItem: vi.fn(k => store[k] || null),
+  setItem: vi.fn((k, v) => {
+    store[k] = v
+  }),
+  removeItem: vi.fn(k => {
+    delete store[k]
+  }),
+  clear: vi.fn(() => {
+    Object.keys(store).forEach(k => delete store[k])
+  }),
+  length: 0,
+})
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // @vitest-environment jsdom

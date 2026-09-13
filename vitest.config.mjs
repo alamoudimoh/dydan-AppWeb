@@ -8,6 +8,7 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
+      setupFiles: ['./src/test/setup.js'],
       pool: 'forks',
       poolOptions: {
         forks: {

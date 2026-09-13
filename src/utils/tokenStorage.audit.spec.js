@@ -1,3 +1,17 @@
+const store = {}
+vi.stubGlobal('localStorage', {
+  getItem: vi.fn(k => store[k] || null),
+  setItem: vi.fn((k, v) => {
+    store[k] = v
+  }),
+  removeItem: vi.fn(k => {
+    delete store[k]
+  }),
+  clear: vi.fn(() => {
+    Object.keys(store).forEach(k => delete store[k])
+  }),
+  length: 0,
+})
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // @vitest-environment jsdom
@@ -69,7 +83,7 @@ describe('TokenStorage (web)', () => {
       refreshTokenExpiry: '2030-02-01T00:00:00Z',
     })
 
-    for (const call of setItemSpy.mock.calls) {
+    for (const call of localStorage.setItem.mock.calls) {
       expect(
         TOKEN_LIKE_KEYS,
         `token-like key "${call[0]}" must never be written to localStorage on the web`,
@@ -111,7 +125,7 @@ describe('TokenStorage (web)', () => {
     expect(adopted).toBe('legacy-at')
     expect(storage.getAccessToken()).toBe('legacy-at')
 
-    const removed = removeItemSpy.mock.calls.map(call => call[0])
+    const removed = localStorage.removeItem.mock.calls.map(call => call[0])
     expect(removed).toContain('token')
     expect(removed).toContain('token_expiry')
     expect(removed).toContain('refresh_token')

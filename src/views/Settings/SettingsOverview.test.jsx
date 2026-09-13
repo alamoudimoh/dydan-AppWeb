@@ -1,5 +1,19 @@
 // @vitest-environment jsdom
 
+const store = {}
+vi.stubGlobal('localStorage', {
+  getItem: vi.fn(k => store[k] || null),
+  setItem: vi.fn((k, v) => {
+    store[k] = v
+  }),
+  removeItem: vi.fn(k => {
+    delete store[k]
+  }),
+  clear: vi.fn(() => {
+    Object.keys(store).forEach(k => delete store[k])
+  }),
+  length: 0,
+})
 import '@testing-library/jest-dom/vitest'
 
 import { cleanup, render, screen } from '@testing-library/react'
