@@ -7,5 +7,7 @@
   "empty.addTask": "Add task",
   "detail.edit": "Edit project",
   "detail.delete": "Delete project",
+  "detail.close": "Close project details",
+  "detail.completeTask": "Complete task",
   "detail.subtasks": "subtasks"
 }

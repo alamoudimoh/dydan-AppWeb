@@ -1,3 +1,5 @@
+import '../../styles/screenExperience.css'
+
 import { useQueryClient } from '@tanstack/react-query'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
@@ -263,7 +265,7 @@ export default function CalendarView() {
 
   return (
     <div style={{ margin: '0 auto', maxWidth: 960, padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
+      <div className='screen-page-header page-header pb-5'>
         <div>
           <h1
             className='text-primary'
@@ -275,7 +277,7 @@ export default function CalendarView() {
             {t('calendar.subtitle')}
           </div>
         </div>
-        <div className='flex gap-2'>
+        <div className='screen-page-actions'>
           <div className='view-toggle' style={{ width: 'auto' }}>
             <button
               className={`view-toggle-btn ${viewMode === 'month' ? 'active' : ''}`}
@@ -313,6 +315,8 @@ export default function CalendarView() {
             {t('dates.today')}
           </button>
           <button
+            aria-controls='calendar-filter-panel'
+            aria-expanded={showFilters}
             className='btn btn-secondary btn-sm'
             onClick={() => setShowFilters(value => !value)}
             type='button'
@@ -323,7 +327,7 @@ export default function CalendarView() {
         </div>
 
         {showFilters && (
-          <div className='card mb-4 p-4'>
+          <div className='card mb-4 p-4' id='calendar-filter-panel'>
             <div className='figma-calendar-filters'>
               <label>
                 <span className='section-label' style={{ padding: '0 0 6px' }}>
@@ -392,7 +396,12 @@ export default function CalendarView() {
         )}
 
         {calendar.isLoading ? (
-          <div className='card p-5' aria-label={t('calendar.loading')}>
+          <div
+            aria-label={t('calendar.loading')}
+            aria-live='polite'
+            className='card p-5'
+            role='status'
+          >
             <div className='skeleton' style={{ height: 280 }} />
           </div>
         ) : calendar.isError ? (
@@ -512,7 +521,7 @@ export default function CalendarView() {
                                 key={item.occurrenceId}
                                 style={{
                                   borderInlineStartColor: occurrenceColor(item),
-                                  color: occurrenceColor(item),
+                                  color: 'var(--t-primary)',
                                 }}
                               >
                                 {item.name}

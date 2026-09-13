@@ -179,6 +179,11 @@ const ProjectView = () => {
     navigate(`/chores/${task.id}`)
   }
 
+  const handleAddTask = project => {
+    setSelectedProjectWithCache(project)
+    navigate('/chores/create')
+  }
+
   const handleCompleteTask = (task, done) => {
     if (done) return
     markComplete.mutate({ choreId: task.id })
@@ -207,6 +212,7 @@ const ProjectView = () => {
         canManageProject={canManageProject}
         chores={choresList}
         members={members}
+        onAddTask={handleAddTask}
         onCompleteTask={handleCompleteTask}
         onDeleteProject={handleDeleteClicked}
         onEditProject={handleEditProject}

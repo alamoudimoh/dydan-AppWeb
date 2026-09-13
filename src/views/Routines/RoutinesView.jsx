@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import AppModal from '../../components/common/AppModal'
+import ModalActions from '../../components/common/ModalActions'
 import FigmaIcon from '../../components/FigmaIcon'
 import { useRoutineMutation, useRoutines } from '../../queries/RoutineQueries'
 import { useUserProfile } from '../../queries/UserQueries'
@@ -151,6 +152,17 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
   }, [open, pack])
   return (
     <AppModal
+      footer={
+        <ModalActions
+          primary={{
+            disabled: !form.name.trim() || busy,
+            label: t('routines.saveRoutine'),
+            onClick: () => onSave(form),
+          }}
+          secondary={{ label: t('routines.cancel'), onClick: onClose }}
+          stackOnMobile
+        />
+      }
       open={open}
       onClose={onClose}
       title={pack ? t('routines.editRoutine') : t('routines.newPack')}
@@ -175,14 +187,6 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
             }
           />
         </Field>
-        <button
-          className='btn btn-primary'
-          disabled={!form.name.trim() || busy}
-          onClick={() => onSave(form)}
-          type='button'
-        >
-          {t('routines.saveRoutine')}
-        </button>
       </ModalShell>
     </AppModal>
   )
@@ -190,6 +194,7 @@ const PackDialog = ({ busy, onClose, onSave, open, pack }) => {
 
 const TaskDialog = ({
   assets,
+  busy,
   item,
   members,
   meters,
@@ -257,6 +262,17 @@ const TaskDialog = ({
 
   return (
     <AppModal
+      footer={
+        <ModalActions
+          primary={{
+            disabled: disabled || busy,
+            label: t('routines.saveTask'),
+            onClick: () => onSave(payload()),
+          }}
+          secondary={{ label: t('routines.cancel'), onClick: onClose }}
+          stackOnMobile
+        />
+      }
       open={open}
       onClose={onClose}
       title={item ? t('routines.editTask') : t('routines.addTask')}
@@ -513,14 +529,6 @@ const TaskDialog = ({
             )}
           </div>
         )}
-        <button
-          className='btn btn-primary'
-          disabled={disabled}
-          onClick={() => onSave(payload())}
-          type='button'
-        >
-          {t('routines.saveTask')}
-        </button>
       </ModalShell>
     </AppModal>
   )
@@ -549,6 +557,19 @@ const ApplyDialog = ({
   const ready = required.every(item => selections[item.id])
   return (
     <AppModal
+      footer={
+        <ModalActions
+          primary={{
+            disabled: !ready || !pack?.items?.length || busy,
+            label: t('routines.createTasks', {
+              count: pack?.items?.length || 0,
+            }),
+            onClick: () => onApply(startDate, selections),
+          }}
+          secondary={{ label: t('routines.cancel'), onClick: onClose }}
+          stackOnMobile
+        />
+      }
       open={open}
       onClose={onClose}
       title={t('routines.usePackTitle', { name: pack?.name })}
@@ -611,19 +632,6 @@ const ApplyDialog = ({
               </div>
             </div>
           ))}
-        </div>
-        <div className='flex items-center justify-end gap-2'>
-          <button className='btn btn-ghost' onClick={onClose} type='button'>
-            {t('routines.cancel')}
-          </button>
-          <button
-            className='btn btn-primary'
-            disabled={!ready || !pack?.items?.length || busy}
-            onClick={() => onApply(startDate, selections)}
-            type='button'
-          >
-            {t('routines.createTasks', { count: pack?.items?.length || 0 })}
-          </button>
         </div>
       </ModalShell>
     </AppModal>
@@ -782,27 +790,16 @@ const RoutinesView = () => {
       />
 
       <AppModal
+        description={selected?.description}
         open={Boolean(selected) && !applying}
         onClose={() => setSelected(null)}
         size='xl'
+        title={selected?.name}
       >
         <div className='flex flex-col gap-4'>
-          <div>
-            <div className='flex items-center gap-2'>
-              <h2
-                className='text-primary'
-                style={{ fontSize: 20, fontWeight: 800, margin: 0 }}
-              >
-                {selected?.name}
-              </h2>
-              {!selected?.isActive && (
-                <span className='badge'>{t('routines.archived')}</span>
-              )}
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              {selected?.description}
-            </div>
-          </div>
+          {!selected?.isActive && (
+            <span className='badge self-start'>{t('routines.archived')}</span>
+          )}
           <div className='flex flex-wrap gap-2'>
             <button
               className='btn btn-ghost'
@@ -855,7 +852,7 @@ const RoutinesView = () => {
           </div>
           {selected?.items?.map((item, index) => (
             <div key={item.id} className='card'>
-              <div className='flex items-center gap-3 p-4'>
+              <div className='screen-dialog-item flex items-center gap-3 p-4'>
                 <div
                   className='text-muted'
                   style={{ fontSize: 13, flexShrink: 0 }}
@@ -865,7 +862,7 @@ const RoutinesView = () => {
                 <div className='min-w-0 flex-1'>
                   <TaskSummary item={item} members={members} />
                 </div>
-                <div className='flex items-center gap-1'>
+                <div className='screen-dialog-item-actions flex items-center gap-1'>
                   <button
                     aria-label={t('routines.moveTaskUp', { name: item.name })}
                     className='btn btn-ghost btn-icon'
@@ -918,6 +915,7 @@ const RoutinesView = () => {
         busy={mutation.isPending}
       />
       <TaskDialog
+        busy={mutation.isPending}
         open={taskEditor !== null}
         item={taskEditor?.id ? taskEditor : null}
         onClose={() => setTaskEditor(null)}

@@ -167,6 +167,9 @@ const AppModal = forwardRef(
             animation: isOpen
               ? `${isSheet ? 'appSheetEnter' : 'appModalEnter'} 180ms cubic-bezier(0.2, 0.8, 0.2, 1)`
               : undefined,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           }}
         >
           {isSheet && showHandle && (

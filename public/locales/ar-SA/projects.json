@@ -7,5 +7,7 @@
   "empty.addTask": "إضافة مهمة",
   "detail.edit": "تعديل المشروع",
   "detail.delete": "حذف المشروع",
+  "detail.close": "إغلاق تفاصيل المشروع",
+  "detail.completeTask": "إكمال المهمة",
   "detail.subtasks": "مهام فرعية"
 }

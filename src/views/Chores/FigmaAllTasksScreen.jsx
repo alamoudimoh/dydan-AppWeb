@@ -1,3 +1,5 @@
+import '../../styles/screenExperience.css'
+
 import PropTypes from 'prop-types'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +18,12 @@ const statusLabels = (t, key) => {
     uncategorized: t('list.uncategorized'),
   }
   return labels[key] || key
+}
+
+const statusTone = status => {
+  if (status === 'overdue') return 'bg-sig-over-bg text-sig-over'
+  if (status === 'upcoming') return 'bg-brand-faint text-brand'
+  return 'bg-surface-2 text-muted'
 }
 
 function TaskRow({ chore, members, onComplete, onOpen }) {
@@ -37,17 +45,9 @@ function TaskRow({ chore, members, onComplete, onOpen }) {
   const categoryColor = chore.category?.color || 'var(--brand)'
 
   return (
-    <div
-      className={`task-row ${isDone ? 'done' : ''}`}
-      onClick={() => onOpen(chore)}
-      onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') onOpen(chore)
-      }}
-      role='button'
-      tabIndex={0}
-    >
+    <div className={`task-row ${isDone ? 'done' : ''}`}>
       <button
-        aria-label={t('swipe.complete')}
+        aria-label={`${t('swipe.complete')}: ${chore.name}`}
         className={`task-check ${isDone ? 'checked' : ''}`}
         disabled={isDone}
         onClick={event => {
@@ -60,7 +60,12 @@ function TaskRow({ chore, members, onComplete, onOpen }) {
           <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
         )}
       </button>
-      <div className='min-w-0 flex-1'>
+      <button
+        aria-label={chore.name}
+        className='screen-task-open flex-1'
+        onClick={() => onOpen(chore)}
+        type='button'
+      >
         <div
           className='task-title text-primary font-medium'
           style={{ fontSize: 14 }}
@@ -105,7 +110,7 @@ function TaskRow({ chore, members, onComplete, onOpen }) {
             />
           )}
         </div>
-      </div>
+      </button>
       {assignee && (
         <div
           aria-label={assignee.displayName || assignee.name}
@@ -170,10 +175,15 @@ export default function FigmaAllTasksScreen({
     [filtered, groupBy, members],
   )
   const counts = useMemo(() => taskStatusCounts(chores), [chores])
+  const isNarrowed = filter !== 'all' || Boolean(search.trim())
+  const clearNarrowing = () => {
+    setFilter('all')
+    setSearch('')
+  }
 
   return (
     <div style={{ margin: '0 auto', maxWidth: 800, padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
+      <div className='screen-page-header page-header pb-5'>
         <div>
           <h1
             className='text-primary'
@@ -185,7 +195,11 @@ export default function FigmaAllTasksScreen({
             {t('filters.filterTasksCount', { count: filtered.length })}
           </div>
         </div>
-        <button className='btn btn-primary' onClick={onCreate} type='button'>
+        <button
+          className='screen-page-action btn btn-primary'
+          onClick={onCreate}
+          type='button'
+        >
           <FigmaIcon name='plus' size={14} />
           {t('list.createTask')}
         </button>
@@ -195,9 +209,12 @@ export default function FigmaAllTasksScreen({
         <div className='mb-4 flex flex-wrap gap-2'>
           {['overdue', 'todo', 'upcoming', 'done'].map(status => (
             <button
-              className={`badge ${status === 'overdue' ? 'bg-sig-over-bg text-sig-over' : status === 'upcoming' ? 'bg-brand-faint text-brand' : 'bg-surface-2 text-muted'}`}
+              aria-pressed={status === filter}
+              className={`screen-filter-chip badge ${status === filter ? 'is-selected' : ''} ${statusTone(status)}`}
               key={status}
-              onClick={() => setFilter(status)}
+              onClick={() =>
+                setFilter(current => (current === status ? 'all' : status))
+              }
               style={{ cursor: 'pointer', fontSize: 12, padding: '5px 11px' }}
               type='button'
             >
@@ -206,8 +223,8 @@ export default function FigmaAllTasksScreen({
           ))}
         </div>
 
-        <div className='mb-4 flex gap-2'>
-          <div className='relative flex-1'>
+        <div className='screen-task-toolbar mb-4'>
+          <div className='screen-task-search'>
             <FigmaIcon
               name='search'
               size={15}
@@ -220,15 +237,31 @@ export default function FigmaAllTasksScreen({
               }}
             />
             <input
-              aria-label={t('list.clearTaskSearch')}
+              aria-label={t('list.searchTasks')}
               className='input'
               onChange={event => setSearch(event.target.value)}
               placeholder={t('list.searchTasks')}
-              style={{ fontSize: 14, paddingInlineStart: 34 }}
+              style={{
+                fontSize: 14,
+                paddingInlineEnd: search ? 42 : 12,
+                paddingInlineStart: 34,
+              }}
               value={search}
             />
+            {search && (
+              <button
+                aria-label={t('list.clearTaskSearch')}
+                className='screen-task-search-clear btn btn-ghost btn-icon'
+                onClick={() => setSearch('')}
+                type='button'
+              >
+                <FigmaIcon name='x' size={14} />
+              </button>
+            )}
           </div>
           <button
+            aria-controls='task-filter-panel'
+            aria-expanded={showFilters}
             className={`btn btn-secondary ${showFilters ? 'border-brand text-brand' : ''}`}
             onClick={() => setShowFilters(value => !value)}
             type='button'
@@ -239,7 +272,7 @@ export default function FigmaAllTasksScreen({
         </div>
 
         {showFilters && (
-          <div className='card mb-4 p-4'>
+          <div className='card mb-4 p-4' id='task-filter-panel'>
             <div className='flex flex-wrap gap-4'>
               <div>
                 <div className='section-label mb-2' style={{ padding: 0 }}>
@@ -248,6 +281,7 @@ export default function FigmaAllTasksScreen({
                 <div className='flex flex-wrap gap-1'>
                   {['all', 'todo', 'overdue', 'upcoming', 'done'].map(value => (
                     <button
+                      aria-pressed={filter === value}
                       className='btn btn-sm capitalize'
                       key={value}
                       onClick={() => setFilter(value)}
@@ -265,7 +299,7 @@ export default function FigmaAllTasksScreen({
                       type='button'
                     >
                       {value === 'all'
-                        ? t('toolbar.clearAll')
+                        ? t('multiselect.all')
                         : statusLabels(t, value)}
                     </button>
                   ))}
@@ -278,6 +312,7 @@ export default function FigmaAllTasksScreen({
                 <div className='flex flex-wrap gap-1'>
                   {['status', 'assignee', 'category', 'priority'].map(value => (
                     <button
+                      aria-pressed={groupBy === value}
                       className='btn btn-sm capitalize'
                       key={value}
                       onClick={() => setGroupBy(value)}
@@ -324,12 +359,16 @@ export default function FigmaAllTasksScreen({
                 : t('list.noTasksYetDescription')}
             </div>
             <button
-              className='btn btn-primary mt-2'
-              onClick={onCreate}
+              className={`btn mt-2 ${isNarrowed ? 'btn-secondary' : 'btn-primary'}`}
+              onClick={isNarrowed ? clearNarrowing : onCreate}
               type='button'
             >
-              <FigmaIcon name='plus' size={15} />
-              {t('list.addTask')}
+              <FigmaIcon name={isNarrowed ? 'x' : 'plus'} size={15} />
+              {isNarrowed
+                ? search
+                  ? t('list.clearSearch')
+                  : t('list.clearFilters')
+                : t('list.addTask')}
             </button>
           </div>
         ) : (

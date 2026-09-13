@@ -1,9 +1,11 @@
+import '../../styles/screenExperience.css'
+
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import FigmaIcon from '../../components/FigmaIcon'
-import { isProjectTaskDone, projectTasks } from './projectViewModel'
+import { projectTasks } from './projectViewModel'
 
 const statusColor = status => {
   if (status === 'active') return 'var(--sig-done)'
@@ -15,24 +17,27 @@ function DetailTaskRow({ onComplete, onOpen, task }) {
   const { t } = useTranslation('projects')
   const done = task.status === 'done'
   return (
-    <div
-      key={task.id}
-      className='task-row'
-      onClick={() => onOpen(task)}
-      style={{ paddingLeft: 0 }}
-    >
-      <div
+    <div key={task.id} className='task-row' style={{ paddingInlineStart: 0 }}>
+      <button
+        aria-label={`${t('detail.completeTask')}: ${task.title}`}
         className={`task-check ${done ? 'checked' : ''}`}
+        disabled={done}
         onClick={event => {
           event.stopPropagation()
-          onComplete(task, done)
+          if (!done) onComplete(task, done)
         }}
+        type='button'
       >
         {done && (
           <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
         )}
-      </div>
-      <div className='min-w-0 flex-1'>
+      </button>
+      <button
+        aria-label={task.title}
+        className='screen-task-open flex-1'
+        onClick={() => onOpen(task)}
+        type='button'
+      >
         <div
           className='text-primary font-medium'
           style={{
@@ -48,7 +53,7 @@ function DetailTaskRow({ onComplete, onOpen, task }) {
             {task.subtasks.length} {t('detail.subtasks')}
           </div>
         )}
-      </div>
+      </button>
       {task.dueDate && (
         <span className='text-faint' style={{ fontSize: 11 }}>
           {task.dueDate}
@@ -58,11 +63,26 @@ function DetailTaskRow({ onComplete, onOpen, task }) {
   )
 }
 
+DetailTaskRow.propTypes = {
+  onComplete: PropTypes.func.isRequired,
+  onOpen: PropTypes.func.isRequired,
+  task: PropTypes.shape({
+    dueDate: PropTypes.string,
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    status: PropTypes.string,
+    subtasks: PropTypes.arrayOf(
+      PropTypes.shape({ done: PropTypes.bool.isRequired }),
+    ),
+    title: PropTypes.string.isRequired,
+  }).isRequired,
+}
+
 export default function FigmaProjectsScreen({
   canCreate,
   canManageProject,
   chores,
   members,
+  onAddTask,
   onCompleteTask,
   onDeleteProject,
   onEditProject,
@@ -83,7 +103,7 @@ export default function FigmaProjectsScreen({
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
+      <div className='screen-page-header page-header pb-5'>
         <div>
           <h1
             className='text-primary'
@@ -96,7 +116,11 @@ export default function FigmaProjectsScreen({
           </div>
         </div>
         {canCreate && (
-          <button className='btn btn-primary' onClick={onNewProject}>
+          <button
+            className='screen-page-action btn btn-primary'
+            onClick={onNewProject}
+            type='button'
+          >
             <FigmaIcon name='plus' size={14} />
             {t('newProject')}
           </button>
@@ -105,23 +129,23 @@ export default function FigmaProjectsScreen({
 
       <div className='px-4 md:px-7'>
         <div
-          className='grid gap-4'
-          style={{
-            gridTemplateColumns: selected ? '1fr 1fr' : '1fr 1fr 1fr',
-          }}
+          className='screen-projects-grid grid gap-4'
+          data-detail-open={Boolean(selectedProject)}
         >
           {projects.map(project => {
             const isSelected = selected === project.id
             return (
-              <div
+              <button
+                aria-pressed={isSelected}
                 key={project.id}
-                className='card cursor-pointer p-5'
+                className='screen-project-card card cursor-pointer p-5'
                 style={{
                   border: isSelected
                     ? `2px solid ${project.color}`
                     : '1px solid var(--line)',
                 }}
                 onClick={() => setSelected(isSelected ? null : project.id)}
+                type='button'
               >
                 <div className='mb-3 flex items-start justify-between'>
                   <div
@@ -153,12 +177,15 @@ export default function FigmaProjectsScreen({
                   </span>
                 </div>
                 <div
-                  className='text-primary mb-1 font-bold'
+                  className='screen-project-card-title text-primary mb-1 font-bold'
                   style={{ fontSize: 14 }}
                 >
                   {project.name}
                 </div>
-                <div className='text-muted mb-4' style={{ fontSize: 12 }}>
+                <div
+                  className='screen-project-card-description text-muted mb-4'
+                  style={{ fontSize: 12 }}
+                >
                   {project.description}
                 </div>
                 <div
@@ -168,11 +195,19 @@ export default function FigmaProjectsScreen({
                   <span>
                     {project.taskCount} task{project.taskCount !== 1 ? 's' : ''}
                   </span>
-                  <span className='font-bold' style={{ color: project.color }}>
+                  <span className='text-primary font-bold'>
                     {project.progress}%
                   </span>
                 </div>
-                <div className='progress-track' style={{ height: 6 }}>
+                <div
+                  aria-label={project.name}
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={project.progress}
+                  className='progress-track'
+                  role='progressbar'
+                  style={{ height: 6 }}
+                >
                   <div
                     className='progress-fill'
                     style={{
@@ -208,18 +243,19 @@ export default function FigmaProjectsScreen({
                     </span>
                   </div>
                 )}
-              </div>
+              </button>
             )
           })}
           {canCreate && (
             <button
-              className='card hover:border-brand flex cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed p-5'
+              className='font-ui card hover:border-brand flex cursor-pointer flex-col items-center justify-center gap-3 border-2 border-dashed p-5'
               style={{
                 borderColor: 'var(--line)',
                 minHeight: 160,
                 borderStyle: 'dashed',
               }}
               onClick={onNewProject}
+              type='button'
             >
               <div
                 style={{
@@ -277,6 +313,7 @@ export default function FigmaProjectsScreen({
                       className='btn btn-ghost btn-icon'
                       aria-label={t('detail.edit')}
                       onClick={() => onEditProject(selectedProject)}
+                      type='button'
                     >
                       <FigmaIcon name='edit' size={16} />
                     </button>
@@ -284,14 +321,17 @@ export default function FigmaProjectsScreen({
                       className='btn btn-ghost btn-icon'
                       aria-label={t('detail.delete')}
                       onClick={() => onDeleteProject(selectedProject)}
+                      type='button'
                     >
                       <FigmaIcon name='trash' size={16} />
                     </button>
                   </>
                 )}
                 <button
+                  aria-label={t('detail.close')}
                   className='btn btn-ghost btn-icon'
                   onClick={() => setSelected(null)}
+                  type='button'
                 >
                   <FigmaIcon name='x' size={16} />
                 </button>
@@ -306,7 +346,8 @@ export default function FigmaProjectsScreen({
                   </div>
                   <button
                     className='btn btn-primary mt-3'
-                    onClick={onNewProject}
+                    onClick={() => onAddTask(selectedProject)}
+                    type='button'
                   >
                     <FigmaIcon name='plus' size={14} />
                     {t('empty.addTask')}
@@ -329,7 +370,8 @@ export default function FigmaProjectsScreen({
             >
               <button
                 className='btn btn-secondary btn-sm'
-                onClick={onNewProject}
+                onClick={() => onAddTask(selectedProject)}
+                type='button'
               >
                 <FigmaIcon name='plus' size={13} />
                 {t('empty.addTask')}
@@ -347,6 +389,7 @@ FigmaProjectsScreen.propTypes = {
   canManageProject: PropTypes.func.isRequired,
   chores: PropTypes.array,
   members: PropTypes.array,
+  onAddTask: PropTypes.func.isRequired,
   onCompleteTask: PropTypes.func.isRequired,
   onDeleteProject: PropTypes.func.isRequired,
   onEditProject: PropTypes.func.isRequired,

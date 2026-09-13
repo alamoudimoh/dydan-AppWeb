@@ -411,6 +411,7 @@ const Goals = () => {
           balance={balance}
           canManageGoals={data.canManage}
           canManageRewards={isAdmin}
+          embedded
           goals={data.goals}
           onArchiveGoal={archiveGoal}
           onCreateGoal={() => {
