@@ -36,7 +36,7 @@ Include an exact dependency graph and consumer proof for `@mui/joy`, `@mui/mater
 
 # Tests
 
-Run all targeted unit/integration/Playwright tests, `npm test`, `npm run typecheck`, DayDan/Sovereign builds and smokes, reference tests where still required, `./scripts/verify.sh`, and Capacitor web/Android sync.
+Run all targeted unit/integration/Playwright tests, `npm test`, `npm run typecheck`, DayDan/Sovereign builds and smokes, reference tests where still required, the core/baseline local verification flow in `./scripts/verify.sh`, and Capacitor web/Android sync. The script covers runtime artifact checks, dependency installation, changed-file linting, the test suite, and the production build; browser smoke, cross-browser, visual, Arabic/RTL, and native/Capacitor checks remain separate applicable gates.
 
 # RTL / Arabic
 

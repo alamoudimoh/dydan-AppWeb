@@ -1,6 +1,9 @@
 # DayDan App Verification Policy
 
-- Run `./scripts/verify.sh` before completing substantial frontend changes.
+- Run `./scripts/verify.sh` before completing substantial frontend changes. It
+  is the core/baseline local flow (runtime artifacts, dependency install,
+  changed-file linting, tests, and production build); run applicable
+  Playwright, Arabic/RTL, visual, and native/Capacitor checks separately.
 - Complete local verification in a clean worktree is the authoritative merge
   gate. GitHub Actions may run when infrastructure permits but is
   informational and non-gating; distinguish account/runner failures from real
