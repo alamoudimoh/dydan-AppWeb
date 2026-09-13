@@ -31,6 +31,11 @@ npm run test:visual
 The unit/component layer uses Node's test runner and Vitest. Playwright covers
 production route fixtures, Chromium smoke, Firefox/WebKit critical paths,
 visual snapshots, Arabic/RTL behavior, and the alternate Sovereign theme.
+`scripts/verify.sh` is the core/baseline local verification flow: runtime
+artifact checks, dependency installation, changed-file linting, the test
+suite, and the production build. Browser smoke, cross-browser, visual,
+Arabic/RTL-specific, and native/Capacitor checks are separate commands or
+workflows and are required when applicable to the change.
 Complete local verification in a clean worktree is the authoritative merge
 gate. GitHub Actions may run the same checks when runners and account
 infrastructure are available, but its status is informational rather than a

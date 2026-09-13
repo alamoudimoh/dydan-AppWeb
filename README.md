@@ -22,7 +22,8 @@ as an independently developed DayDan product.
   shopping lists.
 - Flexible recurrence and assignment strategies, completion restrictions,
   analytics, points, rewards, and progress tracking.
-- REST API access, realtime synchronization, Home Assistant integration,
+- REST API access, realtime synchronization, REST/API and webhook integrations
+  suitable for external automation platforms such as Home Assistant,
   Telegram/Pushover/Discord notification targets, and webhook-driven
   automation through DayDan-Server.
 - Home, Today, calendar, activity, history, family progress, rewards, search,
@@ -99,7 +100,11 @@ npm run test:visual
 
 `npm test` runs the Node test suite and the targeted Vitest UI suite.
 Playwright covers Chromium, cross-browser, visual, Arabic, and fixture-backed
-production route scenarios. The repository's `scripts/verify.sh` combines the required local gates. Local
+production route scenarios. `scripts/verify.sh` is the core/baseline local
+verification flow: runtime artifact checks, dependency installation,
+changed-file linting, the test suite, and the production build. Browser smoke,
+cross-browser, visual, Arabic/RTL, and native/Capacitor checks are separate
+commands or workflows and are required when applicable to the change. Local
 verification in a clean worktree is the authoritative merge gate. GitHub
 Actions may execute these checks when infrastructure permits, but is
 informational and non-gating; infrastructure/account failures with zero
