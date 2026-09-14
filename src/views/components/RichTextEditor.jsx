@@ -299,7 +299,7 @@ const RichTextEditor = forwardRef(
             overflow: 'scroll',
             //   border:
             //     '1px solid var(--joy-palette-neutral-outlinedBorder, #DDE7EE)',
-            borderRadius: 8,
+            borderRadius: 'var(--r-sm)',
             padding: 16,
             background: 'var(--surface)',
             color: 'var(--t-primary)',

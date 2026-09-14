@@ -78,7 +78,7 @@ const Chip = ({ children, color = 'primary', icon, sx }) => (
       gap: 0.5,
       px: 0.875,
       py: 0.25,
-      borderRadius: '999px',
+      borderRadius: 'var(--r-sm)',
       bgcolor: `${color}.softBg`,
       color: color === 'neutral' ? 'text.secondary' : `${color}.softColor`,
       fontSize: productTypeScale.label.fontSize,
@@ -102,7 +102,7 @@ const LabelChip = ({ color, label, sx }) => (
       alignSelf: 'flex-start',
       px: 0.75,
       py: 0.125,
-      borderRadius: '999px',
+      borderRadius: 'var(--r-sm)',
       fontSize: productTypeScale.label.fontSize,
       fontWeight: 700,
       lineHeight: 1.6,
@@ -184,7 +184,7 @@ const AssigneeChip = ({ color = 'primary', name, sx }) => (
       paddingInlineStart: 0.25,
       pr: 1,
       py: 0.25,
-      borderRadius: '999px',
+      borderRadius: 'var(--r-sm)',
       border: '1px solid',
       borderColor: 'divider',
       fontSize: productTypeScale.label.fontSize,
@@ -259,7 +259,7 @@ const SourcePill = ({ icon, index, label }) => (
       alignItems: 'center',
       gap: 0.375,
       py: 1,
-      borderRadius: '14px',
+      borderRadius: 'var(--r-sm)',
       border: '1px solid',
       fontSize: productTypeScale.label.fontSize,
       fontWeight: 600,
@@ -804,7 +804,7 @@ const HistoryRow = ({
             mt: 0.75,
             px: 1,
             py: 0.75,
-            borderRadius: '8px',
+            borderRadius: 'var(--r-sm)',
             bgcolor: 'neutral.softBg',
           }}
         >
@@ -863,7 +863,7 @@ const ActionButton = ({
       gap: 0.5,
       px: 1,
       py: 0.75,
-      borderRadius: '10px',
+      borderRadius: 'var(--r-sm)',
       fontSize: productTypeScale.bodySmall.fontSize,
       fontWeight: 600,
       whiteSpace: 'nowrap',
@@ -914,7 +914,7 @@ export const NfcVignette = () => {
             flex: '0 0 auto',
             width: 38,
             height: 38,
-            borderRadius: '12px',
+            borderRadius: 'var(--r-sm)',
             display: 'grid',
             placeItems: 'center',
             bgcolor: 'primary.softBg',
@@ -928,7 +928,7 @@ export const NfcVignette = () => {
               sx={{
                 position: 'absolute',
                 inset: 0,
-                borderRadius: '12px',
+                borderRadius: 'var(--r-sm)',
                 border: '2px solid',
                 borderColor: 'primary.400',
                 opacity: 0,
@@ -953,7 +953,7 @@ export const NfcVignette = () => {
         </Box>
       </Box>
 
-      <Box sx={{ ...cardSx, borderRadius: 16, px: 1.5, py: 1.25 }}>
+      <Box sx={{ ...cardSx, borderRadius: 'var(--r-sm)', px: 1.5, py: 1.25 }}>
         <Typography level='title-sm' sx={{ fontWeight: 600, mb: 1 }}>
           {t('onboarding.vignettes.nfc.swapFilter')}
         </Typography>
@@ -1001,7 +1001,7 @@ export const NfcVignette = () => {
         </Cycler>
       </Box>
 
-      <Box sx={{ ...cardSx, borderRadius: 14, overflow: 'hidden' }}>
+      <Box sx={{ ...cardSx, borderRadius: 'var(--r-sm)', overflow: 'hidden' }}>
         <Box
           sx={{
             display: 'grid',
@@ -1213,7 +1213,7 @@ export const TakesTurnsVignette = () => {
               ...cardSx,
               position: 'absolute',
               inset: 0,
-              borderRadius: 14,
+              borderRadius: 'var(--r-sm)',
               overflow: 'hidden',
               animation: `historyStack ${NAG_CYCLE_MS}ms ${EASE} ${index * NAG_STEP_MS}ms infinite both`,
               '@keyframes historyStack': historyStackKeyframes,
@@ -1242,7 +1242,7 @@ export const TakesTurnsVignette = () => {
 
 const widgetSx = {
   ...cardSx,
-  borderRadius: 18,
+  borderRadius: 'var(--r-sm)',
   boxShadow: 'md',
   p: 1.5,
 }
@@ -1352,7 +1352,7 @@ const NotificationBanner = ({
   <Box
     sx={{
       ...cardSx,
-      borderRadius: 16,
+      borderRadius: 'var(--r-sm)',
       boxShadow: 'md',
       px: 1.5,
       py: 1.25,
@@ -1371,7 +1371,7 @@ const NotificationBanner = ({
         flex: '0 0 auto',
         width: 30,
         height: 30,
-        borderRadius: '9px',
+        borderRadius: 'var(--r-sm)',
         display: 'grid',
         placeItems: 'center',
         bgcolor: `${color}.softBg`,
@@ -1541,7 +1541,7 @@ const ProblemVignette = () => {
                 flex: '0 0 auto',
                 px: 0.875,
                 py: 0.125,
-                borderRadius: '999px',
+                borderRadius: 'var(--r-sm)',
                 fontSize: productTypeScale.label.fontSize,
                 fontWeight: 700,
                 lineHeight: 1.6,

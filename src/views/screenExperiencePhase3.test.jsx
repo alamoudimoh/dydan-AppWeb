@@ -7,9 +7,9 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import ModalActions from '../components/common/ModalActions'
-import FigmaActivityScreen from './User/FigmaActivityScreen'
 import FigmaMaintenanceScreen from './Maintenance/FigmaMaintenanceScreen'
 import FigmaShoppingScreen from './ShoppingLists/FigmaShoppingScreen'
+import FigmaActivityScreen from './User/FigmaActivityScreen'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({

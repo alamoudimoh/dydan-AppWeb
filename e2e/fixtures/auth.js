@@ -1,10 +1,23 @@
+/* global process */
 const SMOKE_TOKEN = 'smoke-test-token'
+const SMOKE_HOST = process.env.SMOKE_HOST || '127.0.0.1'
+
+export const installRefreshCookie = async context => {
+  await context.addCookies([
+    {
+      name: 'refresh_token',
+      value: 'smoke-refresh-token',
+      domain: SMOKE_HOST,
+      path: '/api/v1',
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ])
+}
 
 export const installSmokeSession = async page => {
+  await installRefreshCookie(page.context())
   await page.addInitScript(() => {
-    const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    localStorage.setItem('token', 'smoke-test-token')
-    localStorage.setItem('token_expiry', expiry)
     localStorage.setItem('circleId', '3')
     localStorage.setItem('themeMode', JSON.stringify('light'))
     sessionStorage.removeItem('session_expired')
@@ -13,6 +26,7 @@ export const installSmokeSession = async page => {
 }
 
 export const clearSmokeSession = async page => {
+  await page.context().clearCookies({ name: 'refresh_token' })
   await page.addInitScript(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('token_expiry')

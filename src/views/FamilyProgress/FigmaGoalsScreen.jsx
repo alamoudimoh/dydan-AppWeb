@@ -258,7 +258,7 @@ export default function FigmaGoalsScreen({
             className='text-primary'
             style={{ fontSize: 17, fontWeight: 800, margin: 0 }}
           >
-            {t('familyProgress.rewards')}
+            {t('navigation.rewards')}
           </h2>
           {canManageRewards && (
             <button

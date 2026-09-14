@@ -38,11 +38,11 @@ function QuestHero({ currentMember, streak }) {
   const { t } = useTranslation('common')
   return (
     <div
-      className='mb-6 flex flex-col gap-4 rounded-2xl p-5 text-white'
+      className='mb-6 flex flex-col gap-4 rounded-2xl p-5'
       style={{
-        background:
-          'linear-gradient(135deg, #6A40E4 0%, #8B5CF6 45%, #C084FC 100%)',
+        background: 'var(--callout-bg)',
         borderRadius: 'var(--r-2xl)',
+        color: 'var(--callout-text)',
       }}
     >
       <div>
@@ -60,7 +60,10 @@ function QuestHero({ currentMember, streak }) {
       </div>
       <div
         className='flex items-center justify-between rounded-xl px-4 py-2.5'
-        style={{ background: 'rgba(255,255,255,0.12)' }}
+        style={{
+          background:
+            'color-mix(in srgb, var(--callout-text) 12%, transparent)',
+        }}
       >
         <div className='flex flex-col'>
           <span style={{ fontSize: 11, opacity: 0.8 }}>

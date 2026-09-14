@@ -135,7 +135,7 @@ const CompactChoreCard = ({
           bottom: 0,
           width: '3px',
           backgroundColor: getPriorityColor(chore.priority),
-          borderRadius: '16px',
+          borderRadius: 'var(--r-sm)',
         },
       }}
     >

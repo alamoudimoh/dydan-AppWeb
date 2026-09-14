@@ -96,7 +96,7 @@ export const AdvancedOptionsTrigger = ({
         style={{
           minHeight: 40,
           padding: showLabel ? '8px 10px' : '8px 6px',
-          borderRadius: 128,
+          borderRadius: 'var(--r-sm)',
           gap: showLabel ? 8 : 0,
           background: isActive ? 'var(--brand-faint)' : undefined,
           borderColor: isActive ? 'var(--brand)' : undefined,

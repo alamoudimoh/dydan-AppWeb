@@ -67,6 +67,9 @@ describe('TokenStorage (web)', () => {
 
   beforeEach(async () => {
     vi.resetModules()
+    localStorage.clear()
+    localStorage.setItem.mockClear()
+    localStorage.removeItem.mockClear()
     setItemSpy.mockClear()
     removeItemSpy.mockClear()
     secureStorage.getItem.mockReset()
@@ -114,7 +117,7 @@ describe('TokenStorage (web)', () => {
     expect(storage.getAccessToken()).toBeNull()
   })
 
-  it('adoptLegacyStoredToken moves the legacy token to memory and scrubs storage exactly once', async () => {
+  it('keeps a legacy session until cookie rotation succeeds, then scrubs it exactly once', async () => {
     localStorage.setItem('token', 'legacy-at')
     localStorage.setItem('token_expiry', '2030-01-01T00:00:00Z')
     localStorage.setItem('refresh_token', 'legacy-rt')
@@ -124,28 +127,23 @@ describe('TokenStorage (web)', () => {
     const adopted = storage.adoptLegacyStoredToken()
     expect(adopted).toBe('legacy-at')
     expect(storage.getAccessToken()).toBe('legacy-at')
+    expect(storage.getLegacyBrowserRefreshToken()).toBe('legacy-rt')
+    expect(localStorage.removeItem).not.toHaveBeenCalled()
 
-    const removed = localStorage.removeItem.mock.calls.map(call => call[0])
-    expect(removed).toContain('token')
-    expect(removed).toContain('token_expiry')
-    expect(removed).toContain('refresh_token')
+    storage.clearLegacyBrowserTokens()
 
-    // Nothing persistent survives the migration.
     expect(localStorage.getItem('token')).toBeNull()
     expect(localStorage.getItem('token_expiry')).toBeNull()
     expect(localStorage.getItem('refresh_token')).toBeNull()
-
-    // Second run is a clean no-op.
-    expect(storage.adoptLegacyStoredToken()).toBeNull()
   })
 
-  it('scrubs orphaned refresh credentials without an access token', () => {
+  it('makes an orphaned legacy refresh credential available for one safe rotation', () => {
     localStorage.setItem('refresh_token', 'orphaned-refresh')
     localStorage.setItem('refresh_token_expiry', '2030-06-01T00:00:00Z')
 
     expect(storage.adoptLegacyStoredToken()).toBeNull()
-    expect(localStorage.getItem('refresh_token')).toBeNull()
-    expect(localStorage.getItem('refresh_token_expiry')).toBeNull()
+    expect(storage.getLegacyBrowserRefreshToken()).toBe('orphaned-refresh')
+    expect(localStorage.getItem('refresh_token')).toBe('orphaned-refresh')
   })
 
   it('getRefreshToken stays unavailable to JavaScript on the web', async () => {

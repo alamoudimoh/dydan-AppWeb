@@ -282,7 +282,7 @@ const SmartInsightsCard = ({
                 justifyContent: 'space-between',
                 p: 1.5,
                 height: 'auto',
-                borderRadius: 12,
+                borderRadius: 'var(--r-sm)',
                 transition: 'all 0.2s ease',
                 border: isActive ? '2px solid' : '2px solid transparent',
               }}

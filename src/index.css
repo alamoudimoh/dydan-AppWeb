@@ -29,36 +29,55 @@
   --sidebar-w: 244px;
 }
 [data-theme='sovereign'] {
-  --page: #1a1a1a;
-  --surface: #242424;
-  --surface-2: #2e2e2e;
-  --surface-3: #333;
-  --t-primary: #f2f2f2;
-  --t-muted: #b8b8b8;
-  --t-faint: #a6a6a6;
-  --line: #3a3a3a;
-  --line-strong: #4d4d4d;
-  --brand: #ffc107;
-  --brand-hover: #ffd04d;
-  --brand-faint: #2a2200;
-  --brand-contrast: #1a1a1a;
-  --accent: #31bfc4;
+  --page: #f2f2f2;
+  --surface: #fff;
+  --surface-2: #e6e6e6;
+  --surface-3: #e6e6e6;
+  --t-primary: #1a1a1a;
+  --t-muted: #4d4d4d;
+  --t-faint: #4d4d4d;
+  --line: #666;
+  --line-strong: #666;
+  --brand: #1a1a1a;
+  --brand-hover: #2e2e2e;
+  --brand-faint: #f2f2f2;
+  --brand-contrast: #ffc107;
+  --action-bg: #ffc107;
+  --action-text: #1a1a1a;
+  --gold-text: #6b5200;
+  --callout-bg: #1a1a1a;
+  --callout-text: #f2f2f2;
+  --callout-muted: #999;
+  --focus-inner: #fff;
+  --focus-outer: #1a1a1a;
+  --accent: #ffc107;
   --font-ui: 'Ubuntu', system-ui, sans-serif;
   --font-mono: 'Ubuntu Mono', ui-monospace, monospace;
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 #root.dark {
-  --page: #191e25;
-  --surface: #242a33;
-  --surface-2: #303744;
-  --surface-3: #3a4352;
-  --t-primary: #f8fafc;
-  --t-muted: #bac3d3;
-  --t-faint: #8d9aad;
-  --line: #3c4657;
-  --line-strong: #596578;
-  --brand-faint: #332d69;
+  --page: var(--product-page);
+  --surface: var(--product-surface);
+  --surface-2: var(--product-surface-subtle);
+  --surface-3: var(--product-surface-subtle);
+  --t-primary: var(--product-text);
+  --t-muted: var(--product-text-muted);
+  --t-faint: var(--product-text-muted);
+  --line: var(--product-boundary);
+  --line-strong: var(--product-boundary);
+  --brand: var(--product-brand);
+  --brand-hover: var(--product-brand-hover);
+  --brand-faint: var(--product-brand-soft);
+  --brand-contrast: var(--product-brand-contrast);
+  --action-bg: var(--product-action);
+  --action-text: var(--product-action-text);
+  --gold-text: var(--product-gold-text);
+  --callout-bg: var(--product-callout);
+  --callout-text: var(--product-callout-text);
+  --callout-muted: var(--product-callout-muted);
+  --focus-inner: var(--product-focus-inner);
+  --focus-outer: var(--product-focus-outer);
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -72,7 +91,7 @@ body {
   font-family: var(--font-ui);
 }
 :focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--focus-outer);
   outline-offset: 2px;
   border-radius: var(--r-sm);
 }
@@ -233,9 +252,9 @@ body {
   padding: 8px;
 }
 .btn-primary {
-  background: var(--brand);
-  color: var(--brand-contrast);
-  border-color: var(--brand);
+  background: var(--action-bg);
+  color: var(--action-text);
+  border-color: var(--action-bg);
 }
 .btn-ghost {
   background: transparent;
@@ -544,10 +563,10 @@ body {
     0 12px 40px rgba(11, 16, 32, 0.12), 0 4px 12px rgba(11, 16, 32, 0.06);
 }
 [data-theme='sovereign'] {
-  --accent-bg: #0d2f30;
-  --accent-text: #31bfc4;
-  --callout-bg: #f2f2f2;
-  --callout-text: #1a1a1a;
+  --accent-bg: #f2f2f2;
+  --accent-text: #6b5200;
+  --callout-bg: #1a1a1a;
+  --callout-text: #f2f2f2;
   --sig-done: #31c476;
   --sig-done-bg: #0a2e1a;
   --sig-due: #ffc107;
@@ -556,12 +575,12 @@ body {
   --sig-over-bg: #2e0a10;
   --sig-flag: #ac85e0;
   --sig-flag-bg: #1e1030;
-  --member-1: #ff8a00;
-  --member-2: #29d6b4;
-  --member-3: #b87ef7;
-  --member-4: #e879be;
-  --member-5: #ffc107;
-  --member-6: #31bfc4;
+  --member-1: var(--product-member-1);
+  --member-2: var(--product-member-2);
+  --member-3: var(--product-member-3);
+  --member-4: var(--product-member-4);
+  --member-5: var(--product-member-5);
+  --member-6: var(--product-member-6);
   --project-1: #e879be;
   --project-2: #ffc107;
   --project-3: #29d6b4;
@@ -571,11 +590,19 @@ body {
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
+[data-theme='sovereign'][data-joy-color-scheme='light'] {
+  --sig-done: #0f763f;
+  --sig-done-bg: #dcfce7;
+  --sig-due: #6b5200;
+  --sig-due-bg: #fef3c7;
+  --sig-over: #c52338;
+  --sig-over-bg: #ffe4e6;
+}
 #root.dark {
-  --accent-bg: #0d2f30;
-  --accent-text: #33c8ee;
-  --callout-bg: #f2f2f2;
-  --callout-text: #1a1a1a;
+  --accent-bg: var(--product-surface-subtle);
+  --accent-text: var(--product-gold-text);
+  --callout-bg: var(--product-callout);
+  --callout-text: var(--product-callout-text);
   --sig-done: #31c476;
   --sig-done-bg: #0a2e1a;
   --sig-due: #ffc107;
@@ -584,12 +611,12 @@ body {
   --sig-over-bg: #2e0a10;
   --sig-flag: #ac85e0;
   --sig-flag-bg: #1e1030;
-  --member-1: #6d5df6;
-  --member-2: #3bd68f;
-  --member-3: #33c8ee;
-  --member-4: #e878c8;
-  --member-5: #ffb84d;
-  --member-6: #3bd68f;
+  --member-1: var(--product-member-1);
+  --member-2: var(--product-member-2);
+  --member-3: var(--product-member-3);
+  --member-4: var(--product-member-4);
+  --member-5: var(--product-member-5);
+  --member-6: var(--product-member-6);
   --project-1: #e878c8;
   --project-2: #ffb84d;
   --project-3: #3bd68f;
@@ -610,8 +637,8 @@ body {
   transition: all 0.14s ease;
 }
 .btn-primary:hover {
-  background: var(--brand-hover);
-  border-color: var(--brand-hover);
+  background: var(--product-primary-hover);
+  border-color: var(--product-primary-hover);
 }
 .btn-secondary {
   background: var(--surface-2);
@@ -750,13 +777,13 @@ body {
 .view-toggle {
   display: flex;
   background: var(--surface-2);
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   padding: 3px;
 }
 .view-toggle-btn {
   flex: 1;
   padding: 5px 10px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   font-size: 12px;
   font-weight: 700;
   border: none;
@@ -951,7 +978,7 @@ body {
   gap: 4px;
   margin-bottom: 20px;
   padding: 4px;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-sm);
   background: var(--surface-2);
 }
 .auth-segmented__option {
@@ -1132,7 +1159,7 @@ body {
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -1257,7 +1284,7 @@ body {
   background: var(--callout-bg);
   color: var(--callout-text);
   padding: 10px 20px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   font-size: 14px;
   font-weight: 600;
   box-shadow: var(--shadow-md);

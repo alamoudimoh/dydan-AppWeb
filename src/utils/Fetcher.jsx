@@ -743,7 +743,7 @@ const RedeemPoints = (userId, points, circleID) => {
     body: JSON.stringify({ points, userId }),
   })
 }
-const RefreshToken = async () => {
+const RefreshToken = async legacyRefreshToken => {
   await apiClient.init()
   const basedURL = apiManager.getApiURL()
 
@@ -770,7 +770,10 @@ const RefreshToken = async () => {
     return fetch(`${basedURL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
-      headers: HEADERS(),
+      headers: { 'Content-Type': 'application/json', ...HEADERS() },
+      ...(legacyRefreshToken
+        ? { body: JSON.stringify({ refresh_token: legacyRefreshToken }) }
+        : {}),
     })
   }
 }

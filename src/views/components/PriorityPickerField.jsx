@@ -3,11 +3,11 @@ import { useEffect, useId, useRef, useState } from 'react'
 import FigmaIcon from '../../components/FigmaIcon'
 
 const defaultPriorityColors = {
-  0: '#9CA3AF',
-  1: '#EF4444',
-  2: '#F97316',
-  3: '#FBBF24',
-  4: '#3B82F6',
+  0: 'var(--t-muted)',
+  1: 'var(--sig-over)',
+  2: 'var(--project-2)',
+  3: 'var(--sig-due)',
+  4: 'var(--accent-text)',
 }
 
 const defaultPriorityLabels = {
@@ -141,7 +141,9 @@ const PriorityPickerField = ({
         aria-label={isEmpty ? 'Priority' : `Priority: ${selectedItem.label}`}
         style={{
           alignItems: 'center',
-          backgroundColor: selectedItem ? `${selectedItem.color}20` : undefined,
+          backgroundColor: selectedItem
+            ? `color-mix(in srgb, ${selectedItem.color} 12%, transparent)`
+            : undefined,
           borderColor: selectedItem?.color || undefined,
           borderRadius: 'var(--r-full)',
           color: selectedItem?.color || 'var(--t-primary)',
@@ -235,7 +237,9 @@ const PriorityPickerField = ({
                 onKeyDown={event => handleOptionKeyDown(event, index)}
                 style={{
                   alignItems: 'center',
-                  background: isSelected ? `${option.color}20` : 'transparent',
+                  background: isSelected
+                    ? `color-mix(in srgb, ${option.color} 12%, transparent)`
+                    : 'transparent',
                   border: 0,
                   borderRadius: 'var(--r-sm)',
                   color: isSelected ? option.color : 'var(--t-primary)',

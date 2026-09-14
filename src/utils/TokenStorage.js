@@ -22,6 +22,14 @@ const TOKEN_KEYS = {
 // Legacy keys written by older builds. They are only ever removed.
 const LEGACY_TOKEN_KEYS = ['ca_token', 'ca_expiration', 'access_token']
 
+const BROWSER_LEGACY_KEYS = [
+  TOKEN_KEYS.ACCESS_TOKEN,
+  TOKEN_KEYS.ACCESS_TOKEN_EXPIRY,
+  TOKEN_KEYS.REFRESH_TOKEN,
+  TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
+  ...LEGACY_TOKEN_KEYS,
+]
+
 // Cache platform detection to avoid repeated checks
 let _isNativePlatform = null
 
@@ -207,14 +215,7 @@ export const clearAllTokens = async () => {
 
   try {
     // Always scrub localStorage of anything token-shaped (legacy cleanup).
-    const keysToRemove = [
-      TOKEN_KEYS.ACCESS_TOKEN,
-      TOKEN_KEYS.ACCESS_TOKEN_EXPIRY,
-      TOKEN_KEYS.REFRESH_TOKEN,
-      TOKEN_KEYS.REFRESH_TOKEN_EXPIRY,
-      ...LEGACY_TOKEN_KEYS,
-    ]
-    for (const key of keysToRemove) {
+    for (const key of BROWSER_LEGACY_KEYS) {
       try {
         localStorage.removeItem(key)
       } catch {
@@ -249,10 +250,10 @@ export const clearAllTokens = async () => {
 /**
  * One-time migration for users upgrading from the legacy build that kept the
  * access token in localStorage. The token is adopted into the correct
- * runtime location (memory on web, unchanged on native) and then removed
- * from localStorage so no duplicate persistent copy survives. Callers should
- * follow up with a refresh request to rotate into a fresh cookie-backed
- * session where possible.
+ * runtime location (memory on web, unchanged on native). The caller removes
+ * the shipped legacy copy only after the refresh credential has successfully
+ * rotated into an HttpOnly cookie, so a transient restore failure cannot
+ * destroy the user's only session.
  *
  * Returns the adopted token, or null when there was nothing to migrate.
  */
@@ -266,17 +267,6 @@ export const adoptLegacyStoredToken = () => {
     return null
   }
 
-  if (!isNativePlatform()) {
-    try {
-      localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
-      localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN_EXPIRY)
-      for (const key of LEGACY_TOKEN_KEYS) {
-        localStorage.removeItem(key)
-      }
-    } catch (error) {
-      console.error('Failed to remove legacy refresh token storage:', error)
-    }
-  }
   if (!legacyToken) {
     return null
   }
@@ -286,15 +276,25 @@ export const adoptLegacyStoredToken = () => {
   memoryAccessToken = legacyToken
   memoryAccessTokenExpiry = legacyExpiry
 
-  // Remove the legacy copies immediately after successful adoption so we
-  // never hold two persistent credentials.
-  try {
-    localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
-    localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN_EXPIRY)
-  } catch (error) {
-    console.error('Failed to remove legacy token storage:', error)
-  }
   return legacyToken
+}
+
+export const getLegacyBrowserRefreshToken = () => {
+  if (isNativePlatform()) return null
+  try {
+    return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
+  } catch {
+    return null
+  }
+}
+
+export const clearLegacyBrowserTokens = () => {
+  if (isNativePlatform()) return
+  try {
+    for (const key of BROWSER_LEGACY_KEYS) localStorage.removeItem(key)
+  } catch (error) {
+    console.error('Failed to remove migrated browser credentials:', error)
+  }
 }
 
 export const migrateNativeCredentials = async () => {

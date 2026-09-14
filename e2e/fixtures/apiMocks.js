@@ -13,6 +13,11 @@ export const hasAuthorization = request => {
   return Boolean(headers.authorization || headers.Authorization)
 }
 
+export const hasRefreshCookie = request =>
+  /(?:^|;\s*)refresh_token=smoke-refresh-token(?:;|$)/.test(
+    request.headers().cookie || '',
+  )
+
 const smokeProfile = {
   id: 1,
   circleID: 3,
@@ -159,7 +164,7 @@ export const apiMockContract = [
     method: 'POST',
     path: /^\/api\/v1\/auth\/refresh$/,
     response: request =>
-      hasAuthorization(request)
+      hasAuthorization(request) || hasRefreshCookie(request)
         ? json({
             token: 'smoke-test-token',
             access_token: 'smoke-test-token',

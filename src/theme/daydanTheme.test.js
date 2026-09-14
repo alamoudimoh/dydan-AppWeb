@@ -31,7 +31,7 @@ test('semantic roles, local font stacks, and scheme CSS variables are centralize
   assert.match(daydanTokens.font.data, /JetBrains Mono/)
   assert.equal(daydanCssVariables('light')['--daydan-focus-outer'], '#4D40DB')
   assert.equal(daydanCssVariables('dark')['--daydan-focus-outer'], '#A59CF5')
-  assert.equal(daydanCssVariables('light')['--daydan-radius-card'], '16px')
+  assert.equal(daydanCssVariables('light')['--daydan-radius-card'], '8px')
 })
 
 test('product themes keep DayDan and Sovereign semantics independent', () => {
@@ -48,8 +48,71 @@ test('product themes keep DayDan and Sovereign semantics independent', () => {
   )
   assert.equal(
     productCssVariables('sovereign', 'light')['--product-primary'],
-    '#0F766E',
+    '#FFC107',
   )
+})
+
+test('Sovereign semantic roles and native aliases match the approved palette', () => {
+  const expected = {
+    light: {
+      '--product-page': '#F2F2F2',
+      '--product-surface': '#FFFFFF',
+      '--product-surface-subtle': '#E6E6E6',
+      '--product-text': '#1A1A1A',
+      '--product-text-muted': '#4D4D4D',
+      '--product-boundary': '#666666',
+      '--product-brand': '#1A1A1A',
+      '--product-brand-hover': '#2E2E2E',
+      '--product-brand-contrast': '#FFC107',
+      '--product-action': '#FFC107',
+      '--product-action-text': '#1A1A1A',
+      '--product-gold-text': '#6B5200',
+      '--product-callout': '#1A1A1A',
+      '--product-callout-text': '#F2F2F2',
+      '--product-callout-muted': '#999999',
+      '--product-focus-inner': '#FFFFFF',
+      '--product-focus-outer': '#1A1A1A',
+    },
+    dark: {
+      '--product-page': '#1A1A1A',
+      '--product-surface': '#242424',
+      '--product-surface-subtle': '#2E2E2E',
+      '--product-text': '#F2F2F2',
+      '--product-text-muted': '#999999',
+      '--product-boundary': '#999999',
+      '--product-brand': '#FFC107',
+      '--product-brand-hover': '#FFD04D',
+      '--product-brand-contrast': '#1A1A1A',
+      '--product-action': '#FFC107',
+      '--product-action-text': '#1A1A1A',
+      '--product-gold-text': '#FFC107',
+      '--product-callout': '#2E2E2E',
+      '--product-callout-text': '#F2F2F2',
+      '--product-callout-muted': '#999999',
+      '--product-focus-inner': '#1A1A1A',
+      '--product-focus-outer': '#F2F2F2',
+    },
+  }
+
+  for (const [scheme, palette] of Object.entries(expected)) {
+    const variables = productCssVariables('sovereign', scheme)
+    for (const [name, value] of Object.entries(palette)) {
+      assert.equal(variables[name], value, `${scheme} ${name}`)
+    }
+    for (const radius of ['nav', 'control', 'row', 'card', 'shell']) {
+      assert.equal(productTokens.sovereign.radius[radius], '8px')
+    }
+    for (const radius of [
+      '--r-xs',
+      '--r-sm',
+      '--r-md',
+      '--r-lg',
+      '--r-xl',
+      '--r-2xl',
+    ]) {
+      assert.equal(variables[radius], '8px')
+    }
+  }
 })
 
 test('neutral chrome stays legible in dark mode for both brands', () => {

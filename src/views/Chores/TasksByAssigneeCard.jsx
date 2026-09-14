@@ -259,7 +259,7 @@ const TasksByAssigneeCard = ({ chores = [] }) => {
                     height: barHeight,
                     width: '100%',
                     maxWidth: 28,
-                    borderRadius: 4,
+                    borderRadius: 'var(--r-sm)',
                     overflow: 'hidden',
                     border: '1px solid',
                     borderColor: 'divider',

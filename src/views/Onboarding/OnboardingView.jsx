@@ -181,7 +181,7 @@ const OnboardingView = () => {
           color='neutral'
           size='sm'
           onClick={finish}
-          sx={{ fontWeight: 600, borderRadius: '999px' }}
+          sx={{ fontWeight: 600, borderRadius: 'var(--r-sm)' }}
         >
           {t('onboarding.carousel.skip')}
         </Button>
@@ -380,7 +380,7 @@ const Dots = ({ activeIndex, count, onSelect, t }) => (
               display: 'block',
               height: 6,
               width: active ? 22 : 6,
-              borderRadius: '999px',
+              borderRadius: 'var(--r-sm)',
               bgcolor: active ? 'primary.500' : 'neutral.softBg',
               transition: `width 280ms ${EASE}, background-color 280ms ease`,
             },

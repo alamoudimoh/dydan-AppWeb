@@ -694,7 +694,7 @@ const ArchivedTasks = () => {
           value={searchTerm}
           fullWidth
           sx={{
-            borderRadius: 24,
+            borderRadius: 'var(--r-sm)',
             height: 24,
             borderColor: 'text.disabled',
             padding: 1,

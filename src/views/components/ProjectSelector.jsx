@@ -181,7 +181,7 @@ const ProjectSelector = ({
             width: 24,
             borderRadius: 24,
             backgroundColor: currentProject?.color || LABEL_COLORS[0].value,
-            border: '1px solid var(--figma-color-border, transparent)',
+            border: '1px solid var(--line)',
             color: getTextColorFromBackgroundColor(
               currentProject?.color || LABEL_COLORS[0].value,
             ),
@@ -214,10 +214,10 @@ const ProjectSelector = ({
             className='figma-dropdown-menu figma-project-selector__menu'
             role='menu'
             style={{
-              backgroundColor: 'var(--figma-color-bg, #fff)',
-              border: '1px solid var(--figma-color-border, #e5e5e5)',
-              borderRadius: 'var(--figma-radius-md, 8px)',
-              boxShadow: 'var(--figma-shadow-lg, 0 8px 24px rgb(0 0 0 / 16%))',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--line)',
+              borderRadius: 'var(--r-sm)',
+              boxShadow: 'var(--shadow-lg)',
               left: 0,
               minWidth: 280,
               padding: 4,
@@ -230,7 +230,7 @@ const ProjectSelector = ({
               className='figma-menu-header'
               style={{
                 alignItems: 'center',
-                color: 'var(--figma-color-text, #1e1e1e)',
+                color: 'var(--t-primary)',
                 display: 'flex',
                 fontSize: 13,
                 fontWeight: 600,
@@ -246,7 +246,7 @@ const ProjectSelector = ({
               className='figma-menu-divider'
               role='separator'
               style={{
-                backgroundColor: 'var(--figma-color-border, #e5e5e5)',
+                backgroundColor: 'var(--line)',
                 height: 1,
                 margin: '4px 0',
               }}
@@ -268,12 +268,12 @@ const ProjectSelector = ({
                 alignItems: 'center',
                 backgroundColor:
                   effectiveSelectedProject === 'Default Project'
-                    ? 'var(--figma-color-bg-selected, #e5f0ff)'
+                    ? 'var(--brand-faint)'
                     : selectedIndex === 0 && anchorEl && isKeyboardNavigating
-                      ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                      ? 'var(--surface-2)'
                       : 'transparent',
                 border: 0,
-                borderRadius: 'var(--figma-radius-sm, 4px)',
+                borderRadius: 'var(--r-sm)',
                 cursor: 'pointer',
                 display: 'flex',
                 gap: 8,
@@ -287,7 +287,7 @@ const ProjectSelector = ({
                 style={{
                   alignItems: 'center',
                   backgroundColor: LABEL_COLORS[0].value,
-                  borderRadius: 4,
+                  borderRadius: 'var(--r-sm)',
                   color: getTextColorFromBackgroundColor(LABEL_COLORS[0].value),
                   display: 'flex',
                   flex: '0 0 24px',
@@ -304,8 +304,8 @@ const ProjectSelector = ({
                     alignItems: 'center',
                     color:
                       effectiveSelectedProject === 'Default Project'
-                        ? 'var(--figma-color-text-brand, #0d99ff)'
-                        : 'var(--figma-color-text, #1e1e1e)',
+                        ? 'var(--brand)'
+                        : 'var(--t-primary)',
                     display: 'flex',
                     fontSize: 13,
                     fontWeight:
@@ -322,7 +322,7 @@ const ProjectSelector = ({
                 </span>
                 <span
                   style={{
-                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    color: 'var(--t-muted)',
                     display: 'block',
                     fontSize: 11,
                     marginTop: 2,
@@ -343,14 +343,14 @@ const ProjectSelector = ({
                   alignItems: 'center',
                   backgroundColor:
                     effectiveSelectedProject === project.name
-                      ? 'var(--figma-color-bg-selected, #e5f0ff)'
+                      ? 'var(--brand-faint)'
                       : selectedIndex === index + 1 &&
                           anchorEl &&
                           isKeyboardNavigating
-                        ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                        ? 'var(--surface-2)'
                         : 'transparent',
                   border: 0,
-                  borderRadius: 'var(--figma-radius-sm, 4px)',
+                  borderRadius: 'var(--r-sm)',
                   cursor: 'pointer',
                   display: 'flex',
                   gap: 8,
@@ -364,7 +364,7 @@ const ProjectSelector = ({
                   style={{
                     alignItems: 'center',
                     backgroundColor: project.color || LABEL_COLORS[0].value,
-                    borderRadius: 4,
+                    borderRadius: 'var(--r-sm)',
                     color: getTextColorFromBackgroundColor(
                       project.color || LABEL_COLORS[0].value,
                     ),
@@ -383,8 +383,8 @@ const ProjectSelector = ({
                       alignItems: 'center',
                       color:
                         effectiveSelectedProject === project.name
-                          ? 'var(--figma-color-text-brand, #0d99ff)'
-                          : 'var(--figma-color-text, #1e1e1e)',
+                          ? 'var(--brand)'
+                          : 'var(--t-primary)',
                       display: 'flex',
                       fontSize: 13,
                       fontWeight:
@@ -400,7 +400,7 @@ const ProjectSelector = ({
                   {project.id === 'default' && (
                     <span
                       style={{
-                        color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                        color: 'var(--t-muted)',
                         display: 'block',
                         fontSize: 11,
                         marginTop: 2,
@@ -417,7 +417,7 @@ const ProjectSelector = ({
               className='figma-menu-divider'
               role='separator'
               style={{
-                backgroundColor: 'var(--figma-color-border, #e5e5e5)',
+                backgroundColor: 'var(--line)',
                 height: 1,
                 margin: '4px 0',
               }}
@@ -434,10 +434,10 @@ const ProjectSelector = ({
                   selectedIndex === defaultProjects.length + 1 &&
                   anchorEl &&
                   isKeyboardNavigating
-                    ? 'var(--figma-color-bg-success, #e5f7ed)'
+                    ? 'var(--brand-faint)'
                     : 'transparent',
                 border: 0,
-                borderRadius: 'var(--figma-radius-sm, 4px)',
+                borderRadius: 'var(--r-sm)',
                 cursor: 'pointer',
                 display: 'flex',
                 gap: 8,
@@ -450,7 +450,7 @@ const ProjectSelector = ({
               <span>
                 <span
                   style={{
-                    color: 'var(--figma-color-text, #1e1e1e)',
+                    color: 'var(--t-primary)',
                     display: 'block',
                     fontSize: 13,
                     fontWeight: 500,
@@ -460,7 +460,7 @@ const ProjectSelector = ({
                 </span>
                 <span
                   style={{
-                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    color: 'var(--t-muted)',
                     display: 'block',
                     fontSize: 11,
                     marginTop: 2,
@@ -482,10 +482,10 @@ const ProjectSelector = ({
                   selectedIndex === defaultProjects.length + 2 &&
                   anchorEl &&
                   isKeyboardNavigating
-                    ? 'var(--figma-color-bg-hover, #f5f5f5)'
+                    ? 'var(--surface-2)'
                     : 'transparent',
                 border: 0,
-                borderRadius: 'var(--figma-radius-sm, 4px)',
+                borderRadius: 'var(--r-sm)',
                 cursor: 'pointer',
                 display: 'flex',
                 gap: 8,
@@ -498,7 +498,7 @@ const ProjectSelector = ({
               <span>
                 <span
                   style={{
-                    color: 'var(--figma-color-text, #1e1e1e)',
+                    color: 'var(--t-primary)',
                     display: 'block',
                     fontSize: 13,
                     fontWeight: 500,
@@ -508,7 +508,7 @@ const ProjectSelector = ({
                 </span>
                 <span
                   style={{
-                    color: 'var(--figma-color-text-secondary, #6b6b6b)',
+                    color: 'var(--t-muted)',
                     display: 'block',
                     fontSize: 11,
                     marginTop: 2,

@@ -14,11 +14,11 @@ const mocks = vi.hoisted(() => ({
     refreshToken: vi.fn(),
   },
   storage: {
-    adoptLegacyStoredToken: vi.fn(),
     clearAllTokens: vi.fn(),
+    clearLegacyBrowserTokens: vi.fn(),
     getAccessToken: vi.fn(),
     getAccessTokenExpiry: vi.fn(),
-    hasAccessToken: vi.fn(),
+    getLegacyBrowserRefreshToken: vi.fn(),
     isNative: vi.fn(),
     migrateNativeCredentials: vi.fn(),
     saveTokens: vi.fn(),
@@ -67,7 +67,7 @@ describe('AuthProvider transient restore failures', () => {
     mocks.storage.isNative.mockReturnValue(true)
     mocks.storage.getAccessToken.mockReturnValue(null)
     mocks.storage.getAccessTokenExpiry.mockReturnValue(null)
-    mocks.storage.hasAccessToken.mockReturnValue(false)
+    mocks.storage.getLegacyBrowserRefreshToken.mockReturnValue(null)
     mocks.storage.migrateNativeCredentials.mockResolvedValue({
       status: 'already-secure',
     })
@@ -153,6 +153,21 @@ describe('AuthProvider transient restore failures', () => {
     expect(screen.queryByText(/pending:/)).toBeNull()
   })
 
+  it('scrubs a rejected legacy browser credential so the cookie can recover', async () => {
+    mocks.storage.isNative.mockReturnValue(false)
+    mocks.storage.getLegacyBrowserRefreshToken.mockReturnValue('stale-legacy')
+    mocks.apiClient.refreshToken.mockResolvedValue({
+      success: false,
+      kind: 'auth',
+      error: 'Refresh failed',
+    })
+
+    renderBootstrap()
+
+    await waitFor(() => expect(screen.getByText('false')).toBeTruthy())
+    expect(mocks.storage.clearLegacyBrowserTokens).toHaveBeenCalledOnce()
+  })
+
   it('no local credential at all lands on the login path without a pending state', async () => {
     mocks.apiClient.refreshToken.mockResolvedValue({
       success: false,
@@ -208,6 +223,57 @@ describe('AuthProvider transient restore failures', () => {
     await waitFor(() =>
       expect(screen.getByText('pending:connectivity')).toBeTruthy(),
     )
+  })
+
+  it('web cold start restores an HttpOnly-cookie session without persistent tokens', async () => {
+    mocks.storage.isNative.mockReturnValue(false)
+    mocks.apiClient.refreshToken.mockResolvedValue({
+      success: true,
+      token: 'cookie-restored-access',
+    })
+
+    renderBootstrap()
+
+    await waitFor(() => expect(screen.getByText('true')).toBeTruthy())
+    expect(mocks.apiClient.refreshToken).toHaveBeenCalledWith({
+      allowLogoutFallback: false,
+      legacyRefreshToken: null,
+    })
+  })
+
+  it('scrubs shipped browser credentials only after successful cookie rotation', async () => {
+    mocks.storage.isNative.mockReturnValue(false)
+    mocks.storage.getLegacyBrowserRefreshToken.mockReturnValue('legacy-refresh')
+    mocks.apiClient.refreshToken.mockResolvedValue({
+      success: true,
+      token: 'rotated-access',
+    })
+
+    renderBootstrap()
+
+    await waitFor(() => expect(screen.getByText('true')).toBeTruthy())
+    expect(mocks.apiClient.refreshToken).toHaveBeenCalledWith({
+      allowLogoutFallback: false,
+      legacyRefreshToken: 'legacy-refresh',
+    })
+    expect(mocks.storage.clearLegacyBrowserTokens).toHaveBeenCalledOnce()
+  })
+
+  it('retains shipped browser credentials when rotation is transiently unavailable', async () => {
+    mocks.storage.isNative.mockReturnValue(false)
+    mocks.storage.getLegacyBrowserRefreshToken.mockReturnValue('legacy-refresh')
+    mocks.apiClient.refreshToken.mockResolvedValue({
+      success: false,
+      kind: 'network',
+      error: 'Failed to fetch',
+    })
+
+    renderBootstrap()
+
+    await waitFor(() =>
+      expect(screen.getByText('pending:connectivity')).toBeTruthy(),
+    )
+    expect(mocks.storage.clearLegacyBrowserTokens).not.toHaveBeenCalled()
   })
 })
 

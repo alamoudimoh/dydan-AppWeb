@@ -145,7 +145,15 @@ class ApiClient {
     }
 
     try {
-      let refreshReq = await RefreshToken()
+      let refreshReq = await RefreshToken(options.legacyRefreshToken)
+
+      // A rejected migration token must not mask a newer valid cookie.
+      if (
+        options.legacyRefreshToken &&
+        [400, 401, 403].includes(refreshReq.status)
+      ) {
+        refreshReq = await RefreshToken()
+      }
 
       // A parallel browser tab may have won rotation. The server deliberately
       // issues no credentials to this stale request; retry against the shared

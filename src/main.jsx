@@ -11,10 +11,12 @@ import '@fontsource/jetbrains-mono/600.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
+import { APP_BRAND_ID } from './config/AppBranding.js'
 import { initSentry, SentryBoundary } from './observability/sentry.jsx'
 import { capturePasswordResetCredential } from './utils/PasswordResetCredential.js'
 
 capturePasswordResetCredential(window)
+document.documentElement.dataset.theme = APP_BRAND_ID
 // No-op unless VITE_SENTRY_DSN is configured; the SDK stays dormant otherwise.
 initSentry()
 

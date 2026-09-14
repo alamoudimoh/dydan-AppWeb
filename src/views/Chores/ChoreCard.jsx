@@ -140,7 +140,7 @@ const ChoreCard = ({
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: 20,
+          borderRadius: 'var(--r-sm)',
         }}
       >
         <Card
@@ -153,7 +153,7 @@ const ChoreCard = ({
             justifyContent: 'space-between',
             p: 2,
             boxShadow: 'sm',
-            borderRadius: 20,
+            borderRadius: 'var(--r-sm)',
             key: `${chore.id}-card`,
             position: 'relative',
             backgroundColor: 'background.surface',

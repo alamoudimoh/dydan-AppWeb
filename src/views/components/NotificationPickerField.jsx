@@ -88,7 +88,7 @@ const NotificationPickerField = ({
             minHeight: 40,
             minWidth: 'min-content',
             padding: shouldShowLabel ? '8px 10px' : '8px 6px',
-            borderRadius: 128,
+            borderRadius: 'var(--r-sm)',
             transition: 'all 0.25s ease-in-out',
             whiteSpace: 'nowrap',
           }}

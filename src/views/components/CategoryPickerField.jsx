@@ -109,7 +109,14 @@ const CategoryPickerField = ({ onChange, value }) => {
     }
   }
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div
+      style={{
+        display: 'grid',
+        gap: 8,
+        minWidth: 0,
+        width: 'min(240px, 100%)',
+      }}
+    >
       <label
         id={labelId}
         style={{ color: 'var(--t-primary)', fontSize: 14, fontWeight: 600 }}
@@ -139,8 +146,18 @@ const CategoryPickerField = ({ onChange, value }) => {
             textAlign: 'start',
           }}
         >
-          {options[activeIndex].name}
-          <FigmaIcon name='chevron_down' size={16} />
+          <span
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {options[activeIndex].name}
+          </span>
+          <span style={{ flexShrink: 0 }}>
+            <FigmaIcon name='chevron_down' size={16} />
+          </span>
         </button>
         {isOpen && (
           <div

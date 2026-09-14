@@ -11,22 +11,29 @@ import { useNavigate } from 'react-router-dom'
 
 import { apiClient } from '../utils/ApiClient'
 import {
+  isDefinitiveRefreshFailure,
   isTransientRefreshFailure,
   RefreshFailureKind,
 } from '../utils/authErrors'
 import { offlineDB } from '../utils/OfflineDB'
 import {
-  adoptLegacyStoredToken,
   clearAllTokens,
+  clearLegacyBrowserTokens,
   getAccessToken,
   getAccessTokenExpiry,
-  hasAccessToken,
+  getLegacyBrowserRefreshToken,
   isNative,
   migrateNativeCredentials,
   saveTokens,
 } from '../utils/TokenStorage'
 
 const AuthContext = createContext(null)
+
+export const AuthState = Object.freeze({
+  RESTORING: 'restoring',
+  AUTHENTICATED: 'authenticated',
+  UNAUTHENTICATED: 'unauthenticated',
+})
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -52,6 +59,12 @@ export const AuthProvider = ({ children }) => {
   const [restorePending, setRestorePending] = useState(null)
   const navigate = useNavigate()
   const isAuthenticated = !!token
+  const authState =
+    isLoading || restorePending
+      ? AuthState.RESTORING
+      : isAuthenticated
+        ? AuthState.AUTHENTICATED
+        : AuthState.UNAUTHENTICATED
   // Holds the latest boot-restore routine so retryRestore can re-run it.
   const restoreSessionRef = useRef(null)
 
@@ -78,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       refreshToken: data.refresh_token,
       refreshTokenExpiry: data.refresh_token_expiry,
     })
+    if (!isNative()) clearLegacyBrowserTokens()
     setRestorePending(null)
     setToken(accessToken)
     return accessToken
@@ -86,8 +100,8 @@ export const AuthProvider = ({ children }) => {
   /**
    * Boot-time session establishment for browser/PWA clients:
    *
-   * 1. Migrate any legacy localStorage token into the new model and scrub it
-   *    from storage immediately (one-time upgrade path).
+   * 1. Rotate any legacy localStorage refresh credential, then scrub it only
+   *    after the server establishes the HttpOnly cookie.
    * 2. Restore/rotate the session through POST /auth/refresh using the
    *    HttpOnly cookie. A restored page therefore never relies on a
    *    JavaScript-readable credential.
@@ -104,18 +118,22 @@ export const AuthProvider = ({ children }) => {
 
         if (!nativePlatform) {
           // One-time migration from the legacy localStorage token build.
-          const adopted = adoptLegacyStoredToken()
-          if (adopted) {
-            console.info(
-              'Migrated legacy stored session out of localStorage; rotating credentials',
-            )
-          }
+          const legacyRefreshToken = getLegacyBrowserRefreshToken()
 
           // Restore or rotate through the HttpOnly refresh cookie. A missing
           // cookie simply means "not signed in" - no forced-logout redirect.
           const result = await apiClient.refreshToken({
             allowLogoutFallback: false,
+            legacyRefreshToken,
           })
+          if (result.success && result.token) clearLegacyBrowserTokens()
+          if (
+            legacyRefreshToken &&
+            !result.success &&
+            isDefinitiveRefreshFailure(result.kind)
+          ) {
+            clearLegacyBrowserTokens()
+          }
           if (applyRefreshResult(result)) return
         } else {
           const migration = await migrateNativeCredentials()
@@ -148,13 +166,6 @@ export const AuthProvider = ({ children }) => {
       if (result.success && result.token) {
         setRestorePending(null)
         setToken(result.token)
-        return true
-      }
-      if (hasAccessToken()) {
-        // Migration adopted a still-valid access token but the refresh
-        // rotation failed (e.g. very old server). Keep working until it
-        // expires; the next refresh attempt will require a fresh login.
-        setToken(getAccessToken())
         return true
       }
       if (!result.success && isTransientRefreshFailure(result.kind)) {
@@ -312,6 +323,7 @@ export const AuthProvider = ({ children }) => {
     () => ({
       token,
       user,
+      authState,
       isLoading,
       isAuthenticated,
       restorePending,
@@ -324,6 +336,7 @@ export const AuthProvider = ({ children }) => {
     [
       token,
       user,
+      authState,
       isLoading,
       isAuthenticated,
       restorePending,

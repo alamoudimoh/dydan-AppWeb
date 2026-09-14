@@ -530,7 +530,7 @@ const NotificationTemplate = ({
                 sx={{
                   mb: 1.5,
                   p: 2,
-                  borderRadius: 8,
+                  borderRadius: 'var(--r-sm)',
                   border: '1px solid',
                   borderColor: 'neutral.outlinedBorder',
                   background: 'background.surface',
@@ -683,7 +683,7 @@ const NotificationTemplate = ({
           size={'sm'}
           variant={'outlined'}
           sx={{
-            borderRadius: 6,
+            borderRadius: 'var(--r-sm)',
             fontWeight: 500,
             borderColor: `${TASK_COLOR.SCHEDULED}60`,
             color: TASK_COLOR.SCHEDULED,
@@ -705,7 +705,7 @@ const NotificationTemplate = ({
           size={'sm'}
           variant={'outlined'}
           sx={{
-            borderRadius: 6,
+            borderRadius: 'var(--r-sm)',
             fontWeight: 500,
             borderColor: `${NOTIFICATION_TYPE.DUE_DATE}60`,
             color: NOTIFICATION_TYPE.DUE_DATE,
@@ -724,7 +724,7 @@ const NotificationTemplate = ({
           size={'sm'}
           variant={'outlined'}
           sx={{
-            borderRadius: 6,
+            borderRadius: 'var(--r-sm)',
             fontWeight: 500,
             borderColor: `${NOTIFICATION_TYPE.POSTDUE}60`,
             color: NOTIFICATION_TYPE.POSTDUE,
@@ -753,7 +753,7 @@ const NotificationTemplate = ({
             color='neutral'
             startDecorator={<Save />}
             sx={{
-              borderRadius: 6,
+              borderRadius: 'var(--r-sm)',
               fontWeight: 500,
               '&:hover': {
                 background: 'neutral.softHoverBg',

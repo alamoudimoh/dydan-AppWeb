@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
         'familyProgress.memberPoints': 'Your points',
         'familyProgress.newGoal': 'New goal',
         'familyProgress.noGoals': 'No family goals yet.',
-        'familyProgress.rewards': 'Rewards',
+        'navigation.rewards': 'Rewards',
         'familyProgress.rewardsAwait': 'Keep going',
         'familyProgress.tasks': 'tasks',
         'familyProgress.viewHistory': 'View history',

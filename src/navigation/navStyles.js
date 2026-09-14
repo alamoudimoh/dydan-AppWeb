@@ -9,7 +9,7 @@ export const navBrandSx = {
   fontFamily: 'var(--product-wordmark-font)',
   fontWeight: 700,
   lineHeight: 1.3,
-  color: 'primary.500',
+  color: 'var(--product-brand)',
   letterSpacing: '-0.01em',
 }
 
@@ -44,10 +44,10 @@ export const navItemButtonSx = isActive => ({
     ? {
         '&, &.Mui-selected, &.Mui-selected:hover': {
           bgcolor: 'var(--daydan-brand-soft)',
-          color: 'primary.500',
+          color: 'var(--product-brand)',
         },
         '& .MuiListItemDecorator-root': {
-          color: 'primary.500',
+          color: 'var(--product-brand)',
         },
       }
     : {
@@ -62,7 +62,7 @@ export const navItemButtonSx = isActive => ({
   },
   '& .MuiListItemDecorator-root': {
     minWidth: 28,
-    color: isActive ? 'primary.500' : 'text.secondary',
+    color: isActive ? 'var(--product-brand)' : 'text.secondary',
   },
 })
 

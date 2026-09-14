@@ -1302,9 +1302,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                 display: 'flex',
                 flexDirection: 'row',
                 gap: 12,
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                flexWrap: isMobile ? 'nowrap' : 'wrap',
+                flexWrap: 'wrap',
               }}
             >
               <DueDatePickerField
@@ -1391,7 +1389,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                   type='button'
                   className='btn btn-secondary'
                   onClick={() => setHasDescription(true)}
-                  style={{ borderRadius: 128, minHeight: 40 }}
+                  style={{ borderRadius: 'var(--r-sm)', minHeight: 40 }}
                 >
                   <FigmaIcon name='plus' size={20} />
                   Description
@@ -1405,7 +1403,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
                   type='button'
                   className='btn btn-secondary'
                   onClick={() => setHasSubTasks(true)}
-                  style={{ borderRadius: 128, minHeight: 40 }}
+                  style={{ borderRadius: 'var(--r-sm)', minHeight: 40 }}
                 >
                   <FigmaIcon name='plus' size={20} />
                   Subtasks

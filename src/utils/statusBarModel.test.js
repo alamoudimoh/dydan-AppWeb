@@ -9,8 +9,8 @@ test('status bar background follows the DayDan page token per scheme', () => {
 })
 
 test('status bar background follows the Sovereign page token per scheme', () => {
-  assert.equal(resolveStatusBarBackground('light', 'sovereign'), '#F4F7F6')
-  assert.equal(resolveStatusBarBackground('dark', 'sovereign'), '#111816')
+  assert.equal(resolveStatusBarBackground('light', 'sovereign'), '#F2F2F2')
+  assert.equal(resolveStatusBarBackground('dark', 'sovereign'), '#1A1A1A')
 })
 
 test('unknown brands fall back to DayDan', () => {

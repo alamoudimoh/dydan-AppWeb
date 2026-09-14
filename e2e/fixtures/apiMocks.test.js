@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   createApiMockHandler,
   hasAuthorization,
+  hasRefreshCookie,
   installApiMocks,
 } from './apiMocks.js'
 
@@ -19,6 +20,19 @@ test('hasAuthorization detects bearer tokens case-insensitively', () => {
   assert.equal(hasAuthorization(withLowercase), true)
   assert.equal(hasAuthorization(withUppercase), true)
   assert.equal(hasAuthorization(without), false)
+})
+
+test('hasRefreshCookie recognizes only the HttpOnly smoke session cookie', () => {
+  assert.equal(
+    hasRefreshCookie({
+      headers: () => ({ cookie: 'other=x; refresh_token=smoke-refresh-token' }),
+    }),
+    true,
+  )
+  assert.equal(
+    hasRefreshCookie({ headers: () => ({ cookie: 'refresh_token=expired' }) }),
+    false,
+  )
 })
 
 test('installApiMocks registers one strict API dispatcher', async () => {
@@ -108,8 +122,14 @@ test('strict mock validates mutation payloads and supported public auth flows', 
     method: 'POST',
     path: '/api/v1/auth/refresh',
   })
+  const cookieRefresh = await callMock({
+    method: 'POST',
+    path: '/api/v1/auth/refresh',
+    headers: { cookie: 'refresh_token=smoke-refresh-token' },
+  })
 
   assert.equal(invalidMutation.status, 400)
   assert.equal(validMutation.status, 200)
   assert.equal(publicRefresh.status, 400)
+  assert.equal(cookieRefresh.status, 200)
 })

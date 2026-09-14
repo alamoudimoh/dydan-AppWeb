@@ -1,16 +1,16 @@
 :root,
 [data-joy-color-scheme='light'] {
-  --highlight-date-color: #b45309;
-  --highlight-repeat-color: #15803d;
-  --highlight-label-color: #1d4ed8;
-  --highlight-priority-color: #be123c;
+  --highlight-date-color: var(--sig-due);
+  --highlight-repeat-color: var(--sig-done);
+  --highlight-label-color: var(--accent-text);
+  --highlight-priority-color: var(--sig-over);
 }
 
 [data-joy-color-scheme='dark'] {
-  --highlight-date-color: #fca5a5;
-  --highlight-repeat-color: #86efac;
-  --highlight-label-color: #93c5fd;
-  --highlight-priority-color: #f9a8d4;
+  --highlight-date-color: var(--sig-due);
+  --highlight-repeat-color: var(--sig-done);
+  --highlight-label-color: var(--accent-text);
+  --highlight-priority-color: var(--sig-over);
 }
 
 .smart-task-display {
@@ -75,7 +75,7 @@
 }
 
 .highlight-appear {
-  border-radius: 4px;
+  border-radius: var(--r-sm);
   animation: smart-highlight-in 450ms ease-out;
 }
 
@@ -88,10 +88,10 @@
 .task-input {
   position: relative;
   width: 100%;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   box-sizing: border-box;
   border: none;
-  background-color: var(--joy-palette-neutral-softBg, #f0f4f8);
+  background-color: var(--surface-2);
   overflow: auto;
   transition:
     box-shadow 0.15s ease,
@@ -99,10 +99,9 @@
 }
 
 .task-input:focus-within {
-  box-shadow: 0 0 0 2px
-    var(--joy-palette-primary-outlinedBorder, rgba(11, 107, 203, 0.15));
+  box-shadow: 0 0 0 2px var(--focus-outer);
 }
 
 .task-input:hover:not(:focus-within) {
-  background-color: var(--joy-palette-neutral-softHoverBg, #dde7ee);
+  background-color: var(--surface-2);
 }
