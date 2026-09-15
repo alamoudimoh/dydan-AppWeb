@@ -124,5 +124,5 @@ This document defines **Sovereign identity**, not a predefined UI layout.
 For Figma Make:
 - Use these colors, typography rules, logo principles, and contrast rules as constraints.
 - Do **not** copy the supplied HTML page structure.
-- Sovereign should not be a DayDan layout merely recolored black and yellow.
-- It may have its own visual expression, surfaces, emphasis, and component treatment while preserving the same DayDan product architecture and functionality.
+- Sovereign should not be a Dydan layout merely recolored black and yellow.
+- It may have its own visual expression, surfaces, emphasis, and component treatment while preserving the same Dydan product architecture and functionality.

@@ -83,10 +83,6 @@ const UserProfileAvatar = () => {
     apiClient.handleLogout()
   }
 
-  const handleSupportEmail = () => {
-    window.location.href = 'mailto:support@donetick.com'
-  }
-
   const isDarkMode = themeMode === 'dark'
 
   const handleThemeToggle = () => {
@@ -477,31 +473,6 @@ const UserProfileAvatar = () => {
               </ListItemContent>
             </MenuItem>
           )}
-
-          {/* <MenuItem
-            onClick={handleSupportEmail}
-            sx={{
-              borderRadius: 'var(--joy-radius-sm)',
-              '&:hover': {
-                backgroundColor: 'var(--joy-palette-neutral-softHoverBg)',
-              },
-            }}
-          >
-            <ListItemDecorator sx={{ color: 'var(--joy-palette-info-500)' }}>
-              <Email />
-            </ListItemDecorator>
-            <ListItemContent>
-              <Typography level='body-sm' sx={{ fontWeight: 500 }}>
-                Support
-              </Typography>
-              <Typography
-                level='body-xs'
-                sx={{ color: 'var(--joy-palette-text-tertiary)' }}
-              >
-                support@donetick.com
-              </Typography>
-            </ListItemContent>
-          </MenuItem> */}
 
           <Divider sx={{ my: 1 }} />
 

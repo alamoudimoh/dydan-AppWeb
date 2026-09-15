@@ -82,7 +82,7 @@ export const countOtherActiveCircleMembers = (profile, circleMembers = []) => {
 
 /**
  * Family features require at least one other active circle member.
- * DayDan auto-creates a circle for every user, so circle id alone is not enough.
+ * Dydan auto-creates a circle for every user, so circle id alone is not enough.
  */
 export const hasActiveFamilyCircle = (profile, circleMembers = []) =>
   countOtherActiveCircleMembers(profile, circleMembers) > 0

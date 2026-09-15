@@ -26,7 +26,7 @@ import SettingsQueryStateView from '../../components/settings/SettingsQueryState
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useDeviceTokens, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
-import { isOfficialDayDanInstanceSync } from '../../utils/FeatureToggle'
+import { isOfficialDydanInstanceSync } from '../../utils/FeatureToggle'
 import {
   UnregisterDeviceToken,
   UpdateNotificationTarget,
@@ -101,9 +101,9 @@ const NotificationSetting = () => {
       }
     })
 
-    // Check if this is the official donetick.com instance
+    // Check whether this build configured an official hosted instance.
     try {
-      setIsOfficialInstance(isOfficialDayDanInstanceSync())
+      setIsOfficialInstance(isOfficialDydanInstanceSync())
     } catch (error) {
       console.warn('Error checking instance type:', error)
       setIsOfficialInstance(false)
@@ -758,9 +758,9 @@ const NotificationSetting = () => {
                   <a
                     style={{
                       textDecoration: 'underline',
-                      color: 'var(--daydan-signal)',
+                      color: 'var(--dydan-signal)',
                     }}
-                    href='https://t.me/DonetickBot'
+                    href='https://t.me/DydanBot'
                   >
                     {t('notificationSettings.custom.clickHere')}
                   </a>{' '}
@@ -786,7 +786,7 @@ const NotificationSetting = () => {
                   <a
                     style={{
                       textDecoration: 'underline',
-                      color: 'var(--daydan-signal)',
+                      color: 'var(--dydan-signal)',
                     }}
                     href='https://t.me/userinfobot'
                   >

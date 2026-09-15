@@ -1,10 +1,10 @@
-# DayDan-AppWeb development
+# Dydan-AppWeb development
 
 ## Requirements
 
 - Node.js 22 or newer
 - npm 9 or newer
-- A running compatible DayDan-Server for end-to-end behavior
+- A running compatible Dydan-Server for end-to-end behavior
 - Android Studio/Xcode only when building native applications
 
 Install dependencies and start the client:
@@ -62,5 +62,5 @@ scripts.
 
 Use the paired repositories when changing a client/server contract. The
 backend's API and deployment documentation lives in
-[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server), including the
+[Dydan-Server](https://github.com/alamoudimoh/Dydan-Server), including the
 Docker Compose development path and generated API reference.

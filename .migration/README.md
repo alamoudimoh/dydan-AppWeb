@@ -8,18 +8,18 @@ Fetch/prune; verify Phases 1–7 are merged; rebase this branch onto latest `ori
 
 # Authoritative Figma Baseline
 
-`design-source/figma-make/` in DayDan at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, verified identical to `https://github.com/alamoudimoh/DayDan-AppWeb-ProductExperience` commit `7131b76979e49351db8ecbc33db6648a75139572`.
+`design-source/figma-make/` in Dydan at `ade3ffa8fff9ca947d0a843cfface61cbad0cb47`, verified identical to `https://github.com/alamoudimoh/Dydan-AppWeb-ProductExperience` commit `7131b76979e49351db8ecbc33db6648a75139572`.
 
 # Final Objective
 
-Complete presentation-stack convergence and prove Figma parity while retaining real DayDan behavior.
+Complete presentation-stack convergence and prove Figma parity while retaining real Dydan behavior.
 
 # Required Work
 
 1. Inventory every `@mui/joy`, `@mui/material`, `@emotion/react`, `@emotion/styled`, Tailwind-3-era config/plugin, `@vitejs/plugin-react-swc`, old theme compatibility, design-reference-derived presentation layer, and legacy presentation-component import.
 2. Migrate every Figma-covered residual with the actual Figma JSX/DOM/classes from `design-source/figma-make`; retain its source unchanged and wire existing queries, auth, mutations, offline, SSE, Capacitor, i18n and permissions.
 3. Remove Joy/Material/Emotion only after consumer evidence proves no legitimate consumer remains. Remove obsolete Tailwind-3/theme/design-reference compatibility only after equivalent evidence.
-4. Verify React 19, Tailwind 4-only Figma presentation path, DayDan, Sovereign, Arabic RTL, Capacitor and every Figma-defined screen.
+4. Verify React 19, Tailwind 4-only Figma presentation path, Dydan, Sovereign, Arabic RTL, Capacitor and every Figma-defined screen.
 5. Audit every ACTIVE build/test/reference/verification path for stale migrated-runtime tooling. No executable verification path may retain React 18-only assumptions, `@vitejs/plugin-react-swc`, Tailwind 3/PostCSS integration, or another substituted runtime. Historical docs may remain documented; executable paths must converge.
 
 # Forbidden Substitutions
@@ -36,7 +36,7 @@ Include an exact dependency graph and consumer proof for `@mui/joy`, `@mui/mater
 
 # Tests
 
-Run all targeted unit/integration/Playwright tests, `npm test`, `npm run typecheck`, DayDan/Sovereign builds and smokes, reference tests where still required, the core/baseline local verification flow in `./scripts/verify.sh`, and Capacitor web/Android sync. The script covers runtime artifact checks, dependency installation, changed-file linting, the test suite, and the production build; browser smoke, cross-browser, visual, Arabic/RTL, and native/Capacitor checks remain separate applicable gates.
+Run all targeted unit/integration/Playwright tests, `npm test`, `npm run typecheck`, Dydan/Sovereign builds and smokes, reference tests where still required, the core/baseline local verification flow in `./scripts/verify.sh`, and Capacitor web/Android sync. The script covers runtime artifact checks, dependency installation, changed-file linting, the test suite, and the production build; browser smoke, cross-browser, visual, Arabic/RTL, and native/Capacitor checks remain separate applicable gates.
 
 # RTL / Arabic
 
@@ -56,7 +56,7 @@ Provide dependency graph, remaining consumers/removals, active-tooling consisten
 
 # GitHub Actions / Merge Policy
 
-GitHub Actions are informational and non-gating for DayDan. Complete local
+GitHub Actions are informational and non-gating for Dydan. Complete local
 verification in a clean isolated worktree is authoritative. Do not stop
 because Actions fail before repository steps, record zero executed steps, skip
 downstream jobs, lack runners, or report account/billing/infrastructure
@@ -79,7 +79,7 @@ browser/visual checks, Arabic/RTL checks, Capacitor checks, and
 
 When the owner says `Execute Phase 8`, this README is the complete execution contract. Work autonomously from start to terminal completion.
 
-1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work in isolated worktrees without touching the dirty primary checkout or `daydan-server`.
+1. Fetch/prune, locate this phase branch, read this entire README, inspect the real repository/Figma sources, update the phase branch onto current legitimate `origin/develop`, and execute all required work in isolated worktrees without touching the dirty primary checkout or `dydan-server`.
 2. Do NOT send intermediate progress/status responses. Never return with `underway`, `started`, `pending`, `still running`, `not migrated`, `not verified`, or equivalent. Wait/poll for running commands and continue.
 3. Any test/build/lint/typecheck/visual/dependency-parity failure must be reproduced, root-caused, fixed in scope, covered where appropriate, and rerun. Continue until the full final gate is green or a genuinely external blocker remains after reasonable remediation is exhausted.
 4. Complete missing prior-phase post-merge verification first if necessary; fix any concrete regression through a narrow closure branch/PR, merge, reverify, then continue without asking the owner.

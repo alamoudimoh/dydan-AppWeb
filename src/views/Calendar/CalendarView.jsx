@@ -12,11 +12,11 @@ import { useCalendar } from '../../queries/CalendarQueries'
 import { useCategories } from '../../queries/CategoryQueries'
 import { useUserProfile } from '../../queries/UserQueries'
 import { MarkChoreComplete } from '../../utils/Fetcher'
-import { STORAGE_KEYS } from '../../utils/storageKeys'
 import {
-  readMigratedLocalStorageItem,
+  readLocalStorageItem,
   writeLocalStorageItem,
-} from '../../utils/storageMigration'
+} from '../../utils/storage'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
 import {
   addDays,
   dateKey,
@@ -134,7 +134,7 @@ export default function CalendarView() {
     Intl.DateTimeFormat().resolvedOptions().timeZone ||
     'UTC'
   const today = dateKey(new Date(), timeZone)
-  const savedView = readMigratedLocalStorageItem(preferenceKey)
+  const savedView = readLocalStorageItem(preferenceKey)
   const selected = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '')
     ? params.get('date')
     : today

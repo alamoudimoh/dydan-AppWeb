@@ -36,34 +36,34 @@ upsert_secure_note() {
 # ── Upload ────────────────────────────────────────────────────────────────────
 echo "→ Uploading Android google-services.json"
 upsert_secure_note \
-  "Donetick Google Services Android" \
+  "Dydan Google Services Android" \
   "$(cat "$REPO_ROOT/android/app/google-services.json")"
 
 echo "→ Uploading Fastline google-services.json"
 upsert_secure_note \
-  "Donetick Google Play Service Account" \
-  "$(cat "$REPO_ROOT/donetick-5f910-5688a280a65a--fastline.json")"
+  "Dydan Google Play Service Account" \
+  "$(cat "$REPO_ROOT/dydan-5f910-5688a280a65a--fastline.json")"
 
 echo "→ Uploading Android keystore (base64)"
 upsert_secure_note \
-  "Donetick Android Keystore" \
-  "$(base64 < /Users/mohamad-macbook-air/donetick-android-ley)"
+  "Dydan Android Keystore" \
+  "$(base64 < /Users/mohamad-macbook-air/dydan-android-ley)"
 
 echo "→ Uploading iOS GoogleService-Info.plist"
 upsert_secure_note \
-  "Donetick Google Services iOS" \
+  "Dydan Google Services iOS" \
   "$(cat "$REPO_ROOT/ios/App/App/GoogleService-Info.plist")"
 
 echo "→ Uploading App Store Connect key (base64)"
 upsert_secure_note \
-  "Donetick App Store Connect Key" \
+  "Dydan App Store Connect Key" \
   "$(base64 < /Users/mohamad-macbook-air/Downloads/AuthKey_84F695CDQ3.p8)"
 
 echo "→ Uploading .env.production"
 upsert_secure_note \
-  "Donetick Env Production" \
+  "Dydan Env Production" \
   "$(cat "$REPO_ROOT/.env.production")"
 
 echo ""
 echo "✓ All secrets uploaded. Verify in Vaultwarden, then you can safely delete local copies outside the repo."
-echo "  NOTE: 'Donetick Keystore Password' should already exist — if not, create it manually as a Login item."
+echo "  NOTE: 'Dydan Keystore Password' should already exist — if not, create it manually as a Login item."

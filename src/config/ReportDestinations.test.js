@@ -3,34 +3,27 @@ import test from 'node:test'
 
 import {
   APP_REPORT_SOURCE,
-  DAYDAN_APP_REPO,
+  DYDAN_APP_REPO,
   FEEDBACK_ISSUES_NEW_URL,
   REPORT_ID_PREFIX,
   resolveAppRepoUrl,
 } from '../config/ReportDestinations.js'
 
-test('report destinations default to DayDan-owned GitHub endpoints', () => {
-  assert.equal(DAYDAN_APP_REPO, 'https://github.com/alamoudimoh/daydan-app')
+test('report destinations preserve the current GitHub repository locator', () => {
+  assert.equal(DYDAN_APP_REPO, 'https://github.com/alamoudimoh/DayDan-AppWeb')
   assert.equal(
     FEEDBACK_ISSUES_NEW_URL,
-    'https://github.com/alamoudimoh/daydan-app/issues/new',
+    'https://github.com/alamoudimoh/DayDan-AppWeb/issues/new',
   )
-  assert.equal(APP_REPORT_SOURCE, 'daydan-app')
+  assert.equal(APP_REPORT_SOURCE, 'dydan-app')
   assert.equal(REPORT_ID_PREFIX, 'TD')
 })
 
-test('resolveAppRepoUrl prefers VITE_DAYDAN_APP_REPO_URL over legacy Taskier env', () => {
+test('resolveAppRepoUrl accepts an explicit Dydan repository URL', () => {
   assert.equal(
     resolveAppRepoUrl({
-      VITE_DAYDAN_APP_REPO_URL: 'https://github.com/example/DayDan-App',
-      VITE_TASKIER_APP_REPO_URL: 'https://github.com/example/Taskier-App',
+      VITE_DYDAN_APP_REPO_URL: 'https://github.com/example/Dydan-App',
     }),
-    'https://github.com/example/DayDan-App',
-  )
-  assert.equal(
-    resolveAppRepoUrl({
-      VITE_TASKIER_APP_REPO_URL: 'https://github.com/example/Taskier-App',
-    }),
-    'https://github.com/example/Taskier-App',
+    'https://github.com/example/Dydan-App',
   )
 })

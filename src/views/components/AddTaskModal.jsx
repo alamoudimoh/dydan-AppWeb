@@ -350,7 +350,7 @@ const TaskInput = ({ initialMode, isModalOpen, onChoreUpdate, onClose }) => {
     voiceInputService.isSupported().then(setVoiceAvailable)
   }, [])
 
-  // Quick-capture widget entry points (donetick://chores/add?mode=voice|scan)
+  // Quick-capture widget entry points (dydan://chores/add?mode=voice|scan)
   // land here: open straight into the requested panel, once per modal open so
   // backing out of the panel doesn't bounce the user right back into it.
   const appliedInitialModeRef = useRef(false)

@@ -85,7 +85,7 @@ const SettingsOverview = () => {
     !SETTINGS_PERMISSIONS[setting] ||
     hasPermission(role, SETTINGS_PERMISSIONS[setting])
   const displayName =
-    userProfile?.displayName || userProfile?.username || 'DayDan member'
+    userProfile?.displayName || userProfile?.username || 'Dydan member'
   const email = userProfile?.email || userProfile?.username || ''
   const initials = displayName
     .split(/\s+/)
@@ -175,7 +175,7 @@ const SettingsOverview = () => {
               {t('figmaOverview.theme')}
             </div>
             <div className='grid grid-cols-2 gap-3'>
-              {['daydan', 'sovereign'].map(item => (
+              {['dydan', 'sovereign'].map(item => (
                 <button
                   className={`figma-theme-choice ${APP_BRAND_ID === item ? 'selected' : ''}`}
                   key={item}
@@ -186,14 +186,14 @@ const SettingsOverview = () => {
                     <span
                       className='figma-theme-swatch'
                       style={{
-                        background: item === 'daydan' ? '#4326EA' : '#1A1A1A',
+                        background: item === 'dydan' ? '#4326EA' : '#1A1A1A',
                       }}
                     />
                     <span
                       className='text-primary font-bold'
                       style={{ fontSize: 13 }}
                     >
-                      {item === 'daydan' ? 'DayDan' : 'Sovereign'}
+                      {item === 'dydan' ? 'Dydan' : 'Sovereign'}
                     </span>
                     {APP_BRAND_ID === item && (
                       <FigmaIcon
@@ -204,7 +204,7 @@ const SettingsOverview = () => {
                     )}
                   </span>
                   <span className='text-muted block' style={{ fontSize: 11 }}>
-                    {item === 'daydan'
+                    {item === 'dydan'
                       ? 'Momentum Violet + Flow Aqua'
                       : 'Onyx + Golden Yellow'}
                   </span>
@@ -421,7 +421,7 @@ const SettingsOverview = () => {
             label={t('figmaOverview.help')}
             onClick={() =>
               window.open(
-                'https://github.com/donetick/donetick',
+                'https://github.com/dydan/dydan',
                 '_blank',
                 'noopener,noreferrer',
               )

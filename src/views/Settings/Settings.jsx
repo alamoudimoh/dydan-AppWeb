@@ -762,7 +762,7 @@ const Settings = () => {
 
                   // Check if user now has entitlement after paywall interaction
                   const { customerInfo } = await Purchases.getCustomerInfo()
-                  if (customerInfo.entitlements.active['Donetick Plus']) {
+                  if (customerInfo.entitlements.active['Dydan Plus']) {
                     queryClient.invalidateQueries(['userProfile'])
                     queryClient.refetchQueries(['userProfile'])
                     showNotification({

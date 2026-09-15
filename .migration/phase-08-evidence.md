@@ -70,7 +70,7 @@ active presentation: the only name-level match in the covered directories is
 `views/FamilyProgress/FamilyProgress.test.jsx` (test harness `CssVarsProvider`;
 the covered surface itself is Joy-free). The retained consumers are the
 Phase-6 owner-classified non-Figma surfaces and shared provider/guard shell:
-settlements of the authenticated shell (`App.jsx`, `ThemeContext`, `daydanTheme`),
+settlements of the authenticated shell (`App.jsx`, `ThemeContext`, `dydanTheme`),
 `Settings/**`, `Authorization` residuals, `Onboarding/**`, `Landing/MarketingApp`,
 `Calendar`, `History`, `Projects`, `Notifications`, `ChoreEdit/ChoreView`,
 `ArchivedTasks` (`/archived`), `LearnMore`, `NotFound`, `NavBarLink`,

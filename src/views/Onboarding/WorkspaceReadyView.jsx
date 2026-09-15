@@ -18,7 +18,7 @@ const cardSx = {
   bgcolor: 'background.surface',
   border: '1px solid',
   borderColor: 'divider',
-  borderRadius: 'var(--daydan-radius-card)',
+  borderRadius: 'var(--dydan-radius-card)',
 }
 
 const WorkspaceReadyView = () => {
@@ -57,7 +57,7 @@ const WorkspaceReadyView = () => {
     await RevenueCatUI.presentPaywall({ offering: offerings.current })
 
     const { customerInfo } = await Purchases.getCustomerInfo()
-    if (customerInfo.entitlements.active['Donetick Plus']) {
+    if (customerInfo.entitlements.active['Dydan Plus']) {
       queryClient.invalidateQueries(['userProfile'])
     }
   }

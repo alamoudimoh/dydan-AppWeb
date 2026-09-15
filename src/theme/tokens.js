@@ -8,7 +8,7 @@ const status = Object.freeze({
 })
 
 const accents = Object.freeze({
-  daydan: {
+  dydan: {
     light: {
       members: [
         '#0EA5E9',
@@ -67,11 +67,11 @@ const accents = Object.freeze({
 })
 
 export const productTokens = Object.freeze({
-  daydan: {
-    id: 'daydan',
-    name: 'DayDan',
+  dydan: {
+    id: 'dydan',
+    name: 'Dydan',
     font: {
-      ui: PRODUCT_UI_FONTS.daydan,
+      ui: PRODUCT_UI_FONTS.dydan,
       arabic: ARABIC_UI_FONT,
       data: DATA_FONT,
     },
@@ -194,7 +194,7 @@ export const productTokens = Object.freeze({
 for (const tokens of Object.values(productTokens)) tokens.status = status
 
 export const resolveProductBrand = value =>
-  value === 'sovereign' ? 'sovereign' : 'daydan'
+  value === 'sovereign' ? 'sovereign' : 'dydan'
 
 export const productCssVariables = (brandId, scheme) => {
   const brand = productTokens[resolveProductBrand(brandId)]
@@ -274,30 +274,29 @@ export const productCssVariables = (brandId, scheme) => {
   })
   return {
     ...variables,
-    '--daydan-primary': variables['--product-primary'],
-    '--daydan-signal': variables['--product-signal'],
-    '--daydan-ink': colors.strong,
-    '--daydan-page': variables['--product-page'],
-    '--daydan-surface': variables['--product-surface'],
-    '--daydan-surface-subtle': variables['--product-surface-subtle'],
-    '--daydan-brand-soft': variables['--product-brand-soft'],
-    '--daydan-text': variables['--product-text'],
-    '--daydan-text-muted': variables['--product-text-muted'],
-    '--daydan-boundary': variables['--product-boundary'],
-    '--daydan-focus-inner': variables['--product-focus-inner'],
-    '--daydan-focus-outer': variables['--product-focus-outer'],
-    '--daydan-font-ui': variables['--product-font-ui'],
-    '--daydan-font-arabic': variables['--product-font-arabic'],
-    '--daydan-font-data': variables['--product-font-data'],
-    '--daydan-radius-nav': variables['--product-radius-nav'],
-    '--daydan-radius-control': variables['--product-radius-control'],
-    '--daydan-radius-row': variables['--product-radius-row'],
-    '--daydan-radius-card': variables['--product-radius-card'],
-    '--daydan-radius-shell': variables['--product-radius-shell'],
+    '--dydan-primary': variables['--product-primary'],
+    '--dydan-signal': variables['--product-signal'],
+    '--dydan-ink': colors.strong,
+    '--dydan-page': variables['--product-page'],
+    '--dydan-surface': variables['--product-surface'],
+    '--dydan-surface-subtle': variables['--product-surface-subtle'],
+    '--dydan-brand-soft': variables['--product-brand-soft'],
+    '--dydan-text': variables['--product-text'],
+    '--dydan-text-muted': variables['--product-text-muted'],
+    '--dydan-boundary': variables['--product-boundary'],
+    '--dydan-focus-inner': variables['--product-focus-inner'],
+    '--dydan-focus-outer': variables['--product-focus-outer'],
+    '--dydan-font-ui': variables['--product-font-ui'],
+    '--dydan-font-arabic': variables['--product-font-arabic'],
+    '--dydan-font-data': variables['--product-font-data'],
+    '--dydan-radius-nav': variables['--product-radius-nav'],
+    '--dydan-radius-control': variables['--product-radius-control'],
+    '--dydan-radius-row': variables['--product-radius-row'],
+    '--dydan-radius-card': variables['--product-radius-card'],
+    '--dydan-radius-shell': variables['--product-radius-shell'],
   }
 }
 
-export const daydanTokens = productTokens.daydan
-export const daydanCssVariables = scheme =>
-  productCssVariables('daydan', scheme)
+export const dydanTokens = productTokens.dydan
+export const dydanCssVariables = scheme => productCssVariables('dydan', scheme)
 export const productAccentPalettes = accents

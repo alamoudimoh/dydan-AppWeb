@@ -1,6 +1,6 @@
 const hex = value => value.toUpperCase()
 
-export const DAYDAN_BRAND_PRIMARY = Object.freeze({
+export const DYDAN_BRAND_PRIMARY = Object.freeze({
   light: '#4D40DB',
   dark: '#A59CF5',
 })
@@ -11,7 +11,7 @@ export const SOVEREIGN_BRAND_PRIMARY = Object.freeze({
 })
 
 export const REFERENCE_ACCENT_PALETTES = Object.freeze({
-  daydan: {
+  dydan: {
     light: {
       '--ref-wordmark-font': "'Comfortaa Variable', 'Comfortaa', sans-serif",
       '--ref-member-1': '#0EA5E9',
@@ -132,10 +132,10 @@ export const REFERENCE_ACCENT_PALETTES = Object.freeze({
 export const assertNoBrandLeak = () => {
   const violations = []
   for (const scheme of ['light', 'dark']) {
-    const daydanPrimary = hex(DAYDAN_BRAND_PRIMARY[scheme])
+    const dydanPrimary = hex(DYDAN_BRAND_PRIMARY[scheme])
     const sovereignPrimary = hex(SOVEREIGN_BRAND_PRIMARY[scheme])
     for (const [brand, primary] of [
-      ['daydan', daydanPrimary],
+      ['dydan', dydanPrimary],
       ['sovereign', sovereignPrimary],
     ]) {
       const palette = REFERENCE_ACCENT_PALETTES[brand][scheme]

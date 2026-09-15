@@ -21,17 +21,17 @@ platform :ios do
       scheme: "App",
       export_method: "app-store",
       output_directory: IOS_OUTPUT_DIR,
-      output_name: "DayDan.ipa",
+      output_name: "Dydan.ipa",
       export_options: {
         signingStyle: "manual",
         provisioningProfiles: {
-          "com.donetick.app" => "Donetick App Store(fastline)",
-          "com.donetick.app.widget" => "Donetick Widget App Store(fastline)",
+          "com.dydan.app" => "Dydan App Store(fastline)",
+          "com.dydan.app.widget" => "Dydan Widget App Store(fastline)",
         },
       },
     )
 
-    UI.success("Signed .ipa at #{IOS_OUTPUT_DIR}/DayDan.ipa")
+    UI.success("Signed .ipa at #{IOS_OUTPUT_DIR}/Dydan.ipa")
   end
 
   desc "Upload the built .ipa to TestFlight"
@@ -39,7 +39,7 @@ platform :ios do
     UI.user_error!("Missing #{IOS_KEY_PATH} — run scripts/pull-secrets.sh first") unless File.exist?(IOS_KEY_PATH)
     UI.user_error!("ASC_ISSUER_ID is not set (App Store Connect API key issuer id)") if ENV["ASC_ISSUER_ID"].to_s.empty?
 
-    ipa_path = File.join(IOS_OUTPUT_DIR, "DayDan.ipa")
+    ipa_path = File.join(IOS_OUTPUT_DIR, "Dydan.ipa")
     UI.user_error!("Missing #{ipa_path} — run `fastlane ios release` first") unless File.exist?(ipa_path)
 
     api_key = app_store_connect_api_key(
@@ -101,7 +101,7 @@ platform :android do
 
     upload_to_play_store(
       json_key: PLAY_JSON_KEY_PATH,
-      package_name: "com.donetick.app",
+      package_name: "com.dydan.app",
       aab: aab_path,
       track: options[:track] || "internal",
       skip_upload_metadata: true,

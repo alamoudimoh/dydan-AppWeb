@@ -14,7 +14,7 @@ public class WidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
     ]
 
-    static let appGroup = "group.com.donetick.app"
+    static let appGroup = "group.com.dydan.app"
     static let dataKey = "widget_tasks"
     static let configKey = "widget_config"
 

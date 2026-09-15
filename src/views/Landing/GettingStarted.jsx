@@ -9,7 +9,7 @@ import {
 import { Box, Button, Card, Container, Grid, Typography } from '@mui/joy'
 import { useNavigate } from 'react-router-dom'
 
-import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
+import { DYDAN_APP_REPO } from '@/config/ReportDestinations'
 
 function StartOptionCard({ button, description, icon: Icon, index, title }) {
   return (
@@ -135,10 +135,9 @@ const GettingStarted = () => {
   const navigate = useNavigate()
   const information = [
     {
-      title: 'DayDan Web',
+      title: 'Dydan Web',
       icon: <Cloud />,
-      description:
-        'The easiest way! Just create account and start using DayDan',
+      description: 'The easiest way! Just create account and start using Dydan',
       button: (
         <Button
           size='lg'
@@ -155,14 +154,14 @@ const GettingStarted = () => {
     {
       title: 'Selfhosted',
       icon: <Storage />,
-      description: 'Download the binary and manage your own DayDan instance',
+      description: 'Download the binary and manage your own Dydan instance',
       button: (
         <Button
           size='lg'
           fullWidth
           startDecorator={<GitHub />}
           onClick={() => {
-            window.open(`${DAYDAN_APP_REPO}/releases`, '_blank')
+            window.open(`${DYDAN_APP_REPO}/releases`, '_blank')
           }}
         >
           Github Releases
@@ -255,7 +254,7 @@ const GettingStarted = () => {
               mx: 'auto',
             }}
           >
-            Get the full DayDan experience with notifications, realtime updates,
+            Get the full Dydan experience with notifications, realtime updates,
             and seamless task management on the go
           </Typography>
 
@@ -329,7 +328,7 @@ const GettingStarted = () => {
             <Box
               onClick={() => {
                 window.open(
-                  'https://play.google.com/store/apps/details?id=com.donetick.app',
+                  'https://play.google.com/store/apps/details?id=com.dydan.app',
                   '_blank',
                 )
               }}

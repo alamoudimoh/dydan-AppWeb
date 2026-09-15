@@ -1,6 +1,6 @@
 {
-  "name": "DayDan: Simplify tasks & chores, together.",
-  "short_name": "DayDan",
+  "name": "Dydan: Simplify tasks & chores, together.",
+  "short_name": "Dydan",
   "description": "An open-source, user-friendly app for managing tasks and chores, featuring customizable options to help you and others stay organized",
   "start_url": "/index.html",
   "scope": "/",

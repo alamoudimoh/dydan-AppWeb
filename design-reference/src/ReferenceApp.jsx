@@ -179,12 +179,10 @@ const Navigation = ({ activePage, brand, onNavigate }) => (
                     minHeight: 38,
                     px: 1.25,
                     color: active ? 'primary.500' : 'text.primary',
-                    bgcolor: active
-                      ? 'var(--daydan-brand-soft)'
-                      : 'transparent',
+                    bgcolor: active ? 'var(--dydan-brand-soft)' : 'transparent',
                     '&:hover': {
                       bgcolor: active
-                        ? 'var(--daydan-brand-soft)'
+                        ? 'var(--dydan-brand-soft)'
                         : 'neutral.softHoverBg',
                     },
                   }}
@@ -294,7 +292,7 @@ const TopBar = ({
           },
         }}
       >
-        <Option value='daydan'>DayDan</Option>
+        <Option value='dydan'>Dydan</Option>
         <Option value='sovereign'>Sovereign</Option>
       </Select>
       <Tooltip
@@ -417,7 +415,7 @@ const ReferenceExperience = ({
 }
 
 export default function ReferenceApp() {
-  const [brandId, setBrandId] = useState('daydan')
+  const [brandId, setBrandId] = useState('dydan')
   const [colorMode, setColorMode] = useState('light')
   const [direction, setDirection] = useState('ltr')
   const theme = useMemo(() => getReferenceTheme(brandId), [brandId])
@@ -438,7 +436,7 @@ export default function ReferenceApp() {
       key={brandId}
       theme={theme}
       defaultMode={colorMode}
-      modeStorageKey='daydan-reference-color-mode'
+      modeStorageKey='dydan-reference-color-mode'
     >
       <CssBaseline />
       <GlobalStyles styles={globalStyles} />

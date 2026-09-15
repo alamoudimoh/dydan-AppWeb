@@ -1,4 +1,4 @@
-/** Shared page rhythm for list/detail screens (DayDan Figma system). */
+/** Shared page rhythm for list/detail screens (Dydan Figma system). */
 
 export const APP_PAGE_MAX_WIDTH = Object.freeze({
   wide: 1128,
@@ -69,7 +69,7 @@ export const sectionCardSx = {
   gap: 1.5,
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: 'var(--daydan-radius-card)',
+  borderRadius: 'var(--dydan-radius-card)',
   boxShadow: 'none',
   bgcolor: 'background.surface',
   border: '1px solid',
@@ -90,7 +90,7 @@ export const sectionCardHeaderSx = {
 
 export const nestedRowSx = {
   p: 1.75,
-  borderRadius: 'var(--daydan-radius-row)',
+  borderRadius: 'var(--dydan-radius-row)',
   border: '1px solid',
   borderColor: 'divider',
   bgcolor: 'background.surface',

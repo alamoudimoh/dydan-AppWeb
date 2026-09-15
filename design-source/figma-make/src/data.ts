@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   DayDan Prototype Data — Mitchell Household
+   Dydan Prototype Data — Mitchell Household
    One coherent story used across all screens
 ───────────────────────────────────────────── */
 

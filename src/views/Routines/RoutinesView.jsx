@@ -126,7 +126,7 @@ const TaskSummary = ({ item, members }) => {
       </div>
       <div className='text-muted' style={{ fontSize: 12 }}>
         {recurrence(item, t)} ·{' '}
-        <span className='daydan-metric'>
+        <span className='dydan-metric'>
           {t('dashboard.ptsValue', { count: item.points || 0 })}
         </span>
         {item.requireApproval ? ` · ${t('routines.approvalRequired')}` : ''}

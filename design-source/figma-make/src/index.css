@@ -3,12 +3,12 @@
 @import 'tailwindcss';
 
 /* ─────────────────────────────────────────
-   DayDan — Design Token Foundation
+   Dydan — Design Token Foundation
    Two themes × Two views × LTR + RTL
 ───────────────────────────────────────── */
 
 :root {
-  /* DayDan (default) */
+  /* Dydan (default) */
   --page:             #F8FAFF;
   --surface:          #FFFFFF;
   --surface-2:        #E9E5FF;

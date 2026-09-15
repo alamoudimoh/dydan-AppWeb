@@ -1,5 +1,5 @@
 /**
- * Pure adapters that map DayDan contracts to the Figma Home/Today task model.
+ * Pure adapters that map Dydan contracts to the Figma Home/Today task model.
  * Kept free of UI and query libraries so every branch is unit-testable
  * against deterministic fixtures (authority: design-source/figma-make).
  */

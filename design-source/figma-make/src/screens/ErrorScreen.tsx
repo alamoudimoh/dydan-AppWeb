@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AppCtx, Icon } from "../App";
 
-const ERROR_REPORT = `DayDan Error Report
+const ERROR_REPORT = `Dydan Error Report
 -------------------
 Timestamp: 2026-08-15T09:42:11.312Z
 Session: sess_8af3c2e1
@@ -53,7 +53,7 @@ export default function ErrorScreen({ ctx }: { ctx: AppCtx }) {
         <div style={{ fontSize: 56 }}>✅</div>
         <div className="font-bold text-primary mt-4" style={{ fontSize: 20 }}>Report sent — thank you!</div>
         <div className="text-muted mt-2" style={{ fontSize: 14, textAlign: "center", maxWidth: 360 }}>
-          We review every report and use them to improve DayDan. Returning you home now.
+          We review every report and use them to improve Dydan. Returning you home now.
         </div>
       </div>
     );

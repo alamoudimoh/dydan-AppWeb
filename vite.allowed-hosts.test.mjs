@@ -6,19 +6,19 @@ import {
   resolveAllowedHostsEnv,
 } from './vite.allowed-hosts.mjs'
 
-test('resolveAllowedHostsEnv prefers DAYDAN_ALLOWED_HOSTS over legacy Taskier env', () => {
+test('resolveAllowedHostsEnv prefers DYDAN_ALLOWED_HOSTS over legacy Dydan env', () => {
   assert.equal(
     resolveAllowedHostsEnv({
-      DAYDAN_ALLOWED_HOSTS: 'dev.daydan.test',
-      TASKIER_ALLOWED_HOSTS: 'dev.taskier.test',
+      DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',
+      DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',
     }),
-    'dev.daydan.test',
+    'dev.dydan.test',
   )
   assert.equal(
     resolveAllowedHostsEnv({
-      TASKIER_ALLOWED_HOSTS: 'dev.taskier.test',
+      DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',
     }),
-    'dev.taskier.test',
+    'dev.dydan.test',
   )
 })
 

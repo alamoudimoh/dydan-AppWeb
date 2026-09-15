@@ -16,14 +16,7 @@ const TermsView = lazy(() => import('./views/Terms/TermsView'))
 const page = element => <Suspense fallback={null}>{element}</Suspense>
 
 const AppRedirect = () => {
-  useEffect(() => {
-    const { hash, pathname, search } = window.location
-    window.location.replace(
-      `https://app.donetick.com${pathname}${search}${hash}`,
-    )
-  }, [])
-
-  return null
+  return <Landing />
 }
 
 const router = createBrowserRouter([

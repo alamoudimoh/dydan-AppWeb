@@ -118,7 +118,7 @@ export default function RewardsView() {
             <Card variant='soft' key={label}>
               <CardContent>
                 <Typography level='body-sm'>{t(label)}</Typography>
-                <Typography level='h2' className='daydan-metric'>
+                <Typography level='h2' className='dydan-metric'>
                   {t('rewards.points', { count: value })}
                 </Typography>
               </CardContent>
@@ -170,7 +170,7 @@ export default function RewardsView() {
                     )}
                     <Typography
                       level='h3'
-                      className='daydan-metric'
+                      className='dydan-metric'
                       sx={{ mt: 'auto' }}
                     >
                       {t('rewards.points', { count: reward.costPoints })}

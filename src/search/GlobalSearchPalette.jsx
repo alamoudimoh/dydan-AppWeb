@@ -5,11 +5,8 @@ import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../components/common/AppModal'
 import FigmaIcon from '../components/FigmaIcon'
+import { readLocalStorageJSON, writeLocalStorageJSON } from '../utils/storage'
 import { STORAGE_KEYS } from '../utils/storageKeys'
-import {
-  readMigratedLocalStorageJSON,
-  writeLocalStorageJSON,
-} from '../utils/storageMigration'
 
 const RECENTS_KEY = STORAGE_KEYS.globalSearchRecents
 const GROUPS = [
@@ -63,7 +60,7 @@ const QUICK_ACTIONS = [
   },
 ]
 
-const readRecents = () => readMigratedLocalStorageJSON(RECENTS_KEY, [])
+const readRecents = () => readLocalStorageJSON(RECENTS_KEY, [])
 
 const saveRecent = result => {
   if (result.provider === 'actions') return

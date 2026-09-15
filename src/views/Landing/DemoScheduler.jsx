@@ -51,14 +51,14 @@ const DemoScheduler = () => {
             Advanced Scheduling and Automation
           </Typography>
           <Typography level='body-lg' textAlign='center' sx={{ mb: 4 }}>
-            Scheduling is a crucial aspect of managing tasks and chores. DayDan
+            Scheduling is a crucial aspect of managing tasks and chores. Dydan
             offers basic scheduling options, such as recurring tasks daily,
             weekly, or yearly, as well as more customizable schedules like
             specific days of the week or month. For those unsure of exact
             frequencies, the adaptive scheduling feature averages based on how
-            often you mark a task as completed. Additionally, DayDan supports
+            often you mark a task as completed. Additionally, Dydan supports
             automation by linking tasks with triggers via API. When specific
-            conditions are met, DayDan’s Things feature will automatically
+            conditions are met, Dydan’s Things feature will automatically
             initiate the task, streamlining your workflow.
           </Typography>
         </Card>

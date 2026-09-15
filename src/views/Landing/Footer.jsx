@@ -15,7 +15,7 @@ import {
   APP_DISPLAY_NAME,
   APP_SUPPORT_URL,
 } from '@/config/AppBranding'
-import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
+import { DYDAN_APP_REPO } from '@/config/ReportDestinations'
 
 import { version } from '../../../package.json'
 
@@ -31,36 +31,36 @@ const Footer = () => {
     resources: [
       {
         label: 'Documentation',
-        href: `${DAYDAN_APP_REPO}#readme`,
+        href: `${DYDAN_APP_REPO}#readme`,
       },
       {
         label: 'Report an issue',
-        href: `${DAYDAN_APP_REPO}/issues`,
+        href: `${DYDAN_APP_REPO}/issues`,
       },
       {
         label: 'Discussions',
-        href: `${DAYDAN_APP_REPO}/discussions`,
+        href: `${DYDAN_APP_REPO}/discussions`,
       },
     ],
     downloads: [
       {
         label: 'GitHub Releases',
-        href: `${DAYDAN_APP_REPO}/releases`,
+        href: `${DYDAN_APP_REPO}/releases`,
       },
-      { label: 'Source Code', href: DAYDAN_APP_REPO },
+      { label: 'Source Code', href: DYDAN_APP_REPO },
     ],
     legal: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      ...(APP_BRAND_ID === 'daydan'
+      ...(APP_BRAND_ID === 'dydan'
         ? [
             {
               label: 'License',
-              href: `${DAYDAN_APP_REPO}/blob/develop/LICENSE`,
+              href: `${DYDAN_APP_REPO}/blob/develop/LICENSE`,
             },
             {
               label: 'Changelog',
-              href: `${DAYDAN_APP_REPO}/releases`,
+              href: `${DYDAN_APP_REPO}/releases`,
             },
           ]
         : []),
@@ -68,11 +68,11 @@ const Footer = () => {
   }
 
   const socialLinks = [
-    ...(APP_BRAND_ID === 'daydan'
+    ...(APP_BRAND_ID === 'dydan'
       ? [
           {
             icon: <GitHub />,
-            href: DAYDAN_APP_REPO,
+            href: DYDAN_APP_REPO,
             label: 'GitHub',
           },
         ]
@@ -102,7 +102,7 @@ const Footer = () => {
           <Grid xs={12} md={4}>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                {APP_BRAND_ID === 'daydan' && (
+                {APP_BRAND_ID === 'dydan' && (
                   <img src={LogoSVG} alt='' width='48px' height='48px' />
                 )}
                 <Typography
@@ -195,7 +195,7 @@ const Footer = () => {
                 </Box>
               </Grid>
 
-              {APP_BRAND_ID === 'daydan' && (
+              {APP_BRAND_ID === 'dydan' && (
                 <Grid xs={6} sm={3}>
                   <Typography
                     level='title-md'
@@ -233,7 +233,7 @@ const Footer = () => {
                 </Grid>
               )}
 
-              {APP_BRAND_ID === 'daydan' && (
+              {APP_BRAND_ID === 'dydan' && (
                 <Grid xs={6} sm={3}>
                   <Typography
                     level='title-md'

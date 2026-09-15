@@ -20,9 +20,9 @@ document.documentElement.dataset.theme = APP_BRAND_ID
 // No-op unless VITE_SENTRY_DSN is configured; the SDK stays dormant otherwise.
 initSentry()
 
-const marketingHosts = new Set(['donetick.com', 'www.donetick.com'])
+const marketingHost = import.meta.env.VITE_DYDAN_MARKETING_HOST
 const isMarketingSite =
-  marketingHosts.has(window.location.hostname) ||
+  (marketingHost && window.location.hostname === marketingHost) ||
   (import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get('site') === 'marketing')
 

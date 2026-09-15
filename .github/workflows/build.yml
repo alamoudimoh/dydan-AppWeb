@@ -1,4 +1,4 @@
-name: DayDan App CI
+name: Dydan App CI
 
 on:
   push:
@@ -151,6 +151,6 @@ jobs:
         with:
           files: coverage/lcov.info
           flags: unit
-          name: daydan-app-unit
+          name: dydan-app-unit
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}

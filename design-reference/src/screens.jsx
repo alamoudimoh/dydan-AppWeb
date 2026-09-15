@@ -262,7 +262,7 @@ const StatCard = ({ detail, icon, label, tone = 'primary', value }) => (
         sx={{
           width: 36,
           height: 36,
-          borderRadius: 'var(--daydan-radius-control)',
+          borderRadius: 'var(--dydan-radius-control)',
           display: 'grid',
           placeItems: 'center',
           bgcolor: `${tone}.softBg`,
@@ -737,7 +737,7 @@ function RoutinesScreen() {
                     height: 42,
                     display: 'grid',
                     placeItems: 'center',
-                    borderRadius: 'var(--daydan-radius-control)',
+                    borderRadius: 'var(--dydan-radius-control)',
                     bgcolor: 'background.level1',
                     color: 'var(--routine-color)',
                   }}
@@ -1124,7 +1124,7 @@ function CalendarScreen() {
                       borderRadius: '50%',
                       bgcolor: 'primary.solidBg',
                       color: 'primary.solidColor',
-                      fontFamily: 'var(--daydan-font-data)',
+                      fontFamily: 'var(--dydan-font-data)',
                     }
                   : {}),
               }}
@@ -1278,7 +1278,7 @@ function ProgressScreen() {
                   contentStyle={{
                     background: 'var(--joy-palette-background-popup)',
                     border: '1px solid var(--joy-palette-divider)',
-                    borderRadius: 'var(--daydan-radius-control)',
+                    borderRadius: 'var(--dydan-radius-control)',
                     color: 'var(--joy-palette-text-primary)',
                   }}
                 />
@@ -1398,7 +1398,7 @@ function MetersScreen() {
                     height: 42,
                     display: 'grid',
                     placeItems: 'center',
-                    borderRadius: 'var(--daydan-radius-control)',
+                    borderRadius: 'var(--dydan-radius-control)',
                     bgcolor: 'background.level1',
                     color: meter.color,
                   }}
@@ -1565,7 +1565,7 @@ function RewardsScreen() {
                   placeItems: 'center',
                   bgcolor: 'background.level1',
                   color,
-                  borderRadius: 'var(--daydan-radius-control)',
+                  borderRadius: 'var(--dydan-radius-control)',
                 }}
               >
                 <CardGiftcardRounded />
@@ -1854,7 +1854,7 @@ function SessionsScreen() {
                   placeItems: 'center',
                   bgcolor: 'primary.softBg',
                   color: 'primary.softColor',
-                  borderRadius: 'var(--daydan-radius-control)',
+                  borderRadius: 'var(--dydan-radius-control)',
                 }}
               >
                 <MailOutlineRounded />
@@ -1878,7 +1878,7 @@ function SessionsScreen() {
                   display: 'grid',
                   placeItems: 'center',
                   bgcolor: 'background.level1',
-                  borderRadius: 'var(--daydan-radius-control)',
+                  borderRadius: 'var(--dydan-radius-control)',
                 }}
               >
                 <SecurityRounded />
@@ -1938,7 +1938,7 @@ function SessionsScreen() {
                       <Stack direction='row' spacing={1} alignItems='center'>
                         <DevicesRounded />
                         <Typography level='title-sm'>
-                          DayDan on iPhone
+                          Dydan on iPhone
                         </Typography>
                       </Stack>
                     </td>

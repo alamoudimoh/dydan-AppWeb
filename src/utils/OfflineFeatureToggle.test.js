@@ -29,7 +29,6 @@ globalThis.window = {
 }
 
 const {
-  LEGACY_OFFLINE_FEATURE_EVENT,
   OFFLINE_FEATURE_EVENT,
   setOfflineFeatureEnabled,
   subscribeToOfflineFeature,
@@ -40,19 +39,18 @@ const reset = () => {
   localStorage.clear()
 }
 
-test('setOfflineFeatureEnabled emits DayDan and legacy offline events', () => {
+test('setOfflineFeatureEnabled emits the Dydan offline event', () => {
   reset()
   const seen = []
   const handler = event => seen.push(event.type)
   window.addEventListener(OFFLINE_FEATURE_EVENT, handler)
-  window.addEventListener(LEGACY_OFFLINE_FEATURE_EVENT, handler)
 
   setOfflineFeatureEnabled(false)
 
-  assert.deepEqual(seen, [OFFLINE_FEATURE_EVENT, LEGACY_OFFLINE_FEATURE_EVENT])
+  assert.deepEqual(seen, [OFFLINE_FEATURE_EVENT])
 })
 
-test('subscribeToOfflineFeature handles DayDan and legacy events', () => {
+test('subscribeToOfflineFeature handles the Dydan offline event', () => {
   reset()
   const values = []
   const unsubscribe = subscribeToOfflineFeature(enabled => {
@@ -62,12 +60,6 @@ test('subscribeToOfflineFeature handles DayDan and legacy events', () => {
   window.dispatchEvent(
     new CustomEvent(OFFLINE_FEATURE_EVENT, { detail: { enabled: true } }),
   )
-  window.dispatchEvent(
-    new CustomEvent(LEGACY_OFFLINE_FEATURE_EVENT, {
-      detail: { enabled: false },
-    }),
-  )
-
   unsubscribe()
-  assert.deepEqual(values, [true, false])
+  assert.deepEqual(values, [true])
 })

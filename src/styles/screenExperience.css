@@ -1,5 +1,5 @@
 /* Screen-level layout rules shared by the task, project, goal, routine, and
-   calendar experiences. These complement the global DayDan primitives without
+   calendar experiences. These complement the global Dydan primitives without
    changing their behavior for legacy routes. */
 .screen-page-header > .screen-page-action {
   flex-shrink: 0;

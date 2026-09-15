@@ -52,11 +52,11 @@ const navigateToChore = (choreId, { autoComplete, isColdStart } = {}) => {
   routerNavigate(path, { seedHome: isColdStart })
 }
 
-// NFC chore deep link: donetick://chores/123?auto_complete=true
+// NFC chore deep link: dydan://chores/123?auto_complete=true
 const handleNFCChoreDeepLink = (url, isColdStart) => {
   try {
     const urlObj = new URL(url)
-    // donetick://chores/123 → host='chores', pathname='/123'
+    // dydan://chores/123 → host='chores', pathname='/123'
     navigateToChore(urlObj.pathname.slice(1), {
       autoComplete: urlObj.searchParams.get('auto_complete'),
       isColdStart,
@@ -76,7 +76,7 @@ const handleUrlOpen = (url, isColdStart = false) => {
   }
 
   const isCircleInvite =
-    (parsedUrl.protocol === 'donetick:' &&
+    (parsedUrl.protocol === 'dydan:' &&
       parsedUrl.host === 'circle' &&
       parsedUrl.pathname === '/join') ||
     (parsedUrl.protocol === 'https:' && parsedUrl.pathname === '/circle/join')
@@ -87,7 +87,7 @@ const handleUrlOpen = (url, isColdStart = false) => {
     routerNavigate(
       needsOnboarding ? '/onboarding' : `/circle/join${parsedUrl.search}`,
     )
-  } else if (url.startsWith('donetick://chores/add')) {
+  } else if (url.startsWith('dydan://chores/add')) {
     // Widget "+" / quick-capture buttons: land on the chore list with the
     // quick-add modal open (MyChores watches for the add_task param and
     // consumes it). ?mode=scan|voice opens straight into that capture panel.
@@ -102,9 +102,9 @@ const handleUrlOpen = (url, isColdStart = false) => {
         ? `/chores?add_task=1&mode=${mode}`
         : '/chores?add_task=1',
     )
-  } else if (url.startsWith('donetick://chores/')) {
+  } else if (url.startsWith('dydan://chores/')) {
     handleNFCChoreDeepLink(url, isColdStart)
-  } else if (url.startsWith('donetick://auth/')) {
+  } else if (url.startsWith('dydan://auth/')) {
     handleOAuthDeepLink(url)
   }
 }

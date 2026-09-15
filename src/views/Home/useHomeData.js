@@ -41,7 +41,7 @@ const nameOf = (profile, fallbackName) => {
 }
 
 /**
- * Binds the Figma Home/Today screens to the live DayDan query layer.
+ * Binds the Figma Home/Today screens to the live Dydan query layer.
  * Resolves the persona (quest = child) exactly like the rest of the app and
  * derives every list/stat through the pure adapters in ./homeModel.
  */

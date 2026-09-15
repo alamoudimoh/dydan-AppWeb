@@ -3,7 +3,6 @@ import 'aos/dist/aos.css'
 import { Box, Container, Grid } from '@mui/joy'
 import AOS from 'aos'
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import CookiePermissionSnackbar from './CookiePermissionSnackbar'
 import DemoAssignee from './DemoAssignee'
@@ -17,16 +16,11 @@ import GettingStarted from './GettingStarted'
 import HomeHero from './HomeHero'
 import TabletInstallationSection from './TabletInstallationSection'
 const Landing = () => {
-  const Navigate = useNavigate()
   useEffect(() => {
-    // if the host is https://app.donetick.com/ then redirect to https://app.donetick.com/my/chores:
-    if (window.location.host === 'app.donetick.com') {
-      Navigate('/chores')
-    }
     AOS.init({
       once: false, // whether animation should happen only once - while scrolling down
     })
-  }, [Navigate])
+  }, [])
 
   return (
     <Container className='flex min-h-full flex-col'>

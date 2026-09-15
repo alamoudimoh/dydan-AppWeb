@@ -6,7 +6,7 @@ const json = (body, status = 200, headers = {}) => ({
 })
 
 const error = (status, message) =>
-  json({ error: message }, status, { 'X-DayDan-Mock-Contract-Error': message })
+  json({ error: message }, status, { 'X-Dydan-Mock-Contract-Error': message })
 
 export const hasAuthorization = request => {
   const headers = request.headers()
@@ -153,7 +153,7 @@ const endpoint = ({
 }) => ({ method, path, response, query, validate })
 
 // This is the E2E contract registry. Each entry is backed by a route and DTO
-// inspected in daydan-server; no collection wildcard is allowed to mask drift.
+// inspected in dydan-server; no collection wildcard is allowed to mask drift.
 export const apiMockContract = [
   endpoint({
     method: 'GET',

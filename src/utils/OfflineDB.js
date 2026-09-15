@@ -3,10 +3,6 @@ import { CapacitorSQLite } from '@capacitor-community/sqlite'
 
 import { isOfflineFeatureEnabled } from './OfflineFeatureToggle'
 import { OFFLINE_DB } from './storageKeys'
-import {
-  migrateNativeOfflineSqliteIfNeeded,
-  migrateOfflineIndexedDbIfNeeded,
-} from './storageMigration'
 
 const DB_NAME = OFFLINE_DB.canonical
 const DB_VERSION = OFFLINE_DB.version
@@ -135,8 +131,6 @@ class SQLiteBackend {
     } catch {
       // column already exists
     }
-
-    await migrateNativeOfflineSqliteIfNeeded(CapacitorSQLite)
 
     this.initialized = true
   }
@@ -593,7 +587,6 @@ class IndexedDBBackend {
 
   async init() {
     if (this.initialized) return
-    await migrateOfflineIndexedDbIfNeeded()
     this.db = await this._open()
     // Re-open if browser closes the connection (e.g. after device sleep)
     this.db.onclose = () => {

@@ -90,11 +90,11 @@ const TermsView = () => {
 
       <LegalParagraph>
         These Terms of Service (&quot;Terms&quot;) govern your access to and use
-        of the DayDan task management platform provided by Favoro LLC
-        (&quot;DayDan&quot;, &quot;we&quot;, &quot;us&quot;, or
-        &quot;our&quot;). By accessing or using our services, you agree to be
-        bound by these Terms. If you do not agree to these Terms, you may not
-        access or use our services.
+        of the Dydan task management platform provided by Favoro LLC
+        (&quot;Dydan&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;).
+        By accessing or using our services, you agree to be bound by these
+        Terms. If you do not agree to these Terms, you may not access or use our
+        services.
       </LegalParagraph>
 
       <Card
@@ -103,7 +103,7 @@ const TermsView = () => {
         sx={{
           my: 2.5,
           p: { xs: 2, sm: 2.5 },
-          borderRadius: 'var(--daydan-radius-card)',
+          borderRadius: 'var(--dydan-radius-card)',
           bgcolor: 'background.level1',
           border: '1px solid',
           borderColor: 'divider',
@@ -113,13 +113,13 @@ const TermsView = () => {
           {t('legal.important')}: {t('legal.cloudVsSelfHosted')}
         </Typography>
         <Typography level='body-md' sx={{ mb: 1.5, lineHeight: 1.6 }}>
-          DayDan is available in two deployment models with different terms and
+          Dydan is available in two deployment models with different terms and
           responsibilities:
         </Typography>
         <LegalList>
           <LegalListItem>
-            <strong>Cloud-Hosted Service:</strong> Hosted at donetick.com where
-            we provide infrastructure and data management
+            <strong>Cloud-Hosted Service:</strong> A separately configured
+            deployment where we provide infrastructure and data management
           </LegalListItem>
           <LegalListItem>
             <strong>Self-Hosted Service:</strong> Open-source software you
@@ -136,12 +136,12 @@ const TermsView = () => {
         <SectionCard title='1. Definitions' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              <strong>&quot;Cloud Service&quot;</strong> refers to the DayDan
-              platform hosted at donetick.com and managed by Favoro LLC
+              <strong>&quot;Cloud Service&quot;</strong> refers to the Dydan
+              platform hosted by its designated operator
             </LegalListItem>
             <LegalListItem>
               <strong>&quot;Self-Hosted Service&quot;</strong> refers to the
-              open-source DayDan software deployed on user-controlled
+              open-source Dydan software deployed on user-controlled
               infrastructure
             </LegalListItem>
             <LegalListItem>
@@ -183,8 +183,7 @@ const TermsView = () => {
 
         <SectionCard title='3. Cloud-Hosted Service Terms' titleLevel='h2'>
           <LegalEmphasis>
-            This section applies only to users of the Cloud Service at
-            donetick.com
+            This section applies only to users of a configured Cloud Service
           </LegalEmphasis>
 
           <SectionTitle>3.1 Service Availability and Uptime</SectionTitle>
@@ -269,7 +268,7 @@ const TermsView = () => {
 
         <SectionCard title='4. Self-Hosted Service Terms' titleLevel='h2'>
           <LegalEmphasis>
-            This section applies to users deploying DayDan on their own
+            This section applies to users deploying Dydan on their own
             infrastructure
           </LegalEmphasis>
 
@@ -282,7 +281,7 @@ const TermsView = () => {
               You may modify, distribute, and use the software for any purpose
             </LegalListItem>
             <LegalListItem>
-              Attribution to DayDan must be maintained in derivative works
+              Attribution to Dydan must be maintained in derivative works
             </LegalListItem>
             <LegalListItem>
               No warranty or support is provided for self-hosted deployments
@@ -397,7 +396,7 @@ const TermsView = () => {
               You are responsible for security in self-hosted deployments
             </LegalListItem>
             <LegalListItem>
-              Report security vulnerabilities to security@donetick.com
+              Report security vulnerabilities through the Dydan support channel
             </LegalListItem>
           </LegalList>
         </SectionCard>
@@ -405,7 +404,7 @@ const TermsView = () => {
         <SectionCard title='8. Intellectual Property' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              The DayDan name, logo, and proprietary features are our
+              The Dydan name, logo, and proprietary features are our
               intellectual property
             </LegalListItem>
             <LegalListItem>
@@ -420,7 +419,7 @@ const TermsView = () => {
         <SectionCard title='9. Third-Party Integrations' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              DayDan integrates with third-party services (Telegram, Discord,
+              Dydan integrates with third-party services (Telegram, Discord,
               webhooks, etc.)
             </LegalListItem>
             <LegalListItem>
@@ -570,11 +569,12 @@ const TermsView = () => {
           </LegalParagraph>
           <LegalList>
             <LegalListItem>
-              <strong>{t('legal.email')}:</strong> legal@donetick.com
+              <strong>{t('legal.email')}:</strong>{' '}
+              <Link href={APP_SUPPORT_URL}>Dydan support on GitHub</Link>
             </LegalListItem>
             <LegalListItem>
               <strong>{t('legal.support')}:</strong>{' '}
-              <Link href={APP_SUPPORT_URL}>DayDan support on GitHub</Link>
+              <Link href={APP_SUPPORT_URL}>Dydan support on GitHub</Link>
             </LegalListItem>
             <LegalListItem>
               <strong>{t('legal.address')}:</strong> Favoro LLC, [Address to be

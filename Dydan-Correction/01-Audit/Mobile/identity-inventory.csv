@@ -1,0 +1,12 @@
+ID,Legacy Identity,Scope,Disposition,Canonical Result,Status,Notes
+MOB-001,DayDan,UI/PWA/native/locales,Renamed,Dydan and Arabic دَيْدَن,Closed,Active display branding only
+MOB-002,daydan/DAYDAN,theme/build/release identifiers,Renamed,dydan/DYDAN,Closed,Repository-local technical identifiers
+MOB-003,Taskier/test compatibility keys,storage/fixtures,Removed,Dydan-only storage,Closed,No released data requires compatibility
+MOB-004,com.donetick.app,Capacitor/Android/iOS identities,Renamed,com.dydan.app,Closed,Owner confirmed no installed/store/external identity
+MOB-005,DonetickWidget,iOS widget target/files,Renamed,DydanWidget,Closed,Project references and bundle IDs updated
+MOB-006,donetick://,custom URI/OAuth/NFC,Dydan-only,dydan://,Closed,No registered redirects or deployed links
+MOB-007,app.donetick.com/App Links,Android/iOS association config,Removed,None,Closed,No Dydan production host is provisioned
+MOB-008,daydan_notifications/donetick_notifications,Android notification channels,Renamed,dydan_notifications,Closed,No persisted devices or server payload contract
+MOB-009,Donetick Firebase/signing/store identifiers,external configuration references,Removed or renamed,Dydan-ready source configuration,Closed,No external registrations or secrets exist
+MOB-010,daydan/donetick offline databases and browser keys,offline storage,Renamed,dydan_offline and dydan.*,Closed,No released data to copy
+MOB-011,legacy GitHub repository references,repository locators,Preserved,alamoudimoh/DayDan-AppWeb,Closed,Current remote slug is intentionally retained
