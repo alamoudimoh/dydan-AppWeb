@@ -31,6 +31,7 @@ vi.mock('react-i18next', () => ({
         'navigation.rewards': 'Rewards',
         'familyProgress.rewardsAwait': 'Keep going',
         'familyProgress.tasks': 'tasks',
+        'familyProgress.points': 'points',
         'familyProgress.viewHistory': 'View history',
         'filters.active': 'Active',
         'filters.priority': 'Priority',
@@ -48,6 +49,9 @@ vi.mock('react-i18next', () => ({
         'list.searchTasks': 'Search tasks',
         'multiselect.all': 'All',
         'rewards.noRewards': 'No rewards yet',
+        'rewards.requestReward': 'Request reward',
+        edit: 'Edit',
+        'familyProgress.archive': 'Archive',
         'routines.active': 'Active',
         'routines.archive': 'Archive',
         'routines.archived': 'Archived',
@@ -79,6 +83,14 @@ vi.mock('react-i18next', () => ({
       if (key === 'familyProgress.streakAndTasksCompleted') {
         return `${options.streak}-day streak · ${options.tasks} tasks completed`
       }
+      if (key === 'familyProgress.goalProgressLabel')
+        return `${options.name} progress`
+      if (key === 'familyProgress.rewardsAvailable')
+        return options.count === 1
+          ? '1 reward available!'
+          : `${options.count} rewards available!`
+      if (key === 'familyProgress.percentComplete')
+        return `${options.count}% complete`
       return values[key] || key
     },
   }),
@@ -250,6 +262,78 @@ describe('routine and goal screen hierarchy', () => {
     expect(screen.getByText('No family goals yet.')).toBeVisible()
     expect(screen.getByText('No rewards yet')).toBeVisible()
     expect(screen.getAllByRole('button', { name: 'New goal' })).toHaveLength(1)
+  })
+
+  it('renders populated goal cards with progressbar semantics and reward availability', () => {
+    const onRequestReward = vi.fn()
+    render(
+      <FigmaGoalsScreen
+        balance={{ currentBalance: 120, spendableBalance: 120 }}
+        canManageGoals
+        canManageRewards
+        embedded
+        goals={[
+          {
+            id: 1,
+            name: 'Read More',
+            metricType: 'TASK_COMPLETIONS',
+            target: 20,
+            progress: 8,
+            percent: 40,
+            status: 'ACTIVE',
+          },
+        ]}
+        onArchiveGoal={noop}
+        onCreateGoal={noop}
+        onCreateReward={noop}
+        onEditGoal={noop}
+        onRequestReward={onRequestReward}
+        onViewHistory={noop}
+        rewards={[
+          {
+            id: 10,
+            name: 'Movie Night',
+            costPoints: 50,
+            icon: '🎬',
+            description: 'Pick a movie',
+          },
+          {
+            id: 11,
+            name: 'Game Time',
+            costPoints: 200,
+            icon: '🎮',
+          },
+        ]}
+        streak={5}
+        tasksCompleted={12}
+      />,
+    )
+
+    // Goal card with progressbar role and aria values
+    const bar = screen.getByRole('progressbar', { name: 'Read More progress' })
+    expect(bar).toHaveAttribute('aria-valuenow', '40')
+    expect(bar).toHaveAttribute('aria-valuemin', '0')
+    expect(bar).toHaveAttribute('aria-valuemax', '100')
+
+    // Affordable reward shows a request button
+    expect(screen.getByText('Movie Night')).toBeVisible()
+    const requestBtn = screen.getByRole('button', { name: 'Request reward' })
+    expect(requestBtn).toBeVisible()
+
+    // Non-affordable reward shows progress percentage, no button
+    expect(screen.getByText('Game Time')).toBeVisible()
+    expect(screen.getByText('60%')).toBeVisible()
+
+    // Create reward button is visible for managers
+    expect(
+      screen.getByRole('button', { name: 'Create new reward' }),
+    ).toBeVisible()
+
+    // Request button calls the real callback
+    requestBtn.click()
+    expect(onRequestReward).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 10, name: 'Movie Night' }),
+    )
   })
 })
 

@@ -36,6 +36,29 @@ const progressMocks = vi.hoisted(() => ({
   },
 }))
 
+const rewardMocks = vi.hoisted(() => ({
+  balance: { currentBalance: 120, spendableBalance: 120 },
+  rewards: [
+    {
+      id: 1,
+      name: 'Movie Night',
+      costPoints: 50,
+      isActive: true,
+      icon: '🎬',
+      description: 'Pick a movie',
+    },
+    {
+      id: 2,
+      name: 'Game Time',
+      costPoints: 200,
+      isActive: true,
+      icon: '🎮',
+      description: '30 min extra play',
+    },
+  ],
+  rewardMutate: vi.fn(),
+}))
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, options) => {
@@ -55,9 +78,28 @@ vi.mock('react-i18next', () => ({
         'familyProgress.archive': 'Archive',
         'familyProgress.goalsLoadError': 'Family goals could not be loaded.',
         'familyProgress.retry': 'Retry',
+        'familyProgress.newGoal': 'New goal',
+        'familyProgress.memberPoints': 'Your points',
+        'familyProgress.rewardsAwait': 'Keep going',
+        'familyProgress.viewHistory': 'View history',
+        'familyProgress.familyGoals': 'Family goals',
+        'familyProgress.points': 'points',
+        'familyProgress.tasks': 'tasks',
+        'familyProgress.createNewReward': 'Create new reward',
+        'navigation.rewards': 'Rewards',
+        'rewards.noRewards': 'No rewards yet',
+        'rewards.requestReward': 'Request reward',
         edit: 'Edit',
       }
       if (key === 'familyProgress.days') return `${options.count} days`
+      if (key === 'familyProgress.streakAndTasksCompleted')
+        return `${options.streak}-day streak · ${options.tasks} tasks completed`
+      if (key === 'familyProgress.rewardsAvailable')
+        return options.count === 1
+          ? '1 reward available!'
+          : `${options.count} rewards available!`
+      if (key === 'familyProgress.goalProgressLabel')
+        return `${options.name} progress`
       return values[key] || key
     },
   }),
@@ -125,10 +167,13 @@ vi.mock('../../queries/ChoreQueries', () => ({
 
 vi.mock('../../queries/RewardQueries', () => ({
   useMyRewardRequests: () => ({
-    data: { balance: { currentBalance: 0, spendableBalance: 0 } },
+    data: { balance: rewardMocks.balance },
   }),
-  useRewardMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }),
-  useRewards: () => ({ data: { res: [] } }),
+  useRewardMutation: () => ({
+    mutate: rewardMocks.rewardMutate,
+    mutateAsync: vi.fn(),
+  }),
+  useRewards: () => ({ data: { res: rewardMocks.rewards } }),
 }))
 
 vi.mock('../Rewards/RewardsView', () => ({
@@ -151,6 +196,8 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+
 const renderPage = () =>
   render(
     <MemoryRouter>
@@ -160,33 +207,54 @@ const renderPage = () =>
     </MemoryRouter>,
   )
 
+const defaultGoals = [
+  {
+    id: 5,
+    name: 'Home Focus',
+    metricType: 'CATEGORY_COMPLETIONS',
+    categoryId: 7,
+    target: 10,
+    progress: 7,
+    percent: 70,
+    status: 'ACTIVE',
+    startDate: '2026-08-01T00:00:00Z',
+    endDate: '2026-09-01T00:00:00Z',
+  },
+]
+
+const defaultRewards = [
+  {
+    id: 1,
+    name: 'Movie Night',
+    costPoints: 50,
+    isActive: true,
+    icon: '🎬',
+    description: 'Pick a movie',
+  },
+  {
+    id: 2,
+    name: 'Game Time',
+    costPoints: 200,
+    isActive: true,
+    icon: '🎮',
+    description: '30 min extra play',
+  },
+]
+
 describe('Family Progress', () => {
   beforeEach(() => {
     progressMocks.canManage = true
     progressMocks.mutate.mockReset()
     progressMocks.goalsState = {
-      data: {
-        canManage: true,
-        goals: [
-          {
-            id: 5,
-            name: 'Home Focus',
-            metricType: 'CATEGORY_COMPLETIONS',
-            categoryId: 7,
-            target: 10,
-            progress: 7,
-            percent: 70,
-            status: 'ACTIVE',
-            startDate: '2026-08-01T00:00:00Z',
-            endDate: '2026-09-01T00:00:00Z',
-          },
-        ],
-      },
+      data: { canManage: true, goals: defaultGoals },
       isLoading: false,
       isError: false,
       error: null,
       refetch: vi.fn(),
     }
+    rewardMocks.balance = { currentBalance: 120, spendableBalance: 120 }
+    rewardMocks.rewards = defaultRewards
+    rewardMocks.rewardMutate.mockReset()
   })
   afterEach(cleanup)
 
@@ -257,5 +325,58 @@ describe('Family Progress', () => {
         data: expect.objectContaining({ status: 'ARCHIVED' }),
       }),
     )
+  })
+
+  it('renders goal progressbar with accessible role and value', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    const bar = screen.getByRole('progressbar', {
+      name: 'Home Focus progress',
+    })
+    expect(bar).toBeVisible()
+    expect(bar).toHaveAttribute('aria-valuenow', '70')
+    expect(bar).toHaveAttribute('aria-valuemin', '0')
+    expect(bar).toHaveAttribute('aria-valuemax', '100')
+  })
+
+  it('renders the points summary with live balance, streak, and tasks', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    expect(screen.getByText('120')).toBeVisible()
+    expect(screen.getByText('6-day streak · 0 tasks completed')).toBeVisible()
+  })
+
+  it('shows reward availability based on spendable balance', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    expect(screen.getByText('Movie Night')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Request reward' })).toBeVisible()
+    expect(screen.getByText('Game Time')).toBeVisible()
+    // Game Time costs 200 but balance is 120 → 60% progress, no redeem button
+    expect(screen.getByText('60%')).toBeVisible()
+  })
+
+  it('requests a reward through the real callback', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    await user.click(screen.getByRole('button', { name: 'Request reward' }))
+    expect(rewardMocks.rewardMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: '/rewards/requests',
+        data: { rewardId: 1 },
+      }),
+    )
+  })
+
+  it('shows a reward-empty state when no rewards exist', async () => {
+    rewardMocks.rewards = []
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(screen.getByRole('tab', { name: /Goals/ }))
+    expect(screen.getByText('No rewards yet')).toBeVisible()
   })
 })
