@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -145,6 +145,23 @@ describe('task screen interactions', () => {
 
     expect(screen.getByRole('button', { name: 'Overdue task' })).toBeVisible()
     expect(onCreate).not.toHaveBeenCalled()
+  })
+
+  it('colors due dates by task status for clearer visual hierarchy', () => {
+    renderTasks()
+    // Overdue task → red due date
+    const overdueBtn = screen.getByRole('button', {
+      name: 'Overdue task',
+    })
+    const overdueDate = within(overdueBtn).getByText(/Jan/)
+    expect(overdueDate).toHaveStyle({ color: 'var(--sig-over)' })
+
+    // Upcoming task → brand-colored due date
+    const upcomingBtn = screen.getByRole('button', {
+      name: 'Upcoming task',
+    })
+    const upcomingDate = within(upcomingBtn).getByText(/Jan/)
+    expect(upcomingDate).toHaveStyle({ color: 'var(--brand)' })
   })
 })
 
