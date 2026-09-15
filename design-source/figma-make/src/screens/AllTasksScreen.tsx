@@ -12,11 +12,11 @@ function TaskRow({ task, onOpen, onComplete }: { task: Task; onOpen: () => void;
   const statusColor = isOverdue ? "var(--sig-over)" : isDone ? "var(--sig-done)" : task.status === "upcoming" ? "var(--brand)" : "var(--t-faint)";
 
   return (
-    <div className={`task-row ${isDone ? "done" : ""}`} onClick={onOpen}>
-      <button className={`task-check ${isDone ? "checked" : ""}`} onClick={e => { e.stopPropagation(); if (!isDone) onComplete(task.id); }}>
+    <div className={`task-row ${isDone ? "done" : ""}`}>
+      <button className={`task-check ${isDone ? "checked" : ""}`} aria-label={isDone ? `${task.title} completed` : `Mark ${task.title} complete`} onClick={e => { e.stopPropagation(); if (!isDone) onComplete(task.id); }}>
         {isDone && <Icon name="check" size={11} style={{ color: "white" }} />}
       </button>
-      <div className="flex-1 min-w-0">
+      <button className="task-row-open flex-1 min-w-0 text-start" aria-label={`Open task: ${task.title}`} onClick={onOpen}>
         <div className="task-title font-medium text-primary" style={{ fontSize: 14 }}>{task.title}</div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {task.category && <span className="badge" style={{ background: `color-mix(in srgb, ${task.categoryColor} 10%, transparent)`, color: task.categoryColor }}>{task.category}</span>}
@@ -24,7 +24,7 @@ function TaskRow({ task, onOpen, onComplete }: { task: Task; onOpen: () => void;
           {task.isRecurring && <Icon name="repeat" size={11} style={{ color: "var(--t-faint)" }} />}
           {task.projectId && <Icon name="projects" size={11} style={{ color: "var(--brand)" }} />}
         </div>
-      </div>
+      </button>
       {assignee && <div className="avatar flex-shrink-0" style={{ width: 22, height: 22, background: assignee.avatarColor, fontSize: 9 }}>{assignee.initials}</div>}
       {task.priority === "high" && !isDone && <Icon name="flag" size={12} style={{ color: "var(--sig-over)", flexShrink: 0 }} />}
     </div>

@@ -26,13 +26,13 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
       </div>
 
       <div className="px-4 md:px-7">
-        <div className="grid gap-4" style={{ gridTemplateColumns: selected ? "1fr 1fr" : "1fr 1fr 1fr" }}>
+        <div className="projects-grid grid gap-4" style={{ gridTemplateColumns: selected ? "1fr 1fr" : "1fr 1fr 1fr" }}>
           {projects.map(p => {
             const owner = getMemberById(p.owner);
             const taskCount = TASKS.filter(t => t.projectId === p.id).length;
             const isSelected = selected === p.id;
             return (
-              <div key={p.id} className="card p-5 cursor-pointer" style={{ border: isSelected ? `2px solid ${p.color}` : "1px solid var(--line)" }} onClick={() => setSelected(isSelected ? null : p.id)}>
+              <button key={p.id} className="card p-5 cursor-pointer text-start" style={{ border: isSelected ? `2px solid ${p.color}` : "1px solid var(--line)", fontFamily: "var(--font-ui)" }} onClick={() => setSelected(isSelected ? null : p.id)} aria-pressed={isSelected}>
                 <div className="flex items-start justify-between mb-3">
                   <div style={{ width: 36, height: 36, borderRadius: "var(--r-md)", background: `color-mix(in srgb, ${p.color} 13%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Icon name="projects" size={18} style={{ color: p.color }} />
@@ -43,7 +43,7 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                 <div className="text-muted mb-4" style={{ fontSize: 12 }}>{p.description}</div>
                 <div className="flex justify-between text-faint mb-2" style={{ fontSize: 11 }}>
                   <span>{taskCount} task{taskCount !== 1 ? "s" : ""}</span>
-                  <span className="font-bold" style={{ color: p.color }}>{p.progress}%</span>
+                  <span className="font-bold text-primary">{p.progress}%</span>
                 </div>
                 <div className="progress-track" style={{ height: 6 }}>
                   <div className="progress-fill" style={{ width: `${p.progress}%`, background: p.color }} />
@@ -60,7 +60,7 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                     <span className="text-faint" style={{ fontSize: 11 }}>{owner.name}</span>
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
           {!isChild && (
@@ -93,7 +93,7 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                   <button className="btn btn-primary mt-3" onClick={ctx.openCreate}><Icon name="plus" size={14} />Add task</button>
                 </div>
               ) : projectTasks.map(t => (
-                <div key={t.id} className="task-row" onClick={() => ctx.openTask(t)}>
+                <div key={t.id} className="task-row" role="button" tabIndex={0} aria-label={`Open task: ${t.title}`} onClick={() => ctx.openTask(t)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ctx.openTask(t); } }}>
                   <div className={`task-check ${t.status === "done" ? "checked" : ""}`}>
                     {t.status === "done" && <Icon name="check" size={11} style={{ color: "white" }} />}
                   </div>

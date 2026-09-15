@@ -8,9 +8,37 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
   const [newItem, setNewItem] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  
+  const [isCreatingList, setIsCreatingList] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [newListEmoji, setNewListEmoji] = useState("🛒");
+  const [newListShared, setNewListShared] = useState(false);
+
+  const [isEditingList, setIsEditingList] = useState(false);
+  const [editListName, setEditListName] = useState("");
+  const [editListEmoji, setEditListEmoji] = useState("");
+  const [editListShared, setEditListShared] = useState(false);
 
   const visibleLists = isSolo ? lists.filter(l => !l.isShared) : lists;
   const currentList = visibleLists.find(l => l.id === activeList) || visibleLists[0];
+
+  const handleCreateList = () => {
+    if (!newListName.trim()) return;
+    const newList: ShoppingList = {
+      id: `sl-${Date.now()}`,
+      name: newListName.trim(),
+      emoji: newListEmoji,
+      isShared: !isSolo && newListShared,
+      ownerId: "sarah",
+      items: []
+    };
+    setLists(prev => [...prev, newList]);
+    setActiveList(newList.id);
+    setIsCreatingList(false);
+    setNewListName("");
+    setNewListEmoji("🛒");
+    ctx.showToast(`List "${newList.name}" created`);
+  };
 
   const toggleItem = (listId: string, itemId: string) => {
     setLists(prev => prev.map(l => l.id !== listId ? l : {
@@ -41,11 +69,11 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
     setEditingId(null);
   };
 
-  if (!currentList) return (
+  if (!currentList && !isCreatingList) return (
     <div className="empty-state">
       <div style={{ fontSize: 48 }}>🛒</div>
       <div className="font-bold text-primary">No shopping lists yet</div>
-      <button className="btn btn-primary mt-3" onClick={ctx.openCreate}><Icon name="plus" size={15} />Create list</button>
+      <button className="btn btn-primary mt-3" onClick={() => setIsCreatingList(true)}><Icon name="plus" size={15} />Create list</button>
     </div>
   );
 
@@ -61,13 +89,13 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
             {isSolo ? "Personal lists" : "Personal and shared household lists"}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={ctx.openCreate}>
+        <button className="btn btn-primary" onClick={() => setIsCreatingList(true)}>
           <Icon name="plus" size={14} />New list
         </button>
       </div>
 
       <div className="px-4 md:px-7">
-        <div className="grid gap-5" style={{ gridTemplateColumns: "220px 1fr" }}>
+        <div className="shopping-layout grid gap-5" style={{ gridTemplateColumns: "220px 1fr" }}>
           {/* List sidebar */}
           <div className="flex flex-col gap-2">
             {visibleLists.map(l => {
@@ -93,7 +121,7 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
             })}
             <button className="p-3 rounded-lg border-2 border-dashed text-center text-brand font-semibold"
               style={{ borderColor: "var(--line)", borderRadius: "var(--r-lg)", fontSize: 12, cursor: "pointer", background: "transparent", fontFamily: "var(--font-ui)" }}
-              onClick={ctx.openCreate}>
+              onClick={() => setIsCreatingList(true)}>
               <Icon name="plus" size={13} style={{ display: "inline", marginRight: 4 }} />
               New list
             </button>
@@ -101,6 +129,92 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
 
           {/* List content */}
           <div>
+            {isCreatingList ? (
+              <div className="card p-5 border border-line" style={{ borderRadius: "var(--r-xl)" }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-primary font-bold" style={{ fontSize: 18, margin: 0 }}>Create New List</h2>
+                  <button className="btn btn-ghost btn-icon" onClick={() => setIsCreatingList(false)}>
+                    <Icon name="x" size={16} />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex gap-3">
+                    <div className="flex flex-col gap-1 w-16">
+                      <label className="text-muted" style={{ fontSize: 12, fontWeight: 600 }}>Emoji</label>
+                      <input className="input text-center" value={newListEmoji} onChange={e => setNewListEmoji(e.target.value)} maxLength={2} style={{ fontSize: 18, padding: "8px 0" }} />
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <label className="text-muted" style={{ fontSize: 12, fontWeight: 600 }}>List Name</label>
+                      <input className="input" value={newListName} onChange={e => setNewListName(e.target.value)} placeholder="e.g. Groceries, Target, Hardware..." autoFocus />
+                    </div>
+                  </div>
+                  {!isSolo && (
+                    <label className="flex items-center gap-2 cursor-pointer mt-1">
+                      <input type="checkbox" checked={newListShared} onChange={e => setNewListShared(e.target.checked)} style={{ accentColor: "var(--brand)", width: 16, height: 16 }} />
+                      <span className="text-primary font-medium" style={{ fontSize: 14 }}>Share with family</span>
+                    </label>
+                  )}
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button className="btn btn-ghost" onClick={() => setIsCreatingList(false)}>Cancel</button>
+                    <button className="btn btn-primary" onClick={handleCreateList} disabled={!newListName.trim()}>Create List</button>
+                  </div>
+                </div>
+              </div>
+            ) : isEditingList ? (
+              <div className="card p-5 border border-line" style={{ borderRadius: "var(--r-xl)" }}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-primary font-bold" style={{ fontSize: 18, margin: 0 }}>Edit List</h2>
+                  <button className="btn btn-ghost btn-icon" onClick={() => setIsEditingList(false)}>
+                    <Icon name="x" size={16} />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex gap-3">
+                    <div className="flex flex-col gap-1 w-16">
+                      <label className="text-muted" style={{ fontSize: 12, fontWeight: 600 }}>Emoji</label>
+                      <input className="input text-center" value={editListEmoji} onChange={e => setEditListEmoji(e.target.value)} maxLength={2} style={{ fontSize: 18, padding: "8px 0" }} />
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <label className="text-muted" style={{ fontSize: 12, fontWeight: 600 }}>List Name</label>
+                      <input className="input" value={editListName} onChange={e => setEditListName(e.target.value)} autoFocus />
+                    </div>
+                  </div>
+                  {!isSolo && (
+                    <label className="flex items-center gap-2 cursor-pointer mt-1">
+                      <input type="checkbox" checked={editListShared} onChange={e => setEditListShared(e.target.checked)} style={{ accentColor: "var(--brand)", width: 16, height: 16 }} />
+                      <span className="text-primary font-medium" style={{ fontSize: 14 }}>Share with family</span>
+                    </label>
+                  )}
+                  <div className="flex items-center justify-between mt-2 pt-4 border-t border-line" style={{ borderColor: "var(--line)" }}>
+                    <button className="btn btn-ghost text-sig-over px-2" onClick={() => {
+                      ctx.showConfirm({
+                        title: "Delete List",
+                        message: `Are you sure you want to delete "${currentList.name}"? This cannot be undone.`,
+                        confirmLabel: "Delete",
+                        danger: true,
+                        onConfirm: () => {
+                          const newLists = lists.filter(l => l.id !== currentList.id);
+                          setLists(newLists);
+                          setIsEditingList(false);
+                          if (!newLists.find(l => l.id === activeList)) setActiveList(newLists[0]?.id || "");
+                          ctx.showToast("List deleted");
+                        }
+                      });
+                    }}>Delete list</button>
+                    <div className="flex gap-2">
+                      <button className="btn btn-ghost" onClick={() => setIsEditingList(false)}>Cancel</button>
+                      <button className="btn btn-primary" onClick={() => {
+                        if (!editListName.trim()) return;
+                        setLists(prev => prev.map(l => l.id === currentList.id ? { ...l, name: editListName.trim(), emoji: editListEmoji, isShared: !isSolo && editListShared } : l));
+                        setIsEditingList(false);
+                        ctx.showToast("List updated");
+                      }} disabled={!editListName.trim()}>Save Changes</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : currentList ? (
+              <>
             {/* List header */}
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -114,16 +228,27 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
                   {done.length > 0 && ` · ${done.length} done`}
                 </div>
               </div>
-              {done.length > 0 && (
-                <button className="btn btn-ghost btn-sm text-muted" onClick={() => clearDone(currentList.id)}>
-                  Clear done
+              <div className="flex items-center gap-2">
+                {done.length > 0 && (
+                  <button className="btn btn-ghost btn-sm text-muted" onClick={() => clearDone(currentList.id)}>
+                    Clear done
+                  </button>
+                )}
+                <button aria-label="Edit shopping list" className="btn btn-ghost btn-icon text-muted" onClick={() => {
+                  setEditListName(currentList.name);
+                  setEditListEmoji(currentList.emoji);
+                  setEditListShared(currentList.isShared || false);
+                  setIsEditingList(true);
+                }}>
+                  <Icon name="edit" size={16} />
                 </button>
-              )}
+              </div>
             </div>
 
             {/* Add item input */}
             <div className="flex gap-2 mb-4">
               <input
+                aria-label="Add shopping item"
                 className="input flex-1"
                 placeholder="Add an item..."
                 value={newItem}
@@ -152,6 +277,7 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
                     return (
                       <div key={item.id} className="flex items-center gap-3 px-4 py-3 border-b border-line" style={{ borderColor: "var(--line)" }}>
                         <button
+                          aria-label={`Mark ${item.text} complete`}
                           onClick={() => toggleItem(currentList.id, item.id)}
                           style={{ width: 22, height: 22, borderRadius: 6, border: "2px solid var(--line-strong)", background: "transparent", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
                         />
@@ -179,10 +305,10 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
                             </div>
                           )}
                         </div>
-                        <button className="btn btn-ghost btn-icon" onClick={() => { setEditingId(item.id); setEditText(item.text); }}>
+                        <button aria-label={`Edit ${item.text}`} className="btn btn-ghost btn-icon" onClick={() => { setEditingId(item.id); setEditText(item.text); }}>
                           <Icon name="edit" size={13} />
                         </button>
-                        <button className="btn btn-ghost btn-icon text-sig-over" onClick={() => removeItem(currentList.id, item.id)}>
+                        <button aria-label={`Remove ${item.text}`} className="btn btn-ghost btn-icon text-sig-over" onClick={() => removeItem(currentList.id, item.id)}>
                           <Icon name="trash" size={13} />
                         </button>
                       </div>
@@ -196,14 +322,15 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
                         <span className="text-faint" style={{ fontSize: 12, fontWeight: 700 }}>Checked off ({done.length})</span>
                       </div>
                       {done.map(item => (
-                        <div key={item.id} className="flex items-center gap-3 px-4 py-3 border-b border-line" style={{ borderColor: "var(--line)", opacity: 0.7 }}>
+                        <div key={item.id} className="flex items-center gap-3 px-4 py-3 border-b border-line" style={{ borderColor: "var(--line)" }}>
                           <button
+                            aria-label={`Mark ${item.text} incomplete`}
                             onClick={() => toggleItem(currentList.id, item.id)}
                             style={{ width: 22, height: 22, borderRadius: 6, border: "2px solid var(--sig-done)", background: "var(--sig-done)", cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <Icon name="check" size={12} style={{ color: "white" }} />
                           </button>
                           <span className="text-muted flex-1" style={{ fontSize: 14, textDecoration: "line-through" }}>{item.text}</span>
-                          <button className="btn btn-ghost btn-icon text-sig-over" onClick={() => removeItem(currentList.id, item.id)}>
+                          <button aria-label={`Remove ${item.text}`} className="btn btn-ghost btn-icon text-sig-over" onClick={() => removeItem(currentList.id, item.id)}>
                             <Icon name="trash" size={13} />
                           </button>
                         </div>
@@ -223,6 +350,8 @@ export default function ShoppingScreen({ ctx, isSolo }: { ctx: AppCtx; isSolo: b
                 <span className="text-muted font-mono" style={{ fontSize: 12 }}>{done.length}/{currentList.items.length}</span>
               </div>
             )}
+              </>
+            ) : null}
           </div>
         </div>
 

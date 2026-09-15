@@ -7,7 +7,7 @@ function TaskRow({ task, onOpen, onComplete, compact }: { task: Task; onOpen: ()
   const isOverdue = task.status === "overdue";
   const assignee = task.assigneeId ? getMemberById(task.assigneeId) : null;
   return (
-    <div className={`task-row ${isDone ? "done" : ""}`} onClick={onOpen} style={{ padding: compact ? "8px 12px" : "11px 14px" }}>
+    <div className={`task-row ${isDone ? "done" : ""}`} style={{ padding: compact ? "8px 12px" : "11px 14px" }}>
       <button
         className={`task-check ${isDone ? "checked" : ""}`}
         onClick={e => { e.stopPropagation(); if (!isDone) onComplete(task.id); }}
@@ -15,7 +15,7 @@ function TaskRow({ task, onOpen, onComplete, compact }: { task: Task; onOpen: ()
       >
         {isDone && <Icon name="check" size={11} style={{ color: "white" }} />}
       </button>
-      <div className="flex-1 min-w-0">
+      <button className="task-row-open flex-1 min-w-0 text-start" aria-label={`Open task: ${task.title}`} onClick={onOpen}>
         <div className="task-title font-medium" style={{ fontSize: 14, color: isDone ? "var(--t-muted)" : "var(--t-primary)" }}>{task.title}</div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {task.category && <span className="badge" style={{ background: `color-mix(in srgb, ${task.categoryColor} 10%, transparent)`, color: task.categoryColor }}>{task.category}</span>}
@@ -25,7 +25,7 @@ function TaskRow({ task, onOpen, onComplete, compact }: { task: Task; onOpen: ()
           {task.isRecurring && <Icon name="repeat" size={11} style={{ color: "var(--t-faint)" }} />}
           {task.points && !isDone && <span className="text-brand font-bold font-mono" style={{ fontSize: 11 }}>+{task.points}pts</span>}
         </div>
-      </div>
+      </button>
       <div className="flex items-center gap-2 flex-shrink-0">
         {assignee && <div className="avatar" style={{ width: 22, height: 22, background: assignee.avatarColor, fontSize: 9 }}>{assignee.initials}</div>}
         {task.priority === "high" && !isDone && <Icon name="flag" size={13} style={{ color: "var(--sig-over)" }} />}
