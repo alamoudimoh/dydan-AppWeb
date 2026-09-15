@@ -219,7 +219,7 @@ const MetersView = () => {
                     <Typography level='body-xs' color='neutral'>
                       {t('meters.currentReading')}
                     </Typography>
-                    <Typography level='h3' className='daydan-metric'>
+                    <Typography level='h3' className='dydan-metric'>
                       {meter.currentReading.toLocaleString(locale)} {meter.unit}
                     </Typography>
                   </Box>

@@ -58,7 +58,7 @@ const callMock = async ({ body, headers = {}, method = 'GET', path }) => {
       headers: () => headers,
       method: () => method,
       postData: () => body,
-      url: () => `http://daydan.test${path}`,
+      url: () => `http://dydan.test${path}`,
     }),
     fulfill: response => fulfillCalls.push(response),
   }

@@ -18,18 +18,18 @@ select {
 }
 
 *:focus-visible {
-  outline: 2px solid var(--daydan-focus-outer);
+  outline: 2px solid var(--dydan-focus-outer);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--daydan-focus-inner);
+  box-shadow: 0 0 0 1px var(--dydan-focus-inner);
 }
 
 [dir='rtl'] {
-  font-family: var(--daydan-font-arabic);
+  font-family: var(--dydan-font-arabic);
 }
 
 .reference-metric {
   direction: ltr;
-  font-family: var(--daydan-font-data);
+  font-family: var(--dydan-font-data);
   font-variant-numeric: tabular-nums;
   unicode-bidi: isolate;
 }
@@ -161,11 +161,11 @@ select {
 }
 
 .reference-streak-pip[data-filled='true'] {
-  background: var(--daydan-primary);
+  background: var(--dydan-primary);
 }
 
 .reference-streak-pip[data-today='true'] {
-  outline: 2px solid var(--daydan-focus-outer);
+  outline: 2px solid var(--dydan-focus-outer);
   outline-offset: 1px;
 }
 
@@ -210,7 +210,7 @@ select {
   grid-template-columns: repeat(7, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--joy-palette-divider);
-  border-radius: var(--daydan-radius-card);
+  border-radius: var(--dydan-radius-card);
   background: var(--joy-palette-background-surface);
 }
 
@@ -231,7 +231,7 @@ select {
 }
 
 .reference-calendar-day[data-today='true'] {
-  box-shadow: inset 0 0 0 2px var(--daydan-primary);
+  box-shadow: inset 0 0 0 2px var(--dydan-primary);
 }
 
 .reference-calendar-dot {
@@ -240,7 +240,7 @@ select {
   height: 6px;
   margin-inline-end: 3px;
   border-radius: 50%;
-  background: var(--reference-dot, var(--daydan-primary));
+  background: var(--reference-dot, var(--dydan-primary));
 }
 
 .reference-static-hover {
@@ -249,9 +249,9 @@ select {
 }
 
 .reference-static-focus {
-  outline: 2px solid var(--daydan-focus-outer) !important;
+  outline: 2px solid var(--dydan-focus-outer) !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--daydan-focus-inner) !important;
+  box-shadow: 0 0 0 1px var(--dydan-focus-inner) !important;
 }
 
 .reference-static-active {
@@ -270,7 +270,7 @@ select {
 
 .reference-rtl-preview {
   direction: rtl;
-  font-family: var(--daydan-font-arabic);
+  font-family: var(--dydan-font-arabic);
   text-align: right;
 }
 
@@ -356,7 +356,7 @@ select {
   }
 
   .reference-calendar-grid {
-    border-radius: var(--daydan-radius-row);
+    border-radius: var(--dydan-radius-row);
   }
 
   .reference-calendar-day {

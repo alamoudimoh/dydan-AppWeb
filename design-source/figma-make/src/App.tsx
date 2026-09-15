@@ -17,7 +17,7 @@ import MaintenanceScreen from "./screens/MaintenanceScreen";
 import TaskDetailModal from "./components/TaskDetailModal";
 import CreateTaskModal from "./components/CreateTaskModal";
 
-export type Theme = "daydan" | "sovereign";
+export type Theme = "dydan" | "sovereign";
 export type View = "quest" | "focus";
 export type Persona = "parent" | "child" | "solo";
 export type Screen =
@@ -177,7 +177,7 @@ function Sidebar({ screen, view, theme, persona, isRTL, onNavigate, onViewChange
       <div className="flex items-center gap-2 px-3 pt-4 pb-3 border-b border-line" style={{ borderColor: "var(--line)" }}>
         <LogoMark size={28} theme={theme} />
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-primary leading-tight" style={{ fontSize: 14 }}>DayDan</div>
+          <div className="font-bold text-primary leading-tight" style={{ fontSize: 14 }}>Dydan</div>
           <div className="text-faint" style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase" }}>
             {isChild ? "QUEST" : view === "quest" ? "QUEST MODE" : "FOCUS MODE"}
           </div>
@@ -235,7 +235,7 @@ function Sidebar({ screen, view, theme, persona, isRTL, onNavigate, onViewChange
         <div className="px-1 mb-1">
           <div className="section-label" style={{ padding: "4px 0 4px", fontSize: 9 }}>THEME</div>
           <div className="view-toggle">
-            <button className={`view-toggle-btn ${theme === "daydan" ? "active" : ""}`} onClick={() => onThemeChange("daydan")}>DayDan</button>
+            <button className={`view-toggle-btn ${theme === "dydan" ? "active" : ""}`} onClick={() => onThemeChange("dydan")}>Dydan</button>
             <button className={`view-toggle-btn ${theme === "sovereign" ? "active" : ""}`} onClick={() => onThemeChange("sovereign")}>Sovereign</button>
           </div>
         </div>
@@ -303,7 +303,7 @@ function ToastContainer({ toasts }: { toasts: { id: string; msg: string }[] }) {
 
 /* ─── App ────────────────────────────── */
 export default function App() {
-  const [theme, setThemeState] = useState<Theme>("daydan");
+  const [theme, setThemeState] = useState<Theme>("dydan");
   const [view, setViewState] = useState<View>("focus");
   const [persona, setPersonaState] = useState<Persona>("parent");
   const [screen, setScreen] = useState<Screen>("home");
@@ -337,7 +337,7 @@ export default function App() {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 2900);
   }, []);
 
-  const setTheme = (t: Theme) => { setThemeState(t); showToast(`Switched to ${t === "daydan" ? "DayDan" : "Sovereign"} theme`); };
+  const setTheme = (t: Theme) => { setThemeState(t); showToast(`Switched to ${t === "dydan" ? "Dydan" : "Sovereign"} theme`); };
   const setView = (v: View) => { setViewState(v); showToast(`${v === "focus" ? "Focus" : "Quest"} view active`); };
   const setPersona = (p: Persona) => { setPersonaState(p); showToast(`Demo: ${p} persona`); };
   const toggleRTL = () => { setIsRTL(r => !r); };
@@ -395,7 +395,7 @@ export default function App() {
         <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-40" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
           <div className="flex items-center gap-2 md:hidden">
             <LogoMark size={22} theme={theme} />
-            <span className="font-bold text-primary" style={{ fontSize: 15 }}>DayDan</span>
+            <span className="font-bold text-primary" style={{ fontSize: 15 }}>Dydan</span>
           </div>
           {/* Desktop search bar */}
           <button className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-muted" style={{ background: "var(--surface-2)", border: "1px solid var(--line)", fontSize: 13, cursor: "text", width: 200 }} onClick={() => navigate("search")}>

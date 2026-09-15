@@ -1,8 +1,8 @@
-# DayDan-AppWeb architecture
+# Dydan-AppWeb architecture
 
 ## Runtime layers
 
-DayDan-AppWeb is a React 19/Vite application that runs as a browser SPA, a
+Dydan-AppWeb is a React 19/Vite application that runs as a browser SPA, a
 PWA, and a Capacitor Android/iOS application. `src/App.jsx` provides the shared
 application shell: authentication restoration, onboarding gates, network
 status, PWA updates, error boundaries, navigation, server-sent-event setup,
@@ -19,7 +19,7 @@ settings, notifications, search, and authentication.
 `src/utils/ApiClient.js` and `src/utils/Fetcher.jsx` centralize API access.
 TanStack Query supplies cache and invalidation behavior through
 `src/queries/` and `src/contexts/QueryContext.jsx`. The client is a consumer
-of DayDan-Server; server-side authorization and persistence remain authoritative.
+of Dydan-Server; server-side authorization and persistence remain authoritative.
 
 Realtime updates use authenticated server-sent events through `src/hooks/useSSE.js`
 and `src/contexts/SSEContext.jsx`. Reconnect and network transitions are
@@ -40,7 +40,7 @@ reconnection. The browser/PWA does not use the native SQLite database.
 
 ## UX system
 
-DayDan uses a shared theme and token system in `src/theme/`, with light, dark,
+Dydan uses a shared theme and token system in `src/theme/`, with light, dark,
 and system modes. Localization is provided by i18next and HTTP-loaded locale
 bundles. `src/contexts/LocalizationContext.jsx` sets language and direction;
 Arabic is treated as a real RTL layout, not only a translated string set.

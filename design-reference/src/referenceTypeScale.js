@@ -1,6 +1,6 @@
-import { daydanTokens } from '../../src/theme/tokens.js'
+import { dydanTokens } from '../../src/theme/tokens.js'
 
-export const DAYDAN_UI_FONT =
+export const DYDAN_UI_FONT =
   "'Comfortaa Variable', 'Comfortaa', system-ui, sans-serif"
 export const SOVEREIGN_UI_FONT =
   "'Ubuntu Sans Variable', 'Ubuntu', system-ui, sans-serif"
@@ -35,7 +35,7 @@ export const REFERENCE_TYPE_SCALE = Object.freeze({
   },
   button: { fontSize: '0.875rem', fontWeight: 700, lineHeight: 1.45 },
   metric: {
-    fontFamily: daydanTokens.font.data,
+    fontFamily: dydanTokens.font.data,
     fontSize: '1.125rem',
     fontWeight: 700,
     fontVariantNumeric: 'tabular-nums',

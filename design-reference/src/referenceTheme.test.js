@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import {
   assertNoBrandLeak,
-  DAYDAN_BRAND_PRIMARY,
+  DYDAN_BRAND_PRIMARY,
   REFERENCE_ACCENT_PALETTES,
 } from './referenceAccents.js'
 import {
@@ -38,14 +38,14 @@ const ACCENT_ROLES = [
   '--ref-signal',
 ]
 
-test('Sovereign never inherits DayDan member or category accents', () => {
+test('Sovereign never inherits Dydan member or category accents', () => {
   const identityRoles = ACCENT_ROLES.filter(
     role => !role.startsWith('--ref-progress'),
   )
   for (const scheme of ['light', 'dark']) {
     for (const role of identityRoles) {
       assert.notEqual(
-        REFERENCE_ACCENT_PALETTES.daydan[scheme][role],
+        REFERENCE_ACCENT_PALETTES.dydan[scheme][role],
         REFERENCE_ACCENT_PALETTES.sovereign[scheme][role],
         `${scheme} ${role} must be brand-specific`,
       )
@@ -54,7 +54,7 @@ test('Sovereign never inherits DayDan member or category accents', () => {
 })
 
 test('every member role has a value in every brand and color mode', () => {
-  for (const brand of ['daydan', 'sovereign']) {
+  for (const brand of ['dydan', 'sovereign']) {
     for (const scheme of ['light', 'dark']) {
       for (let index = 1; index <= 6; index += 1) {
         assert.match(
@@ -67,7 +67,7 @@ test('every member role has a value in every brand and color mode', () => {
 })
 
 test('every semantic accent role is defined for every brand and color mode', () => {
-  for (const brand of ['daydan', 'sovereign']) {
+  for (const brand of ['dydan', 'sovereign']) {
     for (const scheme of ['light', 'dark']) {
       const palette = REFERENCE_ACCENT_PALETTES[brand][scheme]
       for (const role of ACCENT_ROLES) {
@@ -82,14 +82,14 @@ test('identity and progress accents never reuse the active brand primary', () =>
   assert.deepEqual(assertNoBrandLeak(), [])
   for (const scheme of ['light', 'dark']) {
     assert.notEqual(
-      REFERENCE_ACCENT_PALETTES.daydan[scheme]['--ref-member-1'],
-      DAYDAN_BRAND_PRIMARY[scheme],
+      REFERENCE_ACCENT_PALETTES.dydan[scheme]['--ref-member-1'],
+      DYDAN_BRAND_PRIMARY[scheme],
     )
   }
 })
 
 test('chart series mirror member identity within each brand and mode', () => {
-  for (const brand of ['daydan', 'sovereign']) {
+  for (const brand of ['dydan', 'sovereign']) {
     for (const scheme of ['light', 'dark']) {
       for (let index = 1; index <= 6; index += 1) {
         assert.equal(

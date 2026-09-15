@@ -6,7 +6,7 @@ import FigmaIcon from '../../components/FigmaIcon'
 import LABEL_COLORS, {
   getTextColorFromBackgroundColor,
 } from '../../utils/Colors'
-import { isOfficialDayDanInstanceSync } from '../../utils/FeatureToggle'
+import { isOfficialDydanInstanceSync } from '../../utils/FeatureToggle'
 import { getIconComponent } from '../../utils/ProjectIcons'
 import { useProjects } from '../Projects/ProjectQueries'
 
@@ -113,7 +113,7 @@ const ChoreActionMenu = ({
 
   useEffect(() => {
     try {
-      setIsOfficialInstance(isOfficialDayDanInstanceSync())
+      setIsOfficialInstance(isOfficialDydanInstanceSync())
     } catch (error) {
       console.warn('Error checking instance type:', error)
       setIsOfficialInstance(false)

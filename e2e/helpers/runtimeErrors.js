@@ -38,7 +38,7 @@ export const attachRuntimeErrorGuard = page => {
   // Browser resource errors omit the URL. The strict API mock adds this header
   // so a route/query/method regression is actionable in the smoke output.
   page.on('response', response => {
-    const contractError = response.headers()['x-daydan-mock-contract-error']
+    const contractError = response.headers()['x-dydan-mock-contract-error']
     if (contractError) {
       errors.push(`API contract: ${contractError}`)
     }

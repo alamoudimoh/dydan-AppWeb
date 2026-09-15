@@ -1,5 +1,5 @@
 /**
- * DayDan-owned report destinations. Self-hosted and failed cloud delivery
+ * Dydan-owned report destinations. Self-hosted and failed cloud delivery
  * fall back here instead of upstream issue trackers.
  *
  * Cloud relay: set VITE_FEEDBACK_WEBHOOK_URL and/or VITE_ERROR_REPORT_WEBHOOK_URL
@@ -10,15 +10,13 @@ const viteEnv =
   typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {}
 
 export const resolveAppRepoUrl = (env = viteEnv) =>
-  env.VITE_DAYDAN_APP_REPO_URL ||
-  env.VITE_TASKIER_APP_REPO_URL ||
-  'https://github.com/alamoudimoh/daydan-app'
+  env.VITE_DYDAN_APP_REPO_URL || 'https://github.com/alamoudimoh/daydan-app'
 
-export const DAYDAN_APP_REPO = resolveAppRepoUrl()
+export const DYDAN_APP_REPO = resolveAppRepoUrl()
 
 export const FEEDBACK_ISSUES_NEW_URL =
-  viteEnv.VITE_FEEDBACK_ISSUES_URL || `${DAYDAN_APP_REPO}/issues/new`
+  viteEnv.VITE_FEEDBACK_ISSUES_URL || `${DYDAN_APP_REPO}/issues/new`
 
-export const APP_REPORT_SOURCE = 'daydan-app'
+export const APP_REPORT_SOURCE = 'dydan-app'
 
 export const REPORT_ID_PREFIX = 'TD'

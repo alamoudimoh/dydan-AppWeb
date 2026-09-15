@@ -17,9 +17,9 @@ export const REFERENCE_PAGE_IDS = Object.freeze([
 ])
 
 export const REFERENCE_BRANDS = Object.freeze({
-  daydan: {
-    id: 'daydan',
-    name: 'DayDan',
+  dydan: {
+    id: 'dydan',
+    name: 'Dydan',
     tagline: 'Simplify tasks & chores, together.',
     wordmarkFont: "'Comfortaa Variable', 'Comfortaa', sans-serif",
   },
@@ -38,4 +38,4 @@ export const resolveReferenceDirection = language =>
   String(language).toLowerCase().startsWith('ar') ? 'rtl' : 'ltr'
 
 export const getReferenceBrand = brandId =>
-  REFERENCE_BRANDS[brandId] || REFERENCE_BRANDS.daydan
+  REFERENCE_BRANDS[brandId] || REFERENCE_BRANDS.dydan

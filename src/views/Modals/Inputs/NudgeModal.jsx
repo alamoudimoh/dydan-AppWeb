@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import KeyboardShortcutHint from '../../../components/common/KeyboardShortcutHint'
 import ModalActions from '../../../components/common/ModalActions'
 import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
-import { isOfficialDayDanInstanceSync } from '../../../utils/FeatureToggle'
+import { isOfficialDydanInstanceSync } from '../../../utils/FeatureToggle'
 
 function NudgeModal({ config }) {
   const { ResponsiveModal } = useResponsiveModal()
@@ -33,9 +33,9 @@ function NudgeModal({ config }) {
       setMessage('')
       setNotifyAllAssignees(false)
 
-      // Check if this is the official donetick.com instance
+      // Check whether this build configured an official hosted instance.
       try {
-        setIsOfficialInstance(isOfficialDayDanInstanceSync())
+        setIsOfficialInstance(isOfficialDydanInstanceSync())
       } catch (error) {
         console.warn('Error checking instance type:', error)
         setIsOfficialInstance(false)
@@ -133,7 +133,7 @@ function NudgeModal({ config }) {
           }}
         >
           <p style={{ margin: 0, fontSize: 14 }}>
-            <strong>Heads up!</strong>This feature is available on DayDan Cloud!
+            <strong>Heads up!</strong>This feature is available on Dydan Cloud!
             Since you&apos;re using a self-hosted instance, nudges will requires
             you to setup Google cloud account and Firebase Cloud Messaging
             (FCM). and build the Android or the iOS app by yourself.

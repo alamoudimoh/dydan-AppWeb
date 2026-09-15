@@ -5,8 +5,8 @@ import { parseAllowedHosts } from './vite.allowed-hosts.mjs'
 
 test('parses exact additional Vite hosts from installation configuration', () => {
   assert.deepEqual(
-    parseAllowedHosts(' daydan.example.com, taskier.example.com,,'),
-    ['daydan.example.com', 'taskier.example.com'],
+    parseAllowedHosts(' dydan.example.com, dydan.example.com,,'),
+    ['dydan.example.com', 'dydan.example.com'],
   )
 })
 
@@ -15,7 +15,7 @@ test('does not broaden the Vite host allowlist', () => {
   assert.throws(() => parseAllowedHosts('*'), /exact hostnames/)
   assert.throws(() => parseAllowedHosts('.example.com'), /exact hostnames/)
   assert.throws(
-    () => parseAllowedHosts('https://taskier.example.com'),
+    () => parseAllowedHosts('https://dydan.example.com'),
     /exact hostnames/,
   )
 })

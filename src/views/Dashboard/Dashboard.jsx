@@ -74,7 +74,7 @@ const Overview = ({ chores, locale, now, timeZone }) => {
           </Stack>
         </Box>
         {Number(chore.points) > 0 && (
-          <Typography level='body-sm' className='daydan-metric'>
+          <Typography level='body-sm' className='dydan-metric'>
             +{chore.points}
           </Typography>
         )}

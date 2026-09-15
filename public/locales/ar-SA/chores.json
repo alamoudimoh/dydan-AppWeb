@@ -156,11 +156,11 @@
     "backToTasks": "العودة إلى المهام"
   },
   "list": {
-    "cantReachDayDan": "لا يمكن الوصول إلى DayDan",
+    "cantReachDydan": "لا يمكن الوصول إلى دَيْدَن",
     "loadErrorDescription": "مهامك آمنة. لم نتمكن من تحميلها الآن، تحقق من اتصالك وحاول مرة أخرى.",
     "tryAgain": "حاول مرة أخرى",
     "noTasksYet": "لا توجد مهام بعد",
-    "noTasksYetDescription": "أنشئ مهمتك الأولى وسيتابع DayDan موعد استحقاقها، ومن دوره، وما هو التالي.",
+    "noTasksYetDescription": "أنشئ مهمتك الأولى وسيتابع دَيْدَن موعد استحقاقها، ومن دوره، وما هو التالي.",
     "createTask": "إنشاء مهمة",
     "moreOptions": "خيارات أخرى",
     "noTasksMatchView": "لا توجد مهام تطابق هذا العرض",

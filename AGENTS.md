@@ -1,4 +1,4 @@
-# DayDan App Verification Policy
+# Dydan App Verification Policy
 
 - Run `./scripts/verify.sh` before completing substantial frontend changes. It
   is the core/baseline local flow (runtime artifacts, dependency install,

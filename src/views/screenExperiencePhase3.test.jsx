@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
         'activity.household': 'Household',
         'activity.points': '+{{count}} pts',
         'activity.subtitle': 'Activity for {{scope}}',
-        'activity.system': 'DayDan',
+        'activity.system': 'Dydan',
         'activity.taskFallback': 'a task',
         'activity.title': 'Activity',
         cancel: 'Cancel',

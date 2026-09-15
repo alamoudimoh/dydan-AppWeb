@@ -435,7 +435,7 @@
       },
       "feedback": {
         "title": "Send Feedback",
-        "description": "Tell us how DayDan is working for you or request a feature."
+        "description": "Tell us how Dydan is working for you or request a feature."
       },
       "bugReport": {
         "title": "Report a Bug",
@@ -486,15 +486,15 @@
     "activityVisibleHelp": "Manage household visibility and sharing",
     "export": "Export",
     "exportData": "Export my data",
-    "exportHelp": "Download a copy of your DayDan data",
+    "exportHelp": "Download a copy of your Dydan data",
     "delete": "Delete",
     "deleteHelp": "Permanently remove your data",
     "support": "Support",
     "open": "Open",
     "help": "Help & documentation",
     "report": "Report a problem",
-    "reportHelp": "Send feedback to the DayDan team",
+    "reportHelp": "Send feedback to the Dydan team",
     "feedback": "Feedback",
-    "about": "About DayDan"
+    "about": "About Dydan"
   }
 }

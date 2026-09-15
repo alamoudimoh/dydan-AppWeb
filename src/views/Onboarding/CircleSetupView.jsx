@@ -34,7 +34,7 @@ const cardSx = {
   bgcolor: 'background.surface',
   border: '1px solid',
   borderColor: 'divider',
-  borderRadius: 'var(--daydan-radius-card)',
+  borderRadius: 'var(--dydan-radius-card)',
 }
 
 const IconHalo = ({ icon }) => (

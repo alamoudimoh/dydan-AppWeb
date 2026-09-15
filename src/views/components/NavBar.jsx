@@ -81,11 +81,7 @@ const NavBar = () => {
   }, [circleMembersData, openSearch, t, userProfile])
   if (shellMode === 'spacer')
     return <div style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }} />
-  if (
-    shellMode === 'none' ||
-    ['www.donetick.com', 'donetick.com'].includes(window.location.hostname)
-  )
-    return null
+  if (shellMode === 'none') return null
   const activate = link => {
     if (link.onClick) link.onClick()
     else navigate(link.to)

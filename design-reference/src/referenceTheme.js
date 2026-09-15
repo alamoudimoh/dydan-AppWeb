@@ -1,10 +1,10 @@
 import { extendTheme } from '@mui/joy/styles'
 
-import daydanTheme from '../../src/theme/daydanTheme.js'
-import { daydanCssVariables, daydanTokens } from '../../src/theme/tokens.js'
+import dydanTheme from '../../src/theme/dydanTheme.js'
+import { dydanCssVariables, dydanTokens } from '../../src/theme/tokens.js'
 import { REFERENCE_ACCENT_PALETTES } from './referenceAccents.js'
 import {
-  DAYDAN_UI_FONT,
+  DYDAN_UI_FONT,
   REFERENCE_TYPE_SCALE,
   SOVEREIGN_UI_FONT,
 } from './referenceTypeScale.js'
@@ -213,7 +213,7 @@ export const sovereignTheme = extendTheme({
   fontFamily: {
     body: SOVEREIGN_UI_FONT,
     display: SOVEREIGN_UI_FONT,
-    code: daydanTokens.font.data,
+    code: dydanTokens.font.data,
     fallback: 'system-ui, sans-serif',
   },
   radius: {
@@ -342,63 +342,63 @@ export const sovereignTheme = extendTheme({
 })
 
 const themeVariables = {
-  daydan: {
+  dydan: {
     light: {
-      ...daydanCssVariables('light'),
-      '--daydan-font-ui': DAYDAN_UI_FONT,
-      ...REFERENCE_ACCENT_PALETTES.daydan.light,
+      ...dydanCssVariables('light'),
+      '--dydan-font-ui': DYDAN_UI_FONT,
+      ...REFERENCE_ACCENT_PALETTES.dydan.light,
     },
     dark: {
-      ...daydanCssVariables('dark'),
-      '--daydan-font-ui': DAYDAN_UI_FONT,
-      ...REFERENCE_ACCENT_PALETTES.daydan.dark,
+      ...dydanCssVariables('dark'),
+      '--dydan-font-ui': DYDAN_UI_FONT,
+      ...REFERENCE_ACCENT_PALETTES.dydan.dark,
     },
   },
   sovereign: {
     light: {
-      '--daydan-primary': sovereign.light.primary,
-      '--daydan-signal': sovereign.light.signal,
-      '--daydan-ink': sovereign.light.text,
-      '--daydan-page': sovereign.light.page,
-      '--daydan-surface': sovereign.light.surface,
-      '--daydan-surface-subtle': sovereign.light.raised,
-      '--daydan-brand-soft': sovereign.light.soft,
-      '--daydan-text': sovereign.light.text,
-      '--daydan-text-muted': sovereign.light.muted,
-      '--daydan-boundary': sovereign.light.boundary,
-      '--daydan-focus-inner': '#FFFFFF',
-      '--daydan-focus-outer': sovereign.light.primary,
-      '--daydan-font-ui': SOVEREIGN_UI_FONT,
-      '--daydan-font-arabic': daydanTokens.font.arabic,
-      '--daydan-font-data': daydanTokens.font.data,
-      '--daydan-radius-nav': '7px',
-      '--daydan-radius-control': '8px',
-      '--daydan-radius-row': '10px',
-      '--daydan-radius-card': '12px',
-      '--daydan-radius-shell': '20px',
+      '--dydan-primary': sovereign.light.primary,
+      '--dydan-signal': sovereign.light.signal,
+      '--dydan-ink': sovereign.light.text,
+      '--dydan-page': sovereign.light.page,
+      '--dydan-surface': sovereign.light.surface,
+      '--dydan-surface-subtle': sovereign.light.raised,
+      '--dydan-brand-soft': sovereign.light.soft,
+      '--dydan-text': sovereign.light.text,
+      '--dydan-text-muted': sovereign.light.muted,
+      '--dydan-boundary': sovereign.light.boundary,
+      '--dydan-focus-inner': '#FFFFFF',
+      '--dydan-focus-outer': sovereign.light.primary,
+      '--dydan-font-ui': SOVEREIGN_UI_FONT,
+      '--dydan-font-arabic': dydanTokens.font.arabic,
+      '--dydan-font-data': dydanTokens.font.data,
+      '--dydan-radius-nav': '7px',
+      '--dydan-radius-control': '8px',
+      '--dydan-radius-row': '10px',
+      '--dydan-radius-card': '12px',
+      '--dydan-radius-shell': '20px',
       ...REFERENCE_ACCENT_PALETTES.sovereign.light,
     },
     dark: {
-      '--daydan-primary': sovereign.dark.primary,
-      '--daydan-signal': sovereign.dark.signal,
-      '--daydan-ink': sovereign.dark.text,
-      '--daydan-page': sovereign.dark.page,
-      '--daydan-surface': sovereign.dark.surface,
-      '--daydan-surface-subtle': sovereign.dark.raised,
-      '--daydan-brand-soft': sovereign.dark.soft,
-      '--daydan-text': sovereign.dark.text,
-      '--daydan-text-muted': sovereign.dark.muted,
-      '--daydan-boundary': sovereign.dark.boundary,
-      '--daydan-focus-inner': sovereign.dark.page,
-      '--daydan-focus-outer': sovereign.dark.primary,
-      '--daydan-font-ui': SOVEREIGN_UI_FONT,
-      '--daydan-font-arabic': daydanTokens.font.arabic,
-      '--daydan-font-data': daydanTokens.font.data,
-      '--daydan-radius-nav': '7px',
-      '--daydan-radius-control': '8px',
-      '--daydan-radius-row': '10px',
-      '--daydan-radius-card': '12px',
-      '--daydan-radius-shell': '20px',
+      '--dydan-primary': sovereign.dark.primary,
+      '--dydan-signal': sovereign.dark.signal,
+      '--dydan-ink': sovereign.dark.text,
+      '--dydan-page': sovereign.dark.page,
+      '--dydan-surface': sovereign.dark.surface,
+      '--dydan-surface-subtle': sovereign.dark.raised,
+      '--dydan-brand-soft': sovereign.dark.soft,
+      '--dydan-text': sovereign.dark.text,
+      '--dydan-text-muted': sovereign.dark.muted,
+      '--dydan-boundary': sovereign.dark.boundary,
+      '--dydan-focus-inner': sovereign.dark.page,
+      '--dydan-focus-outer': sovereign.dark.primary,
+      '--dydan-font-ui': SOVEREIGN_UI_FONT,
+      '--dydan-font-arabic': dydanTokens.font.arabic,
+      '--dydan-font-data': dydanTokens.font.data,
+      '--dydan-radius-nav': '7px',
+      '--dydan-radius-control': '8px',
+      '--dydan-radius-row': '10px',
+      '--dydan-radius-card': '12px',
+      '--dydan-radius-shell': '20px',
       ...REFERENCE_ACCENT_PALETTES.sovereign.dark,
     },
   },
@@ -454,7 +454,7 @@ const semanticVariables = {
 }
 
 const infoVariables = {
-  daydan: {
+  dydan: {
     light: {
       '--joy-palette-info-softBg': '#E0F2FE',
       '--joy-palette-info-softColor': '#075985',
@@ -482,7 +482,7 @@ const infoVariables = {
 
 export { REFERENCE_TYPE_SCALE } from './referenceTypeScale.js'
 
-const referenceDaydanButton = {
+const referenceDydanButton = {
   styleOverrides: {
     root: ({ ownerState }) => ({
       minHeight:
@@ -491,7 +491,7 @@ const referenceDaydanButton = {
           : ownerState.size === 'sm'
             ? '36px'
             : '42px',
-      borderRadius: daydanTokens.radius.control,
+      borderRadius: dydanTokens.radius.control,
       fontWeight: REFERENCE_TYPE_SCALE.button.fontWeight,
       fontSize: REFERENCE_TYPE_SCALE.button.fontSize,
       lineHeight: REFERENCE_TYPE_SCALE.button.lineHeight,
@@ -508,23 +508,23 @@ const referenceDaydanButton = {
   },
 }
 
-export const referenceDaydanTheme = extendTheme({
-  ...daydanTheme,
+export const referenceDydanTheme = extendTheme({
+  ...dydanTheme,
   fontFamily: {
-    body: DAYDAN_UI_FONT,
-    display: DAYDAN_UI_FONT,
-    code: daydanTokens.font.data,
+    body: DYDAN_UI_FONT,
+    display: DYDAN_UI_FONT,
+    code: dydanTokens.font.data,
     fallback: 'system-ui, sans-serif',
   },
-  typography: typographyOverrides(daydanTheme),
+  typography: typographyOverrides(dydanTheme),
   components: {
-    ...daydanTheme.components,
-    JoyButton: referenceDaydanButton,
+    ...dydanTheme.components,
+    JoyButton: referenceDydanButton,
   },
 })
 
 export const getReferenceTheme = brand =>
-  brand === 'sovereign' ? sovereignTheme : referenceDaydanTheme
+  brand === 'sovereign' ? sovereignTheme : referenceDydanTheme
 
 export const getReferenceGlobalStyles = brand => ({
   ':root': {

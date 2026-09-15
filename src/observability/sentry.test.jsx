@@ -77,7 +77,7 @@ describe('Sentry baseline', () => {
       message: 'boom',
       user: { id: '123' },
       request: {
-        url: 'https://daydan.example/auth/oauth2?code=secret&state=secret-state&safe=1',
+        url: 'https://dydan.example/auth/oauth2?code=secret&state=secret-state&safe=1',
         headers: {
           authorization: 'Bearer secret',
           cookie: 'a=b',
@@ -111,7 +111,7 @@ describe('Sentry baseline', () => {
 
   it('scrubs OAuth URLs without request headers and in breadcrumbs', () => {
     const secretUrl =
-      'https://daydan.example/auth/oauth2?code=secret&state=secret-state'
+      'https://dydan.example/auth/oauth2?code=secret&state=secret-state'
     const scrubbed = sanitizeSentryEvent({
       request: { url: secretUrl },
       breadcrumbs: [
@@ -129,7 +129,7 @@ describe('Sentry baseline', () => {
   it('scrubs password-reset credentials', () => {
     const scrubbed = sanitizeSentryEvent({
       request: {
-        url: 'https://daydan.example/password/update?c=reset-secret&safe=1',
+        url: 'https://dydan.example/password/update?c=reset-secret&safe=1',
       },
     })
     expect(scrubbed.request.url).toContain('safe=1')

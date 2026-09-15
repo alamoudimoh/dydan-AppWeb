@@ -1,5 +1,5 @@
 export const PRODUCT_UI_FONTS = Object.freeze({
-  daydan: "'Comfortaa Variable', 'Comfortaa', system-ui, sans-serif",
+  dydan: "'Comfortaa Variable', 'Comfortaa', system-ui, sans-serif",
   sovereign: "'Ubuntu Sans Variable', 'Ubuntu', system-ui, sans-serif",
 })
 

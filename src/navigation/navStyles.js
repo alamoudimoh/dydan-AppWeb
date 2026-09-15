@@ -30,7 +30,7 @@ export const navSectionSpacingSx = index => ({
 })
 
 export const navItemButtonSx = isActive => ({
-  borderRadius: 'var(--daydan-radius-nav)',
+  borderRadius: 'var(--dydan-radius-nav)',
   minHeight: { xs: NAV_ITEM_MIN_HEIGHT, sm: 36 },
   py: 1,
   px: 1.25,
@@ -43,7 +43,7 @@ export const navItemButtonSx = isActive => ({
   ...(isActive
     ? {
         '&, &.Mui-selected, &.Mui-selected:hover': {
-          bgcolor: 'var(--daydan-brand-soft)',
+          bgcolor: 'var(--dydan-brand-soft)',
           color: 'var(--product-brand)',
         },
         '& .MuiListItemDecorator-root': {
@@ -53,11 +53,11 @@ export const navItemButtonSx = isActive => ({
     : {
         color: 'text.primary',
         '&:hover': {
-          bgcolor: 'var(--joy-palette-neutral-50, var(--daydan-page))',
+          bgcolor: 'var(--joy-palette-neutral-50, var(--dydan-page))',
         },
       }),
   '&:focus-visible': {
-    outline: '2px solid var(--daydan-focus-outer)',
+    outline: '2px solid var(--dydan-focus-outer)',
     outlineOffset: 2,
   },
   '& .MuiListItemDecorator-root': {

@@ -443,7 +443,7 @@ const MyChores = () => {
     setSelectedProjectWithCache,
   ])
 
-  // Widget deep links (donetick://chores/add[?mode=scan|voice] →
+  // Widget deep links (dydan://chores/add[?mode=scan|voice] →
   // /chores?add_task=1[&mode=…]): open the quick-add modal once, in the
   // requested capture mode, and strip the params so back/refresh doesn't
   // re-trigger it.
@@ -1002,7 +1002,7 @@ const MyChores = () => {
           variant='error'
           fullHeight
           icon={<FigmaIcon name='error' size={22} />}
-          title={t('list.cantReachDayDan')}
+          title={t('list.cantReachDydan')}
           description={
             choresErrorDetails?.message || t('list.loadErrorDescription')
           }

@@ -40,32 +40,32 @@ get_password() {
 
 # ── Android ───────────────────────────────────────────────────────────────────
 echo "→ Writing android/app/google-services.json"
-get_note "Donetick Google Services Android" > "$REPO_ROOT/android/app/google-services.json"
+get_note "Dydan Google Services Android" > "$REPO_ROOT/android/app/google-services.json"
 
 echo "→ Writing android keystore"
-get_note "Donetick Android Keystore" | base64 --decode > "$REPO_ROOT/android/app/release/donetick.jks"
+get_note "Dydan Android Keystore" | base64 --decode > "$REPO_ROOT/android/app/release/dydan.jks"
 
-KEYSTORE_PASSWORD=$(get_password "Donetick Keystore Password")
+KEYSTORE_PASSWORD=$(get_password "Dydan Keystore Password")
 
 cat > "$REPO_ROOT/android/keystore.properties" <<EOF
-storeFile=release/donetick.jks
+storeFile=release/dydan.jks
 storePassword=$KEYSTORE_PASSWORD
 keyAlias=key0
 keyPassword=$KEYSTORE_PASSWORD
 EOF
 
 echo "→ Writing android/play-service-account.json"
-get_note "Donetick Google Play Service Account" > "$REPO_ROOT/android/play-service-account.json"
+get_note "Dydan Google Play Service Account" > "$REPO_ROOT/android/play-service-account.json"
 
 # ── iOS ───────────────────────────────────────────────────────────────────────
 echo "→ Writing ios/App/App/GoogleService-Info.plist"
-get_note "Donetick Google Services iOS" > "$REPO_ROOT/ios/App/App/GoogleService-Info.plist"
+get_note "Dydan Google Services iOS" > "$REPO_ROOT/ios/App/App/GoogleService-Info.plist"
 
 echo "→ Writing App Store Connect key"
-get_note "Donetick App Store Connect Key" | base64 --decode > "$REPO_ROOT/ios/AuthKey_84F695CDQ3.p8"
+get_note "Dydan App Store Connect Key" | base64 --decode > "$REPO_ROOT/ios/AuthKey_84F695CDQ3.p8"
 
 # ── Env ───────────────────────────────────────────────────────────────────────
 echo "→ Writing .env.production"
-get_note "Donetick Env Production" > "$REPO_ROOT/.env.production"
+get_note "Dydan Env Production" > "$REPO_ROOT/.env.production"
 
 echo "✓ All secrets pulled successfully"

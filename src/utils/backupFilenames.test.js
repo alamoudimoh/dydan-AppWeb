@@ -6,14 +6,14 @@ import {
   DEFAULT_BACKUP_FILENAME_PREFIX,
 } from './backupFilenames.js'
 
-test('default backup export filename uses DayDan prefix', () => {
+test('default backup export filename uses Dydan prefix', () => {
   assert.equal(
     buildDefaultBackupFilename('2026-08-16T12-00-00'),
-    'daydan-backup-2026-08-16T12-00-00.backup',
+    'dydan-backup-2026-08-16T12-00-00.backup',
   )
-  assert.equal(DEFAULT_BACKUP_FILENAME_PREFIX, 'daydan-backup')
+  assert.equal(DEFAULT_BACKUP_FILENAME_PREFIX, 'dydan-backup')
 })
 
-test('legacy Donetick backup filenames remain valid import targets', () => {
-  assert.match('donetick-backup-2026-08-16T12-00-00.backup', /\.backup$/)
+test('legacy Dydan backup filenames remain valid import targets', () => {
+  assert.match('dydan-backup-2026-08-16T12-00-00.backup', /\.backup$/)
 })

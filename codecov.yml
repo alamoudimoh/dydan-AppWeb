@@ -1,4 +1,4 @@
-# Codecov configuration for the DayDan App repository.
+# Codecov configuration for the Dydan App repository.
 # Coverage is collected from the Vitest unit/component suite only in this phase;
 # Playwright browser smoke does not contribute coverage yet.
 

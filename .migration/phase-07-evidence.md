@@ -30,7 +30,7 @@ rg -l "@(mui/(joy|material)|emotion/(react|styled))" src --glob '*.{js,jsx,ts,ts
 ```
 
 At this commit it reports 204 direct production/test consumers. They include the
-active app providers (`contexts/ThemeContext.jsx` and `theme/daydanTheme.js`),
+active app providers (`contexts/ThemeContext.jsx` and `theme/dydanTheme.js`),
 the authenticated shell (`App.jsx`), shared controls/modals, route views,
 onboarding and landing surfaces, and their tests. `@mui/joy`, `@mui/material`,
 `@emotion/react`, and `@emotion/styled` therefore remain required and were not

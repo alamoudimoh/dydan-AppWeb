@@ -5,10 +5,10 @@ import { InAppReview } from '@capacitor-community/in-app-review'
 
 import {
   APP_REPORT_SOURCE,
-  DAYDAN_APP_REPO,
+  DYDAN_APP_REPO,
   FEEDBACK_ISSUES_NEW_URL,
 } from '../config/ReportDestinations.js'
-import { isOfficialDayDanInstance } from '../utils/FeatureToggle'
+import { isOfficialDydanInstance } from '../utils/FeatureToggle'
 
 const STATE_KEY = 'feedbackState'
 
@@ -22,8 +22,8 @@ const ERROR_QUIET_PERIOD_MS = 10 * 60 * 1000
 const APP_STORE_URL =
   'https://apps.apple.com/app/apple-store/id6742807441?pt=127258663&ct=website&mt=8'
 const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.donetick.app'
-const GITHUB_URL = DAYDAN_APP_REPO
+  'https://play.google.com/store/apps/details?id=com.dydan.app'
+const GITHUB_URL = DYDAN_APP_REPO
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -149,7 +149,7 @@ export const collectFeedbackContext = async ({ feature, userProfile } = {}) => {
     getAppVersion(),
     getDeviceContext(),
     readState(),
-    isOfficialDayDanInstance().catch(() => false),
+    isOfficialDydanInstance().catch(() => false),
   ])
 
   const signupDate = userProfile?.created_at
@@ -333,12 +333,12 @@ export const isFeedbackSubmissionConfigured = () =>
 export const isRawChatWebhookConfigured = () => isRawChatWebhook(WEBHOOK_URL)
 
 /**
- * Whether this app is talking to the hosted donetick.com service. Self-hosted
+ * Whether this app is talking to the configured hosted service. Self-hosted
  * instances route feedback to GitHub instead of the webhook, so their data
  * never leaves infrastructure they control.
  */
 export const isCloudInstance = () =>
-  isOfficialDayDanInstance().catch(() => false)
+  isOfficialDydanInstance().catch(() => false)
 
 export const SUBMIT_RESULT = {
   SENT: 'sent',

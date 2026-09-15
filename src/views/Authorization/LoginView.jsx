@@ -366,7 +366,7 @@ const LoginView = () => {
     }
 
     if (Capacitor.isNativePlatform()) {
-      const redirectUri = 'donetick://auth/oauth2'
+      const redirectUri = 'dydan://auth/oauth2'
       const txn = await startOAuthTransaction(redirectUri)
       if (!txn) return
       const params = new URLSearchParams({

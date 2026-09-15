@@ -294,7 +294,7 @@ export const AssetDetail = () => {
                     )}
                   </div>
                   <div
-                    className='daydan-metric'
+                    className='dydan-metric'
                     style={{ fontSize: 20, fontWeight: 700 }}
                   >
                     {meter.currentReading.toLocaleString(locale)} {meter.unit}

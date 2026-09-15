@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>NFCReaderUsageDescription</key>
-	<string>DayDan uses NFC to read and write chore tags for quick task completion.</string>
+	<string>Dydan uses NFC to read and write chore tags for quick task completion.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>DayDan</string>
+	<string>Dydan</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -67,10 +67,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.donetick.app</string>
+			<string>com.dydan.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>donetick</string>
+				<string>dydan</string>
 			</array>
 		</dict>
 		<dict>

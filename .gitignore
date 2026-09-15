@@ -53,7 +53,7 @@ vendor/bundle
 .agents/
 skills-lock.json
 
-# Taskier runtime state belongs to the backend persistent data volume.
+# Dydan runtime state belongs to the backend persistent data volume.
 *.db
 *.db-wal
 *.db-shm
@@ -63,5 +63,5 @@ skills-lock.json
 jwt-secret
 data/
 uploads/
-taskier-zero-config-*
-taskier-container-*
+dydan-zero-config-*
+dydan-container-*

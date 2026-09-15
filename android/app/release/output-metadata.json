@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.donetick.app",
+  "applicationId": "com.dydan.app",
   "variantName": "release",
   "elements": [
     {

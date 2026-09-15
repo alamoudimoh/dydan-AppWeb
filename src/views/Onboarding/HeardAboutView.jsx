@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { productTypeScale } from '../../theme/typography'
-import { isOfficialDayDanInstance } from '../../utils/FeatureToggle'
+import { isOfficialDydanInstance } from '../../utils/FeatureToggle'
 import {
   haptic,
   recordAcquisitionSource,
@@ -29,7 +29,7 @@ const cardSx = {
   bgcolor: 'background.surface',
   border: '1px solid',
   borderColor: 'divider',
-  borderRadius: 'var(--daydan-radius-card)',
+  borderRadius: 'var(--dydan-radius-card)',
 }
 
 const Shell = ({ children }) => (
@@ -323,7 +323,7 @@ const HeardAboutView = () => {
 
   useEffect(() => {
     let cancelled = false
-    isOfficialDayDanInstance().then(result => {
+    isOfficialDydanInstance().then(result => {
       if (!cancelled) setIsOfficial(result)
     })
     return () => {

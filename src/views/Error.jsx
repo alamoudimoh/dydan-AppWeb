@@ -65,7 +65,7 @@ const Error = () => {
           Report sent - thank you!
         </div>
         <div className='text-muted figma-error-sent-copy mt-2'>
-          We review every report and use them to improve DayDan. Returning you
+          We review every report and use them to improve Dydan. Returning you
           home now.
         </div>
       </div>

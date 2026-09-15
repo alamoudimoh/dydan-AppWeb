@@ -43,7 +43,7 @@ Any active build/test/reference/verification config that still depends on supers
 
 ## GitHub Actions
 
-GitHub Actions are non-gating for DayDan when they fail before executing repository steps, record zero steps, skip downstream jobs, lack runners, or fail for account/billing/infrastructure reasons. Report such state only as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS` and continue. Investigate only concrete reproducible repository-code/test failures from actually executed jobs.
+GitHub Actions are non-gating for Dydan when they fail before executing repository steps, record zero steps, skip downstream jobs, lack runners, or fail for account/billing/infrastructure reasons. Report such state only as `NON-GATING GITHUB ACTIONS INFRASTRUCTURE STATUS` and continue. Investigate only concrete reproducible repository-code/test failures from actually executed jobs.
 
 ## Required terminal path
 

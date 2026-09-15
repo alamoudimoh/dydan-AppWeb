@@ -14,7 +14,7 @@ import {
   APP_DISPLAY_NAME,
   APP_DISPLAY_TAGLINE,
 } from '@/config/AppBranding'
-import { DAYDAN_APP_REPO } from '@/config/ReportDestinations'
+import { DYDAN_APP_REPO } from '@/config/ReportDestinations'
 
 import useWindowWidth from '../../hooks/useWindowWidth'
 
@@ -40,7 +40,7 @@ const HomeHero = () => {
         alignItems: 'center',
       }}
     >
-      {APP_BRAND_ID === 'daydan' && <img src={Logo} width='100' alt='' />}
+      {APP_BRAND_ID === 'dydan' && <img src={Logo} width='100' alt='' />}
       <Typography
         level='h1'
         fontSize={{ xs: 42, sm: 58 }}
@@ -89,15 +89,7 @@ const HomeHero = () => {
         transition: 'all 0.20s',
       }}
       className='hover:scale-105'
-      onClick={() => {
-        // if the url is donetick.com then navigate to app.donetick.com/chores
-        // else navigate to /chores
-        if (window.location.hostname === 'donetick.com') {
-          window.location.href = 'https://app.donetick.com/chores'
-        } else {
-          navigate('/chores')
-        }
-      }}
+      onClick={() => navigate('/chores')}
     >
       Get started
     </Button>
@@ -141,7 +133,7 @@ const HomeHero = () => {
             }}
           >
             {ctaButton}
-            {APP_BRAND_ID === 'daydan' && (
+            {APP_BRAND_ID === 'dydan' && (
               <Button
                 data-aos-delay={100 * 2.5}
                 data-aos-anchor='[data-aos-id-hero]'
@@ -157,7 +149,7 @@ const HomeHero = () => {
                   transition: 'all 0.20s',
                 }}
                 className='hover:scale-105'
-                onClick={() => window.open(DAYDAN_APP_REPO, '_blank')}
+                onClick={() => window.open(DYDAN_APP_REPO, '_blank')}
                 startDecorator={<GitHub />}
               >
                 GitHub

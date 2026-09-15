@@ -3,7 +3,7 @@ import { CssVarsProvider } from '@mui/joy/styles'
 import PropType from 'prop-types'
 
 import { APP_BRAND_ID } from '@/config/AppBranding'
-import { createProductTheme, getProductGlobalStyles } from '@/theme/daydanTheme'
+import { createProductTheme, getProductGlobalStyles } from '@/theme/dydanTheme'
 
 const productTheme = createProductTheme(APP_BRAND_ID)
 const productGlobalStyles = getProductGlobalStyles(APP_BRAND_ID)

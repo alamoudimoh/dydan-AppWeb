@@ -1,17 +1,17 @@
-# DayDan-AppWeb
+# Dydan-AppWeb
 
-DayDan-AppWeb is the DayDan web application and native mobile client. It
-provides the responsive household experience for DayDan tasks, chores,
+Dydan-AppWeb is the Dydan web application and native mobile client. It
+provides the responsive household experience for Dydan tasks, chores,
 projects, routines, shopping lists, maintenance, meters, rewards, history,
 notifications, and shared circles.
 
-DayDan is a self-hostable task and household coordination product. This
+Dydan is a self-hostable task and household coordination product. This
 repository contains the client; the API, persistence, authentication, realtime
 events, notifications, integrations, and deployment image are maintained in
-[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server).
+[Dydan-Server](https://github.com/alamoudimoh/Dydan-Server).
 
-DayDan originated from the open-source Donetick project and has since evolved
-as an independently developed DayDan product.
+Dydan originated from the open-source Dydan project and has since evolved
+as an independently developed Dydan product.
 
 ## Product capabilities
 
@@ -25,7 +25,7 @@ as an independently developed DayDan product.
 - REST API access, realtime synchronization, REST/API and webhook integrations
   suitable for external automation platforms such as Home Assistant,
   Telegram/Pushover/Discord notification targets, and webhook-driven
-  automation through DayDan-Server.
+  automation through Dydan-Server.
 - Home, Today, calendar, activity, history, family progress, rewards, search,
   dashboards, archived work, and notification views.
 - Local and push notifications, device registration, task deep links, voice
@@ -33,7 +33,7 @@ as an independently developed DayDan product.
 - Light/dark/system themes, responsive layouts, Arabic RTL support, and
   localized UI bundles.
 
-The client expects a compatible DayDan-Server API. It does not contain the
+The client expects a compatible Dydan-Server API. It does not contain the
 authoritative task database or authentication service.
 
 ## Run the web client
@@ -57,13 +57,13 @@ npm run preview
 ```
 
 For a complete self-hosted deployment, use the Docker Compose instructions in
-[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server#quick-start).
+[Dydan-Server](https://github.com/alamoudimoh/Dydan-Server#quick-start).
 
 ## Client architecture
 
 The application is a React 19 and Vite SPA. React Router provides lazy-loaded
 route modules, TanStack Query manages server-backed cache state, and the
-central API client handles requests to DayDan-Server. Server-sent events are
+central API client handles requests to Dydan-Server. Server-sent events are
 used for optional realtime updates. Authentication, onboarding, network
 status, PWA updates, error boundaries, navigation, and native lifecycle events
 are coordinated by the application shell.
@@ -83,7 +83,7 @@ More detail is in:
 - [Client architecture and security](docs/architecture.md)
 - [Development and verification](docs/development.md)
 - [Mobile and native integrations](docs/mobile.md)
-- [Product implementation evidence](https://github.com/alamoudimoh/DayDan-Server/blob/develop/docs/product-implementation-review.md)
+- [Product implementation evidence](https://github.com/alamoudimoh/Dydan-Server/blob/develop/docs/product-implementation-review.md)
 
 ## Verification
 
@@ -116,8 +116,8 @@ failures.
 Use a focused branch, keep changes scoped to the client, run the relevant
 verification gates, and open a pull request against `develop`. Changes that
 depend on API behavior should be coordinated with
-[DayDan-Server](https://github.com/alamoudimoh/DayDan-Server).
+[Dydan-Server](https://github.com/alamoudimoh/Dydan-Server).
 
 ## License
 
-DayDan-AppWeb is licensed under the AGPLv3. See [LICENSE.md](LICENSE.md).
+Dydan-AppWeb is licensed under the AGPLv3. See [LICENSE.md](LICENSE.md).

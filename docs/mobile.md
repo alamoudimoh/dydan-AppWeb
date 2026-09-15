@@ -1,6 +1,6 @@
-# DayDan mobile and device integrations
+# Dydan mobile and device integrations
 
-DayDan-AppWeb uses Capacitor for Android and iOS packaging. Native plugins
+Dydan-AppWeb uses Capacitor for Android and iOS packaging. Native plugins
 provide secure storage, SQLite, notifications, speech recognition, NFC,
 document scanning, OCR, sharing, status-bar behavior, social login, and
 subscription purchases.

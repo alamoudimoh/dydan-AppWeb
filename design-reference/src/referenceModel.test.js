@@ -32,10 +32,10 @@ test('reference covers every required product surface', () => {
 })
 
 test('brands have distinct names and wordmark fonts', () => {
-  assert.notEqual(REFERENCE_BRANDS.daydan.name, REFERENCE_BRANDS.sovereign.name)
-  assert.match(REFERENCE_BRANDS.daydan.wordmarkFont, /Comfortaa/)
+  assert.notEqual(REFERENCE_BRANDS.dydan.name, REFERENCE_BRANDS.sovereign.name)
+  assert.match(REFERENCE_BRANDS.dydan.wordmarkFont, /Comfortaa/)
   assert.match(REFERENCE_BRANDS.sovereign.wordmarkFont, /Ubuntu/)
-  assert.equal(getReferenceBrand('unknown'), REFERENCE_BRANDS.daydan)
+  assert.equal(getReferenceBrand('unknown'), REFERENCE_BRANDS.dydan)
 })
 
 test('direction and page fallbacks are deterministic', () => {

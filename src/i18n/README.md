@@ -1,6 +1,6 @@
 # Internationalization (i18n) Setup
 
-This directory contains the internationalization configuration for DayDan.
+This directory contains the internationalization configuration for Dydan.
 
 ## Structure
 

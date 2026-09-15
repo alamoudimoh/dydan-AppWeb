@@ -372,7 +372,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'public',
     auth: false,
     nav: false,
-    heading: /donetick/i,
+    heading: /dydan/i,
   },
   '/ready': {
     status: 'covered',
@@ -393,7 +393,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'public',
     auth: true,
     nav: true,
-    heading: /help us improve daydan/i,
+    heading: /help us improve dydan/i,
   },
   '/circle/join': {
     status: 'covered',

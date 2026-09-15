@@ -830,7 +830,7 @@ const ChoreView = () => {
               <Card
                 variant='soft'
                 sx={{
-                  borderRadius: 'var(--daydan-radius-row)',
+                  borderRadius: 'var(--dydan-radius-row)',
                   border: '1px solid',
                   borderColor: 'divider',
                   bgcolor: 'background.surface',

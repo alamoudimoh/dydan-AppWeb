@@ -129,7 +129,7 @@ export const readSentryConfig = () => {
     tracesSampleRate: parseSampleRate(
       import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE,
     ),
-    release: `daydan-app@${import.meta.env.VITE_APP_VERSION || 'dev'}`,
+    release: `dydan-app@${import.meta.env.VITE_APP_VERSION || 'dev'}`,
   }
 }
 

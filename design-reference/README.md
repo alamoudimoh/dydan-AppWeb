@@ -1,12 +1,12 @@
-# DayDan product design reference
+# Dydan product design reference
 
-This is the isolated, interactive HTML reference for the DayDan application.
-It reuses the frontend's React/Vite toolchain, the production DayDan Joy theme,
-MUI Joy components, MUI Icons, Fontsource packages, and shared DayDan UI
+This is the isolated, interactive HTML reference for the Dydan application.
+It reuses the frontend's React/Vite toolchain, the production Dydan Joy theme,
+MUI Joy components, MUI Icons, Fontsource packages, and shared Dydan UI
 components. It does not mount production providers, call the API, change routes,
 or alter application behavior.
 
-Run from `daydan-app`:
+Run from `dydan-app`:
 
 ```sh
 npm run reference:dev
@@ -25,20 +25,20 @@ The production build is written to `design-reference/dist`.
 - The app combines Joy `sx`, shared style objects, CSS/CSS Modules, and a small
   Tailwind utility layer. Tailwind preflight is disabled.
 - Fonts are self-hosted with Fontsource. The canonical reference uses Comfortaa
-  Variable for the complete English DayDan UI, Ubuntu Sans Variable for the
+  Variable for the complete English Dydan UI, Ubuntu Sans Variable for the
   complete English Sovereign UI, Cairo for Arabic, and JetBrains Mono only for
   compact numeric/data values. The production UI still uses Inter until a later
   migration pass.
 - Recharts provides charts; `react-calendar` provides legacy calendar surfaces.
   The app also uses Joy tables/lists and both DnD Kit and Hello Pangea DnD.
-- The production theme is `src/theme/daydanTheme.js`, backed by
+- The production theme is `src/theme/dydanTheme.js`, backed by
   `src/theme/tokens.js`. Shared layout rules live in `src/theme/appLayout.js`.
 - Existing reusable primitives include `PageHeader`, `SectionCard`, `AppModal`,
   `ModalActions`, `EmptyState`, `QueryLoadingView`, the navigation model/styles,
   category/option picker fields, task rows/cards, sync status, and the profile
   avatar/menu.
 
-## Existing DayDan foundation
+## Existing Dydan foundation
 
 - Primary: `#4D40DB` light / `#A59CF5` dark.
 - Signal/info: `#0369A1` light / `#7DD3FC` dark.
@@ -51,7 +51,7 @@ The production build is written to `design-reference/dist`.
 - Shadows: 1/2 px through 24/64 px, with low-opacity ink-colored shadows.
 - The reference type scale has explicit display, page-title, section-title,
   card-title, row-title, body, small-body, label, button, and metric roles.
-  DayDan uses Comfortaa weights 400/600/700 to preserve hierarchy; Sovereign
+  Dydan uses Comfortaa weights 400/600/700 to preserve hierarchy; Sovereign
   uses Ubuntu Sans; Arabic uses equivalent Cairo hierarchy rather than
   inheriting the English face.
 - Spacing is based on Joy's 8 px unit, with established 12 px page padding on
@@ -78,7 +78,7 @@ The production build is written to `design-reference/dist`.
   `xs 0`, `sm 600`, `md 900`, `lg 1200`, `xl 1536`. Existing isolated 480 px and
   768 px calendar queries are not promoted into the canonical system.
 - All category, member/avatar, chart, circle, and progress accents resolve via
-  semantic theme variables. No DayDan brand color is retained when Sovereign is
+  semantic theme variables. No Dydan brand color is retained when Sovereign is
   active.
 - Member presentation exposes six brand-aware identity roles. Chart roles
   intentionally alias those identity colors, while category, circle, progress,
@@ -128,14 +128,14 @@ than presenting it as existing production behavior:
   soft/solid status variables so dark-mode foregrounds and backgrounds cannot
   collapse to the same color.
 - Several people/category/project fallbacks use literal colors instead of a
-  brand-aware semantic palette, which would leak DayDan colors into Sovereign.
+  brand-aware semantic palette, which would leak Dydan colors into Sovereign.
 
 ## Screens and specimens
 
 The sidebar exposes dashboard, chores/tasks, calendar, notifications, routines,
 projects, shopping lists, meters, family progress/charts, rewards, settings,
 account/session management, a complete component sheet, system states, and an
-Arabic RTL screen. Global controls switch DayDan/Sovereign, light/dark, and
+Arabic RTL screen. Global controls switch Dydan/Sovereign, light/dark, and
 LTR/RTL without reloading.
 
 ## Figma Make convergence decisions
