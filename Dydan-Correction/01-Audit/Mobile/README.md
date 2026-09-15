@@ -1,6 +1,6 @@
 # Dydan Mobile Identity Remediation Closure
 
-- Repository: `alamoudimoh/daydan-app`
+- Repository: `alamoudimoh/DayDan-AppWeb`
 - Remediation branch: `fix/dydan-identity-mobile`
 - Base: `origin/develop` at `f4c536461d3341e612302d0685815446704bae75`
 - Closure date: 2026-09-15
@@ -16,14 +16,14 @@ The product owner confirmed that no released app, store listing, Firebase/OAuth 
 - Set the custom URI scheme and Android notification channel to `dydan` and `dydan_notifications`.
 - Removed legacy storage/database/channel migration behavior because no user data exists to migrate.
 - Removed unprovisioned App Links, Apple associated domains, and assumed `dydan.com` redirects. Hosted-domain detection now requires explicit build-time configuration.
-- Retained `alamoudimoh/daydan-app` only as the current GitHub repository locator.
+- Retained `alamoudimoh/DayDan-AppWeb` as the current GitHub repository locator.
 
 ## Verification
 
 - `./scripts/verify.sh`: passed: changed-file lint, 181 node tests, 146 UI tests, and production build.
 - `npx cap sync`: passed: Android and iOS Capacitor assets now report `com.dydan.app` and `Dydan`.
 - `./gradlew test`: blocked by this machine's missing Android SDK (`ANDROID_HOME` or `android/local.properties`); it did not reach compilation or tests.
-- Tracked-content scan found only the intentional `alamoudimoh/daydan-app` GitHub locator; the legacy-identity path scan is empty.
+- Tracked-content scan found only the intentional `alamoudimoh/DayDan-AppWeb` GitHub locator; the legacy-identity path scan is empty.
 - `git diff --check`: passed.
 
 ## Follow-up

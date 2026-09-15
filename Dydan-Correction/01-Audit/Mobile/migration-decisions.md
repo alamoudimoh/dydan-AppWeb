@@ -13,7 +13,7 @@ All active client, Capacitor, Android, iOS, widget, release, localization, test,
 | Deep links | Use `dydan://` only. |
 | Hosted domains and App Links | No Dydan domain is provisioned; remove host-specific routes and association assets. |
 | Firebase, OAuth, signing, stores, RevenueCat | No production identities exist; do not invent new external configuration. |
-| GitHub locator | Preserve `alamoudimoh/daydan-app` until its owner renames the remote. |
+| GitHub locator | Preserve `alamoudimoh/DayDan-AppWeb`, the remote's canonical location. |
 
 ## Implementation Rules
 

@@ -9,4 +9,4 @@ MOB-007,app.donetick.com/App Links,Android/iOS association config,Removed,None,C
 MOB-008,daydan_notifications/donetick_notifications,Android notification channels,Renamed,dydan_notifications,Closed,No persisted devices or server payload contract
 MOB-009,Donetick Firebase/signing/store identifiers,external configuration references,Removed or renamed,Dydan-ready source configuration,Closed,No external registrations or secrets exist
 MOB-010,daydan/donetick offline databases and browser keys,offline storage,Renamed,dydan_offline and dydan.*,Closed,No released data to copy
-MOB-011,legacy GitHub repository references,repository locators,Preserved,alamoudimoh/daydan-app,Closed,Current remote slug is intentionally retained
+MOB-011,legacy GitHub repository references,repository locators,Preserved,alamoudimoh/DayDan-AppWeb,Closed,Current remote slug is intentionally retained

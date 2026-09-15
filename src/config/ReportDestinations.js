@@ -10,7 +10,7 @@ const viteEnv =
   typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {}
 
 export const resolveAppRepoUrl = (env = viteEnv) =>
-  env.VITE_DYDAN_APP_REPO_URL || 'https://github.com/alamoudimoh/daydan-app'
+  env.VITE_DYDAN_APP_REPO_URL || 'https://github.com/alamoudimoh/DayDan-AppWeb'
 
 export const DYDAN_APP_REPO = resolveAppRepoUrl()
 
