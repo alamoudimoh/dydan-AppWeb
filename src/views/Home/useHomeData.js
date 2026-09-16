@@ -16,6 +16,8 @@ import {
   normalizeCircleMembers,
   resolveEffectiveRole,
 } from '../../utils/PermissionModel'
+import { readLocalStorageItem } from '../../utils/storage'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
 import { useProjects } from '../Projects/ProjectQueries'
 import {
   buildActivityFeed,
@@ -39,6 +41,14 @@ const nameOf = (profile, fallbackName) => {
     fallbackName
   ).trim()
 }
+
+/**
+ * Resolves the persona-aware home screen. Children are always on Quest;
+ * adults follow the persisted preference (Focus unless a Quest view is
+ * stored under the canonical `dydan.home.view` key).
+ */
+export const resolveHomeView = (isChild, storedView) =>
+  isChild || storedView === 'quest' ? 'quest' : 'focus'
 
 /**
  * Binds the Figma Home/Today screens to the live Dydan query layer.
@@ -199,7 +209,7 @@ export const useHomeData = () => {
     !profileLoading && !choresLoading && !historyLoading && !membersLoading
 
   return {
-    view: isChild ? 'quest' : 'focus',
+    view: resolveHomeView(isChild, readLocalStorageItem(STORAGE_KEYS.homeView)),
     isChild,
     isSolo,
     hasFamily: !isSolo,

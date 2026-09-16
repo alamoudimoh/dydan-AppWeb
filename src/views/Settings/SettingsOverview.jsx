@@ -6,11 +6,17 @@ import FigmaIcon from '../../components/FigmaIcon'
 import { APP_BRAND_ID } from '../../config/AppBranding'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import { productTokens } from '../../theme/tokens'
 import {
   hasPermission,
   resolveEffectiveRole,
   SETTINGS_PERMISSIONS,
 } from '../../utils/PermissionModel'
+import {
+  readLocalStorageItem,
+  writeLocalStorageItem,
+} from '../../utils/storage'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 
@@ -79,6 +85,9 @@ const SettingsOverview = () => {
   const { data: circleMembersData } = useCircleMembers()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const [homeView, setHomeView] = useState(
+    () => readLocalStorageItem(STORAGE_KEYS.homeView) || 'focus',
+  )
   const members = circleMembersData?.res || []
   const role = resolveEffectiveRole(userProfile, members)
   const can = setting =>
@@ -97,6 +106,11 @@ const SettingsOverview = () => {
 
   const settingsAction = (setting, label, danger = false) =>
     can(setting) ? { danger, label } : null
+
+  const selectHomeView = view => {
+    setHomeView(view)
+    writeLocalStorageItem(STORAGE_KEYS.homeView, view)
+  }
 
   return (
     <div className='figma-settings-wrap'>
@@ -152,14 +166,14 @@ const SettingsOverview = () => {
                 action={settingsAction('account', t('figmaOverview.change'))}
                 icon='mail'
                 label={t('figmaOverview.email')}
-                onClick={() => navigate('/settings/account')}
+                onClick={() => navigate('/settings/profile')}
                 sub={email}
               />
               <Row
                 action={settingsAction('account', t('figmaOverview.update'))}
                 icon='lock'
                 label={t('accountSettings.password')}
-                onClick={() => navigate('/settings/account')}
+                onClick={() => navigate('/settings/profile')}
                 sub={t('figmaOverview.passwordHelp')}
               />
             </>
@@ -186,7 +200,10 @@ const SettingsOverview = () => {
                     <span
                       className='figma-theme-swatch'
                       style={{
-                        background: item === 'dydan' ? '#4326EA' : '#1A1A1A',
+                        background:
+                          item === 'dydan'
+                            ? productTokens.dydan.light.primary
+                            : productTokens.sovereign.light.brand,
                       }}
                     />
                     <span
@@ -222,14 +239,18 @@ const SettingsOverview = () => {
             <div className='view-toggle figma-view-toggle'>
               {['focus', 'quest'].map(item => (
                 <button
-                  className={`view-toggle-btn ${item === 'focus' ? 'active' : ''}`}
+                  aria-pressed={homeView === item}
+                  className={`view-toggle-btn ${homeView === item ? 'active' : ''}`}
                   key={item}
-                  onClick={() => navigate('/settings/sidepanel')}
+                  onClick={() => selectHomeView(item)}
                   type='button'
                 >
                   {item === 'focus' ? '⚡ Focus' : '✨ Quest'}
                 </button>
               ))}
+            </div>
+            <div className='text-muted' style={{ fontSize: 12, marginTop: 4 }}>
+              {t('figmaOverview.defaultViewHelp')}
             </div>
           </div>
           <Row
@@ -408,7 +429,7 @@ const SettingsOverview = () => {
               action={{ danger: true, label: t('figmaOverview.delete') }}
               icon='trash'
               label={t('accountSettings.deleteAccount')}
-              onClick={() => navigate('/settings/account')}
+              onClick={() => navigate('/settings/profile')}
               sub={t('figmaOverview.deleteHelp')}
             />
           )}
@@ -439,7 +460,7 @@ const SettingsOverview = () => {
             icon='info'
             label={t('figmaOverview.about')}
             onClick={() => setFeedbackOpen(true)}
-            sub={`Version ${import.meta.env.VITE_APP_VERSION || '2.4.1'}`}
+            sub={`Version ${import.meta.env.VITE_APP_VERSION || 'dev'}`}
           />
         </Section>
       </div>

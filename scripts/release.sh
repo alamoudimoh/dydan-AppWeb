@@ -19,7 +19,8 @@ Builds signed release artifacts for Android (.aab) and/or iOS (.ipa).
 
   --android        Build Android only
   --ios            Build iOS only
-  --bump TYPE      Version bump type before building (default: patch)
+  --bump TYPE      Version bump before building (YYYYMM-NN scheme; any TYPE
+                   accepted, e.g. patch, minor, major)
   --skip-bump      Don't bump the version, build with the current one
   --upload         Also upload: Android to Play Store, iOS to TestFlight
   --upload-only    Skip bump/build entirely, just upload the artifacts already built

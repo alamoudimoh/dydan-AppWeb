@@ -16,15 +16,21 @@ import { useTranslation } from 'react-i18next'
 import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
 import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
+import AccountSessionsCard from '../../components/settings/AccountSessionsCard'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { formStackSx, sectionCardSx } from '../../theme/appLayout'
 import { apiClient } from '../../utils/ApiClient'
-import { UpdateUserDetails } from '../../utils/Fetcher'
+import { UpdatePassword, UpdateUserDetails } from '../../utils/Fetcher'
 import { resolvePhotoURL } from '../../utils/Helpers'
 import { getCroppedImg } from '../../utils/imageCropUtils'
+import {
+  hasPermission,
+  PERMISSIONS,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
 import { initialProfileForm } from '../../utils/ProfileFormState'
 import {
   isValidIanaTimezone,
@@ -35,6 +41,8 @@ import {
   SETTINGS_QUERY_STATE,
 } from '../../utils/SettingsQueryState'
 import LoadingComponent from '../components/Loading'
+import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
+import UserDeletionModal from '../Modals/Inputs/UserDeletionModal'
 import SettingsLayout from './SettingsLayout'
 
 const ProfileSettingsForm = ({
@@ -51,12 +59,19 @@ const ProfileSettingsForm = ({
   const [timezone, setTimezone] = useState(initialForm.timezone)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [changePasswordModal, setChangePasswordModal] = useState(false)
+  const [userDeletionModal, setUserDeletionModal] = useState(false)
   const fileInputRef = useRef()
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
   const [showCropper, setShowCropper] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const canManageAccount = hasPermission(
+    resolveEffectiveRole(userProfile, circleMembers),
+    PERMISSIONS.MANAGE_ACCOUNT,
+  )
+  const isSelfHosted = import.meta.env.VITE_IS_SELF_HOSTED === 'true'
 
   // Get available timezones
   const timezones = supportedTimezones()
@@ -308,7 +323,103 @@ const ProfileSettingsForm = ({
             {t('profile.save')}
           </Button>
         </Box>
+
+        {canManageAccount && (
+          <>
+            <Box sx={{ mt: 4 }}>
+              <Typography level='title-md' mb={0.5}>
+                {t('profile.security')}
+              </Typography>
+              <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
+                {t('profile.securityDescription')}
+              </Typography>
+            </Box>
+            {isSelfHosted && (
+              <Card sx={{ ...sectionCardSx, maxWidth: 400 }}>
+                <Typography level='title-sm' mb={0.5}>
+                  {t('accountSettings.password')}
+                </Typography>
+                <Typography level='body-sm' mb={2} sx={{ opacity: 0.85 }}>
+                  {t('profile.passwordHelp')}
+                </Typography>
+                <Button
+                  variant='soft'
+                  onClick={() => setChangePasswordModal(true)}
+                >
+                  {t('accountSettings.changePassword')}
+                </Button>
+              </Card>
+            )}
+            <AccountSessionsCard userId={userProfile.id} />
+            <Card
+              sx={{
+                ...sectionCardSx,
+                maxWidth: 400,
+                bgcolor: 'danger.softBg',
+              }}
+            >
+              <Typography level='title-md' mb={1} color='danger'>
+                {t('accountSettings.dangerZone')}
+              </Typography>
+              <Typography level='body-sm' mb={2} color='neutral'>
+                {t('accountSettings.dangerZoneDescription')}
+              </Typography>
+              <Button
+                variant='outlined'
+                color='danger'
+                onClick={() => setUserDeletionModal(true)}
+              >
+                {t('accountSettings.deleteAccount')}
+              </Button>
+            </Card>
+          </>
+        )}
       </Box>
+
+      {canManageAccount &&
+        (changePasswordModal ? (
+          <PassowrdChangeModal
+            isOpen={changePasswordModal}
+            onClose={({ currentPassword, password } = {}) => {
+              if (password && currentPassword) {
+                UpdatePassword(currentPassword, password).then(resp => {
+                  if (resp.ok) {
+                    showSuccess({
+                      title: t('accountSettings.changePassword'),
+                      message: t('profile.passwordChanged'),
+                    })
+                  } else if (resp.status === 403) {
+                    showError({
+                      title: t('accountSettings.changePassword'),
+                      message: t('profile.wrongCurrentPassword'),
+                    })
+                  } else {
+                    showError({
+                      title: t('accountSettings.changePassword'),
+                      message: t('profile.passwordChangeFailed'),
+                    })
+                  }
+                })
+              }
+              setChangePasswordModal(false)
+            }}
+          />
+        ) : null)}
+
+      {canManageAccount && (
+        <UserDeletionModal
+          isOpen={userDeletionModal}
+          onClose={success => {
+            setUserDeletionModal(false)
+            if (success) {
+              showSuccess({
+                title: t('accountSettings.deleteAccount'),
+                message: t('profile.accountDeleted'),
+              })
+            }
+          }}
+        />
+      )}
     </SettingsLayout>
   )
 }

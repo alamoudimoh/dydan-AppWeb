@@ -93,4 +93,23 @@ describe('SettingsOverview', () => {
     expect(navigate).toHaveBeenCalledWith('/settings/notifications')
     expect(localStorage.getItem('figmaNotificationOverview')).toBeNull()
   })
+
+  it('persists the Focus/Quest home view preference instead of navigating', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    const quest = screen.getByRole('button', { name: /quest/i })
+    await user.click(quest)
+
+    expect(localStorage.getItem('dydan.home.view')).toBe('quest')
+    expect(quest).toHaveAttribute('aria-pressed', 'true')
+    expect(navigate).not.toHaveBeenCalledWith('/settings/sidepanel')
+
+    await user.click(screen.getByRole('button', { name: /focus/i }))
+    expect(localStorage.getItem('dydan.home.view')).toBe('focus')
+  })
 })
