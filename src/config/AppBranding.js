@@ -21,7 +21,7 @@ export const APP_BACKGROUND_COLOR = productTokens[APP_BRAND_ID].light.page
 
 export const APP_SUPPORT_URL =
   viteEnv.VITE_APP_SUPPORT_URL ||
-  'https://github.com/alamoudimoh/DayDan-AppWeb/issues'
+  'https://github.com/alamoudimoh/DyDan-AppWeb/issues'
 
 export const formatPageTitle = detail =>
   detail ? `${APP_DISPLAY_NAME}: ${detail}` : APP_DISPLAY_NAME
