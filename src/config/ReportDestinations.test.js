@@ -10,10 +10,10 @@ import {
 } from '../config/ReportDestinations.js'
 
 test('report destinations preserve the current GitHub repository locator', () => {
-  assert.equal(DYDAN_APP_REPO, 'https://github.com/alamoudimoh/DayDan-AppWeb')
+  assert.equal(DYDAN_APP_REPO, 'https://github.com/alamoudimoh/DyDan-AppWeb')
   assert.equal(
     FEEDBACK_ISSUES_NEW_URL,
-    'https://github.com/alamoudimoh/DayDan-AppWeb/issues/new',
+    'https://github.com/alamoudimoh/DyDan-AppWeb/issues/new',
   )
   assert.equal(APP_REPORT_SOURCE, 'dydan-app')
   assert.equal(REPORT_ID_PREFIX, 'TD')

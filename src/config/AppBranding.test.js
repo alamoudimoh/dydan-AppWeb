@@ -36,6 +36,6 @@ test('PWA shell colors match the Dydan page background', () => {
 test('default support URL points to the Dydan app issue tracker', () => {
   assert.equal(
     APP_SUPPORT_URL,
-    'https://github.com/alamoudimoh/DayDan-AppWeb/issues',
+    'https://github.com/alamoudimoh/DyDan-AppWeb/issues',
   )
 })
