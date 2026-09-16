@@ -223,7 +223,14 @@
     "timezone": "Timezone",
     "timezonePlaceholder": "Select your timezone",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "security": "Security & Account",
+    "securityDescription": "Change your password, review signed-in sessions, or delete your account.",
+    "passwordHelp": "Change the password used to sign in to your account.",
+    "passwordChanged": "Password changed successfully",
+    "wrongCurrentPassword": "Current password is incorrect",
+    "passwordChangeFailed": "Password change failed",
+    "accountDeleted": "Account deleted successfully"
   },
   "mfa": {
     "title": "Multi-Factor Authentication",
@@ -455,6 +462,7 @@
     "appearance": "Appearance",
     "theme": "Theme",
     "defaultView": "Default view",
+    "defaultViewHelp": "Adults choose Focus or Quest. Children always see Quest.",
     "rtl": "Right-to-left layout",
     "rtlHelp": "Arabic and other RTL language support",
     "circle": "Circle",

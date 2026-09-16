@@ -32,10 +32,23 @@ vi.mock('../../utils/ApiClient', () => ({
 
 vi.mock('../../utils/Fetcher', () => ({
   UpdateUserDetails: vi.fn(),
+  UpdatePassword: vi.fn(),
 }))
 
 vi.mock('../../components/settings/AccountIdentityCard', () => ({
   default: () => <div data-testid='account-identity-card' />,
+}))
+
+vi.mock('../../components/settings/AccountSessionsCard', () => ({
+  default: () => <div data-testid='account-sessions-card' />,
+}))
+
+vi.mock('../Modals/Inputs/PasswordChangeModal', () => ({
+  default: () => null,
+}))
+
+vi.mock('../Modals/Inputs/UserDeletionModal', () => ({
+  default: () => null,
 }))
 
 vi.mock('./SettingsLayout', () => ({
@@ -105,6 +118,28 @@ describe('ProfileSettings', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('account-identity-card')).toBeInTheDocument()
+    })
+  })
+
+  it('shows security, sessions, and danger zone to accounts that can manage them', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CssVarsProvider>
+          <ProfileSettings />
+        </CssVarsProvider>
+      </QueryClientProvider>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('accountSettings.dangerZone')).toBeInTheDocument()
+      expect(screen.getByTestId('account-sessions-card')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'accountSettings.deleteAccount' }),
+      ).toBeInTheDocument()
     })
   })
 })

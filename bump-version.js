@@ -16,26 +16,24 @@ const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
 const currentVersion = packageJson.version
 console.log(`Current version: ${currentVersion}`)
 
-// Parse version (assuming semver format: major.minor.patch)
-const versionParts = currentVersion.split('.').map(Number)
-const [major, minor, patch] = versionParts
-
-// Bump patch version by default (can be modified to accept arguments for major/minor)
-const bumpType = process.argv[2] || 'patch'
-let newVersion
-
-switch (bumpType) {
-  case 'major':
-    newVersion = `${major + 1}.0.0`
-    break
-  case 'minor':
-    newVersion = `${major}.${minor + 1}.0`
-    break
-  case 'patch':
-  default:
-    newVersion = `${major}.${minor}.${patch + 1}`
-    break
+// Parse YYYYMM-NN version. The `--bump TYPE` argument is accepted for
+// compatibility with scripts/release.sh but in the calendar scheme every
+// bump advances the same sequence.
+const versionMatch = currentVersion.match(/^(\d{6})-(\d+)$/)
+if (!versionMatch) {
+  console.error(
+    `Invalid version format "${currentVersion}": expected YYYYMM-NN`,
+  )
+  process.exit(1)
 }
+const [currentYearMonth, currentSeq] = versionMatch.slice(1, 3)
+
+const now = new Date()
+const nowYearMonth =
+  String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0')
+
+const newSeq = currentYearMonth === nowYearMonth ? Number(currentSeq) + 1 : 1
+const newVersion = `${nowYearMonth}-${String(newSeq).padStart(2, '0')}`
 
 console.log(`New version: ${newVersion}`)
 

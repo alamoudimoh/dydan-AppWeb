@@ -10,6 +10,9 @@ export const STORAGE_KEYS = {
   dashboardUpcomingRange: {
     canonical: 'dydan.dashboard.upcomingRange',
   },
+  homeView: {
+    canonical: 'dydan.home.view',
+  },
 }
 
 export const OFFLINE_DB = {
