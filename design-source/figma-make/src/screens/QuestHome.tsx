@@ -85,7 +85,7 @@ function RewardCard({ reward, currentPoints }: { reward: typeof REWARDS[0]; curr
   );
 }
 
-export default function QuestHome({ ctx, tasks, isSolo }: { ctx: AppCtx; tasks: Task[]; isSolo: boolean }) {
+export default function QuestHome({ ctx, tasks, isSolo, onComplete }: { ctx: AppCtx; tasks: Task[]; isSolo: boolean; onComplete: (id: string) => void }) {
   const liam = MEMBERS.find(m => m.role === "child")!;
   const persona = ctx.persona;
   const currentMember = persona === "child" ? liam : MEMBERS.find(m => m.isCurrentUser)!;
@@ -162,7 +162,7 @@ export default function QuestHome({ ctx, tasks, isSolo }: { ctx: AppCtx; tasks: 
             <h2 className="text-primary font-bold" style={{ fontSize: 16, margin: 0 }}>
               My quests today
             </h2>
-            <button className="btn btn-ghost btn-sm text-brand" onClick={() => ctx.navigate("all-tasks")}>See all</button>
+            <button className="btn btn-ghost btn-sm text-brand" onClick={() => ctx.navigate("today")}>See all</button>
           </div>
 
           {todo.length === 0 && done.length > 0 ? (
@@ -176,13 +176,13 @@ export default function QuestHome({ ctx, tasks, isSolo }: { ctx: AppCtx; tasks: 
           ) : (
             <div className="flex flex-col gap-2">
               {todo.map(t => (
-                <QuestTaskCard key={t.id} task={t} onComplete={() => {}} onOpen={() => ctx.openTask(t)} />
+                <QuestTaskCard key={t.id} task={t} onComplete={onComplete} onOpen={() => ctx.openTask(t)} />
               ))}
               {done.length > 0 && (
                 <>
                   <div className="section-label mt-2">Completed</div>
                   {done.map(t => (
-                    <QuestTaskCard key={t.id} task={t} onComplete={() => {}} onOpen={() => ctx.openTask(t)} />
+                    <QuestTaskCard key={t.id} task={t} onComplete={onComplete} onOpen={() => ctx.openTask(t)} />
                   ))}
                 </>
               )}

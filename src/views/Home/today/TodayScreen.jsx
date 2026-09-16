@@ -1,25 +1,26 @@
+import '../../../styles/screenExperience.css'
+
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
-import { formatDate } from '../homeModel'
 
 function CompactTaskRow({ onComplete, onOpen, task }) {
-  const { i18n, t } = useTranslation('common')
+  const { t } = useTranslation('common')
   const isDone = task.status === 'done'
+  const isOverdue = task.status === 'overdue'
+
   return (
     <div
-      className='task-row'
+      className={`task-row ${isDone ? 'done' : ''}`}
       style={{ padding: '8px 12px' }}
-      onClick={() => onOpen(task)}
-      role='button'
-      tabIndex={0}
     >
       <button
         type='button'
         className={`task-check ${isDone ? 'checked' : ''}`}
+        disabled={isDone}
         onClick={e => {
           e.stopPropagation()
           if (!isDone) onComplete(task)
@@ -32,14 +33,19 @@ function CompactTaskRow({ onComplete, onOpen, task }) {
           <FigmaIcon name='check' size={11} style={{ color: 'white' }} />
         )}
       </button>
-      <div className='min-w-0 flex-1'>
+      <button
+        type='button'
+        className='screen-task-open min-w-0 flex-1'
+        aria-label={task.title}
+        onClick={() => onOpen(task)}
+      >
         <div
-          className={`text-primary font-medium ${isDone ? 'text-faint line-through' : ''}`}
+          className={`font-medium ${isDone ? 'text-faint line-through' : 'text-primary'}`}
           style={{ fontSize: 13 }}
         >
           {task.title}
         </div>
-        <div className='mt-0.5 flex items-center gap-2'>
+        <div className='mt-0.5 flex flex-wrap items-center gap-2'>
           {task.category && (
             <span
               className='badge'
@@ -51,21 +57,33 @@ function CompactTaskRow({ onComplete, onOpen, task }) {
               {task.category}
             </span>
           )}
-          {task.dueDate && (
-            <span className='text-faint' style={{ fontSize: 10 }}>
-              {formatDate(task.dueDate, {
-                locale: i18n.resolvedLanguage || 'en',
-                t,
-              })}
+          {task.dueTime && (
+            <span className='text-faint' style={{ fontSize: 11 }}>
+              {task.dueTime}
+            </span>
+          )}
+          {isOverdue && (
+            <span className='text-sig-over font-bold' style={{ fontSize: 11 }}>
+              {t('homeToday.overdue')}
+            </span>
+          )}
+          {task.isRecurring && (
+            <FigmaIcon
+              name='repeat'
+              size={11}
+              style={{ color: 'var(--t-faint)' }}
+            />
+          )}
+          {task.points > 0 && !isDone && (
+            <span
+              className='text-brand font-bold font-mono'
+              style={{ fontSize: 11 }}
+            >
+              +{task.points}pts
             </span>
           )}
         </div>
-      </div>
-      {task.points > 0 && (
-        <span className='text-faint font-mono' style={{ fontSize: 11 }}>
-          +{task.points}
-        </span>
-      )}
+      </button>
     </div>
   )
 }
@@ -81,40 +99,32 @@ const MemberCard = ({ assignedToday, doneToday, member, onClick }) => {
   return (
     <button
       type='button'
-      className='card flex flex-col gap-2 p-4 text-left'
+      className='card flex flex-col gap-2 p-3 text-left'
       onClick={onClick}
     >
       <div className='flex items-center gap-2'>
         <div
           className='avatar'
           style={{
-            width: 30,
-            height: 30,
+            width: 32,
+            height: 32,
             background: member.color,
-            fontSize: 11,
+            fontSize: 12,
           }}
         >
           {member.initials}
         </div>
         <div
           className='text-primary truncate font-semibold'
-          style={{ fontSize: 13 }}
+          style={{ fontSize: 12 }}
         >
           {member.name}
         </div>
       </div>
-      <div className='flex items-baseline justify-between'>
-        <span className='text-faint' style={{ fontSize: 11 }}>
-          {t('homeToday.todayLower')}
-        </span>
-        <span className='font-mono font-bold' style={{ fontSize: 16 }}>
-          {doneToday}
-          <span className='text-faint ms-1' style={{ fontSize: 11 }}>
-            / {assignedToday}
-          </span>
-        </span>
+      <div className='text-faint' style={{ fontSize: 11 }}>
+        {doneToday}/{assignedToday} {t('homeToday.done').toLowerCase()}
       </div>
-      <div className='progress-track' style={{ height: 6 }}>
+      <div className='progress-track' style={{ height: 4 }}>
         <div
           className='progress-fill'
           style={{
@@ -141,6 +151,7 @@ export default function TodayScreen({
   household,
   makeTaskDone,
   members,
+  overdue = [],
   todayKey,
   todo,
 }) {
@@ -149,51 +160,108 @@ export default function TodayScreen({
   const openChore = task => navigate(`/chores/${task.choreId}`)
   const [view, setView] = useState('mine')
   const [showDone, setShowDone] = useState(false)
+
+  const total = done.length + todo.length
+  const percent = total > 0 ? Math.round((done.length / total) * 100) : 0
+  const totalPoints = done.reduce((sum, task) => sum + (task.points || 0), 0)
   const maxDone = Math.max(1, ...household.map(item => item.done))
+
+  const fullDate = new Intl.DateTimeFormat(i18n.resolvedLanguage || 'en', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(`${todayKey}T00:00:00`))
 
   return (
     <div style={{ padding: '0 0 40px' }}>
       <div className='px-4 md:px-7'>
-        <div className='page-header pb-6'>
+        <div className='screen-page-header page-header pb-5'>
           <div>
+            <div
+              className='text-faint'
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                marginBottom: 4,
+              }}
+            >
+              {fullDate}
+            </div>
             <h1
               className='text-primary'
-              style={{ fontSize: 26, fontWeight: 800, margin: 0 }}
+              style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
             >
               {t('homeToday.today')}
             </h1>
-            <p
-              className='text-muted'
-              style={{ fontSize: 14, margin: '6px 0 0' }}
-            >
-              {formatDate(todayKey, {
-                locale: i18n.resolvedLanguage || 'en',
-                t,
-              })}{' '}
-              · {t('homeToday.tasksToGo', { count: todo.length })}
-            </p>
+            <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+              {t('homeToday.tasksComplete', {
+                done: done.length,
+                total,
+              })}
+              {totalPoints > 0 && (
+                <span className='text-brand font-bold ms-2'>
+                  +{totalPoints} pts
+                </span>
+              )}
+            </div>
           </div>
           <button
-            className='btn btn-secondary hidden md:flex'
+            className='screen-page-action btn btn-primary'
             onClick={() => navigate('/chores/create')}
+            type='button'
           >
-            <FigmaIcon name='plus' size={15} />
+            <FigmaIcon name='plus' size={14} />
             {t('homeToday.newTask')}
           </button>
         </div>
 
-        <div className='view-toggle mb-5'>
+        {/* Daily progress */}
+        <div className='mb-4'>
+          <div
+            className='text-faint mb-1.5 flex justify-between'
+            style={{ fontSize: 11 }}
+          >
+            <span>{t('homeToday.dailyProgress')}</span>
+            <span className='font-bold' style={{ color: 'var(--brand)' }}>
+              {percent}%
+            </span>
+          </div>
+          <div
+            aria-label={t('homeToday.dailyProgressLabel')}
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={percent}
+            className='progress-track'
+            role='progressbar'
+            style={{ height: 8 }}
+          >
+            <div
+              className='progress-fill done'
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* View toggle */}
+        <div className='view-toggle mb-5' role='tablist'>
           <button
-            type='button'
+            aria-selected={view === 'mine'}
             className={view === 'mine' ? 'active' : ''}
             onClick={() => setView('mine')}
+            role='tab'
+            type='button'
           >
             {t('homeToday.forMe')}
           </button>
           <button
-            type='button'
+            aria-selected={view === 'family'}
             className={view === 'family' ? 'active' : ''}
             onClick={() => setView('family')}
+            role='tab'
+            type='button'
           >
             {t('homeToday.family')}
           </button>
@@ -201,22 +269,57 @@ export default function TodayScreen({
 
         {view === 'mine' && (
           <div className='flex flex-col gap-4'>
+            {/* Overdue banner */}
+            {overdue.length > 0 && (
+              <div
+                className='mb-2 p-4'
+                style={{
+                  background: 'var(--sig-over-bg)',
+                  border: '1px solid var(--sig-over)',
+                  borderRadius: 'var(--r-lg)',
+                }}
+              >
+                <div className='mb-2 flex items-center gap-2'>
+                  <FigmaIcon
+                    name='error'
+                    size={15}
+                    style={{ color: 'var(--sig-over)' }}
+                  />
+                  <span
+                    className='text-sig-over font-bold'
+                    style={{ fontSize: 13 }}
+                  >
+                    {t('homeToday.overdue')}
+                  </span>
+                  <span className='badge bg-sig-over-bg text-sig-over ms-auto'>
+                    {overdue.length}
+                  </span>
+                </div>
+                <div className='flex flex-col gap-1'>
+                  {overdue.map(task => (
+                    <CompactTaskRow
+                      key={task.id}
+                      task={task}
+                      onComplete={makeTaskDone}
+                      onOpen={openChore}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* To do */}
             <div className='card overflow-hidden'>
               <div
                 className='border-line border-b px-4 py-3'
                 style={{ borderColor: 'var(--line)' }}
               >
                 <div className='flex items-center gap-2'>
-                  <FigmaIcon
-                    name='check'
-                    size={14}
-                    style={{ color: 'var(--brand)' }}
-                  />
                   <span
                     className='text-primary font-bold'
-                    style={{ fontSize: 13 }}
+                    style={{ fontSize: 14 }}
                   >
-                    {t('homeToday.assignedToMe')}
+                    {t('homeToday.toDo')}
                   </span>
                   <span className='badge ms-auto' style={{ fontSize: 11 }}>
                     {todo.length}
@@ -226,10 +329,24 @@ export default function TodayScreen({
               <div className='py-1'>
                 {todo.length === 0 ? (
                   <div className='empty-state py-10'>
-                    <div style={{ fontSize: 32 }}>🎉</div>
-                    <div className='text-primary font-bold'>
-                      {t('homeToday.nothingLeft')}
+                    <div style={{ fontSize: 40 }}>🎉</div>
+                    <div
+                      className='text-primary font-bold'
+                      style={{ fontSize: 18 }}
+                    >
+                      {t('homeToday.nothingDueHeading')}
                     </div>
+                    <div className='text-muted' style={{ fontSize: 14 }}>
+                      {t('homeToday.nothingDueSubtitle')}
+                    </div>
+                    <button
+                      className='btn btn-primary mt-2'
+                      onClick={() => navigate('/chores/create')}
+                      type='button'
+                    >
+                      <FigmaIcon name='plus' size={15} />
+                      {t('homeToday.addTask')}
+                    </button>
                   </div>
                 ) : (
                   todo.map(task => (
@@ -244,6 +361,7 @@ export default function TodayScreen({
               </div>
             </div>
 
+            {/* Completed toggle */}
             <button
               type='button'
               className='btn btn-ghost btn-sm w-full justify-between'
@@ -256,7 +374,28 @@ export default function TodayScreen({
               />
             </button>
             {showDone && done.length > 0 && (
-              <div className='card overflow-hidden'>
+              <div className='card overflow-hidden' style={{ opacity: 0.9 }}>
+                <div
+                  className='border-line border-b px-4 py-3'
+                  style={{ borderColor: 'var(--line)' }}
+                >
+                  <div className='flex items-center gap-2'>
+                    <FigmaIcon
+                      name='check'
+                      size={14}
+                      style={{ color: 'var(--sig-done)' }}
+                    />
+                    <span
+                      className='text-primary font-bold'
+                      style={{ fontSize: 14 }}
+                    >
+                      {t('homeToday.completed')}
+                    </span>
+                    <span className='badge bg-sig-done-bg text-sig-done ms-auto'>
+                      {done.length}
+                    </span>
+                  </div>
+                </div>
                 <div className='py-1'>
                   {done.map(task => (
                     <CompactTaskRow
@@ -278,12 +417,7 @@ export default function TodayScreen({
               <div className='section-label mb-3'>
                 {t('homeToday.familyProgressToday')}
               </div>
-              <div
-                className='grid gap-3'
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                }}
-              >
+              <div className='grid grid-cols-2 gap-3 md:grid-cols-3'>
                 {household.map(card => (
                   <MemberCard
                     key={card.id}
@@ -362,6 +496,7 @@ TodayScreen.propTypes = {
   household: PropTypes.array.isRequired,
   makeTaskDone: PropTypes.func.isRequired,
   members: PropTypes.array.isRequired,
+  overdue: PropTypes.array,
   todayKey: PropTypes.string.isRequired,
   todo: PropTypes.array.isRequired,
 }

@@ -74,6 +74,7 @@ export default function FigmaGoalsScreen({
       )}
 
       <div className={embedded ? '' : 'px-4 md:px-7'}>
+        {/* Points summary */}
         <div
           className='card mb-5 p-5'
           style={{
@@ -84,18 +85,26 @@ export default function FigmaGoalsScreen({
         >
           <div className='flex flex-wrap items-center justify-between gap-4'>
             <div>
-              <div className='text-muted' style={{ fontSize: 12 }}>
+              <div
+                className='text-muted'
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                }}
+              >
                 {t('familyProgress.memberPoints')}
               </div>
               <div className='mt-1 flex items-center gap-2'>
                 <FigmaIcon
                   name='star'
-                  size={22}
+                  size={24}
                   style={{ color: 'var(--brand)' }}
                 />
                 <span
                   className='text-primary font-mono'
-                  style={{ fontSize: 30, fontWeight: 800 }}
+                  style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}
                 >
                   {balance.currentBalance || 0}
                 </span>
@@ -110,19 +119,24 @@ export default function FigmaGoalsScreen({
                 })}
               </div>
             </div>
-            <div className='screen-goal-summary-actions text-end'>
-              <div
-                className='text-primary font-semibold'
-                style={{ fontSize: 13 }}
-              >
-                {availableRewards.length
-                  ? t('familyProgress.rewardsAvailable', {
-                      count: availableRewards.length,
-                    })
-                  : t('familyProgress.rewardsAwait')}
-              </div>
+            <div className='screen-goal-summary-actions flex flex-col items-end gap-2'>
+              {availableRewards.length > 0 ? (
+                <div
+                  className='badge bg-sig-done-bg text-sig-done'
+                  style={{ padding: '8px 16px', fontSize: 13 }}
+                >
+                  🎉{' '}
+                  {t('familyProgress.rewardsAvailable', {
+                    count: availableRewards.length,
+                  })}
+                </div>
+              ) : (
+                <div className='text-muted' style={{ fontSize: 12 }}>
+                  {t('familyProgress.rewardsAwait')}
+                </div>
+              )}
               <button
-                className='btn btn-secondary btn-sm mt-2'
+                className='btn btn-secondary btn-sm'
                 onClick={onViewHistory}
                 type='button'
               >
@@ -132,10 +146,11 @@ export default function FigmaGoalsScreen({
           </div>
         </div>
 
+        {/* Family goals */}
         <div className='screen-section-header mb-3'>
           <h2
             className='text-primary'
-            style={{ fontSize: 17, fontWeight: 800, margin: 0 }}
+            style={{ fontSize: 16, fontWeight: 800, margin: 0 }}
           >
             {t('familyProgress.familyGoals')}
           </h2>
@@ -172,104 +187,94 @@ export default function FigmaGoalsScreen({
           <div className='flex flex-col gap-3'>
             {goals.map(goal => (
               <div key={goal.id} className='card p-5'>
-                <div className='flex gap-4'>
-                  <div style={{ fontSize: 28, lineHeight: 1 }}>
-                    {goalEmoji(goal)}
-                  </div>
-                  <div className='min-w-0 flex-1'>
-                    <div className='flex items-start justify-between gap-3'>
-                      <div className='screen-goal-copy min-w-0'>
-                        <div
-                          className='text-primary font-bold'
-                          style={{ fontSize: 15 }}
-                        >
-                          {goal.name}
-                        </div>
-                        {goal.description && (
-                          <div
-                            className='text-muted'
-                            style={{ fontSize: 12, marginTop: 2 }}
-                          >
-                            {goal.description}
-                          </div>
-                        )}
-                      </div>
-                      <span className='badge bg-brand-faint text-brand'>
-                        {Math.round(goal.percent || 0)}%
-                      </span>
-                    </div>
-                    <div className='mt-3 flex items-center justify-between gap-3'>
-                      <span className='text-muted' style={{ fontSize: 12 }}>
-                        {goal.progress || 0}/{goal.target} {goalUnit(goal, t)}
-                      </span>
-                      <span className='text-faint' style={{ fontSize: 11 }}>
-                        {t('familyProgress.percentComplete', {
-                          count: Math.round(goal.percent || 0),
-                        })}
-                      </span>
-                    </div>
-                    <div
-                      aria-label={t('familyProgress.goalProgressLabel', {
-                        name: goal.name,
-                      })}
-                      aria-valuemax={100}
-                      aria-valuemin={0}
-                      aria-valuenow={Math.round(goal.percent || 0)}
-                      className='progress-track mt-2'
-                      role='progressbar'
-                      style={{ height: 7 }}
-                    >
+                <div className='mb-4 flex items-start justify-between gap-3'>
+                  <div className='flex items-center gap-3'>
+                    <span style={{ fontSize: 32, lineHeight: 1 }}>
+                      {goalEmoji(goal)}
+                    </span>
+                    <div className='screen-goal-copy min-w-0'>
                       <div
-                        className='progress-fill'
-                        style={{
-                          width: `${Math.min(100, Math.max(0, goal.percent || 0))}%`,
-                        }}
-                      />
-                    </div>
-                    {canManageGoals && goal.status === 'ACTIVE' && (
-                      <div className='screen-routine-actions mt-3'>
-                        <button
-                          className='btn btn-ghost btn-sm'
-                          onClick={() => onEditGoal(goal)}
-                          type='button'
-                        >
-                          <FigmaIcon name='edit' size={13} />
-                          {t('edit')}
-                        </button>
-                        <button
-                          className='btn btn-ghost btn-sm text-sig-over'
-                          onClick={() => onArchiveGoal(goal)}
-                          type='button'
-                        >
-                          <FigmaIcon name='trash' size={13} />
-                          {t('familyProgress.archive')}
-                        </button>
+                        className='text-primary font-bold'
+                        style={{ fontSize: 15 }}
+                      >
+                        {goal.name}
                       </div>
-                    )}
+                      {goal.description && (
+                        <div
+                          className='text-muted'
+                          style={{ fontSize: 12, marginTop: 2 }}
+                        >
+                          {goal.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className='flex-shrink-0 text-end'>
+                    <div
+                      className='text-primary font-bold'
+                      style={{
+                        fontSize: 22,
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {Math.round(goal.percent || 0)}%
+                    </div>
+                    <div className='text-faint' style={{ fontSize: 11 }}>
+                      {goal.progress || 0}/{goal.target} {goalUnit(goal, t)}
+                    </div>
                   </div>
                 </div>
+                <div
+                  aria-label={t('familyProgress.goalProgressLabel', {
+                    name: goal.name,
+                  })}
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={Math.round(goal.percent || 0)}
+                  className='progress-track mb-3'
+                  role='progressbar'
+                  style={{ height: 10 }}
+                >
+                  <div
+                    className='progress-fill'
+                    style={{
+                      width: `${Math.min(100, Math.max(0, goal.percent || 0))}%`,
+                    }}
+                  />
+                </div>
+                {canManageGoals && goal.status === 'ACTIVE' && (
+                  <div className='screen-routine-actions'>
+                    <button
+                      className='btn btn-ghost btn-sm'
+                      onClick={() => onEditGoal(goal)}
+                      type='button'
+                    >
+                      <FigmaIcon name='edit' size={13} />
+                      {t('edit')}
+                    </button>
+                    <button
+                      className='btn btn-ghost btn-sm text-sig-over'
+                      onClick={() => onArchiveGoal(goal)}
+                      type='button'
+                    >
+                      <FigmaIcon name='trash' size={13} />
+                      {t('familyProgress.archive')}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
 
+        {/* Rewards */}
         <div className='screen-section-header mb-3 mt-6'>
           <h2
             className='text-primary'
-            style={{ fontSize: 17, fontWeight: 800, margin: 0 }}
+            style={{ fontSize: 16, fontWeight: 800, margin: 0 }}
           >
             {t('navigation.rewards')}
           </h2>
-          {canManageRewards && (
-            <button
-              className='btn btn-secondary btn-sm'
-              onClick={onCreateReward}
-              type='button'
-            >
-              <FigmaIcon name='plus' size={13} />
-              {t('familyProgress.createNewReward')}
-            </button>
-          )}
         </div>
 
         {rewards.length === 0 ? (
@@ -280,78 +285,101 @@ export default function FigmaGoalsScreen({
             </div>
           </div>
         ) : (
-          <div
-            className='grid gap-3'
-            style={{
-              gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
-            }}
-          >
-            {rewards.map(reward => {
-              const affordable =
-                Number(reward.costPoints) <=
-                Number(balance.spendableBalance || 0)
-              const percent = Math.min(
-                100,
-                Math.round(
-                  (Number(balance.spendableBalance || 0) /
-                    Math.max(1, Number(reward.costPoints))) *
-                    100,
-                ),
-              )
-              return (
-                <div key={reward.id} className='card p-4'>
-                  <div style={{ fontSize: 25 }}>{reward.icon || '🎁'}</div>
+          <>
+            <div className='grid grid-cols-2 gap-3 md:grid-cols-3'>
+              {rewards.map(reward => {
+                const affordable =
+                  Number(reward.costPoints) <=
+                  Number(balance.spendableBalance || 0)
+                const percent = Math.min(
+                  100,
+                  Math.round(
+                    (Number(balance.spendableBalance || 0) /
+                      Math.max(1, Number(reward.costPoints))) *
+                      100,
+                  ),
+                )
+                return (
                   <div
-                    className='text-primary mt-2 font-bold'
-                    style={{ fontSize: 14 }}
+                    key={reward.id}
+                    className='card flex flex-col gap-3 p-4'
+                    style={{ opacity: affordable ? 1 : 0.8 }}
                   >
-                    {reward.name}
-                  </div>
-                  {reward.description && (
-                    <div className='text-muted mt-1' style={{ fontSize: 12 }}>
-                      {reward.description}
+                    <div style={{ fontSize: 32, lineHeight: 1 }}>
+                      {reward.icon || '🎁'}
                     </div>
-                  )}
-                  <div
-                    className='text-brand mt-3 flex items-center gap-1 font-semibold'
-                    style={{ fontSize: 13 }}
-                  >
-                    <FigmaIcon name='star' size={14} />
-                    {reward.costPoints}
-                  </div>
-                  {affordable ? (
-                    <button
-                      className='btn btn-primary btn-sm mt-3 w-full'
-                      onClick={() => onRequestReward(reward)}
-                      type='button'
-                    >
-                      {t('rewards.requestReward')}
-                    </button>
-                  ) : (
-                    <>
-                      <div className='text-faint mt-3' style={{ fontSize: 11 }}>
-                        {percent}%
+                    <div>
+                      <div
+                        className='text-primary font-bold'
+                        style={{ fontSize: 13 }}
+                      >
+                        {reward.name}
                       </div>
+                      {reward.description && (
+                        <div
+                          className='text-muted'
+                          style={{ fontSize: 11, marginTop: 2 }}
+                        >
+                          {reward.description}
+                        </div>
+                      )}
+                    </div>
+                    <div className='flex items-center justify-between'>
+                      <div
+                        className='text-brand flex items-center gap-1 font-bold'
+                        style={{
+                          fontSize: 14,
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        <FigmaIcon name='star' size={12} />
+                        {reward.costPoints}
+                      </div>
+                      {affordable ? (
+                        <button
+                          className='btn btn-primary btn-sm'
+                          onClick={() => onRequestReward(reward)}
+                          type='button'
+                        >
+                          {t('rewards.requestReward')}
+                        </button>
+                      ) : (
+                        <span className='text-faint' style={{ fontSize: 11 }}>
+                          {percent}%
+                        </span>
+                      )}
+                    </div>
+                    {!affordable && (
                       <div
                         aria-label={reward.name}
                         aria-valuemax={100}
                         aria-valuemin={0}
                         aria-valuenow={percent}
-                        className='progress-track mt-1'
+                        className='progress-track'
                         role='progressbar'
-                        style={{ height: 5 }}
+                        style={{ height: 4 }}
                       >
                         <div
                           className='progress-fill'
                           style={{ width: `${percent}%` }}
                         />
                       </div>
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            {canManageRewards && (
+              <button
+                className='btn btn-secondary mt-3 w-full'
+                onClick={onCreateReward}
+                type='button'
+              >
+                <FigmaIcon name='plus' size={14} />
+                {t('familyProgress.createNewReward')}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

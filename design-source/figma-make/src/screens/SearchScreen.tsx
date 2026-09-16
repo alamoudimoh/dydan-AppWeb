@@ -31,7 +31,7 @@ export default function SearchScreen({ ctx }: { ctx: AppCtx }) {
             onChange={e => setQuery(e.target.value)}
           />
           {query && (
-            <button className="btn btn-ghost btn-icon" onClick={() => setQuery("")}>
+            <button aria-label="Clear search" className="btn btn-ghost btn-icon" onClick={() => setQuery("")}>
               <Icon name="x" size={15} />
             </button>
           )}
@@ -63,7 +63,7 @@ export default function SearchScreen({ ctx }: { ctx: AppCtx }) {
             <div className="section-label" style={{ padding: "0 0 8px" }}>Tasks ({taskResults.length})</div>
             <div className="card overflow-hidden">
               {taskResults.map(t => (
-                <div key={t.id} className="task-row" onClick={() => ctx.openTask(t)}>
+                <div key={t.id} className="task-row" role="button" tabIndex={0} aria-label={`Open task: ${t.title}`} onClick={() => ctx.openTask(t)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ctx.openTask(t); } }}>
                   <div className={`task-check ${t.status === "done" ? "checked" : ""}`}>
                     {t.status === "done" && <Icon name="check" size={11} style={{ color: "white" }} />}
                   </div>

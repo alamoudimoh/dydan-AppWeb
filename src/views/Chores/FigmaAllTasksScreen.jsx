@@ -87,7 +87,13 @@ function TaskRow({ chore, members, onComplete, onOpen }) {
           {date && (
             <span
               style={{
-                color: isOverdue ? 'var(--sig-over)' : 'var(--t-faint)',
+                color: isOverdue
+                  ? 'var(--sig-over)'
+                  : isDone
+                    ? 'var(--sig-done)'
+                    : status === 'upcoming'
+                      ? 'var(--brand)'
+                      : 'var(--t-faint)',
                 fontSize: 11,
                 fontWeight: 600,
               }}

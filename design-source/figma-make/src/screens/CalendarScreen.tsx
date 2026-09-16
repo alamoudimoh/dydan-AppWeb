@@ -55,14 +55,14 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
       </div>
 
       <div className="px-4 md:px-7">
-        <div className="grid gap-5" style={{ gridTemplateColumns: "1fr 280px" }}>
+        <div className="calendar-layout grid gap-5" style={{ gridTemplateColumns: "1fr 280px" }}>
           {/* Calendar grid */}
           <div className="card overflow-hidden">
             {/* Month nav */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-line" style={{ borderColor: "var(--line)" }}>
-              <button className="btn btn-ghost btn-icon" onClick={prevMonth}><Icon name="chevron_right" size={16} style={{ transform: "rotate(180deg)" }} /></button>
+              <button aria-label="Previous month" className="btn btn-ghost btn-icon" onClick={prevMonth}><Icon name="chevron_right" size={16} style={{ transform: "rotate(180deg)" }} /></button>
               <div className="font-bold text-primary" style={{ fontSize: 16 }}>{MONTHS[month]} {year}</div>
-              <button className="btn btn-ghost btn-icon" onClick={nextMonth}><Icon name="chevron_right" size={16} /></button>
+              <button aria-label="Next month" className="btn btn-ghost btn-icon" onClick={nextMonth}><Icon name="chevron_right" size={16} /></button>
             </div>
 
             {/* Day headers */}
@@ -82,10 +82,12 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
                 const events = isValid ? getEventsForDay(day) : [];
 
                 return (
-                  <div
+                  <button
                     key={i}
-                    className="p-1.5 cursor-pointer border-b border-line"
-                    style={{ borderColor: "var(--line)", borderRight: (i + 1) % 7 !== 0 ? "1px solid var(--line)" : "none", minHeight: 70, background: isSelected ? "var(--brand-faint)" : "transparent", opacity: isValid ? 1 : 0.3 }}
+                    className="p-1.5 cursor-pointer border-b border-line text-start"
+                    aria-label={isValid ? `Select ${day} ${MONTHS[month]}` : "Date outside current month"}
+                    disabled={!isValid}
+                    style={{ borderColor: "var(--line)", borderRight: (i + 1) % 7 !== 0 ? "1px solid var(--line)" : "none", minHeight: 70, background: isSelected ? "var(--brand-faint)" : "transparent", opacity: isValid ? 1 : 0.3, fontFamily: "var(--font-ui)" }}
                     onClick={() => isValid && setSelectedDay(day)}
                   >
                     {isValid && (
@@ -96,7 +98,7 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
                         </div>
                         <div className="flex flex-col gap-0.5 mt-0.5">
                           {events.slice(0, 2).map(e => (
-                            <div key={e.id} className="rounded px-1" style={{ background: `color-mix(in srgb, ${e.color} 13%, transparent)`, borderLeft: `2px solid ${e.color}`, fontSize: 10, fontWeight: 600, color: e.color, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <div key={e.id} className="rounded px-1" style={{ background: `color-mix(in srgb, ${e.color} 13%, transparent)`, borderLeft: `2px solid ${e.color}`, fontSize: 10, fontWeight: 600, color: "var(--t-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {e.title}
                             </div>
                           ))}
@@ -104,7 +106,7 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
                         </div>
                       </>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -131,7 +133,7 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
                     return (
                       <div key={e.id} className="flex items-start gap-2 p-2 rounded-lg" style={{ background: `color-mix(in srgb, ${e.color} 7%, transparent)`, borderLeft: `3px solid ${e.color}`, borderRadius: "0 var(--r-sm) var(--r-sm) 0" }}>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold" style={{ fontSize: 12, color: e.color }}>{e.title}</div>
+                          <div className="font-semibold" style={{ fontSize: 12, color: "var(--t-primary)" }}>{e.title}</div>
                           {e.time && <div className="text-faint" style={{ fontSize: 10 }}>{e.time}</div>}
                         </div>
                         {assignee && <div className="avatar" style={{ width: 18, height: 18, background: assignee.avatarColor, fontSize: 7 }}>{assignee.initials}</div>}
@@ -139,12 +141,12 @@ export default function CalendarScreen({ ctx, tasks }: { ctx: AppCtx; tasks: Tas
                     );
                   })}
                   {selectedTasks.filter(t => !CALENDAR_EVENTS.find(e => e.title === t.title)).map(t => (
-                    <div key={t.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer" style={{ background: "var(--surface-2)", borderRadius: "var(--r-sm)" }} onClick={() => ctx.openTask(t)}>
+                    <button key={t.id} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer text-start w-full" style={{ background: "var(--surface-2)", borderRadius: "var(--r-sm)", border: "none", fontFamily: "var(--font-ui)" }} onClick={() => ctx.openTask(t)} aria-label={`Open task: ${t.title}`}>
                       <div className="task-check" style={{ width: 16, height: 16, borderRadius: 4, borderColor: t.status === "done" ? "var(--sig-done)" : "var(--line-strong)", background: t.status === "done" ? "var(--sig-done)" : "transparent", flexShrink: 0, cursor: "pointer" }}>
                         {t.status === "done" && <Icon name="check" size={9} style={{ color: "white" }} />}
                       </div>
                       <span style={{ fontSize: 12, color: "var(--t-primary)", textDecoration: t.status === "done" ? "line-through" : "none" }}>{t.title}</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
