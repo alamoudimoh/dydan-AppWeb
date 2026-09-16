@@ -6,14 +6,7 @@ import {
   resolveAllowedHostsEnv,
 } from './vite.allowed-hosts.mjs'
 
-test('resolveAllowedHostsEnv prefers DYDAN_ALLOWED_HOSTS over legacy Dydan env', () => {
-  assert.equal(
-    resolveAllowedHostsEnv({
-      DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',
-      DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',
-    }),
-    'dev.dydan.test',
-  )
+test('resolveAllowedHostsEnv reads DYDAN_ALLOWED_HOSTS from env', () => {
   assert.equal(
     resolveAllowedHostsEnv({
       DYDAN_ALLOWED_HOSTS: 'dev.dydan.test',

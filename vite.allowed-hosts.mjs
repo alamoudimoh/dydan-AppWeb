@@ -2,7 +2,7 @@ const exactHostnamePattern =
   /^(?=.{1,253}$)(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?)(?:\.(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?))*$/i
 
 export const resolveAllowedHostsEnv = (env = process.env) =>
-  env.DYDAN_ALLOWED_HOSTS || env.DYDAN_ALLOWED_HOSTS || ''
+  env.DYDAN_ALLOWED_HOSTS || ''
 
 export const parseAllowedHosts = (value = '') =>
   value
