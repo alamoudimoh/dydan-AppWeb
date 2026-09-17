@@ -50,6 +50,7 @@ import TodayScreen from './TodayScreen'
 afterEach(() => {
   cleanup()
   mockNavigate.mockReset()
+  window.localStorage.clear()
 })
 
 const noop = vi.fn()
@@ -194,6 +195,23 @@ describe('TodayScreen', () => {
     render(<TodayScreen {...defaultProps} />)
     await user.click(screen.getByRole('button', { name: 'Wash dishes' }))
     expect(mockNavigate).toHaveBeenCalledWith('/chores/10')
+  })
+
+  it('restores the previously selected tab from storage', () => {
+    window.localStorage.setItem('dydan.today.view', 'family')
+    render(<TodayScreen {...defaultProps} />)
+    expect(screen.getByRole('tab', { name: 'Family' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByText('Family progress today')).toBeVisible()
+  })
+
+  it('persists the selected tab to storage when switched', async () => {
+    const user = userEvent.setup()
+    render(<TodayScreen {...defaultProps} />)
+    await user.click(screen.getByRole('tab', { name: 'Family' }))
+    expect(window.localStorage.getItem('dydan.today.view')).toBe('family')
   })
 
   it('derives daily progress from live done and todo counts', () => {

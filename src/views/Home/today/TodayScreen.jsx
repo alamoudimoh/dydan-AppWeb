@@ -6,6 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
+import {
+  readLocalStorageItem,
+  writeLocalStorageItem,
+} from '../../../utils/storage'
+import { STORAGE_KEYS } from '../../../utils/storageKeys'
+
+const preferenceKey = STORAGE_KEYS.todayView
 
 function CompactTaskRow({ onComplete, onOpen, task }) {
   const { t } = useTranslation('common')
@@ -158,8 +165,14 @@ export default function TodayScreen({
   const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const openChore = task => navigate(`/chores/${task.choreId}`)
-  const [view, setView] = useState('mine')
+  const [view, setView] = useState(
+    () => readLocalStorageItem(preferenceKey) || 'mine',
+  )
   const [showDone, setShowDone] = useState(false)
+  const selectView = next => {
+    setView(next)
+    writeLocalStorageItem(preferenceKey, next)
+  }
 
   const total = done.length + todo.length
   const percent = total > 0 ? Math.round((done.length / total) * 100) : 0
@@ -250,7 +263,7 @@ export default function TodayScreen({
           <button
             aria-selected={view === 'mine'}
             className={view === 'mine' ? 'active' : ''}
-            onClick={() => setView('mine')}
+            onClick={() => selectView('mine')}
             role='tab'
             type='button'
           >
@@ -259,7 +272,7 @@ export default function TodayScreen({
           <button
             aria-selected={view === 'family'}
             className={view === 'family' ? 'active' : ''}
-            onClick={() => setView('family')}
+            onClick={() => selectView('family')}
             role='tab'
             type='button'
           >

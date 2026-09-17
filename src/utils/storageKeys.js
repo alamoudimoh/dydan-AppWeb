@@ -13,6 +13,9 @@ export const STORAGE_KEYS = {
   homeView: {
     canonical: 'dydan.home.view',
   },
+  todayView: {
+    canonical: 'dydan.today.view',
+  },
 }
 
 export const OFFLINE_DB = {

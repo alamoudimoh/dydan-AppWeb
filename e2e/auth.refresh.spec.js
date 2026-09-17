@@ -103,3 +103,33 @@ test('confirmed invalid refresh session redirects and retains the complete retur
     await page.evaluate(() => sessionStorage.getItem('return_path_pending')),
   ).toBe('/settings/profile?section=account#profile')
 })
+
+test('authenticated refresh at /today restores the previously selected tab', async ({
+  context,
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installRefreshCookie(context)
+  page.route(/\/api\/v1\/chores\/?\??/, route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ res: [] }),
+    }),
+  )
+
+  await page.goto('/today', { waitUntil: 'networkidle' })
+  const familyTab = page.getByRole('tab', { name: 'Family' })
+  await expect(familyTab).toBeVisible()
+  await familyTab.click()
+  await expect(familyTab).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByText('Family progress today')).toBeVisible()
+
+  await page.reload({ waitUntil: 'networkidle' })
+
+  await expect(familyTab).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByText('Family progress today')).toBeVisible()
+  expect(new URL(page.url()).pathname).toBe('/today')
+  runtimeGuard.assertClean()
+})
