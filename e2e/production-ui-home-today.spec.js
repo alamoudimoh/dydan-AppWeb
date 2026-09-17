@@ -166,7 +166,7 @@ test('home-today: family toggle on /today surfaces household cards', async ({
 
   await page.goto('/today', { waitUntil: 'networkidle' })
   const copy = localized('ar-SA')
-  await page.getByRole('button', { name: copy.family }).click()
+  await page.getByRole('tab', { name: copy.family }).click()
   await expect(page.getByText(copy.familyProgress)).toBeVisible()
   await expect(page.getByRole('button', { name: /Smoke User/ })).toBeVisible()
   await expect(
@@ -191,9 +191,9 @@ test('home-today: Arabic RTL renders translated Today content', async ({
     page.getByRole('heading', { name: copy.today, exact: true }),
   ).toBeVisible()
   await expect(
-    page.getByRole('button', { name: copy.forMe, exact: true }),
+    page.getByRole('tab', { name: copy.forMe, exact: true }),
   ).toBeVisible()
-  await expect(page.getByText('مُسنَدة إليّ')).toBeVisible()
+  await expect(page.getByText('للقيام')).toBeVisible()
   await expect(
     page.getByRole('button', { name: copy.markComplete, exact: true }),
   ).toBeVisible()
