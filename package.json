@@ -1,7 +1,7 @@
 {
   "name": "dydan",
   "private": true,
-  "version": "202609-02",
+  "version": "202609-03",
   "type": "module",
   "engines": {
     "node": ">=22.0.0",

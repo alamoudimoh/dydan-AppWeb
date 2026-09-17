@@ -133,3 +133,90 @@ test('authenticated refresh at /today restores the previously selected tab', asy
   expect(new URL(page.url()).pathname).toBe('/today')
   runtimeGuard.assertClean()
 })
+
+test('transient startup network failure shows a retryable offline state, not a login redirect', async ({
+  context,
+  page,
+}) => {
+  await installRefreshCookie(context)
+  await installApiMocks(page)
+  let refreshAttempts = 0
+  await page.route('**/api/v1/auth/refresh', async route => {
+    refreshAttempts += 1
+    if (refreshAttempts === 1) {
+      await route.abort('failed')
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ token: 'smoke-test-token' }),
+    })
+  })
+
+  await page.goto('/calendar?view=month#calendar')
+
+  await expect(
+    page.getByRole('heading', { name: "You're offline" }),
+  ).toBeVisible()
+  await expect(
+    page.getByText('Sign-in will resume when your connection is back.'),
+  ).toBeVisible()
+  // A connectivity hiccup must not be presented as a definitive logout.
+  expect(new URL(page.url()).pathname).toBe('/calendar')
+  expect(new URL(page.url()).pathname).not.toBe('/login')
+
+  await page.getByRole('button', { name: 'Try again' }).click()
+
+  await expect(page.getByRole('heading', { name: /^calendar$/i })).toBeVisible()
+  expect(new URL(page.url()).pathname).toBe('/calendar')
+  expect(refreshAttempts).toBeGreaterThanOrEqual(2)
+})
+
+test('browser back and forward navigation remains correct after an authenticated refresh', async ({
+  context,
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installRefreshCookie(context)
+
+  await page.goto('/calendar?view=month#calendar', { waitUntil: 'networkidle' })
+  await expect(page.getByRole('heading', { name: /^calendar$/i })).toBeVisible()
+
+  await page.goto('/today', { waitUntil: 'networkidle' })
+  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+
+  await page.reload({ waitUntil: 'networkidle' })
+  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+  expect(new URL(page.url()).pathname).not.toBe('/login')
+
+  await page.goBack()
+  expect(new URL(page.url()).pathname).toBe('/calendar')
+  expect(page.url()).toContain('#calendar')
+  await expect(page.getByRole('heading', { name: /^calendar$/i })).toBeVisible()
+
+  await page.goForward()
+  expect(new URL(page.url()).pathname).toBe('/today')
+  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+  runtimeGuard.assertClean()
+})
+
+test('authenticated deep link to a parameterized route restores and survives refresh', async ({
+  context,
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installRefreshCookie(context)
+
+  await page.goto('/chores/42', { waitUntil: 'networkidle' })
+  await expect(page.getByRole('heading', { name: 'Smoke Chore' })).toBeVisible()
+
+  await page.reload({ waitUntil: 'networkidle' })
+
+  expect(page.url()).toMatch(/\/chores\/42$/)
+  expect(new URL(page.url()).pathname).not.toBe('/login')
+  await expect(page.getByRole('heading', { name: 'Smoke Chore' })).toBeVisible()
+  runtimeGuard.assertClean()
+})
