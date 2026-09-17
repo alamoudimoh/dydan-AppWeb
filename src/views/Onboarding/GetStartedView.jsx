@@ -3,6 +3,7 @@ import { Box, Button, Link, Typography } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import Logo from '../../Logo'
 import { useResource } from '../../queries/ResourceQueries'
 import { productTypeScale } from '../../theme/typography'
@@ -93,10 +94,7 @@ const GetStartedView = () => {
               textWrap: 'balance',
             }}
           >
-            Done
-            <Box component='span' sx={{ color: 'primary.500' }}>
-              tick
-            </Box>
+            {APP_DISPLAY_NAME}
           </Typography>
           <Typography
             level='body-md'
