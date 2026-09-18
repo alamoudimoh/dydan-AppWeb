@@ -782,10 +782,6 @@ body {
 }
 .view-toggle-btn {
   flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   padding: 5px 10px;
   border-radius: var(--r-sm);
   font-size: 12px;
@@ -1440,6 +1436,12 @@ body {
 }
 .figma-view-toggle {
   display: inline-flex;
+}
+.figma-view-toggle .view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 .figma-settings-toggle {
   position: relative;
