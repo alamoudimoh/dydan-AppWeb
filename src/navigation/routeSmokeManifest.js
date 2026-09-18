@@ -60,7 +60,7 @@ export const ROUTE_SMOKE_ENTRIES = Object.freeze([
   { path: '/settings/developer', label: 'Developer settings' },
   { path: '/settings/detailed', label: 'Detailed settings' },
   { path: '/settings/circle', label: 'Circle settings' },
-  { path: '/settings/account', label: 'Account settings' },
+  { path: '/settings/account', label: 'Subscription' },
   { path: '/settings/subaccounts', label: 'Subaccounts settings' },
   { path: '/settings/mfa', label: 'MFA settings' },
   { path: '/settings/apitokens', label: 'API token settings' },

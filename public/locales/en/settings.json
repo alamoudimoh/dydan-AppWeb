@@ -87,6 +87,7 @@
     "dangerZoneDescription": "Once you delete your account, there is no going back. Please be certain.",
     "deleteAccount": "Delete Account",
     "subscriptionStatusPlusUntil": "Plus (until {{date}})",
+    "subscriptionDescription": "Manage your Plus subscription, current plan, and billing.",
     "subscriptionDetails": {
       "active": "You are currently subscribed to the Plus plan. Your subscription will renew on {{date}}.",
       "cancelled": "You cancelled your subscription. Your account will be downgraded to the Free plan on {{date}}.",
@@ -389,7 +390,7 @@
       },
       "account": {
         "title": "Account Settings",
-        "description": "Manage your subscription, change password, and account deletion options."
+        "description": "Manage your Plus subscription, current plan, and billing."
       },
       "subaccounts": {
         "title": "Managed Accounts",

@@ -87,6 +87,7 @@
     "dangerZoneDescription": "حذف حسابك نهائي ولا يمكن التراجع عنه. يرجى التأكد قبل المتابعة.",
     "deleteAccount": "حذف الحساب",
     "subscriptionStatusPlusUntil": "Plus (حتى {{date}})",
+    "subscriptionDescription": "إدارة اشتراكك في Plus وخطتك الحالية والفوترة.",
     "subscriptionDetails": {
       "active": "أنت مشترك حالياً في خطة Plus. سيتجدد اشتراكك في {{date}}.",
       "cancelled": "لقد ألغيت اشتراكك. سيتم تحويل حسابك إلى الخطة المجانية في {{date}}.",
@@ -387,9 +388,9 @@
         "title": "إعدادات الدائرة",
         "description": "أدر دائرتك وادعُ الأعضاء وتعامل مع طلبات الانضمام."
       },
-      "account": {
+"account": {
         "title": "إعدادات الحساب",
-        "description": "أدر اشتراكك وغيّر كلمة المرور وخيارات حذف الحساب."
+        "description": "إدارة اشتراكك في Plus وخطتك الحالية والفوترة."
       },
       "subaccounts": {
         "title": "الحسابات المُدارة",

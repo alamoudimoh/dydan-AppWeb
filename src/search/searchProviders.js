@@ -15,7 +15,12 @@ const HISTORY_STATUS = {
 const SETTINGS = [
   ['profile', 'Profile', 'Name, avatar and personal details'],
   ['circle', 'Circle', 'Members and household settings', true],
-  ['account', 'Account', 'Subscription and account management', true],
+  [
+    'account',
+    'Subscription',
+    'Manage your Plus subscription, plan, and billing',
+    true,
+  ],
   ['subaccounts', 'Subaccounts', 'Manage child accounts'],
   ['notifications', 'Notifications', 'Reminders and notification preferences'],
   ['mfa', 'Multi-factor authentication', 'Secure your account', true],

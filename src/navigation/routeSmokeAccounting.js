@@ -239,7 +239,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'settings',
     auth: true,
     nav: true,
-    heading: /account settings/i,
+    heading: /subscription/i,
   },
   '/settings/subaccounts': {
     status: 'covered',

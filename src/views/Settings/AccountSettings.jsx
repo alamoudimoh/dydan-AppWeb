@@ -4,30 +4,26 @@ import { Purchases } from '@revenuecat/purchases-capacitor'
 import { useQueryClient } from '@tanstack/react-query'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
-import AccountSessionsCard from '../../components/settings/AccountSessionsCard'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import SubscriptionModal from '../../components/SubscriptionModal'
 import { useLocalization } from '../../contexts/LocalizationContext'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import { useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { formStackSx } from '../../theme/appLayout'
-import { CancelSubscription, UpdatePassword } from '../../utils/Fetcher'
+import { CancelSubscription } from '../../utils/Fetcher'
 import {
   resolveSettingsQueryState,
   SETTINGS_QUERY_STATE,
 } from '../../utils/SettingsQueryState'
 import LoadingComponent from '../components/Loading'
 import NativeCancelSubscriptionModal from '../Modals/Inputs/NativeCancelSubscriptionModal'
-import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
-import UserDeletionModal from '../Modals/Inputs/UserDeletionModal'
 import SettingsLayout from './SettingsLayout'
 
 const AccountSettings = () => {
+  const { t } = useTranslation('settings')
   const { data: userProfile, error, isLoading, refetch } = useUserProfile()
-  const { data: membersData } = useCircleMembers()
-  const circleMembers = membersData?.res || []
   const profileState = resolveSettingsQueryState({
     isLoading,
     isError: Boolean(error),
@@ -37,9 +33,7 @@ const AccountSettings = () => {
   const { showNotification } = useNotification()
   const { fmt } = useLocalization()
 
-  const [changePasswordModal, setChangePasswordModal] = useState(false)
   const [subscriptionModal, setSubscriptionModal] = useState(false)
-  const [userDeletionModal, setUserDeletionModal] = useState(false)
   const [nativeCancelModal, setNativeCancelModal] = useState(false)
 
   useEffect(() => {
@@ -59,30 +53,36 @@ const AccountSettings = () => {
 
   const getSubscriptionDetails = () => {
     if (userProfile?.subscription === 'active') {
-      return `You are currently subscribed to the Plus plan. Your subscription will renew on ${fmt.date(userProfile?.expiration)}.`
+      return t('accountSettings.subscriptionDetails.active', {
+        date: fmt.date(userProfile?.expiration),
+      })
     } else if (userProfile?.subscription === 'cancelled') {
-      return `You have cancelled your subscription. Your account will be downgraded to the Free plan on ${fmt.date(userProfile?.expiration)}.`
+      return t('accountSettings.subscriptionDetails.cancelled', {
+        date: fmt.date(userProfile?.expiration),
+      })
     } else {
-      return `You are currently on the Free plan. Upgrade to the Plus plan to unlock more features.`
+      return t('accountSettings.subscriptionDetails.free')
     }
   }
 
   const getSubscriptionStatus = () => {
     if (userProfile?.subscription === 'active') {
-      return `Plus`
+      return t('accountSettings.plus')
     } else if (userProfile?.subscription === 'cancelled') {
       if (moment().isBefore(userProfile?.expiration)) {
-        return `Plus(until ${fmt.date(userProfile?.expiration)})`
+        return t('accountSettings.subscriptionStatusPlusUntil', {
+          date: fmt.date(userProfile?.expiration),
+        })
       }
-      return `Free`
+      return t('accountSettings.free')
     } else {
-      return `Free`
+      return t('accountSettings.free')
     }
   }
 
   if (profileState === SETTINGS_QUERY_STATE.LOADING) {
     return (
-      <SettingsLayout title='Account Settings'>
+      <SettingsLayout title={t('accountSettings.subscription')}>
         <LoadingComponent />
       </SettingsLayout>
     )
@@ -90,7 +90,7 @@ const AccountSettings = () => {
 
   if (profileState === SETTINGS_QUERY_STATE.ERROR) {
     return (
-      <SettingsLayout title='Account Settings'>
+      <SettingsLayout title={t('accountSettings.subscription')}>
         <SettingsQueryStateView
           onRetry={() => refetch()}
           description={error?.message}
@@ -100,17 +100,13 @@ const AccountSettings = () => {
   }
 
   return (
-    <SettingsLayout title='Account Settings'>
+    <SettingsLayout title={t('accountSettings.subscription')}>
       <Box sx={formStackSx}>
         <Typography level='body-md'>
-          Change your account settings, type or update your password
+          {t('accountSettings.subscriptionDescription')}
         </Typography>
-        <AccountIdentityCard
-          profile={userProfile}
-          circleMembers={circleMembers}
-        />
         <Typography level='title-md' mb={-1}>
-          Account Type : {getSubscriptionStatus()}
+          {t('accountSettings.subscriptionStatus')} : {getSubscriptionStatus()}
         </Typography>
         <Typography level='body-sm'>{getSubscriptionDetails()}</Typography>
         <Box>
@@ -212,7 +208,7 @@ const AccountSettings = () => {
               }
             }}
           >
-            Upgrade
+            {t('accountSettings.upgrade')}
           </Button>
 
           {userProfile?.subscription === 'active' && (
@@ -228,92 +224,15 @@ const AccountSettings = () => {
                 setNativeCancelModal(true)
               }}
             >
-              Cancel
+              {t('accountSettings.cancel')}
             </Button>
           )}
-        </Box>
-        {import.meta.env.VITE_IS_SELF_HOSTED === 'true' && (
-          <Box>
-            <Typography level='title-md' mb={1}>
-              Password :
-            </Typography>
-            <Typography mb={1} level='body-sm'></Typography>
-            <Button
-              variant='soft'
-              onClick={() => {
-                setChangePasswordModal(true)
-              }}
-            >
-              Change Password
-            </Button>
-            {changePasswordModal ? (
-              <PassowrdChangeModal
-                isOpen={changePasswordModal}
-                onClose={({ currentPassword, password } = {}) => {
-                  if (password && currentPassword) {
-                    UpdatePassword(currentPassword, password).then(resp => {
-                      if (resp.ok) {
-                        showNotification({
-                          type: 'success',
-                          message: 'Password changed successfully',
-                        })
-                      } else if (resp.status === 403) {
-                        showNotification({
-                          type: 'error',
-                          message: 'Current password is incorrect',
-                        })
-                      } else {
-                        showNotification({
-                          type: 'error',
-                          message: 'Password change failed',
-                        })
-                      }
-                    })
-                  }
-                  setChangePasswordModal(false)
-                }}
-              />
-            ) : null}
-          </Box>
-        )}
-
-        <AccountSessionsCard userId={userProfile?.id} />
-
-        <Box>
-          <Typography level='title-md' mb={1} color='danger'>
-            Danger Zone
-          </Typography>
-          <Typography level='body-sm' mb={2} color='neutral'>
-            Once you delete your account, there is no going back. Please be
-            certain.
-          </Typography>
-          <Button
-            variant='outlined'
-            color='danger'
-            onClick={() => setUserDeletionModal(true)}
-          >
-            Delete Account
-          </Button>
         </Box>
       </Box>
 
       <SubscriptionModal
         open={subscriptionModal}
         onClose={() => setSubscriptionModal(false)}
-      />
-
-      <UserDeletionModal
-        isOpen={userDeletionModal}
-        onClose={success => {
-          setUserDeletionModal(false)
-          if (success) {
-            showNotification({
-              type: 'success',
-              message: 'Account deleted successfully',
-            })
-          }
-        }}
-        userProfile={userProfile}
       />
 
       <NativeCancelSubscriptionModal
