@@ -158,12 +158,18 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     nav: true,
     heading: /^settings$/i,
   },
-  '/settings/profile': {
+  '/profile': {
     status: 'covered',
     group: 'settings',
     auth: true,
     nav: true,
     heading: /profile settings/i,
+  },
+  '/settings/profile': {
+    status: 'excluded',
+    group: 'settings',
+    reason:
+      'Legacy redirect to /profile; it renders no screen of its own so there is no heading to assert.',
   },
   '/settings/localization': {
     status: 'covered',
@@ -219,7 +225,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'settings',
     auth: true,
     nav: true,
-    heading: /profile settings/i,
+    heading: /circle settings/i,
   },
   '/settings/circle': {
     status: 'covered',
@@ -233,7 +239,7 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     group: 'settings',
     auth: true,
     nav: true,
-    heading: /account settings/i,
+    heading: /subscription/i,
   },
   '/settings/subaccounts': {
     status: 'covered',

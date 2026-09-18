@@ -81,8 +81,7 @@ function MyComponent() {
 ## RTL Support
 
 Languages in the `RTL_BASE_LANGUAGES` array (resolved by `resolveDirection`
-in `src/utils/localizationModel.js`, with `RTL_LANGUAGES` re-exported for
-backward compatibility) automatically get:
+in `src/utils/localizationModel.js`) automatically get:
 
 - `dir="rtl"` on the document
 - RTL-specific CSS styles

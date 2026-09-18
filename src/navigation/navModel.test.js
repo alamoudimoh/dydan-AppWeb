@@ -24,7 +24,7 @@ const ROUTE_REGISTRY = {
   [NAV_LINK_IDS.ACTIVITIES]: { to: '/activities' },
   [NAV_LINK_IDS.POINTS]: { to: '/points' },
   [NAV_LINK_IDS.REWARDS]: { to: '/rewards' },
-  [NAV_LINK_IDS.PROFILE]: { to: '/settings/profile' },
+  [NAV_LINK_IDS.PROFILE]: { to: '/profile' },
   [NAV_LINK_IDS.SETTINGS]: { to: '/settings' },
 }
 
@@ -120,7 +120,7 @@ test('active circle plan preserves legacy feature routes', () => {
   assert.ok(routes.includes('/chores'))
   assert.ok(routes.includes('/family'))
   assert.ok(routes.includes('/settings'))
-  assert.ok(routes.includes('/settings/profile'))
+  assert.ok(routes.includes('/profile'))
 })
 
 test('account and support sections stay separate from product navigation', () => {

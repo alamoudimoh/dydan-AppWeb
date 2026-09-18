@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Themavoorkeuren",
-    "description": "Kies hoe de site er voor u uitziet. Selecteer een enkel thema of synchroniseer met uw systeem en schakel automatisch tussen dag- en nachtthema's.",
     "themeMode": "Thamamodus",
     "light": "Licht",
     "dark": "Donker",
-    "system": "Systeem"
+    "automatic": "Automatisch"
   },
   "notifications": {
     "settingsSaved": "Instellingen succesvol opgeslagen",

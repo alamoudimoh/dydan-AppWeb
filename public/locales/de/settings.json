@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Theme-Einstellungen",
-    "description": "Wähle, wie die Seite für dich aussieht. Wähle ein einzelnes Theme oder synchronisiere mit deinem System und wechsle automatisch zwischen Tag- und Nacht-Themes.",
     "themeMode": "Theme-Modus",
     "light": "Hell",
     "dark": "Dunkel",
-    "system": "System"
+    "automatic": "Automatisch"
   },
   "notifications": {
     "settingsSaved": "Einstellungen erfolgreich gespeichert",

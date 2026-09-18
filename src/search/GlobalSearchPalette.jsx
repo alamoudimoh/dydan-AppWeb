@@ -15,6 +15,7 @@ const GROUPS = [
   'projects',
   'labels',
   'people',
+  'profile',
   'settings',
   'actions',
 ]
@@ -24,6 +25,7 @@ const GROUP_LABELS = {
   projects: 'Projects',
   labels: 'Categories',
   people: 'People',
+  profile: 'Profile',
   settings: 'Settings',
   actions: 'Quick actions',
 }
@@ -32,6 +34,7 @@ const ICONS = {
   history: 'activity',
   labels: 'tag',
   people: 'users',
+  profile: 'user',
   projects: 'projects',
   settings: 'settings',
   tasks: 'tasks',

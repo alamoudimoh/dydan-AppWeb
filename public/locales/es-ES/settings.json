@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Preferencias de tema",
-    "description": "Elige cómo se ve el sitio para ti. Selecciona un solo tema o sincronízalo con tu sistema y cambia automáticamente entre temas de día y noche.",
     "themeMode": "Modo de tema",
     "light": "Claro",
     "dark": "Oscuro",
-    "system": "Sistema"
+    "automatic": "Automático"
   },
   "notifications": {
     "settingsSaved": "Configuración guardada con éxito",

@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "テーマ設定",
-    "description": "サイトの見た目を選択します。単一のテーマを選ぶか、システム設定に同期して昼夜のテーマを自動で切り替えることができます。",
     "themeMode": "テーマモード",
     "light": "ライト",
     "dark": "ダーク",
-    "system": "システム"
+    "automatic": "自動"
   },
   "notifications": {
     "settingsSaved": "設定を保存しました",

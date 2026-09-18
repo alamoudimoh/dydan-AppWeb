@@ -1,12 +1,12 @@
+import { useColorScheme } from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../components/FigmaIcon'
-import { APP_BRAND_ID } from '../../config/AppBranding'
 import { useLocalization } from '../../contexts/LocalizationContext'
+import useStickyState from '../../hooks/useStickyState'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
-import { productTokens } from '../../theme/tokens'
 import {
   hasPermission,
   resolveEffectiveRole,
@@ -19,6 +19,7 @@ import {
 import { STORAGE_KEYS } from '../../utils/storageKeys'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
+import OptionButtonGroup from './OptionButtonGroup'
 
 const Section = ({ children, title }) => (
   <section className='mb-6'>
@@ -80,11 +81,13 @@ const Toggle = ({ checked, label, onChange }) => (
 const SettingsOverview = () => {
   const navigate = useNavigate()
   const { t } = useTranslation('settings')
-  const { isRTL, setLanguage } = useLocalization()
+  const { language, setLanguage } = useLocalization()
+  const { mode, setMode } = useColorScheme()
   const { data: userProfile } = useUserProfile()
   const { data: circleMembersData } = useCircleMembers()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const [themeMode, setThemeMode] = useStickyState(mode, 'themeMode')
   const [homeView, setHomeView] = useState(
     () => readLocalStorageItem(STORAGE_KEYS.homeView) || 'focus',
   )
@@ -93,19 +96,15 @@ const SettingsOverview = () => {
   const can = setting =>
     !SETTINGS_PERMISSIONS[setting] ||
     hasPermission(role, SETTINGS_PERMISSIONS[setting])
-  const displayName =
-    userProfile?.displayName || userProfile?.username || 'Dydan member'
-  const email = userProfile?.email || userProfile?.username || ''
-  const initials = displayName
-    .split(/\s+/)
-    .map(part => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
   const isSolo = !members.length
 
   const settingsAction = (setting, label, danger = false) =>
     can(setting) ? { danger, label } : null
+
+  const selectThemeMode = themeValue => {
+    setThemeMode(themeValue)
+    setMode(themeValue)
+  }
 
   const selectHomeView = view => {
     setHomeView(view)
@@ -128,58 +127,6 @@ const SettingsOverview = () => {
         </div>
       </div>
       <div className='px-4 md:px-7'>
-        <Section title={t('figmaOverview.profile')}>
-          <div className='figma-settings-profile'>
-            <div className='avatar figma-settings-avatar'>{initials}</div>
-            <div className='flex-1'>
-              <div className='text-primary font-bold' style={{ fontSize: 16 }}>
-                {displayName}
-              </div>
-              <div className='text-muted' style={{ fontSize: 13 }}>
-                {email}
-              </div>
-              <div
-                className='badge bg-brand-faint text-brand mt-1'
-                style={{ fontSize: 11 }}
-              >
-                {role}
-              </div>
-            </div>
-            <button
-              className='btn btn-secondary btn-sm'
-              onClick={() => navigate('/settings/profile')}
-              type='button'
-            >
-              {t('figmaOverview.edit')}
-            </button>
-          </div>
-          <Row
-            action={settingsAction('profile', t('figmaOverview.change'))}
-            icon='user'
-            label={t('figmaOverview.displayName')}
-            onClick={() => navigate('/settings/profile')}
-            sub={displayName}
-          />
-          {can('account') && (
-            <>
-              <Row
-                action={settingsAction('account', t('figmaOverview.change'))}
-                icon='mail'
-                label={t('figmaOverview.email')}
-                onClick={() => navigate('/settings/profile')}
-                sub={email}
-              />
-              <Row
-                action={settingsAction('account', t('figmaOverview.update'))}
-                icon='lock'
-                label={t('accountSettings.password')}
-                onClick={() => navigate('/settings/profile')}
-                sub={t('figmaOverview.passwordHelp')}
-              />
-            </>
-          )}
-        </Section>
-
         <Section title={t('figmaOverview.appearance')}>
           <div className='figma-settings-theme-block'>
             <div
@@ -188,46 +135,15 @@ const SettingsOverview = () => {
             >
               {t('figmaOverview.theme')}
             </div>
-            <div className='grid grid-cols-2 gap-3'>
-              {['dydan', 'sovereign'].map(item => (
-                <button
-                  className={`figma-theme-choice ${APP_BRAND_ID === item ? 'selected' : ''}`}
-                  key={item}
-                  onClick={() => navigate('/settings/theme')}
-                  type='button'
-                >
-                  <span className='mb-2 flex items-center gap-2'>
-                    <span
-                      className='figma-theme-swatch'
-                      style={{
-                        background:
-                          item === 'dydan'
-                            ? productTokens.dydan.light.primary
-                            : productTokens.sovereign.light.brand,
-                      }}
-                    />
-                    <span
-                      className='text-primary font-bold'
-                      style={{ fontSize: 13 }}
-                    >
-                      {item === 'dydan' ? 'Dydan' : 'Sovereign'}
-                    </span>
-                    {APP_BRAND_ID === item && (
-                      <FigmaIcon
-                        name='check'
-                        size={13}
-                        style={{ color: 'var(--brand)' }}
-                      />
-                    )}
-                  </span>
-                  <span className='text-muted block' style={{ fontSize: 11 }}>
-                    {item === 'dydan'
-                      ? 'Momentum Violet + Flow Aqua'
-                      : 'Onyx + Golden Yellow'}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <OptionButtonGroup
+              onChange={selectThemeMode}
+              options={[
+                { label: t('theme.light'), value: 'light' },
+                { label: t('theme.dark'), value: 'dark' },
+                { label: t('theme.automatic'), value: 'system' },
+              ]}
+              value={themeMode}
+            />
           </div>
           <div className='figma-settings-theme-block'>
             <div
@@ -236,35 +152,28 @@ const SettingsOverview = () => {
             >
               {t('figmaOverview.defaultView')}
             </div>
-            <div className='view-toggle figma-view-toggle'>
-              {['focus', 'quest'].map(item => (
-                <button
-                  aria-pressed={homeView === item}
-                  className={`view-toggle-btn ${homeView === item ? 'active' : ''}`}
-                  key={item}
-                  onClick={() => selectHomeView(item)}
-                  type='button'
-                >
-                  {item === 'focus' ? '⚡ Focus' : '✨ Quest'}
-                </button>
-              ))}
-            </div>
-            <div className='text-muted' style={{ fontSize: 12, marginTop: 4 }}>
-              {t('figmaOverview.defaultViewHelp')}
-            </div>
+            <OptionButtonGroup
+              onChange={selectHomeView}
+              options={[
+                { icon: '⚡', label: 'Focus', value: 'focus' },
+                { icon: '✨', label: 'Quest', value: 'quest' },
+              ]}
+              value={homeView}
+            />
           </div>
-          <Row
-            icon='rtl'
-            label={t('figmaOverview.rtl')}
-            sub={t('figmaOverview.rtlHelp')}
-            toggle={
-              <Toggle
-                checked={isRTL}
-                label={t('figmaOverview.rtl')}
-                onChange={() => setLanguage(isRTL ? 'en' : 'ar-SA')}
-              />
-            }
-          />
+        </Section>
+
+        <Section title={t('figmaOverview.language')}>
+          <div className='figma-settings-theme-block'>
+            <OptionButtonGroup
+              onChange={setLanguage}
+              options={[
+                { label: 'English', value: 'en' },
+                { label: 'العربية', value: 'ar-SA' },
+              ]}
+              value={language}
+            />
+          </div>
         </Section>
 
         {can('circle') &&
@@ -424,15 +333,6 @@ const SettingsOverview = () => {
             onClick={() => navigate('/settings/storage')}
             sub={t('figmaOverview.exportHelp')}
           />
-          {can('account') && (
-            <Row
-              action={{ danger: true, label: t('figmaOverview.delete') }}
-              icon='trash'
-              label={t('accountSettings.deleteAccount')}
-              onClick={() => navigate('/settings/profile')}
-              sub={t('figmaOverview.deleteHelp')}
-            />
-          )}
         </Section>
 
         <Section title={t('figmaOverview.support')}>

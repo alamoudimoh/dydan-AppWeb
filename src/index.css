@@ -793,6 +793,10 @@ body {
   font-family: var(--font-ui);
   transition: all 0.14s ease;
 }
+.view-toggle-btn .view-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+}
 .view-toggle-btn.active {
   background: var(--brand);
   color: var(--brand-contrast);
@@ -1419,7 +1423,6 @@ body {
 .figma-settings-row:last-child {
   border-bottom: 0;
 }
-.figma-settings-profile,
 .figma-settings-solo {
   display: flex;
   align-items: center;
@@ -1427,37 +1430,18 @@ body {
   padding: 20px;
   border-bottom: 1px solid var(--line);
 }
-.figma-settings-avatar {
-  width: 56px;
-  height: 56px;
-  background: var(--product-member-1);
-  font-size: 22px;
-}
 .figma-settings-theme-block {
   padding: 16px 20px;
   border-bottom: 1px solid var(--line);
 }
-.figma-theme-choice {
-  padding: 16px;
-  border: 2px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--surface-2);
-  cursor: pointer;
-  font-family: var(--font-ui);
-  text-align: start;
-}
-.figma-theme-choice.selected {
-  border-color: var(--brand);
-  background: var(--brand-faint);
-}
-.figma-theme-swatch {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--line);
-  border-radius: 50%;
-}
 .figma-view-toggle {
   display: inline-flex;
+}
+.figma-view-toggle .view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 .figma-settings-toggle {
   position: relative;

@@ -57,7 +57,6 @@ import APITokenSettings from './APITokenSettings'
 import LocalizationSettings from './LocalizationSettings'
 import MFASettings from './MFASettings'
 import NotificationSetting from './NotificationSetting'
-import ProfileSettings from './ProfileSettings'
 import SidepanelSettings from './SidepanelSettings'
 import StorageSettings from './StorageSettings'
 import ThemeToggle from './ThemeToggle'
@@ -242,7 +241,6 @@ const Settings = () => {
 
   return (
     <Container>
-      <ProfileSettings />
       <div className='grid gap-4 py-4' id='circle'>
         <Typography level='h3'>{t('circleSettings.title')}</Typography>
         <Divider />

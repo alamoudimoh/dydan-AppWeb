@@ -29,7 +29,6 @@ const LocalizationSettings = () => {
     dateFormat,
     firstDayOfWeek,
     fmt,
-    isRTL,
     language,
     setDateFormat,
     setFirstDayOfWeek,
@@ -70,9 +69,6 @@ const LocalizationSettings = () => {
               </Option>
             ))}
           </Select>
-          {isRTL && (
-            <FormHelperText>{t('localization.rtlNotice')}</FormHelperText>
-          )}
         </FormControl>
 
         <Typography level='h3'>{t('localization.dateFormat')}</Typography>

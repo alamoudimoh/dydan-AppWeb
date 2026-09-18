@@ -12,6 +12,7 @@ import {
   parseAllowedHosts,
   resolveAllowedHostsEnv,
 } from './vite.allowed-hosts.mjs'
+import { resolveDevProxyTarget } from './vite.dev-proxy.mjs'
 
 // Source-map upload to Sentry activates only when the required build-time
 // credentials are present. Without them ordinary builds never enable source
@@ -143,7 +144,12 @@ export default defineConfig(({ command, mode }) => {
       allowedHosts: parseAllowedHosts(resolveAllowedHostsEnv(process.env)),
       proxy: {
         '/api': {
-          target: 'http://127.0.0.1:2021',
+          // Development-only seam so the dev server can be pointed at the
+          // intended Dydan backend via VITE_DEV_PROXY_TARGET. Resolved from
+          // the Vite-loaded env (loadEnv) so .env, .env.local, mode-specific
+          // Vite env files and the shell environment all work. The default
+          // matches the standard zero-config Dydan deployment port.
+          target: resolveDevProxyTarget(env),
         },
       },
     },
