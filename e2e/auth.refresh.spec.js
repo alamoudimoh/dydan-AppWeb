@@ -26,6 +26,16 @@ const REFRESH_ROUTES = [
     url: '/profile?section=account#profile',
     heading: /profile settings/i,
   },
+  {
+    name: 'Settings',
+    url: '/settings',
+    heading: /^settings$/i,
+  },
+  {
+    name: 'Settings / Account',
+    url: '/settings/account',
+    heading: /^subscription$/i,
+  },
 ]
 
 const expectRouteContent = async (page, route) => {
