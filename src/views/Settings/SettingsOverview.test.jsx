@@ -174,9 +174,9 @@ describe('SettingsOverview', () => {
       </MemoryRouter>,
     )
 
-    const themeBlock = screen.getByText('Theme').closest(
-      '.figma-settings-theme-block',
-    )
+    const themeBlock = screen
+      .getByText('Theme')
+      .closest('.figma-settings-theme-block')
     const buttons = [...themeBlock.querySelectorAll('.view-toggle button')].map(
       b => b.textContent.trim(),
     )
@@ -230,9 +230,9 @@ describe('SettingsOverview', () => {
     ).not.toBeInTheDocument()
     // Choosing Arabic never touches the shared theme choices or renders them in Arabic.
     expect(setMode).not.toHaveBeenCalled()
-    const themeBlock = screen.getByText('Theme').closest(
-      '.figma-settings-theme-block',
-    )
+    const themeBlock = screen
+      .getByText('Theme')
+      .closest('.figma-settings-theme-block')
     expect(themeBlock.textContent).not.toMatch(/[\u0600-\u06FF]/)
   })
 })
