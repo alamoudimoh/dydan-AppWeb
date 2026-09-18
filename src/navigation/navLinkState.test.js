@@ -13,9 +13,10 @@ test('isNavLinkActive matches home and chore routes', () => {
 
 test('isNavLinkActive distinguishes settings overview from profile', () => {
   assert.equal(isNavLinkActive('/settings', NAV_LINK_IDS.SETTINGS), true)
-  assert.equal(isNavLinkActive('/settings/profile', NAV_LINK_IDS.PROFILE), true)
+  assert.equal(isNavLinkActive('/profile', NAV_LINK_IDS.PROFILE), true)
+  assert.equal(isNavLinkActive('/profile', NAV_LINK_IDS.SETTINGS), false)
   assert.equal(
-    isNavLinkActive('/settings/profile', NAV_LINK_IDS.SETTINGS),
+    isNavLinkActive('/settings/profile', NAV_LINK_IDS.PROFILE),
     false,
   )
   assert.equal(

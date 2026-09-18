@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "主题偏好",
-    "description": "选择网站的显示外观。您可以选择单一主题，或与系统同步，自动切换日间和夜间主题。",
     "themeMode": "主题模式",
     "light": "浅色",
     "dark": "深色",
-    "system": "跟随系统"
+    "automatic": "自动"
   },
   "notifications": {
     "settingsSaved": "设置保存成功",

@@ -22,14 +22,20 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const navigate = vi.fn()
+const setMode = vi.fn()
+const setLanguage = vi.fn()
 
 vi.mock('react-router-dom', async importOriginal => ({
   ...(await importOriginal()),
   useNavigate: () => navigate,
 }))
 
+vi.mock('@mui/joy', () => ({
+  useColorScheme: () => ({ mode: 'light', setMode }),
+}))
+
 vi.mock('../../contexts/LocalizationContext', () => ({
-  useLocalization: () => ({ isRTL: false, setLanguage: vi.fn() }),
+  useLocalization: () => ({ language: 'en', setLanguage }),
 }))
 
 vi.mock('../../queries/UserQueries', () => ({
@@ -62,6 +68,8 @@ describe('SettingsOverview', () => {
   afterEach(() => {
     cleanup()
     navigate.mockReset()
+    setMode.mockReset()
+    setLanguage.mockReset()
     localStorage.clear()
   })
 
@@ -75,6 +83,21 @@ describe('SettingsOverview', () => {
     expect(screen.queryByText('figmaOverview.email')).not.toBeInTheDocument()
     expect(
       screen.queryByText('accountSettings.deleteAccount'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps profile management out of Settings (Profile is its own area)', () => {
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    expect(
+      screen.queryByText('figmaOverview.displayName'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /figmaOverview\.edit/i }),
     ).not.toBeInTheDocument()
   })
 
@@ -111,5 +134,43 @@ describe('SettingsOverview', () => {
 
     await user.click(screen.getByRole('button', { name: /focus/i }))
     expect(localStorage.getItem('dydan.home.view')).toBe('focus')
+  })
+
+  it('persists Light/Dark/Automatic theme selection and follows the OS in Automatic', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'theme.dark' }))
+    expect(localStorage.getItem('themeMode')).toBe('"dark"')
+    expect(setMode).toHaveBeenCalledWith('dark')
+
+    await user.click(screen.getByRole('button', { name: 'theme.automatic' }))
+    // 'system' drives the OS-following mode; only the label is "Automatic".
+    expect(localStorage.getItem('themeMode')).toBe('"system"')
+    expect(setMode).toHaveBeenCalledWith('system')
+  })
+
+  it('selects the language explicitly and derives RTL automatically', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    const arabic = screen.getByRole('button', { name: 'العربية' })
+    expect(arabic).toHaveAttribute('aria-pressed', 'false')
+    await user.click(arabic)
+
+    expect(setLanguage).toHaveBeenCalledWith('ar-SA')
+    // No manual right-to-left control remains.
+    expect(screen.queryByText('figmaOverview.rtl')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('figmaOverview.defaultViewHelp'),
+    ).not.toBeInTheDocument()
   })
 })

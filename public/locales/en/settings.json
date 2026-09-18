@@ -145,17 +145,9 @@
     "monday": "Monday",
     "saturday": "Saturday",
     "preview": "Preview",
-    "rtlNotice": "This language uses right-to-left (RTL) text direction.",
     "languages": {
       "ar-SA": "Arabic",
-      "de": "German",
-      "en": "English",
-      "es": "Spanish",
-      "fr": "French",
-      "nl": "Dutch",
-      "ja": "Japanese",
-      "pt": "Portuguese (Brazil)",
-      "zh-CN": "Chinese (Simplified)"
+      "en": "English"
     },
     "formats": {
       "mdy": "MM/DD/YYYY (US)",
@@ -174,11 +166,10 @@
   },
   "theme": {
     "title": "Theme preferences",
-    "description": "Choose how the site looks to you. Select a single theme, or sync with your system and automatically switch between day and night themes.",
     "themeMode": "Theme mode",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "automatic": "Automatic"
   },
   "notifications": {
     "settingsSaved": "Settings saved successfully",
@@ -452,19 +443,9 @@
   },
   "figmaOverview": {
     "subtitle": "Manage your account and preferences",
-    "profile": "Profile",
-    "edit": "Edit",
-    "change": "Change",
-    "update": "Update",
-    "displayName": "Display name",
-    "email": "Email",
-    "passwordHelp": "Manage your password and sessions",
     "appearance": "Appearance",
     "theme": "Theme",
     "defaultView": "Default view",
-    "defaultViewHelp": "Adults choose Focus or Quest. Children always see Quest.",
-    "rtl": "Right-to-left layout",
-    "rtlHelp": "Arabic and other RTL language support",
     "circle": "Circle",
     "currentlySolo": "Currently solo",
     "soloHelp": "Invite others to unlock shared lists, family goals, and household tools.",
@@ -495,14 +476,13 @@
     "export": "Export",
     "exportData": "Export my data",
     "exportHelp": "Download a copy of your Dydan data",
-    "delete": "Delete",
-    "deleteHelp": "Permanently remove your data",
     "support": "Support",
     "open": "Open",
     "help": "Help & documentation",
     "report": "Report a problem",
     "reportHelp": "Send feedback to the Dydan team",
     "feedback": "Feedback",
-    "about": "About Dydan"
+    "about": "About Dydan",
+    "language": "Language"
   }
 }

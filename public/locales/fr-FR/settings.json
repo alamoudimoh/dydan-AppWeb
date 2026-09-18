@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Préférences de thème",
-    "description": "Choisissez comment le site vous apparaît. Sélectionnez un thème unique ou synchronisez avec votre système pour basculer automatiquement entre les thèmes jour et nuit.",
     "themeMode": "Mode de thème",
     "light": "Clair",
     "dark": "Sombre",
-    "system": "Système"
+    "automatic": "Automatique"
   },
   "notifications": {
     "settingsSaved": "Paramètres enregistrés avec succès",

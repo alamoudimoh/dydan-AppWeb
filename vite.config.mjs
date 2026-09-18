@@ -143,7 +143,11 @@ export default defineConfig(({ command, mode }) => {
       allowedHosts: parseAllowedHosts(resolveAllowedHostsEnv(process.env)),
       proxy: {
         '/api': {
-          target: 'http://127.0.0.1:2021',
+          // Development-only seam so the dev server can proxy to whichever
+          // Dydan backend this checkout is being developed against. The
+          // default matches the standard zero-config Dydan deployment port.
+          target:
+            process.env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:2021',
         },
       },
     },

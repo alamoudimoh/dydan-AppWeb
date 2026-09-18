@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Preferências de tema",
-    "description": "Escolha a aparência do site. Selecione um único tema ou sincronize com o sistema para alternar automaticamente entre os temas claro e escuro.",
     "themeMode": "Modo do tema",
     "light": "Claro",
     "dark": "Escuro",
-    "system": "Sistema"
+    "automatic": "Automático"
   },
   "notifications": {
     "settingsSaved": "Configurações salvas com sucesso",

@@ -49,7 +49,8 @@ export const ROUTE_SMOKE_ENTRIES = Object.freeze([
   },
   { path: '/routines', label: 'Routines' },
   { path: '/settings', label: 'Settings overview' },
-  { path: '/settings/profile', label: 'Profile settings' },
+  { path: '/profile', label: 'Profile settings' },
+  { path: '/settings/profile', label: 'Legacy profile redirect' },
   { path: '/settings/localization', label: 'Localization settings' },
   { path: '/settings/theme', label: 'Theme settings' },
   { path: '/settings/notifications', label: 'Notification settings' },
@@ -142,6 +143,7 @@ export const ROUTE_SMOKE_GROUPS = Object.freeze({
   ],
   settings: [
     '/settings',
+    '/profile',
     '/settings/profile',
     '/settings/localization',
     '/settings/theme',

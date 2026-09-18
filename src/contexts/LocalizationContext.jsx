@@ -26,18 +26,11 @@ export const TIME_FORMATS = {
   HOUR_24: 'HH:mm',
 }
 
-export const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur']
-
+// Language selection is explicit: العربية / English. Layout direction
+// (RTL/LTR) is derived from the chosen language, never configured manually.
 export const AVAILABLE_LANGUAGES = [
-  { code: 'ar-SA', name: 'Arabic (Saudi Arabia)', nativeName: 'العربية' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch' },
+  { code: 'ar-SA', name: 'Arabic', nativeName: 'العربية' },
   { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
-  { code: 'pt', name: 'Portuguese (Brazil)', nativeName: 'Português (Brasil)' },
-  { code: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '简体中文' },
 ]
 
 export const LocalizationProvider = ({ children }) => {

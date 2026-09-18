@@ -27,19 +27,15 @@ const ThemeToggle = () => {
     setMode(newThemeMode)
   }
 
-  const FormThemeModeToggleLabel = () => (
-    <FormLabel
-      level='title-md'
-      id={`${ELEMENTID}-label`}
-      htmlFor='select-theme-mode'
-    >
-      {t('theme.themeMode')}
-    </FormLabel>
-  )
-
   return (
     <FormControl>
-      <FormThemeModeToggleLabel />
+      <FormLabel
+        level='title-md'
+        id={`${ELEMENTID}-label`}
+        htmlFor='select-theme-mode'
+      >
+        {t('theme.themeMode')}
+      </FormLabel>
       <div className='flex items-center gap-4'>
         <ToggleButtonGroup
           id={ELEMENTID}
@@ -54,7 +50,7 @@ const ThemeToggle = () => {
             {t('theme.dark')}
           </Button>
           <Button startDecorator={<LaptopOutlined />} value='system'>
-            {t('theme.system')}
+            {t('theme.automatic')}
           </Button>
         </ToggleButtonGroup>
       </div>

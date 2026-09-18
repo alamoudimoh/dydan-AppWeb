@@ -16,7 +16,7 @@ export const NAV_LINK_PATHS = Object.freeze({
   [NAV_LINK_IDS.ACTIVITIES]: '/activities',
   [NAV_LINK_IDS.POINTS]: '/points',
   [NAV_LINK_IDS.REWARDS]: '/rewards',
-  [NAV_LINK_IDS.PROFILE]: '/settings/profile',
+  [NAV_LINK_IDS.PROFILE]: '/profile',
   [NAV_LINK_IDS.SETTINGS]: '/settings',
 })
 
@@ -36,10 +36,6 @@ export const isNavLinkActive = (pathname, linkId) => {
 
   if (linkId === NAV_LINK_IDS.SETTINGS) {
     return path === '/settings' || path === '/settings/'
-  }
-
-  if (linkId === NAV_LINK_IDS.PROFILE) {
-    return path === '/settings/profile' || path.startsWith('/settings/profile/')
   }
 
   return path === target || path.startsWith(`${target}/`)

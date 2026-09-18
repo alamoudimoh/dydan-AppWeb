@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 
 import App from '@/App'
 
@@ -138,6 +138,10 @@ export const appRouteConfig = [
         element: <TodayView />,
       },
       {
+        path: '/profile',
+        element: <ProfileSettings />,
+      },
+      {
         path: '/settings',
         element: <SettingsRoutes />,
         children: [
@@ -153,8 +157,9 @@ export const appRouteConfig = [
             ),
           },
           {
+            // Profile lives at /profile; keep legacy deep links working.
             path: 'profile',
-            element: <ProfileSettings />,
+            element: <Navigate replace to='/profile' />,
           },
           {
             path: 'circle',

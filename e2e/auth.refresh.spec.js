@@ -22,8 +22,8 @@ const REFRESH_ROUTES = [
     heading: /^calendar$/i,
   },
   {
-    name: 'Settings',
-    url: '/settings/profile?section=account#profile',
+    name: 'Profile',
+    url: '/profile?section=account#profile',
     heading: /profile settings/i,
   },
 ]
@@ -97,11 +97,11 @@ test('confirmed invalid refresh session redirects and retains the complete retur
     }),
   )
 
-  await page.goto('/settings/profile?section=account#profile')
+  await page.goto('/profile?section=account#profile')
   await expect(page).toHaveURL(/\/login\?session=expired$/)
   expect(
     await page.evaluate(() => sessionStorage.getItem('return_path_pending')),
-  ).toBe('/settings/profile?section=account#profile')
+  ).toBe('/profile?section=account#profile')
 })
 
 test('authenticated refresh at /today restores the previously selected tab', async ({

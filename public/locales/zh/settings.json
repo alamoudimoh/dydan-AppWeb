@@ -72,11 +72,10 @@
   },
   "theme": {
     "title": "Theme preferences",
-    "description": "Choose how the site looks to you. Select a single theme, or sync with your system and automatically switch between day and night themes.",
     "themeMode": "Theme mode",
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "automatic": "自动"
   },
   "notifications": {
     "settingsSaved": "Settings saved successfully",

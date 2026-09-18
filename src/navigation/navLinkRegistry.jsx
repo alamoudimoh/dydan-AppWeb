@@ -114,7 +114,7 @@ export const createNavLinkRegistry = ({
     icon: <CardGiftcard />,
   },
   [NAV_LINK_IDS.PROFILE]: {
-    to: '/settings/profile',
+    to: '/profile',
     label: t('navigation.profile'),
     icon: <Person />,
   },

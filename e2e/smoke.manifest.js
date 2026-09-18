@@ -27,7 +27,7 @@ export const BROWSER_SMOKE_CRITICAL_PATHS = new Set([
   '/shopping',
   '/family',
   '/settings',
-  '/settings/profile',
+  '/profile',
   '/settings/localization',
   '/settings/storage',
   '/chores',
@@ -72,7 +72,7 @@ export const BROWSER_SMOKE_PAGES = [
   },
   {
     id: 'settings-profile',
-    path: '/settings/profile',
+    path: '/profile',
     auth: true,
     heading: /profile settings/i,
     nav: true,

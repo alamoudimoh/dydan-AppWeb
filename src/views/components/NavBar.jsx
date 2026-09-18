@@ -134,10 +134,7 @@ const NavBar = () => {
           <FigmaIcon name='x' size={15} />
           <span>{t('logout')}</span>
         </button>
-        <div
-          className='figma-profile'
-          onClick={() => navigate('/settings/profile')}
-        >
+        <div className='figma-profile' onClick={() => navigate('/profile')}>
           <UserProfileAvatar />
           <span>
             {userProfile?.displayName || userProfile?.name || t('profile')}

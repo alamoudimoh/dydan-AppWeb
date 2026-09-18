@@ -20,7 +20,7 @@ const AR_ROUTES = [
   { path: '/calendar', auth: true, arabic: /التقويم/ },
   { path: '/routines', auth: true, arabic: /الروتينات/ },
   { path: '/settings', auth: true, arabic: /الإعدادات/ },
-  { path: '/settings/profile', auth: true, arabic: /الملف الشخصي/ },
+  { path: '/profile', auth: true, arabic: /الملف الشخصي/ },
   { path: '/settings/account', auth: true, arabic: /الجلسة الحالية/ },
   {
     path: '/settings/localization',
