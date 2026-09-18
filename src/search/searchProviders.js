@@ -1,4 +1,4 @@
-import { stripHtmlTags } from '../utils/stripHtmlTags'
+import { stripHtmlTags } from '../utils/stripHtmlTags.js'
 
 const stripHtml = value => stripHtmlTags(value)
 
@@ -13,7 +13,6 @@ const HISTORY_STATUS = {
 }
 
 const SETTINGS = [
-  ['profile', 'Profile', 'Name, avatar and personal details'],
   ['circle', 'Circle', 'Members and household settings', true],
   [
     'account',
@@ -162,6 +161,21 @@ registerSearchProvider({
         route: '/chores',
       }),
     ),
+})
+
+registerSearchProvider({
+  id: 'profile',
+  getDocuments: () => [
+    document('profile', {
+      id: 'profile',
+      entityId: 'profile',
+      title: 'Profile',
+      subtitle: 'Profile',
+      body: 'Name, avatar and personal details',
+      keywords: 'preferences configuration profile',
+      route: '/profile',
+    }),
+  ],
 })
 
 registerSearchProvider({
