@@ -53,12 +53,25 @@ vi.mock('../../queries/UserQueries', () => ({
 vi.mock('../Modals/ErrorReportModal', () => ({ default: () => null }))
 vi.mock('../Modals/FeedbackModal', () => ({ default: () => null }))
 
+// Real English labels for the keys under assertion, sourced from
+// public/locales/en/settings.json, so tests verify the user-visible copy
+// (Light/Dark/Automatic) rather than translation keys.
+const EN_LABELS = {
+  'figmaOverview.appearance': 'Appearance',
+  'figmaOverview.theme': 'Theme',
+  'figmaOverview.defaultView': 'Default home view',
+  'figmaOverview.language': 'Language',
+  'theme.light': 'Light',
+  'theme.dark': 'Dark',
+  'theme.automatic': 'Automatic',
+}
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key, options) =>
       key === 'figmaOverview.activeMembers'
         ? `${options.count} active members`
-        : key,
+        : EN_LABELS[key] || key,
   }),
 }))
 
@@ -144,17 +157,60 @@ describe('SettingsOverview', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'theme.dark' }))
+    await user.click(screen.getByRole('button', { name: 'Dark' }))
     expect(localStorage.getItem('themeMode')).toBe('"dark"')
     expect(setMode).toHaveBeenCalledWith('dark')
 
-    await user.click(screen.getByRole('button', { name: 'theme.automatic' }))
+    await user.click(screen.getByRole('button', { name: 'Automatic' }))
     // 'system' drives the OS-following mode; only the label is "Automatic".
     expect(localStorage.getItem('themeMode')).toBe('"system"')
     expect(setMode).toHaveBeenCalledWith('system')
   })
 
-  it('selects the language explicitly and derives RTL automatically', async () => {
+  it('offers exactly Light/Dark/Automatic in the Theme block and never Arabic', () => {
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    const themeBlock = screen.getByText('Theme').closest(
+      '.figma-settings-theme-block',
+    )
+    const buttons = [...themeBlock.querySelectorAll('.view-toggle button')].map(
+      b => b.textContent.trim(),
+    )
+
+    // Exactly the three expected choices, in order — nothing else leaks in.
+    expect(buttons).toEqual(['Light', 'Dark', 'Automatic'])
+    // No brand picker, no "System" spelling, no Arabic copy in the theme area.
+    expect(themeBlock.textContent).not.toMatch(/System/)
+    expect(themeBlock.textContent).not.toMatch(/[\u0600-\u06FF]/)
+    // The language group stays structurally separate from the theme group.
+    const languageBlock = screen.getByText('Language').closest('section')
+    expect(languageBlock.textContent).toContain('English')
+    expect(languageBlock.textContent).toContain('العربية')
+  })
+
+  it('restores a previously persisted theme selection on mount', () => {
+    localStorage.setItem('themeMode', '"dark"')
+    render(
+      <MemoryRouter>
+        <SettingsOverview />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Light' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('selects language with an Arabic label while keeping the Theme block free of Arabic', async () => {
     const user = userEvent.setup()
     render(
       <MemoryRouter>
@@ -172,5 +228,11 @@ describe('SettingsOverview', () => {
     expect(
       screen.queryByText('figmaOverview.defaultViewHelp'),
     ).not.toBeInTheDocument()
+    // Choosing Arabic never touches the shared theme choices or renders them in Arabic.
+    expect(setMode).not.toHaveBeenCalled()
+    const themeBlock = screen.getByText('Theme').closest(
+      '.figma-settings-theme-block',
+    )
+    expect(themeBlock.textContent).not.toMatch(/[\u0600-\u06FF]/)
   })
 })
