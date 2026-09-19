@@ -86,7 +86,7 @@ const DemoHistory = () => {
             History with a Purpose
           </Typography>
           <Typography level='body-lg' textAlign='center' sx={{ mb: 4 }}>
-            Keep track of all your chores and tasks with ease. Dydan records due
+            Keep track of all your chores and tasks with ease. dydan records due
             dates, completion dates, and who completed each task. Any notes
             added to tasks are also tracked, providing a complete history for
             your reference. Stay organized and informed with detailed task

@@ -172,7 +172,7 @@
     "dark": "Dark",
     "automatic": "Automatic",
     "productTheme": "Theme",
-    "productThemeHelp": "Pick the built-in look: the Dydan palette (Momentum Violet + Flow Aqua) or Sovereign (Onyx + Golden Yellow)."
+    "productThemeHelp": "Pick the built-in look: the dydan palette (Momentum Violet + Flow Aqua) or Sovereign (Onyx + Golden Yellow)."
   },
   "notifications": {
     "settingsSaved": "Settings saved successfully",
@@ -452,7 +452,7 @@
       },
       "feedback": {
         "title": "Send Feedback",
-        "description": "Tell us how Dydan is working for you or request a feature."
+        "description": "Tell us how dydan is working for you or request a feature."
       },
       "bugReport": {
         "title": "Report a Bug",
@@ -494,14 +494,14 @@
     "activityVisibleHelp": "Manage household visibility and sharing",
     "export": "Export",
     "exportData": "Export my data",
-    "exportHelp": "Download a copy of your Dydan data",
+    "exportHelp": "Download a copy of your dydan data",
     "support": "Support",
     "open": "Open",
     "help": "Help & documentation",
     "report": "Report a problem",
-    "reportHelp": "Send feedback to the Dydan team",
+    "reportHelp": "Send feedback to the dydan team",
     "feedback": "Feedback",
-    "about": "About Dydan",
+    "about": "About dydan",
     "language": "Language",
     "productTheme": "Theme",
     "themeMode": "Theme mode"
@@ -537,7 +537,7 @@
     "title": "Security",
     "description": "Control how you sign in, protect your account, and manage your devices.",
     "signinTitle": "Sign-in method",
-    "signinHelp": "The provider you use to sign in to Dydan.",
+    "signinHelp": "The provider you use to sign in to dydan.",
     "connectedAccounts": "Connected account",
     "passwordTitle": "Password",
     "passwordHelp": "Set a strong password you do not use anywhere else.",
@@ -573,14 +573,14 @@
     "shareDiagnostics": "Share crash & error diagnostics",
     "shareDiagnosticsHelp": "Sends technical error reports to improve stability on this device.",
     "policyTitle": "Privacy policy",
-    "policyHelp": "How Dydan handles your personal information.",
+    "policyHelp": "How dydan handles your personal information.",
     "readPolicy": "Read the privacy policy"
   },
   "integrations": {
     "title": "Integrations & data",
     "description": "Connect tools, manage access tokens, and review your data.",
     "apiTitle": "API access",
-    "apiHelp": "Long-lived API tokens let external tools talk to Dydan on your behalf.",
+    "apiHelp": "Long-lived API tokens let external tools talk to dydan on your behalf.",
     "manageTokens": "Manage API tokens",
     "webhookTitle": "Webhooks",
     "webhookHelp": "Send household events to your own endpoint.",

@@ -20,6 +20,17 @@ import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 import SyncStatusIndicator from './SyncStatusIndicator'
 
+const SIDEBAR_COLLAPSED_KEY = 'dydan.sidebarCollapsed'
+
+const readSidebarCollapsed = () => {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
+  } catch {
+    /* storage unavailable (private mode/disabled): start expanded */
+    return false
+  }
+}
+
 const iconByLink = {
   home: 'home',
   today: 'calendar',
@@ -55,6 +66,7 @@ const NavBar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed)
   const shellMode = resolveAppShellMode(location.pathname)
 
   useEffect(() => {
@@ -65,6 +77,17 @@ const NavBar = () => {
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [drawerOpen])
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      'sidebar-collapsed',
+      sidebarCollapsed,
+    )
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? '1' : '0')
+    } catch {
+      /* storage unavailable: keep the in-memory state for this session */
+    }
+  }, [sidebarCollapsed])
   const sections = useMemo(() => {
     const registry = createNavLinkRegistry({
       t,
@@ -105,12 +128,37 @@ const NavBar = () => {
           <small>FOCUS MODE</small>
         </div>
         <button
-          className='btn btn-ghost btn-icon'
+          className='btn btn-ghost btn-icon btn-top-compact'
           onClick={() => navigate('/chores/create')}
           aria-label={t('addTask')}
           title={t('addTask')}
         >
           <FigmaIcon name='plus' size={16} />
+        </button>
+        <button
+          className='figma-collapse-button'
+          onClick={() => setSidebarCollapsed(collapsed => !collapsed)}
+          aria-label={
+            sidebarCollapsed
+              ? t('navigation.expandSidebar')
+              : t('navigation.collapseSidebar')
+          }
+          aria-pressed={sidebarCollapsed}
+          title={
+            sidebarCollapsed
+              ? t('navigation.expandSidebar')
+              : t('navigation.collapseSidebar')
+          }
+        >
+          <FigmaIcon
+            name='chevron_right'
+            size={16}
+            style={{
+              transform: sidebarCollapsed
+                ? `scaleX(${isRTL ? -1 : 1})`
+                : `scaleX(${isRTL ? 1 : -1})`,
+            }}
+          />
         </button>
       </div>
       <div className='figma-nav-scroll'>
@@ -173,7 +221,7 @@ const NavBar = () => {
             aria-label={t('navigation.notifications')}
             title={t('navigation.notifications')}
           >
-            <FigmaIcon name='bell' size={20} />
+            <FigmaIcon name='bell' size={18} />
           </button>
           <button
             className='btn btn-primary btn-top-action'

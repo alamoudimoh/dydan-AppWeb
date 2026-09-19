@@ -18,11 +18,11 @@ const translations = {
   'onboarding.carousel.getStarted': 'Get started',
   'onboarding.carousel.turnOnReminders': 'Turn on reminders',
   'onboarding.carousel.notNow': 'Not now',
-  'onboarding.carousel.ariaLabel': 'What you can do with Dydan',
+  'onboarding.carousel.ariaLabel': 'What you can do with dydan',
   'onboarding.carousel.goToStep': 'Go to step {{step}}',
   'onboarding.carousel.slideLabel': '{{index}} of {{count}}',
   'onboarding.slides.problem.title': 'Stop forgetting the little things',
-  'onboarding.slides.problem.body': 'Dydan remembers the last time.',
+  'onboarding.slides.problem.body': 'dydan remembers the last time.',
   'onboarding.slides.capture.title': 'Add it before you forget it',
   'onboarding.slides.capture.body': 'Type it, say it, or snap a photo.',
   'onboarding.slides.circle.title': 'Everyone gets a turn',
@@ -99,7 +99,7 @@ describe('OnboardingView', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('Dydan remembers the last time.'),
+      screen.getByText('dydan remembers the last time.'),
     ).toBeInTheDocument()
   })
 

@@ -62,7 +62,7 @@ const PrivacyPolicyView = () => {
 
       <LegalParagraph>
         Favoro LLC (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates
-        the Dydan application and website (collectively, the
+        the dydan application and website (collectively, the
         &quot;Service&quot;). This Privacy Policy informs you of our policies
         regarding the collection, use, and disclosure of personal data when you
         use our Service and the choices you have associated with that data.
@@ -170,7 +170,7 @@ const PrivacyPolicyView = () => {
           <LegalList>
             <LegalListItem>
               <strong>{t('legal.email')}:</strong>{' '}
-              <Link href={APP_SUPPORT_URL}>Dydan support on GitHub</Link>
+              <Link href={APP_SUPPORT_URL}>dydan support on GitHub</Link>
             </LegalListItem>
             <LegalListItem>
               <strong>{t('legal.address')}:</strong> Favoro LLC

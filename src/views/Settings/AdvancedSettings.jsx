@@ -193,7 +193,7 @@ const AdvancedSettings = () => {
           </Chip>
         </Box>
         <Typography level='body-md' mt={-1}>
-          Keep using Dydan when you're offline on this device/browser. Your
+          Keep using dydan when you're offline on this device/browser. Your
           changes are saved locally and synced when you're back online.
         </Typography>
         <FormControl sx={{ mt: 1 }}>

@@ -24,7 +24,7 @@ const FeaturesSection = () => {
       icon: <Psychology />,
       title: 'Natural Language Input',
       description:
-        'Add tasks just by typing. Dydan understands dates, priorities, labels. you can have quickest way to add tasks.',
+        'Add tasks just by typing. dydan understands dates, priorities, labels. you can have quickest way to add tasks.',
     },
     {
       icon: <Groups />,
@@ -90,7 +90,7 @@ const FeaturesSection = () => {
       icon: <Notifications />,
       title: 'Smart Notifications',
       description:
-        'Get timely reminders via Dydan app or other way like Telegram, push, or webhooks.',
+        'Get timely reminders via dydan app or other way like Telegram, push, or webhooks.',
     },
 
     {
@@ -140,7 +140,7 @@ const FeaturesSection = () => {
             px: { xs: 1, sm: 0 },
           }}
         >
-          Dydan helps you stay organized, motivated, and productive with a suite
+          dydan helps you stay organized, motivated, and productive with a suite
           of powerful features designed for individuals and groups.
         </Typography>
       </Box>

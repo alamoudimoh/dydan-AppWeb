@@ -3,9 +3,9 @@ import { Outlet } from 'react-router-dom'
 import SettingsNav from './SettingsNav'
 
 /**
- * Settings module shell: a categorized sidebar/tab navigation stays visible
- * around every settings detail route so users are never lost on a flat,
- * long, overwhelming page.
+ * Settings module shell: a horizontal tab strip stays visible above every
+ * settings detail route so users are never lost on a flat, long, overwhelming
+ * page. Routes render below inside the styled content area.
  */
 const SettingsRoutes = () => (
   <div className='figma-settings-shell'>

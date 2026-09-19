@@ -36,7 +36,7 @@ const TabletInstallationSection = () => {
             px: { xs: 1, sm: 0 },
           }}
         >
-          Mount Dydan on your tablet for easy family task management. Perfect
+          Mount dydan on your tablet for easy family task management. Perfect
           for kitchens, offices, or any shared space.
         </Typography>
       </Box>
@@ -54,7 +54,7 @@ const TabletInstallationSection = () => {
       >
         <img
           src={ipad_screenshot}
-          alt='Dydan dashboard with calendar view showing task management interface'
+          alt='dydan dashboard with calendar view showing task management interface'
           style={{
             maxWidth: '90%',
             height: 'auto',

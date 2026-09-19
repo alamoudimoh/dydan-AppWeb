@@ -14,7 +14,7 @@ const ProductThemePicker = () => {
     <OptionButtonGroup
       onChange={setBrand}
       options={[
-        { label: 'Dydan', value: 'dydan' },
+        { label: 'dydan', value: 'dydan' },
         { label: 'Sovereign', value: 'sovereign' },
       ]}
       value={brand}

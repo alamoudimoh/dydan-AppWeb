@@ -1,6 +1,6 @@
 {
-  "name": "Dydan: Simplify tasks & chores, together.",
-  "short_name": "Dydan",
+  "name": "dydan: Simplify tasks & chores, together.",
+  "short_name": "dydan",
   "icons": [
     {
       "src": "../icons/icon-48.webp",

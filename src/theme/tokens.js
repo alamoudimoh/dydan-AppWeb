@@ -69,7 +69,7 @@ const accents = Object.freeze({
 export const productTokens = Object.freeze({
   dydan: {
     id: 'dydan',
-    name: 'Dydan',
+    name: 'dydan',
     font: {
       ui: PRODUCT_UI_FONTS.dydan,
       arabic: ARABIC_UI_FONT,

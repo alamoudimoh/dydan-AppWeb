@@ -25,11 +25,7 @@ const NavItem = ({ icon, label, to }) => (
       `figma-settings-nav-item${isActive ? ' active' : ''}`
     }
   >
-    <FigmaIcon
-      name={icon}
-      size={16}
-      style={{ color: 'var(--t-muted)', flexShrink: 0 }}
-    />
+    <FigmaIcon name={icon} size={16} style={{ flexShrink: 0 }} />
     <span className='figma-settings-nav-item-label'>{label}</span>
   </NavLink>
 )

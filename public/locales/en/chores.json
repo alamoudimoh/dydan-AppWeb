@@ -156,11 +156,11 @@
     "backToTasks": "Back to tasks"
   },
   "list": {
-    "cantReachDydan": "Can't reach Dydan",
+    "cantReachDydan": "Can't reach dydan",
     "loadErrorDescription": "Your tasks are safe. We just could not load them right now, check your connection and try again.",
     "tryAgain": "Try again",
     "noTasksYet": "No tasks yet",
-    "noTasksYetDescription": "Create your first task and Dydan keeps track of when it is due, whose turn it is, and what comes next.",
+    "noTasksYetDescription": "Create your first task and dydan keeps track of when it is due, whose turn it is, and what comes next.",
     "createTask": "Create a task",
     "moreOptions": "More options",
     "noTasksMatchView": "No tasks match this view",

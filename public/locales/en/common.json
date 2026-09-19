@@ -166,6 +166,8 @@
     "familyProgress": "Family Progress",
     "home": "Home",
     "openMenu": "Open menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
     "calendar": "Calendar",
     "maintenance": "Maintenance",
     "routines": "Routines",
@@ -605,7 +607,7 @@
   "feedback": {
     "later": "Maybe later",
     "sentiment": {
-      "title": "How's Dydan working for you?",
+      "title": "How's dydan working for you?",
       "subtitle": "Your answer helps us decide what to build next.",
       "options": {
         "love": "Love it",
@@ -633,7 +635,7 @@
     },
     "review": {
       "title": "Glad you're enjoying it!",
-      "subtitle": "A rating or a star helps other people find Dydan.",
+      "subtitle": "A rating or a star helps other people find dydan.",
       "github": "Star on GitHub",
       "appStore": "Rate on the App Store",
       "playStore": "Rate on Google Play"
@@ -656,11 +658,11 @@
       },
       "unconfigured": {
         "title": "Feedback relay isn't set up",
-        "subtitle": "This build has no delivery endpoint configured. Open a pre-filled Dydan issue or copy your notes manually."
+        "subtitle": "This build has no delivery endpoint configured. Open a pre-filled dydan issue or copy your notes manually."
       },
       "misconfigured": {
         "title": "Feedback relay is misconfigured",
-        "subtitle": "The configured endpoint can't accept app feedback. Open a pre-filled Dydan issue instead."
+        "subtitle": "The configured endpoint can't accept app feedback. Open a pre-filled dydan issue instead."
       }
     }
   },
@@ -784,12 +786,12 @@
     "mfaFailedRetry": "Two-factor authentication failed. Please try again.",
     "backToSignIn": "Back to sign in",
     "serverSettingsTitle": "Server settings",
-    "serverSettingsSubtitle": "Point the app at your own self-hosted Dydan server.",
+    "serverSettingsSubtitle": "Point the app at your own self-hosted dydan server.",
     "serverURL": "Server URL",
     "serverURLPlaceholder": "https://your-server:2021",
-    "serverURLHelper": "Use HTTPS and include the port if needed. Dydan defaults to port 2021.",
+    "serverURLHelper": "Use HTTPS and include the port if needed. dydan defaults to port 2021.",
     "invalidURL": "Invalid URL format. Include the protocol (http:// or https://) and port if needed.",
-    "httpsRequiredNative": "The Dydan mobile app requires an HTTPS server URL to protect your account.",
+    "httpsRequiredNative": "The dydan mobile app requires an HTTPS server URL to protect your account.",
     "clearSessionFailed": "Unable to clear local session data. Please try again.",
     "connectedRedirect": "Connected. Taking you to sign in...",
     "testingConnection": "Testing connection to server...",
@@ -799,11 +801,11 @@
     "serverChangeClearsData": "Changing the server clears locally cached data on this device.",
     "connectionErrors": {
       "startingUp": "Server is starting up or temporarily unavailable (503). Try again in a moment.",
-      "serverError": "Server responded with error {{status}}. Please check your Dydan server.",
+      "serverError": "Server responded with error {{status}}. Please check your dydan server.",
       "timeout": "Connection timed out after {{seconds}}s. The host may be unreachable or behind a firewall — check the IP/hostname and network.",
-      "cors": "Server is reachable but blocked the request (CORS). Ensure your Dydan server allows requests from this origin, or check the server CORS config.",
+      "cors": "Server is reachable but blocked the request (CORS). Ensure your dydan server allows requests from this origin, or check the server CORS config.",
       "dns": "Hostname could not be resolved. Check the URL for typos or verify DNS.",
-      "refused": "Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default Dydan port is 2021).",
+      "refused": "Connection refused. The port may be wrong or nothing is listening — verify the URL and port (default dydan port is 2021).",
       "unreachable": "Unable to reach the server. Check the URL, port, and network connection."
     },
     "password": "Password",
@@ -858,7 +860,7 @@
   },
   "onboarding": {
     "carousel": {
-      "ariaLabel": "What you can do with Dydan",
+      "ariaLabel": "What you can do with dydan",
       "skip": "Skip",
       "next": "Next",
       "getStarted": "Get started",
@@ -870,15 +872,15 @@
     "slides": {
       "problem": {
         "title": "Stop forgetting the little things",
-        "body": "Dydan remembers the last time it happened, and when it's due next. So nobody else has to."
+        "body": "dydan remembers the last time it happened, and when it's due next. So nobody else has to."
       },
       "capture": {
         "title": "Add it before you forget it",
-        "body": "Type it, say it out loud, or snap a photo. Dydan fills in the due date, priority, labels, and who's on it."
+        "body": "Type it, say it out loud, or snap a photo. dydan fills in the due date, priority, labels, and who's on it."
       },
       "circle": {
         "title": "Everyone gets a turn, No more arguing",
-        "body": "Rotate in the order you pick, or at random. Dydan remembers who went last, so turns stay fair."
+        "body": "Rotate in the order you pick, or at random. dydan remembers who went last, so turns stay fair."
       },
       "reminders": {
         "title": "A nudge right when it matters & Widgets!",
@@ -992,7 +994,7 @@
       "joinFailed": "Failed to join circle"
     },
     "heardAbout": {
-      "title": "Where'd you hear about Dydan?",
+      "title": "Where'd you hear about dydan?",
       "subtitle": "Helps us know what's working. Totally optional.",
       "continue": "Continue",
       "skip": "Skip",
@@ -1008,12 +1010,12 @@
       }
     },
     "privacy": {
-      "title": "Help us improve Dydan",
+      "title": "Help us improve dydan",
       "subtitle": "Your server, your data. Both of these are off from this point unless you turn them on.",
       "continue": "Continue",
       "crashReports": {
         "label": "Share crash reports",
-        "description": "When Dydan crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster."
+        "description": "When dydan crashes, send us the error and what led to it (device, app version, the screen you were on) no task content. It's how we catch bugs that never show up in our own testing and ship fixes faster."
       },
       "analytics": {
         "label": "Share anonymous usage analytics",

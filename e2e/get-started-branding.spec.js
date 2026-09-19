@@ -4,7 +4,7 @@ import { installApiMocks } from './fixtures/apiMocks.js'
 import { clearSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
-test('get-started renders the canonical Dydan identity without legacy Donetick branding', async ({
+test('get-started renders the canonical dydan identity without legacy Donetick branding', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -15,7 +15,7 @@ test('get-started renders the canonical Dydan identity without legacy Donetick b
   await page.waitForLoadState('networkidle')
 
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Dydan', exact: true }),
+    page.getByRole('heading', { level: 1, name: 'dydan', exact: true }),
   ).toBeVisible()
   await expect(page.locator('#root')).not.toContainText(/donetick/i)
   await expect(page.locator('#root')).toContainText(
@@ -64,7 +64,7 @@ test('get-started keeps the canonical identity valid under Arabic (ar-SA) RTL', 
     await page.evaluate(() => document.documentElement.getAttribute('lang')),
   ).toBe('ar-SA')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Dydan', exact: true }),
+    page.getByRole('heading', { level: 1, name: 'dydan', exact: true }),
   ).toBeVisible()
   await expect(page.locator('#root')).toContainText(
     'أنشئ حسابًا للمزامنة في كل مكان، أو سجّل الدخول لتكمل من حيث توقفت.',

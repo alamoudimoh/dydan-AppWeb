@@ -49,7 +49,7 @@ const NativeCancelSubscriptionModal = ({ isOpen, onClose }) => {
             3. Tap <strong>Subscriptions</strong>
           </Typography>
           <Typography level='body-sm' mb={1}>
-            4. Find and tap <strong>Dydan</strong>
+            4. Find and tap <strong>dydan</strong>
           </Typography>
           <Typography level='body-sm' mb={2}>
             5. Tap <strong>Cancel Subscription</strong>
@@ -78,7 +78,7 @@ const NativeCancelSubscriptionModal = ({ isOpen, onClose }) => {
             4. Tap <strong>Subscriptions</strong>
           </Typography>
           <Typography level='body-sm' mb={1}>
-            5. Find and tap <strong>Dydan</strong>
+            5. Find and tap <strong>dydan</strong>
           </Typography>
           <Typography level='body-sm' mb={2}>
             6. Tap <strong>Cancel subscription</strong>

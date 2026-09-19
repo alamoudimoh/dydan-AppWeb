@@ -90,8 +90,8 @@ const TermsView = () => {
 
       <LegalParagraph>
         These Terms of Service (&quot;Terms&quot;) govern your access to and use
-        of the Dydan task management platform provided by Favoro LLC
-        (&quot;Dydan&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;).
+        of the dydan task management platform provided by Favoro LLC
+        (&quot;dydan&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;).
         By accessing or using our services, you agree to be bound by these
         Terms. If you do not agree to these Terms, you may not access or use our
         services.
@@ -113,7 +113,7 @@ const TermsView = () => {
           {t('legal.important')}: {t('legal.cloudVsSelfHosted')}
         </Typography>
         <Typography level='body-md' sx={{ mb: 1.5, lineHeight: 1.6 }}>
-          Dydan is available in two deployment models with different terms and
+          dydan is available in two deployment models with different terms and
           responsibilities:
         </Typography>
         <LegalList>
@@ -136,12 +136,12 @@ const TermsView = () => {
         <SectionCard title='1. Definitions' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              <strong>&quot;Cloud Service&quot;</strong> refers to the Dydan
+              <strong>&quot;Cloud Service&quot;</strong> refers to the dydan
               platform hosted by its designated operator
             </LegalListItem>
             <LegalListItem>
               <strong>&quot;Self-Hosted Service&quot;</strong> refers to the
-              open-source Dydan software deployed on user-controlled
+              open-source dydan software deployed on user-controlled
               infrastructure
             </LegalListItem>
             <LegalListItem>
@@ -268,7 +268,7 @@ const TermsView = () => {
 
         <SectionCard title='4. Self-Hosted Service Terms' titleLevel='h2'>
           <LegalEmphasis>
-            This section applies to users deploying Dydan on their own
+            This section applies to users deploying dydan on their own
             infrastructure
           </LegalEmphasis>
 
@@ -281,7 +281,7 @@ const TermsView = () => {
               You may modify, distribute, and use the software for any purpose
             </LegalListItem>
             <LegalListItem>
-              Attribution to Dydan must be maintained in derivative works
+              Attribution to dydan must be maintained in derivative works
             </LegalListItem>
             <LegalListItem>
               No warranty or support is provided for self-hosted deployments
@@ -396,7 +396,7 @@ const TermsView = () => {
               You are responsible for security in self-hosted deployments
             </LegalListItem>
             <LegalListItem>
-              Report security vulnerabilities through the Dydan support channel
+              Report security vulnerabilities through the dydan support channel
             </LegalListItem>
           </LegalList>
         </SectionCard>
@@ -404,7 +404,7 @@ const TermsView = () => {
         <SectionCard title='8. Intellectual Property' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              The Dydan name, logo, and proprietary features are our
+              The dydan name, logo, and proprietary features are our
               intellectual property
             </LegalListItem>
             <LegalListItem>
@@ -419,7 +419,7 @@ const TermsView = () => {
         <SectionCard title='9. Third-Party Integrations' titleLevel='h2'>
           <LegalList>
             <LegalListItem>
-              Dydan integrates with third-party services (Telegram, Discord,
+              dydan integrates with third-party services (Telegram, Discord,
               webhooks, etc.)
             </LegalListItem>
             <LegalListItem>
@@ -570,11 +570,11 @@ const TermsView = () => {
           <LegalList>
             <LegalListItem>
               <strong>{t('legal.email')}:</strong>{' '}
-              <Link href={APP_SUPPORT_URL}>Dydan support on GitHub</Link>
+              <Link href={APP_SUPPORT_URL}>dydan support on GitHub</Link>
             </LegalListItem>
             <LegalListItem>
               <strong>{t('legal.support')}:</strong>{' '}
-              <Link href={APP_SUPPORT_URL}>Dydan support on GitHub</Link>
+              <Link href={APP_SUPPORT_URL}>dydan support on GitHub</Link>
             </LegalListItem>
             <LegalListItem>
               <strong>{t('legal.address')}:</strong> Favoro LLC, [Address to be

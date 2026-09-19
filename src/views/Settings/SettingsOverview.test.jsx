@@ -127,18 +127,18 @@ describe('SettingsOverview', () => {
     expect(themeState.mode).toBe('system')
   })
 
-  it('switches the product theme between Dydan and Sovereign', async () => {
+  it('switches the product theme between dydan and Sovereign', async () => {
     const user = await restore()
     await user.click(screen.getByRole('button', { name: 'Sovereign' }))
     expect(themeState.setBrand).toHaveBeenCalledWith('sovereign')
     expect(themeState.brand).toBe('sovereign')
 
-    await user.click(screen.getByRole('button', { name: 'Dydan' }))
+    await user.click(screen.getByRole('button', { name: 'dydan' }))
     expect(themeState.setBrand).toHaveBeenCalledWith('dydan')
     expect(themeState.brand).toBe('dydan')
   })
 
-  it('offers exactly Dydan/Sovereign and Light/Dark/Automatic and never Arabic', async () => {
+  it('offers exactly dydan/Sovereign and Light/Dark/Automatic and never Arabic', async () => {
     await restore()
     const themeBlock = screen
       .getByText('Theme')
@@ -146,7 +146,7 @@ describe('SettingsOverview', () => {
     const themeButtons = [
       ...themeBlock.querySelectorAll('.view-toggle button'),
     ].map(button => button.textContent.trim())
-    expect(themeButtons).toEqual(['Dydan', 'Sovereign'])
+    expect(themeButtons).toEqual(['dydan', 'Sovereign'])
 
     const modeBlock = screen
       .getByText('Theme mode')
@@ -184,7 +184,7 @@ describe('SettingsOverview', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByRole('button', { name: 'Dydan' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'dydan' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )

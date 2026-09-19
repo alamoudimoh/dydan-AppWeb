@@ -7,6 +7,13 @@
 :root {
   --r-full: 9999px;
   --sidebar-w: 244px;
+  --sidebar-w-expanded: 244px;
+  --sidebar-w-collapsed: 68px;
+}
+/* Collapsed sidebar: the documentElement class rewires --sidebar-w so the
+   rail, topbar inset, and route content margin all move in step. */
+:root.sidebar-collapsed {
+  --sidebar-w: var(--sidebar-w-collapsed);
 }
 #root.dark {
   --page: var(--product-page);
@@ -55,6 +62,11 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+/* The mobile drawer always opens full-width, even while the desktop rail is
+   collapsed. */
+.figma-mobile-drawer {
+  width: var(--sidebar-w-expanded);
 }
 .sidebar {
   position: fixed;
@@ -149,6 +161,70 @@ body {
 .figma-profile .MuiDropdown-root {
   display: flex;
 }
+/* Sidebar collapse/expand toggle: a compact surface + border button right in
+   the brand header. The documentElement class drives --sidebar-w so the rail,
+   topbar inset, and route margin follow automatically. */
+.figma-collapse-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--t-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.figma-collapse-button:hover {
+  background: var(--brand-faint);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.figma-brand .figma-collapse-button {
+  color: var(--t-muted);
+}
+.sidebar,
+.figma-topbar,
+.main-content {
+  transition:
+    width 0.18s ease,
+    margin-inline-start 0.18s ease,
+    margin-inline-end 0.18s ease;
+}
+/* Collapsed styling applies to the desktop rail only; the mobile drawer is an
+   overlay that always opens as the full width-column with labels intact. */
+.figma-mobile-drawer .figma-collapse-button {
+  display: none;
+}
+:root.sidebar-collapsed .sidebar .figma-brand {
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 8px 12px;
+}
+:root.sidebar-collapsed .sidebar .figma-brand > div {
+  display: none;
+}
+:root.sidebar-collapsed .sidebar .figma-brand .btn-top-compact {
+  display: none;
+}
+:root.sidebar-collapsed .sidebar .section-label {
+  display: none;
+}
+:root.sidebar-collapsed .sidebar .nav-item {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0;
+}
+:root.sidebar-collapsed .sidebar .nav-item span,
+:root.sidebar-collapsed .sidebar .figma-profile span {
+  display: none;
+}
+:root.sidebar-collapsed .sidebar .figma-profile {
+  justify-content: center;
+}
 .figma-topbar {
   position: sticky;
   top: 0;
@@ -212,14 +288,19 @@ body {
   background: transparent;
   color: var(--t-muted);
 }
-/* Topbar primary actions must be immediately recognizable: the bell icon is
-   raised to the full text color and the "Add task" primary button carries a
-   visible label on wide screens (icon-only below to save room). */
+/* Topbar primary actions must be immediately recognizable: the notifications
+   bell gets the search-style surface + 1px border treatment with a brand
+   hover, and the "Add task" primary button carries a visible label on wide
+   screens (icon-only below to save room). */
 .figma-top-notifications {
   color: var(--t-primary);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
-.figma-top-notifications:hover {
+.figma-top-actions .figma-top-notifications:hover {
   color: var(--brand);
+  background: var(--brand-faint);
+  border-color: var(--brand);
 }
 .btn-top-action {
   gap: 6px;
@@ -1472,53 +1553,61 @@ body {
   display: block;
 }
 
-/* Phase 6.4 settings category navigation: sidebar on desktop, tabs on mobile. */
+/* Phase 6.4 settings navigation: horizontal tab strip across the top of the
+   Settings content area, styled from the Figma nav-item vocabulary. The
+   secondary vertical sidebar is gone; every /settings/* route keeps the full
+   categorized strip so users are never lost on a flat page. */
 .figma-settings-shell {
   display: flex;
-  align-items: flex-start;
-  gap: 28px;
+  flex-direction: column;
+  gap: 20px;
   max-width: 1000px;
   margin: 0 auto;
   padding: 0 0 60px;
 }
 .figma-settings-nav {
-  position: sticky;
-  top: 16px;
   display: flex;
-  flex: 0 0 216px;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
 }
 .figma-settings-nav-section {
-  margin-bottom: 10px;
+  display: contents;
 }
 .figma-settings-nav-label {
-  padding: 10px 12px 4px;
-  color: var(--t-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  align-self: center;
+  padding-inline: 8px 12px;
+  color: var(--t-faint);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .figma-settings-nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-block: 8px;
-  padding-inline: 12px;
+  gap: 8px;
+  padding: 8px 14px;
   border-radius: var(--r-md);
-  color: var(--t-primary);
+  color: var(--t-muted);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
 }
 .figma-settings-nav-item:hover {
   background: var(--surface-2);
+  color: var(--t-primary);
 }
 .figma-settings-nav-item.active {
-  background: var(--surface-2);
+  background: var(--brand-faint);
   color: var(--brand);
-  font-weight: 600;
+  font-weight: 700;
 }
 .figma-settings-nav-item-label {
   white-space: nowrap;
@@ -1526,32 +1615,6 @@ body {
 .figma-settings-content {
   flex: 1;
   min-width: 0;
-}
-@media (max-width: 767px) {
-  .figma-settings-shell {
-    flex-direction: column;
-    gap: 12px;
-  }
-  .figma-settings-nav {
-    position: static;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    width: 100%;
-    gap: 4px;
-    padding: 0 4px;
-  }
-  .figma-settings-nav-section {
-    display: contents;
-    margin: 0;
-  }
-  .figma-settings-nav-label {
-    display: none;
-  }
-  .figma-settings-nav-item {
-    flex-shrink: 0;
-    background: var(--surface-2);
-  }
 }
 .figma-error-wrap {
   max-width: 600px;

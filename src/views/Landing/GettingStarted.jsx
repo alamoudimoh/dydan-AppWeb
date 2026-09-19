@@ -135,9 +135,9 @@ const GettingStarted = () => {
   const navigate = useNavigate()
   const information = [
     {
-      title: 'Dydan Web',
+      title: 'dydan Web',
       icon: <Cloud />,
-      description: 'The easiest way! Just create account and start using Dydan',
+      description: 'The easiest way! Just create account and start using dydan',
       button: (
         <Button
           size='lg'
@@ -154,7 +154,7 @@ const GettingStarted = () => {
     {
       title: 'Selfhosted',
       icon: <Storage />,
-      description: 'Download the binary and manage your own Dydan instance',
+      description: 'Download the binary and manage your own dydan instance',
       button: (
         <Button
           size='lg'
@@ -254,7 +254,7 @@ const GettingStarted = () => {
               mx: 'auto',
             }}
           >
-            Get the full Dydan experience with notifications, realtime updates,
+            Get the full dydan experience with notifications, realtime updates,
             and seamless task management on the go
           </Typography>
 
