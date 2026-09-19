@@ -17,6 +17,11 @@ const CircleSettings = lazy(() => import('@/views/Settings/CircleSettings'))
 const DeveloperSettings = lazy(
   () => import('@/views/Settings/DeveloperSettings'),
 )
+const IntegrationsSettings = lazy(
+  () => import('@/views/Settings/IntegrationsSettings'),
+)
+const PrivacySettings = lazy(() => import('@/views/Settings/PrivacySettings'))
+const SecuritySettings = lazy(() => import('@/views/Settings/SecuritySettings'))
 const Settings = lazy(() => import('@/views/Settings/Settings'))
 const SettingsOverview = lazy(() => import('@/views/Settings/SettingsOverview'))
 const SettingsPermissionGuard = lazy(
@@ -192,6 +197,26 @@ export const appRouteConfig = [
               PERMISSIONS.MANAGE_ACCOUNT,
               <MFASettings />,
             ),
+          },
+          {
+            // Account & security: passwords, two-factor auth, sessions,
+            // connected accounts, and the account danger zone.
+            path: 'security',
+            element: restrictedSetting(
+              PERMISSIONS.MANAGE_ACCOUNT,
+              <SecuritySettings />,
+            ),
+          },
+          {
+            // Privacy is personal, so it is available to every role.
+            path: 'privacy',
+            element: <PrivacySettings />,
+          },
+          {
+            // Integrations & data is a hub; the detail routes it opens are
+            // individually permission-guarded.
+            path: 'integrations',
+            element: <IntegrationsSettings />,
           },
           {
             path: 'apitokens',

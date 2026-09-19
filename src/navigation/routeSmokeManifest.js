@@ -64,6 +64,9 @@ export const ROUTE_SMOKE_ENTRIES = Object.freeze([
   { path: '/settings/subaccounts', label: 'Subaccounts settings' },
   { path: '/settings/mfa', label: 'MFA settings' },
   { path: '/settings/apitokens', label: 'API token settings' },
+  { path: '/settings/security', label: 'Security settings' },
+  { path: '/settings/privacy', label: 'Privacy settings' },
+  { path: '/settings/integrations', label: 'Integrations settings' },
   {
     path: `/chores/${ROUTE_SMOKE_FIXTURES.choreId}`,
     label: 'Chore detail',
@@ -158,6 +161,9 @@ export const ROUTE_SMOKE_GROUPS = Object.freeze({
     '/settings/subaccounts',
     '/settings/mfa',
     '/settings/apitokens',
+    '/settings/security',
+    '/settings/privacy',
+    '/settings/integrations',
   ],
   chores: [
     `/chores/${ROUTE_SMOKE_FIXTURES.choreId}`,

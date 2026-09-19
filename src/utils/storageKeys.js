@@ -16,6 +16,11 @@ export const STORAGE_KEYS = {
   todayView: {
     canonical: 'dydan.today.view',
   },
+  privacy: {
+    showTimezone: { canonical: 'dydan.privacy.showTimezone' },
+    showEmail: { canonical: 'dydan.privacy.showEmail' },
+    shareDiagnostics: { canonical: 'dydan.privacy.shareDiagnostics' },
+  },
 }
 
 export const OFFLINE_DB = {

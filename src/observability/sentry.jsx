@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/react'
 
+import { isDiagnosticsSharingEnabled } from '../utils/SettingsPrivacy'
+
 /**
  * Sentry frontend error-monitoring baseline (Phase 6.3).
  *
@@ -134,6 +136,15 @@ export const readSentryConfig = () => {
 }
 
 /**
+ * Orchestrates the beforeSend pipeline: honor the user's diagnostics
+ * preference first (an opt-out drops the event entirely), then sanitize.
+ */
+export const sentryBeforeSend = event => {
+  if (!isDiagnosticsSharingEnabled()) return null
+  return sanitizeSentryEvent(event)
+}
+
+/**
  * Initializes Sentry only when a DSN is configured. Returns whether the SDK
  * was initialized; callers can rely on it being a no-op otherwise.
  */
@@ -145,7 +156,7 @@ export const initSentry = () => {
     environment: config.environment,
     release: config.release,
     tracesSampleRate: config.tracesSampleRate,
-    beforeSend: sanitizeSentryEvent,
+    beforeSend: sentryBeforeSend,
   })
   return true
 }

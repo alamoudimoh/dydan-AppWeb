@@ -262,6 +262,27 @@ export const ROUTE_SMOKE_ACCOUNTING = Object.freeze({
     nav: true,
     heading: /api tokens/i,
   },
+  '/settings/security': {
+    status: 'covered',
+    group: 'settings',
+    auth: true,
+    nav: true,
+    heading: /^security$/i,
+  },
+  '/settings/privacy': {
+    status: 'covered',
+    group: 'settings',
+    auth: true,
+    nav: true,
+    heading: /^privacy$/i,
+  },
+  '/settings/integrations': {
+    status: 'covered',
+    group: 'settings',
+    auth: true,
+    nav: true,
+    heading: /^integrations/i,
+  },
 
   // chores
   '/chores/42': {

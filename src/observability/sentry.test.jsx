@@ -15,6 +15,7 @@ import {
   parseSampleRate,
   readSentryConfig,
   sanitizeSentryEvent,
+  sentryBeforeSend,
   SentryBoundary,
 } from './sentry.jsx'
 
@@ -50,9 +51,28 @@ describe('Sentry baseline', () => {
         dsn: DSN,
         environment: 'production',
         tracesSampleRate: 0,
-        beforeSend: sanitizeSentryEvent,
+        beforeSend: sentryBeforeSend,
       }),
     )
+  })
+
+  it('drops events entirely when crash diagnostics are opted out', () => {
+    localStorage.setItem('dydan.privacy.shareDiagnostics', 'false')
+    expect(sentryBeforeSend({ event_id: 'abc' })).toBeNull()
+    localStorage.removeItem('dydan.privacy.shareDiagnostics')
+  })
+
+  it('still sanitizes events when diagnostics sharing is enabled', () => {
+    localStorage.removeItem('dydan.privacy.shareDiagnostics')
+    const event = {
+      request: { headers: { Authorization: 'Bearer secret' }, url: '/x?a=1' },
+      extra: { token: 't' },
+    }
+    const result = sentryBeforeSend(event)
+    expect(result).not.toBeNull()
+    expect(result.request.headers.Authorization).toBeUndefined()
+    expect(result.extra.token).toBeUndefined()
+    expect(result.user).toBeNull()
   })
 
   it('defaults traces sample rate to 0', () => {

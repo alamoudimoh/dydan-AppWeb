@@ -4,6 +4,8 @@ import {
   Box,
   Button,
   Card,
+  Chip,
+  Divider,
   Input,
   Typography,
 } from '@mui/joy'
@@ -12,18 +14,19 @@ import imageCompression from 'browser-image-compression'
 import { useRef, useState } from 'react'
 import Cropper from 'react-easy-crop'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import AppModal from '../../components/common/AppModal'
 import ModalActions from '../../components/common/ModalActions'
-import AccountIdentityCard from '../../components/settings/AccountIdentityCard'
-import AccountSessionsCard from '../../components/settings/AccountSessionsCard'
+import FigmaIcon from '../../components/FigmaIcon'
 import SettingsQueryStateView from '../../components/settings/SettingsQueryStateView'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { formStackSx, sectionCardSx } from '../../theme/appLayout'
+import { buildAccountIdentity } from '../../utils/AccountIdentity'
 import { apiClient } from '../../utils/ApiClient'
-import { UpdatePassword, UpdateUserDetails } from '../../utils/Fetcher'
+import { UpdateUserDetails } from '../../utils/Fetcher'
 import { resolvePhotoURL } from '../../utils/Helpers'
 import { getCroppedImg } from '../../utils/imageCropUtils'
 import {
@@ -37,13 +40,121 @@ import {
   supportedTimezones,
 } from '../../utils/SchedulingDate'
 import {
+  getPrivacyPreference,
+  PRIVACY_PREFERENCES,
+} from '../../utils/SettingsPrivacy'
+import {
   resolveSettingsQueryState,
   SETTINGS_QUERY_STATE,
 } from '../../utils/SettingsQueryState'
 import LoadingComponent from '../components/Loading'
-import PassowrdChangeModal from '../Modals/Inputs/PasswordChangeModal'
-import UserDeletionModal from '../Modals/Inputs/UserDeletionModal'
 import SettingsLayout from './SettingsLayout'
+
+const WhoCanSeeLink = ({ label = null }) => {
+  const { t } = useTranslation('settings')
+  const navigate = useNavigate()
+  return (
+    <Button
+      variant='plain'
+      size='sm'
+      color='neutral'
+      onClick={() => navigate('/settings/privacy')}
+      sx={{ px: 0, minHeight: 28, alignSelf: 'flex-start' }}
+    >
+      <FigmaIcon
+        name='eye'
+        size={14}
+        style={{ color: 'var(--t-muted)', marginInlineEnd: 6 }}
+      />
+      {label || t('profile.whoCanSee')}
+    </Button>
+  )
+}
+
+const ProfilePreviewCard = ({
+  displayName,
+  identity,
+  intlLocale,
+  profile,
+  showEmail,
+  showTimezone,
+  timezone,
+}) => {
+  const { t } = useTranslation('settings')
+  const memberSince = profile?.created_at
+    ? new Intl.DateTimeFormat(intlLocale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(new Date(profile.created_at))
+    : null
+
+  return (
+    <Card
+      sx={{ ...sectionCardSx, maxWidth: 440 }}
+      data-testid='profile-preview-card'
+    >
+      <Typography level='title-sm' sx={{ mb: 0.25 }}>
+        {t('profile.preview')}
+      </Typography>
+      <Typography level='body-sm' sx={{ opacity: 0.85 }}>
+        {t('profile.previewHelp')}
+      </Typography>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          marginTop: 14,
+        }}
+      >
+        <Avatar
+          src={resolvePhotoURL(profile?.image)}
+          sx={{ width: 72, height: 72, flexShrink: 0 }}
+        />
+        <div style={{ minWidth: 0 }}>
+          <Typography level='title-lg' sx={{ overflowWrap: 'anywhere' }}>
+            {displayName.trim() || profile?.displayName?.trim() || '—'}
+          </Typography>
+          {identity.username && (
+            <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
+              @{identity.username}
+            </Typography>
+          )}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              marginTop: 8,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Chip variant='soft' size='sm'>
+              {t(`profile.accountIdentity.roles.${identity.effectiveRoleKey}`)}
+            </Chip>
+            {showTimezone && timezone && (
+              <Chip variant='outlined' size='sm'>
+                {String(timezone).replace(/_/g, ' ')}
+              </Chip>
+            )}
+            {memberSince && (
+              <Chip variant='outlined' size='sm'>
+                {`${t('profile.memberSince')} ${memberSince}`}
+              </Chip>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {showEmail && identity.email && (
+        <Typography level='body-sm' sx={{ mt: 1.5, opacity: 0.85 }}>
+          {identity.email}
+        </Typography>
+      )}
+    </Card>
+  )
+}
 
 const ProfileSettingsForm = ({
   circleMembers,
@@ -53,14 +164,13 @@ const ProfileSettingsForm = ({
 }) => {
   const { t } = useTranslation('settings')
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { showError, showSuccess } = useNotification()
   const initialForm = initialProfileForm(userProfile)
   const [displayName, setDisplayName] = useState(initialForm.displayName)
   const [timezone, setTimezone] = useState(initialForm.timezone)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [changePasswordModal, setChangePasswordModal] = useState(false)
-  const [userDeletionModal, setUserDeletionModal] = useState(false)
   const fileInputRef = useRef()
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -71,10 +181,13 @@ const ProfileSettingsForm = ({
     resolveEffectiveRole(userProfile, circleMembers),
     PERMISSIONS.MANAGE_ACCOUNT,
   )
-  const isSelfHosted = import.meta.env.VITE_IS_SELF_HOSTED === 'true'
 
-  // Get available timezones
+  // Live privacy defaults (the Privacy page owns these toggles).
+  const showTimezone = getPrivacyPreference(PRIVACY_PREFERENCES.showTimezone)
+  const showEmail = getPrivacyPreference(PRIVACY_PREFERENCES.showEmail)
+
   const timezones = supportedTimezones()
+  const identity = buildAccountIdentity(userProfile, circleMembers)
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -110,11 +223,6 @@ const ProfileSettingsForm = ({
       const compressedFile = await imageCompression(
         croppedBlob,
         compressionOptions,
-      )
-
-      console.log(`Original size: ${(croppedBlob.size / 1024).toFixed(2)} KB`)
-      console.log(
-        `Compressed size: ${(compressedFile.size / 1024).toFixed(2)} KB`,
       )
 
       const formData = new FormData()
@@ -166,8 +274,6 @@ const ProfileSettingsForm = ({
         throw new Error(body.error || 'Failed to update profile')
       }
     } catch (err) {
-      console.log(err)
-
       showError({
         title: t('profile.updateFailed'),
         message: err.message || t('profile.updateFailedMessage'),
@@ -177,249 +283,248 @@ const ProfileSettingsForm = ({
     }
   }
 
-  // Helper to resolve photoURL with baseURL if needed
-
   return (
     <SettingsLayout title={t('profile.title')}>
       <Box sx={formStackSx} id='profile'>
         <Typography level='body-md'>{t('profile.description')}</Typography>
-        <AccountIdentityCard
+
+        <ProfilePreviewCard
+          displayName={displayName}
+          identity={identity}
+          intlLocale={intlLocale}
           profile={userProfile}
-          circleMembers={circleMembers}
+          showEmail={showEmail}
+          showTimezone={showTimezone}
+          timezone={timezone}
         />
-        <Card
-          sx={{
-            ...sectionCardSx,
-            flexDirection: 'row',
-            alignItems: 'center',
-            maxWidth: 400,
-          }}
-        >
-          <Avatar
-            src={resolvePhotoURL(userProfile?.image)}
-            sx={{ width: 64, height: 64 }}
-          />
-          <Box sx={{ flex: 1 }}>
-            <Button
-              variant='soft'
-              color='primary'
-              onClick={() => fileInputRef.current.click()}
-              loading={isUploading}
-              sx={{ mb: 1 }}
-            >
-              {t('profile.changePhoto')}
-            </Button>
-            <input
-              ref={fileInputRef}
-              type='file'
-              accept='image/*'
-              style={{ display: 'none' }}
-              onChange={handlePhotoChange}
-            />
-          </Box>
-        </Card>
-        <AppModal
-          open={showCropper}
-          onClose={() => {
-            setShowCropper(false)
-            setSelectedFile(null)
-          }}
-          title={t('profile.editPhoto', { defaultValue: 'Edit profile photo' })}
-          size='sm'
-          closeOnBackdrop={!isUploading}
-          closeOnEscape={!isUploading}
-          footer={
-            <ModalActions
-              secondary={{
-                label: t('profile.cancel'),
-                disabled: isUploading,
-                onClick: () => {
-                  setShowCropper(false)
-                  setSelectedFile(null)
-                },
-              }}
-              primary={{
-                label: t('profile.save'),
-                loading: isUploading,
-                onClick: handleCropSave,
-              }}
-            />
-          }
-        >
-          <Box
-            sx={{
-              width: '100%',
-              maxWidth: 320,
-              aspectRatio: '1',
-              position: 'relative',
-              mx: 'auto',
+
+        <Card sx={{ ...sectionCardSx, maxWidth: 440 }}>
+          <Typography level='title-sm' sx={{ mb: 0.25 }}>
+            {t('profile.identitySection')}
+          </Typography>
+          <Typography level='body-sm' sx={{ mb: 2, opacity: 0.85 }}>
+            {t('profile.identityDescription')}
+          </Typography>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              marginBottom: 12,
             }}
           >
-            <Cropper
-              image={selectedFile}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              cropShape='round'
-              showGrid={false}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
+            <Avatar
+              src={resolvePhotoURL(userProfile?.image)}
+              sx={{ width: 64, height: 64 }}
             />
+            <Box sx={{ flex: 1 }}>
+              <Button
+                variant='soft'
+                color='primary'
+                onClick={() => fileInputRef.current.click()}
+                loading={isUploading}
+                sx={{ mb: 1 }}
+              >
+                {t('profile.changePhoto')}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept='image/*'
+                style={{ display: 'none' }}
+                onChange={handlePhotoChange}
+              />
+              <WhoCanSeeLink />
+            </Box>
+          </div>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <Box sx={{ flexDirection: 'column', display: 'flex', gap: 1.5 }}>
+            <div>
+              <Typography level='body-sm' sx={{ mb: 0.5 }}>
+                {t('profile.displayName')}
+              </Typography>
+              <Input
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                placeholder={t('profile.displayNamePlaceholder')}
+              />
+            </div>
+
+            <div>
+              <Typography level='body-sm' sx={{ mb: 0.5 }}>
+                {t('profile.handle')}
+              </Typography>
+              <Input
+                value={identity.username || ''}
+                readOnly
+                variant='soft'
+                startDecorator='@'
+              />
+              <Typography level='body-xs' sx={{ mt: 0.5, opacity: 0.75 }}>
+                {t('profile.handleHelp')}
+              </Typography>
+            </div>
+
+            <div>
+              <Typography level='body-sm' sx={{ mb: 0.5 }}>
+                {t('profile.email')}
+              </Typography>
+              <Input value={identity.email || ''} readOnly variant='soft' />
+              <Typography level='body-xs' sx={{ mt: 0.5, opacity: 0.75 }}>
+                {t('profile.emailHelp')}
+              </Typography>
+            </div>
+
+            <div>
+              <Typography level='body-sm' sx={{ mb: 0.5 }}>
+                {t('profile.role')}
+              </Typography>
+              <Input
+                value={t(
+                  `profile.accountIdentity.roles.${identity.effectiveRoleKey}`,
+                )}
+                readOnly
+                variant='soft'
+              />
+              <Typography level='body-xs' sx={{ mt: 0.5, opacity: 0.75 }}>
+                {t('profile.roleHelp')}
+              </Typography>
+            </div>
+
+            <div>
+              <Typography level='body-sm' sx={{ mb: 0.5 }}>
+                {t('profile.timezone')}
+              </Typography>
+              <Autocomplete
+                value={timezone}
+                onChange={(e, newValue) => setTimezone(newValue)}
+                options={timezones}
+                getOptionLabel={tz => {
+                  const formattedTimezone = tz.replace(/_/g, ' ')
+                  const currentTime = new Date().toLocaleString(intlLocale, {
+                    timeZone: tz,
+                    timeStyle: 'short',
+                  })
+                  return `${formattedTimezone} (${currentTime})`
+                }}
+                filterOptions={(options, { inputValue }) => {
+                  if (!inputValue) return options
+
+                  const searchTerms = inputValue.toLowerCase().split(/\s+/)
+                  return options.filter(tz => {
+                    const timezoneLower = tz.toLowerCase()
+                    const timezoneParts = tz.toLowerCase().split(/[/_]/)
+
+                    return searchTerms.every(
+                      term =>
+                        timezoneLower.includes(term) ||
+                        timezoneParts.some(part => part.includes(term)),
+                    )
+                  })
+                }}
+                placeholder={t('profile.timezonePlaceholder')}
+              />
+            </div>
+
+            <WhoCanSeeLink />
           </Box>
-        </AppModal>
-        <Box sx={{ maxWidth: 400, mt: 3 }}>
-          <Typography level='body-sm' sx={{ mb: 0.5 }}>
-            {t('profile.displayName')}
-          </Typography>
-          <Input
-            value={displayName}
-            onChange={e => setDisplayName(e.target.value)}
-            placeholder={t('profile.displayNamePlaceholder')}
-            sx={{ mb: 2 }}
-          />
-
-          <Typography level='body-sm' sx={{ mb: 0.5 }}>
-            {t('profile.timezone')}
-          </Typography>
-          <Autocomplete
-            value={timezone}
-            onChange={(e, newValue) => setTimezone(newValue)}
-            options={timezones}
-            getOptionLabel={tz => {
-              const formattedTimezone = tz.replace(/_/g, ' ')
-              const currentTime = new Date().toLocaleString(intlLocale, {
-                timeZone: tz,
-                timeStyle: 'short',
-              })
-              return `${formattedTimezone} (${currentTime})`
-            }}
-            filterOptions={(options, { inputValue }) => {
-              if (!inputValue) return options
-
-              const searchTerms = inputValue.toLowerCase().split(/\s+/)
-              return options.filter(tz => {
-                const timezoneLower = tz.toLowerCase()
-                const timezoneParts = tz.toLowerCase().split(/[/_]/)
-
-                return searchTerms.every(
-                  term =>
-                    timezoneLower.includes(term) ||
-                    timezoneParts.some(part => part.includes(term)),
-                )
-              })
-            }}
-            placeholder={t('profile.timezonePlaceholder')}
-            sx={{ mb: 2 }}
-          />
 
           <Button
             variant='soft'
             color='primary'
             onClick={handleSave}
             loading={isSaving}
-            sx={{ width: 120 }}
+            sx={{ width: 120, mt: 2 }}
           >
             {t('profile.save')}
           </Button>
-        </Box>
+        </Card>
 
         {canManageAccount && (
-          <>
-            <Box sx={{ mt: 4 }}>
-              <Typography level='title-md' mb={0.5}>
-                {t('profile.security')}
-              </Typography>
-              <Typography level='body-sm' sx={{ color: 'text.secondary' }}>
-                {t('profile.securityDescription')}
-              </Typography>
-            </Box>
-            {isSelfHosted && (
-              <Card sx={{ ...sectionCardSx, maxWidth: 400 }}>
-                <Typography level='title-sm' mb={0.5}>
-                  {t('accountSettings.password')}
-                </Typography>
-                <Typography level='body-sm' mb={2} sx={{ opacity: 0.85 }}>
-                  {t('profile.passwordHelp')}
-                </Typography>
-                <Button
-                  variant='soft'
-                  onClick={() => setChangePasswordModal(true)}
-                >
-                  {t('accountSettings.changePassword')}
-                </Button>
-              </Card>
-            )}
-            <AccountSessionsCard userId={userProfile.id} />
-            <Card
-              sx={{
-                ...sectionCardSx,
-                maxWidth: 400,
-                bgcolor: 'danger.softBg',
-              }}
+          <Card
+            sx={{
+              ...sectionCardSx,
+              maxWidth: 440,
+              bgcolor: 'background.surface',
+            }}
+          >
+            <Typography level='title-sm' sx={{ mb: 0.25 }}>
+              {t('profile.securityMoved')}
+            </Typography>
+            <Typography level='body-sm' sx={{ mb: 1.5, opacity: 0.85 }}>
+              {t('profile.securityMovedHelp')}
+            </Typography>
+            <Button
+              variant='soft'
+              color='neutral'
+              startDecorator={
+                <FigmaIcon
+                  name='lock'
+                  size={16}
+                  style={{ color: 'var(--t-muted)' }}
+                />
+              }
+              onClick={() => navigate('/settings/security')}
             >
-              <Typography level='title-md' mb={1} color='danger'>
-                {t('accountSettings.dangerZone')}
-              </Typography>
-              <Typography level='body-sm' mb={2} color='neutral'>
-                {t('accountSettings.dangerZoneDescription')}
-              </Typography>
-              <Button
-                variant='outlined'
-                color='danger'
-                onClick={() => setUserDeletionModal(true)}
-              >
-                {t('accountSettings.deleteAccount')}
-              </Button>
-            </Card>
-          </>
+              {t('profile.openSecurity')}
+            </Button>
+          </Card>
         )}
       </Box>
 
-      {canManageAccount &&
-        (changePasswordModal ? (
-          <PassowrdChangeModal
-            isOpen={changePasswordModal}
-            onClose={({ currentPassword, password } = {}) => {
-              if (password && currentPassword) {
-                UpdatePassword(currentPassword, password).then(resp => {
-                  if (resp.ok) {
-                    showSuccess({
-                      title: t('accountSettings.changePassword'),
-                      message: t('profile.passwordChanged'),
-                    })
-                  } else if (resp.status === 403) {
-                    showError({
-                      title: t('accountSettings.changePassword'),
-                      message: t('profile.wrongCurrentPassword'),
-                    })
-                  } else {
-                    showError({
-                      title: t('accountSettings.changePassword'),
-                      message: t('profile.passwordChangeFailed'),
-                    })
-                  }
-                })
-              }
-              setChangePasswordModal(false)
+      <AppModal
+        open={showCropper}
+        onClose={() => {
+          setShowCropper(false)
+          setSelectedFile(null)
+        }}
+        title={t('profile.editPhoto', { defaultValue: 'Edit profile photo' })}
+        size='sm'
+        closeOnBackdrop={!isUploading}
+        closeOnEscape={!isUploading}
+        footer={
+          <ModalActions
+            secondary={{
+              label: t('profile.cancel'),
+              disabled: isUploading,
+              onClick: () => {
+                setShowCropper(false)
+                setSelectedFile(null)
+              },
+            }}
+            primary={{
+              label: t('profile.save'),
+              loading: isUploading,
+              onClick: handleCropSave,
             }}
           />
-        ) : null)}
-
-      {canManageAccount && (
-        <UserDeletionModal
-          isOpen={userDeletionModal}
-          onClose={success => {
-            setUserDeletionModal(false)
-            if (success) {
-              showSuccess({
-                title: t('accountSettings.deleteAccount'),
-                message: t('profile.accountDeleted'),
-              })
-            }
+        }
+      >
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 320,
+            aspectRatio: '1',
+            position: 'relative',
+            mx: 'auto',
           }}
-        />
-      )}
+        >
+          <Cropper
+            image={selectedFile}
+            crop={crop}
+            zoom={zoom}
+            aspect={1}
+            cropShape='round'
+            showGrid={false}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={onCropComplete}
+          />
+        </Box>
+      </AppModal>
     </SettingsLayout>
   )
 }

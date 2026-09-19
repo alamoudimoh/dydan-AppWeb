@@ -5,6 +5,7 @@ import '@testing-library/jest-dom/vitest'
 import { CssVarsProvider } from '@mui/joy'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('react-easy-crop', () => ({
@@ -32,15 +33,14 @@ vi.mock('../../utils/ApiClient', () => ({
 
 vi.mock('../../utils/Fetcher', () => ({
   UpdateUserDetails: vi.fn(),
-  UpdatePassword: vi.fn(),
 }))
 
-vi.mock('../../components/settings/AccountIdentityCard', () => ({
-  default: () => <div data-testid='account-identity-card' />,
-}))
-
-vi.mock('../../components/settings/AccountSessionsCard', () => ({
-  default: () => <div data-testid='account-sessions-card' />,
+vi.mock('../../utils/SettingsPrivacy', () => ({
+  getPrivacyPreference: () => true,
+  PRIVACY_PREFERENCES: {
+    showTimezone: 'showTimezone',
+    showEmail: 'showEmail',
+  },
 }))
 
 vi.mock('../Modals/Inputs/PasswordChangeModal', () => ({
@@ -65,7 +65,11 @@ vi.mock('../../queries/UserQueries', () => ({
     data: {
       id: 1,
       displayName: 'Dana',
+      username: 'dana',
+      email: 'dana@example.com',
+      provider: 0,
       timezone: 'UTC',
+      created_at: '2026-01-01T00:00:00Z',
     },
     isLoading: false,
     error: null,
@@ -103,43 +107,65 @@ describe('ProfileSettings', () => {
     cleanup()
   })
 
-  it('renders without useCircleMembers ReferenceError', async () => {
+  const renderPage = () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     })
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <CssVarsProvider>
-          <ProfileSettings />
-        </CssVarsProvider>
-      </QueryClientProvider>,
+    return render(
+      <MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+          <CssVarsProvider>
+            <ProfileSettings />
+          </CssVarsProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
     )
+  }
+
+  it('renders identity & presentation with a live preview card', async () => {
+    renderPage()
 
     await waitFor(() => {
-      expect(screen.getByTestId('account-identity-card')).toBeInTheDocument()
+      expect(screen.getByTestId('profile-preview-card')).toBeInTheDocument()
     })
+    expect(screen.getByText('profile.handle')).toBeInTheDocument()
+    expect(screen.getByText('profile.email')).toBeInTheDocument()
+    expect(screen.getByText('profile.role')).toBeInTheDocument()
   })
 
-  it('shows security, sessions, and danger zone to accounts that can manage them', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    })
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <CssVarsProvider>
-          <ProfileSettings />
-        </CssVarsProvider>
-      </QueryClientProvider>,
-    )
+  it('links profile fields to privacy settings via "Who can see this?"', async () => {
+    renderPage()
 
     await waitFor(() => {
-      expect(screen.getByText('accountSettings.dangerZone')).toBeInTheDocument()
-      expect(screen.getByTestId('account-sessions-card')).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', { name: 'accountSettings.deleteAccount' }),
-      ).toBeInTheDocument()
+      expect(screen.getByTestId('profile-preview-card')).toBeInTheDocument()
     })
+    expect(
+      screen.getAllByRole('button', { name: 'profile.whoCanSee' }).length,
+    ).toBeGreaterThanOrEqual(1)
+  })
+
+  it('points account owners to Security settings for passwords, sessions and deletion', async () => {
+    renderPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('profile-preview-card')).toBeInTheDocument()
+    })
+
+    // Profile is identity & presentation only now.
+    expect(
+      screen.queryByText('accountSettings.dangerZone'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'accountSettings.deleteAccount' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'accountSettings.changePassword' }),
+    ).not.toBeInTheDocument()
+
+    // The way in to account security lives on the profile as a link.
+    expect(
+      screen.getByRole('button', { name: 'profile.openSecurity' }),
+    ).toBeInTheDocument()
   })
 })
