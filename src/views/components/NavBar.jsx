@@ -6,6 +6,7 @@ import FigmaIcon, { LogoMark } from '../../components/FigmaIcon'
 import UserProfileAvatar from '../../components/UserProfileAvatar'
 import { APP_DISPLAY_NAME } from '../../config/AppBranding'
 import { useLocalization } from '../../contexts/LocalizationContext'
+import { useProductTheme } from '../../contexts/ThemeContext'
 import { resolveAppShellMode } from '../../navigation/appShellModel'
 import { createNavLinkRegistry } from '../../navigation/navLinkRegistry'
 import {
@@ -45,6 +46,7 @@ const iconByLink = {
 const NavBar = () => {
   const { t } = useTranslation('common')
   const { isRTL } = useLocalization()
+  const { brand } = useProductTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const { data: userProfile } = useUserProfile()
@@ -97,7 +99,7 @@ const NavBar = () => {
       aria-label={t('navigation.mainNavigation')}
     >
       <div className='figma-brand'>
-        <LogoMark size={28} />
+        <LogoMark size={28} sovereign={brand === 'sovereign'} />
         <div>
           <strong>{APP_DISPLAY_NAME}</strong>
           <small>FOCUS MODE</small>
@@ -106,6 +108,7 @@ const NavBar = () => {
           className='btn btn-ghost btn-icon'
           onClick={() => navigate('/chores/create')}
           aria-label={t('addTask')}
+          title={t('addTask')}
         >
           <FigmaIcon name='plus' size={16} />
         </button>
@@ -152,7 +155,7 @@ const NavBar = () => {
           onClick={() => setDrawerOpen(true)}
           aria-label={t('navigation.openMenu')}
         >
-          <LogoMark size={22} />
+          <LogoMark size={22} sovereign={brand === 'sovereign'} />
           <span>{APP_DISPLAY_NAME}</span>
         </button>
         <button className='figma-search-button' onClick={openSearch}>
@@ -165,18 +168,20 @@ const NavBar = () => {
             <SyncStatusIndicator />
           </div>
           <button
-            className='btn btn-ghost btn-icon'
+            className='btn btn-ghost btn-icon figma-top-notifications'
             onClick={() => navigate('/notifications')}
             aria-label={t('navigation.notifications')}
+            title={t('navigation.notifications')}
           >
-            <FigmaIcon name='bell' />
+            <FigmaIcon name='bell' size={20} />
           </button>
           <button
-            className='btn btn-primary btn-icon'
+            className='btn btn-primary btn-top-action'
             onClick={() => navigate('/chores/create')}
             aria-label={t('addTask')}
           >
-            <FigmaIcon name='plus' />
+            <FigmaIcon name='plus' size={16} />
+            <span className='btn-top-action-label'>{t('addTask')}</span>
           </button>
           <div className='figma-top-avatar'>
             <UserProfileAvatar />

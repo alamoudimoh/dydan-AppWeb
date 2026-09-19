@@ -1,60 +1,12 @@
 @import 'tailwindcss';
 
-/* Figma shell foundation. Route content remains on the legacy Joy boundary. */
+/* Figma shell foundation. Route content remains on the legacy Joy boundary.
+   Brand colors, fonts, shadows and radii are supplied per theme (+ scheme)
+   by productCssVariables via ThemeContext; only non-theme structural values
+   live here. */
 :root {
-  --page: #f8faff;
-  --surface: #fff;
-  --surface-2: #e9e5ff;
-  --surface-3: #f0eeff;
-  --t-primary: #0b1020;
-  --t-muted: #4e586b;
-  --t-faint: #5e687b;
-  --line: #d4d8e2;
-  --line-strong: #7a8497;
-  --brand: #4326ea;
-  --brand-hover: #3216c8;
-  --brand-faint: #eee9ff;
-  --brand-contrast: #fff;
-  --accent: #09ccf4;
-  --font-ui: 'Comfortaa', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --font-ar: 'Cairo', system-ui, sans-serif;
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 18px;
   --r-full: 9999px;
-  --shadow-xs: 0 1px 2px rgba(11, 16, 32, 0.06);
-  --shadow-sm:
-    0 1px 4px rgba(11, 16, 32, 0.08), 0 2px 8px rgba(11, 16, 32, 0.04);
   --sidebar-w: 244px;
-}
-[data-theme='sovereign'] {
-  --page: #f2f2f2;
-  --surface: #fff;
-  --surface-2: #e6e6e6;
-  --surface-3: #e6e6e6;
-  --t-primary: #1a1a1a;
-  --t-muted: #4d4d4d;
-  --t-faint: #4d4d4d;
-  --line: #666;
-  --line-strong: #666;
-  --brand: #1a1a1a;
-  --brand-hover: #2e2e2e;
-  --brand-faint: #f2f2f2;
-  --brand-contrast: #ffc107;
-  --action-bg: #ffc107;
-  --action-text: #1a1a1a;
-  --gold-text: #6b5200;
-  --callout-bg: #1a1a1a;
-  --callout-text: #f2f2f2;
-  --callout-muted: #999;
-  --focus-inner: #fff;
-  --focus-outer: #1a1a1a;
-  --accent: #ffc107;
-  --font-ui: 'Ubuntu', system-ui, sans-serif;
-  --font-mono: 'Ubuntu Mono', ui-monospace, monospace;
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 #root.dark {
   --page: var(--product-page);
@@ -259,6 +211,31 @@ body {
 .btn-ghost {
   background: transparent;
   color: var(--t-muted);
+}
+/* Topbar primary actions must be immediately recognizable: the bell icon is
+   raised to the full text color and the "Add task" primary button carries a
+   visible label on wide screens (icon-only below to save room). */
+.figma-top-notifications {
+  color: var(--t-primary);
+}
+.figma-top-notifications:hover {
+  color: var(--brand);
+}
+.btn-top-action {
+  gap: 6px;
+  padding: 8px 14px;
+}
+.btn-top-action-label {
+  font: 600 13px var(--font-ui);
+  line-height: 1;
+}
+@media (max-width: 1119.98px) {
+  .btn-top-action {
+    padding: 8px;
+  }
+  .btn-top-action-label {
+    display: none;
+  }
 }
 .mobile-nav {
   display: none;
@@ -597,6 +574,8 @@ body {
   --sig-due-bg: #fef3c7;
   --sig-over: #c52338;
   --sig-over-bg: #ffe4e6;
+  --sig-flag: #bf1881;
+  --sig-flag-bg: #fce7f3;
 }
 #root.dark {
   --accent-bg: var(--product-surface-subtle);

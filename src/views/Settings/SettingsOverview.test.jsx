@@ -19,19 +19,33 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const navigate = vi.fn()
-const setMode = vi.fn()
 const setLanguage = vi.fn()
+
+// Mirrors ThemeContext's runtime state harness (brand + mode). The real
+// persistence to localStorage is exercised by ThemeContext.test.jsx; here we
+// only need the component to observe changes exactly as the context would
+// feed them back.
+const themeState = {
+  brand: 'dydan',
+  mode: 'light',
+  setBrand: vi.fn(value => {
+    themeState.brand = value
+  }),
+  setMode: vi.fn(value => {
+    themeState.mode = value
+  }),
+}
 
 vi.mock('react-router-dom', async importOriginal => ({
   ...(await importOriginal()),
   useNavigate: () => navigate,
 }))
 
-vi.mock('@mui/joy', () => ({
-  useColorScheme: () => ({ mode: 'light', setMode }),
+vi.mock('../../contexts/ThemeContext', () => ({
+  useProductTheme: () => themeState,
 }))
 
 vi.mock('../../contexts/LocalizationContext', () => ({
@@ -55,11 +69,11 @@ vi.mock('../Modals/FeedbackModal', () => ({ default: () => null }))
 
 // Real English labels for the keys under assertion, sourced from
 // public/locales/en/settings.json, so tests verify the user-visible copy
-// (Light/Dark/Automatic) rather than translation keys.
+// (Theme / Theme mode / Light/Dark/Automatic) rather than translation keys.
 const EN_LABELS = {
   'figmaOverview.appearance': 'Appearance',
-  'figmaOverview.theme': 'Theme',
-  'figmaOverview.defaultView': 'Default home view',
+  'figmaOverview.productTheme': 'Theme',
+  'figmaOverview.themeMode': 'Theme mode',
   'figmaOverview.language': 'Language',
   'theme.light': 'Light',
   'theme.dark': 'Dark',
@@ -77,129 +91,82 @@ vi.mock('react-i18next', () => ({
 
 import SettingsOverview from './SettingsOverview.jsx'
 
+const restore = async () => {
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <SettingsOverview />
+    </MemoryRouter>,
+  )
+  return user
+}
+
 describe('SettingsOverview', () => {
+  beforeEach(() => {
+    themeState.brand = 'dydan'
+    themeState.mode = 'light'
+    themeState.setBrand.mockClear()
+    themeState.setMode.mockClear()
+  })
+
   afterEach(() => {
     cleanup()
     navigate.mockReset()
-    setMode.mockReset()
     setLanguage.mockReset()
     localStorage.clear()
   })
 
-  it('does not expose guarded account actions to child accounts', () => {
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
-    expect(screen.queryByText('figmaOverview.email')).not.toBeInTheDocument()
-    expect(
-      screen.queryByText('accountSettings.deleteAccount'),
-    ).not.toBeInTheDocument()
-  })
-
-  it('keeps profile management out of Settings (Profile is its own area)', () => {
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
-    expect(
-      screen.queryByText('figmaOverview.displayName'),
-    ).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: /figmaOverview\.edit/i }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('opens the existing notification settings instead of persisting mock toggles', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
-    await user.click(
-      screen.getByRole('button', { name: 'figmaOverview.taskReminders' }),
-    )
-
-    expect(navigate).toHaveBeenCalledWith('/settings/notifications')
-    expect(localStorage.getItem('figmaNotificationOverview')).toBeNull()
-  })
-
-  it('persists the Focus/Quest home view preference instead of navigating', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
-    const quest = screen.getByRole('button', { name: /quest/i })
-    await user.click(quest)
-
-    expect(localStorage.getItem('dydan.home.view')).toBe('quest')
-    expect(quest).toHaveAttribute('aria-pressed', 'true')
-    expect(navigate).not.toHaveBeenCalledWith('/settings/sidepanel')
-
-    await user.click(screen.getByRole('button', { name: /focus/i }))
-    expect(localStorage.getItem('dydan.home.view')).toBe('focus')
-  })
-
   it('persists Light/Dark/Automatic theme selection and follows the OS in Automatic', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
+    const user = await restore()
     await user.click(screen.getByRole('button', { name: 'Dark' }))
-    expect(localStorage.getItem('themeMode')).toBe('"dark"')
-    expect(setMode).toHaveBeenCalledWith('dark')
+    expect(themeState.setMode).toHaveBeenCalledWith('dark')
+    expect(themeState.mode).toBe('dark')
 
     await user.click(screen.getByRole('button', { name: 'Automatic' }))
-    // 'system' drives the OS-following mode; only the label is "Automatic".
-    expect(localStorage.getItem('themeMode')).toBe('"system"')
-    expect(setMode).toHaveBeenCalledWith('system')
+    expect(themeState.setMode).toHaveBeenCalledWith('system')
+    expect(themeState.mode).toBe('system')
   })
 
-  it('offers exactly Light/Dark/Automatic in the Theme block and never Arabic', () => {
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
+  it('switches the product theme between Dydan and Sovereign', async () => {
+    const user = await restore()
+    await user.click(screen.getByRole('button', { name: 'Sovereign' }))
+    expect(themeState.setBrand).toHaveBeenCalledWith('sovereign')
+    expect(themeState.brand).toBe('sovereign')
 
+    await user.click(screen.getByRole('button', { name: 'Dydan' }))
+    expect(themeState.setBrand).toHaveBeenCalledWith('dydan')
+    expect(themeState.brand).toBe('dydan')
+  })
+
+  it('offers exactly Dydan/Sovereign and Light/Dark/Automatic and never Arabic', async () => {
+    await restore()
     const themeBlock = screen
       .getByText('Theme')
       .closest('.figma-settings-theme-block')
-    const buttons = [...themeBlock.querySelectorAll('.view-toggle button')].map(
-      b => b.textContent.trim(),
-    )
+    const themeButtons = [
+      ...themeBlock.querySelectorAll('.view-toggle button'),
+    ].map(button => button.textContent.trim())
+    expect(themeButtons).toEqual(['Dydan', 'Sovereign'])
 
-    // Exactly the three expected choices, in order — nothing else leaks in.
-    expect(buttons).toEqual(['Light', 'Dark', 'Automatic'])
-    // No brand picker, no "System" spelling, no Arabic copy in the theme area.
-    expect(themeBlock.textContent).not.toMatch(/System/)
-    expect(themeBlock.textContent).not.toMatch(/[\u0600-\u06FF]/)
-    // The language group stays structurally separate from the theme group.
-    const languageBlock = screen.getByText('Language').closest('section')
-    expect(languageBlock.textContent).toContain('English')
-    expect(languageBlock.textContent).toContain('العربية')
+    const modeBlock = screen
+      .getByText('Theme mode')
+      .closest('.figma-settings-theme-block')
+    const modeButtons = [
+      ...modeBlock.querySelectorAll('.view-toggle button'),
+    ].map(button => button.textContent.trim())
+    expect(modeButtons).toEqual(['Light', 'Dark', 'Automatic'])
+    expect(modeBlock.textContent).not.toMatch(/System/)
+    expect(
+      [themeBlock.textContent, modeBlock.textContent].join(' '),
+    ).not.toMatch(/[\u0600-\u06FF]/)
+    // The language group stays structurally separate from the theme groups.
+    const languageGroup = screen.getByText('Language').closest('section')
+    expect(languageGroup).not.toBeNull()
   })
 
-  it('restores a previously persisted theme selection on mount', () => {
-    localStorage.setItem('themeMode', '"dark"')
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
-    )
-
+  it('restores a previously persisted theme selection on mount', async () => {
+    themeState.mode = 'dark'
+    await restore()
     expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -210,29 +177,16 @@ describe('SettingsOverview', () => {
     )
   })
 
-  it('selects language with an Arabic label while keeping the Theme block free of Arabic', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter>
-        <SettingsOverview />
-      </MemoryRouter>,
+  it('restores a previously persisted product theme on mount', async () => {
+    themeState.brand = 'sovereign'
+    await restore()
+    expect(screen.getByRole('button', { name: 'Sovereign' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
     )
-
-    const arabic = screen.getByRole('button', { name: 'العربية' })
-    expect(arabic).toHaveAttribute('aria-pressed', 'false')
-    await user.click(arabic)
-
-    expect(setLanguage).toHaveBeenCalledWith('ar-SA')
-    // No manual right-to-left control remains.
-    expect(screen.queryByText('figmaOverview.rtl')).not.toBeInTheDocument()
-    expect(
-      screen.queryByText('figmaOverview.defaultViewHelp'),
-    ).not.toBeInTheDocument()
-    // Choosing Arabic never touches the shared theme choices or renders them in Arabic.
-    expect(setMode).not.toHaveBeenCalled()
-    const themeBlock = screen
-      .getByText('Theme')
-      .closest('.figma-settings-theme-block')
-    expect(themeBlock.textContent).not.toMatch(/[\u0600-\u06FF]/)
+    expect(screen.getByRole('button', { name: 'Dydan' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
   })
 })

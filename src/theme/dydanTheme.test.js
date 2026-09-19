@@ -11,11 +11,12 @@ import {
 } from './tokens.js'
 
 test('Dydan tokens expose the approved light and dark identity', () => {
-  assert.equal(dydanTokens.light.primary, '#4D40DB')
-  assert.equal(dydanTokens.light.signal, '#0369A1')
-  assert.equal(dydanTokens.light.page, '#F6F7F9')
-  assert.equal(dydanTokens.dark.page, '#1A1F26')
-  assert.equal(dydanTokens.dark.primary, '#A59CF5')
+  assert.equal(dydanTokens.light.brand, '#4326EA')
+  assert.equal(dydanTokens.light.action, '#09CCF4')
+  assert.equal(dydanTokens.light.signal, '#006B80')
+  assert.equal(dydanTokens.light.page, '#F8FAFF')
+  assert.equal(dydanTokens.dark.page, '#080B14')
+  assert.equal(dydanTokens.dark.action, '#7DD3FC')
   assert.equal(dydanTokens.dark.signal, '#7DD3FC')
 })
 
@@ -29,8 +30,8 @@ test('semantic roles, local font stacks, and scheme CSS variables are centralize
   assert.match(dydanTokens.font.ui, /Comfortaa/)
   assert.match(dydanTokens.font.arabic, /Cairo/)
   assert.match(dydanTokens.font.data, /JetBrains Mono/)
-  assert.equal(dydanCssVariables('light')['--dydan-focus-outer'], '#4D40DB')
-  assert.equal(dydanCssVariables('dark')['--dydan-focus-outer'], '#A59CF5')
+  assert.equal(dydanCssVariables('light')['--dydan-focus-outer'], '#4326EA')
+  assert.equal(dydanCssVariables('dark')['--dydan-focus-outer'], '#C4B5FD')
   assert.equal(dydanCssVariables('light')['--dydan-radius-card'], '8px')
 })
 
@@ -52,12 +53,38 @@ test('product themes keep Dydan and Sovereign semantics independent', () => {
   )
 })
 
+test('runtime theme layer: brand, action, and spec-only variables per scheme', () => {
+  const dydanLight = productCssVariables('dydan', 'light')
+  const sovereignLight = productCssVariables('sovereign', 'light')
+  const dydanDark = productCssVariables('dydan', 'dark')
+
+  // dydan splits brand (violet) from action (aqua) per the approved spec.
+  assert.equal(dydanLight['--brand'], '#4326EA')
+  assert.equal(dydanLight['--action-bg'], '#09CCF4')
+  assert.equal(dydanLight['--action-text'], '#0B1020')
+  assert.equal(dydanLight['--soft'], '#DDF9FF')
+  assert.equal(dydanLight['--hero-wash'], 'rgba(9, 204, 244, 0.12)')
+  assert.equal(dydanLight['--stage-bg'], '#F8FAFF')
+  assert.equal(dydanLight['--logo-a'], '#4326EA')
+  assert.equal(dydanLight['--logo-b'], '#09CCF4')
+  assert.equal(dydanLight['--link'], '#4326EA')
+  assert.equal(dydanLight['--link-visited'], '#3216C8')
+  assert.equal(dydanLight['--shadow'], 'rgba(11, 16, 32, 0.10)')
+  assert.equal(dydanDark['--hero-wash'], 'rgba(67, 38, 234, 0.16)')
+
+  // Font stacks travel with the theme so a runtime brand switch restyles the
+  // whole shell, not just colors.
+  assert.match(dydanLight['--font-ui'], /Comfortaa/)
+  assert.match(sovereignLight['--font-ui'], /Ubuntu/)
+  assert.notEqual(dydanLight['--action-bg'], sovereignLight['--action-bg'])
+})
+
 test('Sovereign semantic roles and native aliases match the approved palette', () => {
   const expected = {
     light: {
-      '--product-page': '#F2F2F2',
-      '--product-surface': '#FFFFFF',
-      '--product-surface-subtle': '#E6E6E6',
+      '--product-page': '#FFFFFF',
+      '--product-surface': '#F2F2F2',
+      '--product-surface-subtle': '#FFFFFF',
       '--product-text': '#1A1A1A',
       '--product-text-muted': '#4D4D4D',
       '--product-boundary': '#666666',
@@ -66,7 +93,7 @@ test('Sovereign semantic roles and native aliases match the approved palette', (
       '--product-brand-contrast': '#FFC107',
       '--product-action': '#FFC107',
       '--product-action-text': '#1A1A1A',
-      '--product-gold-text': '#6B5200',
+      '--product-gold-text': '#4D4D4D',
       '--product-callout': '#1A1A1A',
       '--product-callout-text': '#F2F2F2',
       '--product-callout-muted': '#999999',
@@ -86,11 +113,11 @@ test('Sovereign semantic roles and native aliases match the approved palette', (
       '--product-action': '#FFC107',
       '--product-action-text': '#1A1A1A',
       '--product-gold-text': '#FFC107',
-      '--product-callout': '#2E2E2E',
+      '--product-callout': '#242424',
       '--product-callout-text': '#F2F2F2',
       '--product-callout-muted': '#999999',
       '--product-focus-inner': '#1A1A1A',
-      '--product-focus-outer': '#F2F2F2',
+      '--product-focus-outer': '#FFC107',
     },
   }
 

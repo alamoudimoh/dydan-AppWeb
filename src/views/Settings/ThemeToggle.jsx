@@ -3,27 +3,19 @@ import {
   LaptopOutlined,
   LightModeOutlined,
 } from '@mui/icons-material'
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  ToggleButtonGroup,
-  useColorScheme,
-} from '@mui/joy'
+import { Button, FormControl, FormLabel, ToggleButtonGroup } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
 
-import useStickyState from '@/hooks/useStickyState'
+import { useProductTheme } from '@/contexts/ThemeContext'
 
 const ELEMENTID = 'select-theme-mode'
 
 const ThemeToggle = () => {
   const { t } = useTranslation('settings')
-  const { mode, setMode } = useColorScheme()
-  const [themeMode, setThemeMode] = useStickyState(mode, 'themeMode')
+  const { mode, setMode } = useProductTheme()
 
   const handleThemeModeChange = (_, newThemeMode) => {
     if (!newThemeMode) return
-    setThemeMode(newThemeMode)
     setMode(newThemeMode)
   }
 
@@ -40,7 +32,7 @@ const ThemeToggle = () => {
         <ToggleButtonGroup
           id={ELEMENTID}
           variant='outlined'
-          value={themeMode}
+          value={mode}
           onChange={handleThemeModeChange}
         >
           <Button startDecorator={<LightModeOutlined />} value='light'>

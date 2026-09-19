@@ -170,7 +170,9 @@
     "themeMode": "Theme mode",
     "light": "Light",
     "dark": "Dark",
-    "automatic": "Automatic"
+    "automatic": "Automatic",
+    "productTheme": "Theme",
+    "productThemeHelp": "Pick the built-in look: the Dydan palette (Momentum Violet + Flow Aqua) or Sovereign (Onyx + Golden Yellow)."
   },
   "notifications": {
     "settingsSaved": "Settings saved successfully",
@@ -500,7 +502,9 @@
     "reportHelp": "Send feedback to the Dydan team",
     "feedback": "Feedback",
     "about": "About Dydan",
-    "language": "Language"
+    "language": "Language",
+    "productTheme": "Theme",
+    "themeMode": "Theme mode"
   },
   "settingsNav": {
     "title": "Settings",

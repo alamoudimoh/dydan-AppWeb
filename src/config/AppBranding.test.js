@@ -29,8 +29,8 @@ test('formatSearchPlaceholder uses display name', () => {
 })
 
 test('PWA shell colors match the Dydan page background', () => {
-  assert.equal(APP_THEME_COLOR, '#F6F7F9')
-  assert.equal(APP_BACKGROUND_COLOR, '#F6F7F9')
+  assert.equal(APP_THEME_COLOR, '#F8FAFF')
+  assert.equal(APP_BACKGROUND_COLOR, '#F8FAFF')
 })
 
 test('default support URL points to the Dydan app issue tracker', () => {

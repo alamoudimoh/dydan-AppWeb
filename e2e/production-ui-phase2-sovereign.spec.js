@@ -26,9 +26,9 @@ const CASES = [
 
 const PALETTES = {
   light: {
-    '--product-page': '#f2f2f2',
-    '--product-surface': '#ffffff',
-    '--product-surface-subtle': '#e6e6e6',
+    '--product-page': '#ffffff',
+    '--product-surface': '#f2f2f2',
+    '--product-surface-subtle': '#ffffff',
     '--product-text': '#1a1a1a',
     '--product-text-muted': '#4d4d4d',
     '--product-boundary': '#666666',
@@ -37,7 +37,7 @@ const PALETTES = {
     '--product-brand-contrast': '#ffc107',
     '--product-action': '#ffc107',
     '--product-action-text': '#1a1a1a',
-    '--product-gold-text': '#6b5200',
+    '--product-gold-text': '#4d4d4d',
     '--product-callout': '#1a1a1a',
     '--product-callout-text': '#f2f2f2',
     '--product-callout-muted': '#999999',
@@ -57,11 +57,11 @@ const PALETTES = {
     '--product-action': '#ffc107',
     '--product-action-text': '#1a1a1a',
     '--product-gold-text': '#ffc107',
-    '--product-callout': '#2e2e2e',
+    '--product-callout': '#242424',
     '--product-callout-text': '#f2f2f2',
     '--product-callout-muted': '#999999',
     '--product-focus-inner': '#1a1a1a',
-    '--product-focus-outer': '#f2f2f2',
+    '--product-focus-outer': '#ffc107',
   },
 }
 

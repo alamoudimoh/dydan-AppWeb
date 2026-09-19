@@ -170,7 +170,9 @@
     "themeMode": "وضع المظهر",
     "light": "فاتح",
     "dark": "داكن",
-    "automatic": "تلقائي"
+    "automatic": "تلقائي",
+    "productTheme": "السمة",
+    "productThemeHelp": "اختر المظهر المدمج: لوحة دايدان (بنفسجي Momentum + فيروزي Flow) أو Sovereign (أسود Onyx + أصفر ذهبي)."
   },
   "notifications": {
     "settingsSaved": "تم حفظ الإعدادات بنجاح",
@@ -500,7 +502,9 @@
     "reportHelp": "أرسل ملاحظات إلى فريق دَيْدَن",
     "feedback": "ملاحظات",
     "about": "حول دَيْدَن",
-    "language": "اللغة"
+    "language": "اللغة",
+    "productTheme": "السمة",
+    "themeMode": "وضع السمة"
   },
   "settingsNav": {
     "title": "الإعدادات",

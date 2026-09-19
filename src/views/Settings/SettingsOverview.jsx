@@ -1,11 +1,10 @@
-import { useColorScheme } from '@mui/joy'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../components/FigmaIcon'
 import { useLocalization } from '../../contexts/LocalizationContext'
-import useStickyState from '../../hooks/useStickyState'
+import { useProductTheme } from '../../contexts/ThemeContext'
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import {
   hasPermission,
@@ -20,6 +19,7 @@ import { STORAGE_KEYS } from '../../utils/storageKeys'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 import OptionButtonGroup from './OptionButtonGroup'
+import ProductThemePicker from './ProductThemePicker'
 
 const Section = ({ children, title }) => (
   <section className='mb-6'>
@@ -82,12 +82,11 @@ const SettingsOverview = () => {
   const navigate = useNavigate()
   const { t } = useTranslation('settings')
   const { language, setLanguage } = useLocalization()
-  const { mode, setMode } = useColorScheme()
+  const { mode, setMode } = useProductTheme()
   const { data: userProfile } = useUserProfile()
   const { data: circleMembersData } = useCircleMembers()
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
-  const [themeMode, setThemeMode] = useStickyState(mode, 'themeMode')
   const [homeView, setHomeView] = useState(
     () => readLocalStorageItem(STORAGE_KEYS.homeView) || 'focus',
   )
@@ -100,11 +99,6 @@ const SettingsOverview = () => {
 
   const settingsAction = (setting, label, danger = false) =>
     can(setting) ? { danger, label } : null
-
-  const selectThemeMode = themeValue => {
-    setThemeMode(themeValue)
-    setMode(themeValue)
-  }
 
   const selectHomeView = view => {
     setHomeView(view)
@@ -133,16 +127,25 @@ const SettingsOverview = () => {
               className='text-primary mb-3 font-medium'
               style={{ fontSize: 14 }}
             >
-              {t('figmaOverview.theme')}
+              {t('figmaOverview.productTheme')}
+            </div>
+            <ProductThemePicker />
+          </div>
+          <div className='figma-settings-theme-block'>
+            <div
+              className='text-primary mb-3 font-medium'
+              style={{ fontSize: 14 }}
+            >
+              {t('figmaOverview.themeMode')}
             </div>
             <OptionButtonGroup
-              onChange={selectThemeMode}
+              onChange={setMode}
               options={[
                 { label: t('theme.light'), value: 'light' },
                 { label: t('theme.dark'), value: 'dark' },
                 { label: t('theme.automatic'), value: 'system' },
               ]}
-              value={themeMode}
+              value={mode}
             />
           </div>
           <div className='figma-settings-theme-block'>

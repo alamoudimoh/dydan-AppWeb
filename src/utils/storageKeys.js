@@ -24,6 +24,9 @@ export const STORAGE_KEYS = {
   signedIn: {
     canonical: 'dydan.signed-in',
   },
+  productTheme: {
+    canonical: 'dydan.theme',
+  },
 }
 
 export const OFFLINE_DB = {
