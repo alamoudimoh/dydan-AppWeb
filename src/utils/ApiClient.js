@@ -21,6 +21,7 @@ import {
   markSessionExpired,
   storeReturnPath,
 } from './ReturnPath'
+import { clearSignedIn } from './SessionPresence'
 import {
   clearAllTokens,
   getAccessToken,
@@ -274,6 +275,7 @@ class ApiClient {
     }
 
     await clearAllTokens()
+    clearSignedIn()
     syncActiveCircleId(null)
     try {
       await offlineDB.clearAll()

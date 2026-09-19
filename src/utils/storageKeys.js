@@ -21,6 +21,9 @@ export const STORAGE_KEYS = {
     showEmail: { canonical: 'dydan.privacy.showEmail' },
     shareDiagnostics: { canonical: 'dydan.privacy.shareDiagnostics' },
   },
+  signedIn: {
+    canonical: 'dydan.signed-in',
+  },
 }
 
 export const OFFLINE_DB = {

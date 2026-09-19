@@ -93,12 +93,17 @@ test('protected route waits while authentication is restoring', async ({
   expect(new URL(page.url()).pathname).toBe('/calendar')
 })
 
-test('confirmed invalid refresh session redirects and retains the complete return URL', async ({
+test('confirmed invalid refresh session keeps the page and offers in-place sign-in', async ({
   context,
   page,
 }) => {
   await installRefreshCookie(context)
   await installApiMocks(page)
+  // This device has a signed-in user, so a rejected restore must keep the
+  // exact page/tab instead of bouncing the tab to /login.
+  await page.addInitScript(() => {
+    localStorage.setItem('dydan.signed-in', '1')
+  })
   await page.route('**/api/v1/auth/refresh', route =>
     route.fulfill({
       status: 401,
@@ -108,7 +113,18 @@ test('confirmed invalid refresh session redirects and retains the complete retur
   )
 
   await page.goto('/profile?section=account#profile')
+  await expect(
+    page.getByRole('heading', { name: 'Your session expired' }),
+  ).toBeVisible()
+  // Refreshing changed neither the page nor the tab being viewed.
+  const stayed = new URL(page.url())
+  expect(stayed.pathname).toBe('/profile')
+  expect(stayed.search).toBe('?section=account')
+  expect(stayed.hash).toBe('#profile')
+
+  await page.getByRole('button', { name: 'Sign in again' }).click()
   await expect(page).toHaveURL(/\/login\?session=expired$/)
+  // The exact URL is retained so re-authentication returns to this page.
   expect(
     await page.evaluate(() => sessionStorage.getItem('return_path_pending')),
   ).toBe('/profile?section=account#profile')

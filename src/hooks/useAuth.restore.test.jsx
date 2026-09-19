@@ -36,12 +36,28 @@ vi.mock('../utils/TokenStorage', () => mocks.storage)
  * exactly how a failed restore was represented to the user.
  */
 const RestoreProbe = () => {
-  const { isAuthenticated, isLoading, restorePending, retryRestore } = useAuth()
+  const {
+    isAuthenticated,
+    isLoading,
+    restorePending,
+    retryRestore,
+    sessionExpired,
+  } = useAuth()
   if (isLoading) return <div>loading</div>
   if (restorePending) {
     return (
       <div>
         <span>{`pending:${restorePending.reason}`}</span>
+        <button type='button' onClick={() => retryRestore()}>
+          retry
+        </button>
+      </div>
+    )
+  }
+  if (sessionExpired) {
+    return (
+      <div>
+        <span>session-expired</span>
         <button type='button' onClick={() => retryRestore()}>
           retry
         </button>
@@ -140,7 +156,8 @@ describe('AuthProvider transient restore failures', () => {
   })
 
   it('invalid or revoked refresh credential lands on the definitive login path', async () => {
-    // The server answers 401/403 -> classified as an auth rejection.
+    // The server answers 401/403 -> classified as an auth rejection. Without
+    // a device-local sign-in marker this is a fresh visitor: plain redirect.
     mocks.apiClient.refreshToken.mockResolvedValue({
       success: false,
       kind: 'auth',
@@ -151,6 +168,51 @@ describe('AuthProvider transient restore failures', () => {
 
     await waitFor(() => expect(screen.getByText('false')).toBeTruthy())
     expect(screen.queryByText(/pending:/)).toBeNull()
+    expect(screen.queryByText('session-expired')).toBeNull()
+  })
+
+  it('definitive restore failure keeps a signed-in device on the page', async () => {
+    // A user who signed in here before must not be bounced to /login by a
+    // refresh: the in-place session-expired surface keeps the current URL.
+    window.localStorage.setItem('dydan.signed-in', '1')
+    mocks.apiClient.refreshToken.mockResolvedValue({
+      success: false,
+      kind: 'auth',
+      error: 'Refresh failed',
+    })
+
+    renderBootstrap()
+
+    await waitFor(() =>
+      expect(screen.getByText('session-expired')).toBeTruthy(),
+    )
+    expect(screen.queryByText(/pending:/)).toBeNull()
+    expect(mocks.storage.clearAllTokens).not.toHaveBeenCalled()
+  })
+
+  it('a successful retry clears the in-place session-expired verdict', async () => {
+    window.localStorage.setItem('dydan.signed-in', '1')
+    mocks.apiClient.refreshToken
+      .mockResolvedValueOnce({
+        success: false,
+        kind: 'auth',
+        error: 'Refresh failed',
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        token: 'recovered-access',
+      })
+
+    renderBootstrap()
+
+    await waitFor(() =>
+      expect(screen.getByText('session-expired')).toBeTruthy(),
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'retry' }))
+
+    await waitFor(() => expect(screen.getByText('true')).toBeTruthy())
+    expect(screen.queryByText('session-expired')).toBeNull()
   })
 
   it('scrubs a rejected legacy browser credential so the cookie can recover', async () => {

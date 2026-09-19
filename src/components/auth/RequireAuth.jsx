@@ -9,6 +9,7 @@ import {
 } from '../../utils/ReturnPath'
 import LoadingComponent from '../../views/components/Loading'
 import RestorePending from './RestorePending'
+import SessionExpired from './SessionExpired'
 
 /**
  * Route boundary for authenticated app surfaces. Public auth/legal routes render
@@ -26,11 +27,15 @@ import RestorePending from './RestorePending'
 const RequireAuth = ({ children }) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { authState, restorePending } = useAuth()
+  const { authState, restorePending, sessionExpired } = useAuth()
   const isPublic = isPublicAppPath(location.pathname)
 
   useEffect(() => {
     if (authState !== AuthState.UNAUTHENTICATED || isPublic) return
+    // A signed-in user whose boot restore was definitively rejected stays on
+    // the page: the in-place SessionExpired surface (same URL) offers retry
+    // and sign-in instead of bouncing the tab to /login.
+    if (sessionExpired) return
 
     markSessionExpired()
     storeReturnPath(`${location.pathname}${location.search}${location.hash}`)
@@ -42,6 +47,7 @@ const RequireAuth = ({ children }) => {
     location.pathname,
     location.search,
     navigate,
+    sessionExpired,
   ])
 
   // While restoring (isLoading) or while the login redirect is in flight,
@@ -50,6 +56,9 @@ const RequireAuth = ({ children }) => {
   if (authState !== AuthState.AUTHENTICATED && !isPublic) {
     if (restorePending) {
       return <RestorePending />
+    }
+    if (sessionExpired) {
+      return <SessionExpired />
     }
     return <LoadingComponent />
   }

@@ -17,6 +17,11 @@ import {
 } from '../utils/authErrors'
 import { offlineDB } from '../utils/OfflineDB'
 import {
+  clearSignedIn,
+  markSignedIn,
+  wasSignedIn,
+} from '../utils/SessionPresence'
+import {
   clearAllTokens,
   clearLegacyBrowserTokens,
   getAccessToken,
@@ -50,6 +55,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   /**
+   * True when boot-time session restore reached a definitive verdict (the
+   * server rejected the refresh credential) while this device previously had
+   * a signed-in user. Protected routes then render an in-place sign-in
+   * surface at the SAME URL instead of bouncing the tab to /login, so a
+   * refresh never changes the page a user was looking at.
+   */
+  const [sessionExpired, setSessionExpired] = useState(false)
+  /**
    * Non-null when boot-time session restore could not complete for a
    * transient reason ({ reason: 'connectivity' | 'storage' }) even though a
    * refresh credential may still exist locally. This is NOT a logout: the
@@ -78,7 +91,9 @@ export const AuthProvider = ({ children }) => {
     setToken(null)
     setUser(null)
     setRestorePending(null)
+    setSessionExpired(false)
     await clearAllTokens()
+    clearSignedIn()
   }
 
   const establishSession = async data => {
@@ -91,6 +106,7 @@ export const AuthProvider = ({ children }) => {
       refreshToken: data.refresh_token,
       refreshTokenExpiry: data.refresh_token_expiry,
     })
+    markSignedIn()
     if (!isNative()) clearLegacyBrowserTokens()
     setRestorePending(null)
     setToken(accessToken)
@@ -164,7 +180,9 @@ export const AuthProvider = ({ children }) => {
      */
     const applyRefreshResult = result => {
       if (result.success && result.token) {
+        markSignedIn()
         setRestorePending(null)
+        setSessionExpired(false)
         setToken(result.token)
         return true
       }
@@ -178,6 +196,10 @@ export const AuthProvider = ({ children }) => {
       } else {
         setRestorePending(null)
         setToken(null)
+        // A signed-in user whose restore was definitively rejected stays on
+        // the page (in-place sign-in surface); a fresh visitor keeps the
+        // plain redirect to /login.
+        setSessionExpired(wasSignedIn())
       }
       return false
     }
@@ -198,6 +220,7 @@ export const AuthProvider = ({ children }) => {
     const run = restoreSessionRef.current
     if (!run) return { success: false, error: 'restore-unavailable' }
     setRestorePending(null)
+    setSessionExpired(false)
     setIsLoading(true)
     try {
       await run()
@@ -327,6 +350,7 @@ export const AuthProvider = ({ children }) => {
       isLoading,
       isAuthenticated,
       restorePending,
+      sessionExpired,
       retryRestore,
       login,
       establishSession,
@@ -340,6 +364,7 @@ export const AuthProvider = ({ children }) => {
       isLoading,
       isAuthenticated,
       restorePending,
+      sessionExpired,
       retryRestore,
       login,
       establishSession,

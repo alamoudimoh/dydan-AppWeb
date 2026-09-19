@@ -13,6 +13,10 @@ export const writeLocalStorageItem = ({ canonical }, value) => {
   getLocalStorage()?.setItem(canonical, value)
 }
 
+export const removeLocalStorageItem = ({ canonical }) => {
+  getLocalStorage()?.removeItem(canonical)
+}
+
 export const readLocalStorageJSON = (keyConfig, fallback) => {
   const raw = readLocalStorageItem(keyConfig)
   if (raw === null) return fallback
