@@ -5,9 +5,10 @@
 // payloads cannot fire), while still decoding entities correctly.
 export const stripHtmlTags = html => {
   if (!html) return ''
+  const htmlStr = typeof html === 'string' ? html : String(html || '')
   if (typeof document === 'undefined' || typeof DOMParser === 'undefined') {
-    return String(html).replace(/<[^>]*>/g, '')
+    return htmlStr.replace(/<[^>]*>/g, '')
   }
-  const doc = new DOMParser().parseFromString(String(html), 'text/html')
+  const doc = new DOMParser().parseFromString(htmlStr, 'text/html')
   return doc.body.textContent || ''
 }

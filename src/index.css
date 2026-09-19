@@ -1561,7 +1561,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 1000px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 0 0 60px;
 }
@@ -1569,11 +1569,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 10px;
+  gap: 4px;
+  padding: 8px;
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--surface);
+}
+/* Hide section labels on desktop for cleaner horizontal layout */
+@media (min-width: 768px) {
+  .figma-settings-nav-label {
+    display: none;
+  }
 }
 .figma-settings-nav-section {
   display: contents;
@@ -1591,11 +1597,11 @@ body {
 .figma-settings-nav-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 6px;
+  padding: 6px 10px;
   border-radius: var(--r-md);
   color: var(--t-muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
