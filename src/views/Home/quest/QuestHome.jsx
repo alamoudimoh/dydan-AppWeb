@@ -5,75 +5,181 @@ import { useNavigate } from 'react-router-dom'
 import FigmaIcon from '../../../components/FigmaIcon'
 
 const EMOJI = ['🎬', '🎮', '🕹️', '🌙', '🍕', '⭐']
-const QUEST_TOTAL = 14
 const REWARD_CHIPS = 4
 
-function StreakPips({ current, total }) {
-  const filled = Math.min(current, total)
-  return (
-    <div className='flex items-center' style={{ gap: 3 }}>
-      {Array.from({ length: total }, (_, i) => (
-        <span
-          key={i}
-          className='streak-pips'
-          style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            background: i < filled ? 'var(--accent-text)' : 'var(--surface-2)',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-StreakPips.propTypes = {
-  current: PropTypes.number.isRequired,
-  total: PropTypes.number,
-}
-StreakPips.defaultProps = { total: QUEST_TOTAL }
-
-function QuestHero({ currentMember, streak }) {
+/**
+ * Brand-gradient hero matching the QuestMode screen of the product
+ * experience prototype: Quest Mode label, points + streak chips and a
+ * daily progress bar for today's quests.
+ */
+function QuestHero({
+  currentMember,
+  doneQuests,
+  pointsAvailable,
+  questTotal,
+  streak,
+}) {
   const { t } = useTranslation('common')
+  const progressPct =
+    questTotal > 0 ? Math.round((doneQuests / questTotal) * 100) : 0
+  const subtitle =
+    questTotal === 0
+      ? t('homeToday.questHeroNoQuests')
+      : doneQuests === questTotal
+        ? t('homeToday.questHeroAllDone')
+        : t('homeToday.questHeroQuestsLeft', {
+            count: questTotal - doneQuests,
+          })
   return (
     <div
-      className='mb-6 flex flex-col gap-4 rounded-2xl p-5'
       style={{
-        background: 'var(--callout-bg)',
-        borderRadius: 'var(--r-2xl)',
-        color: 'var(--callout-text)',
+        background:
+          'linear-gradient(135deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, var(--accent)) 100%)',
+        padding: '28px 24px 40px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <div>
-        <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.15 }}>
-          {EMOJI[streak % EMOJI.length]}{' '}
-          {t('homeToday.keepItUp', {
-            member: currentMember?.name || t('homeToday.member'),
-          })}
+      {/* Decorative circles */}
+      <div
+        style={{
+          position: 'absolute',
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.06)',
+          top: -60,
+          right: -40,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          width: 100,
+          height: 100,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.06)',
+          bottom: -20,
+          left: 20,
+        }}
+      />
+
+      <div
+        className='mb-5 flex items-start justify-between'
+        style={{ position: 'relative' }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.75)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: 6,
+            }}
+          >
+            {t('homeToday.questMode')}
+          </div>
+          <h1
+            style={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: 'white',
+              margin: 0,
+              lineHeight: 1.2,
+            }}
+          >
+            {t('homeToday.questView')}
+          </h1>
+          <div
+            style={{
+              fontSize: 14,
+              color: 'rgba(255,255,255,0.8)',
+              marginTop: 4,
+            }}
+          >
+            {subtitle}
+          </div>
         </div>
-        <div style={{ fontSize: 13, opacity: 0.85, marginTop: 6 }}>
-          {streak === 0
-            ? t('homeToday.startStreak')
-            : t('homeToday.streakEncouragement', { count: streak })}
+        <div className='flex flex-col items-end gap-1'>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              borderRadius: 'var(--r-full)',
+              padding: '4px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <FigmaIcon
+              name='star'
+              size={13}
+              style={{ color: 'var(--accent)' }}
+            />
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 800,
+                color: 'white',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              {pointsAvailable}
+            </span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
+              {t('homeToday.pts')}
+            </span>
+          </div>
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.12)',
+              borderRadius: 'var(--r-full)',
+              padding: '4px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <FigmaIcon name='fire' size={13} style={{ color: '#FF8C42' }} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'white' }}>
+              {t('homeToday.dayStreak', { count: streak })}
+            </span>
+          </div>
         </div>
       </div>
-      <div
-        className='flex items-center justify-between rounded-xl px-4 py-2.5'
-        style={{
-          background:
-            'color-mix(in srgb, var(--callout-text) 12%, transparent)',
-        }}
-      >
-        <div className='flex flex-col'>
-          <span style={{ fontSize: 11, opacity: 0.8 }}>
-            {t('homeToday.dailyStreak')}
-          </span>
-          <span style={{ fontSize: 20, fontWeight: 800 }}>
-            {t('homeToday.days', { count: streak })}
+
+      {/* Daily progress */}
+      <div>
+        <div
+          className='mb-2 flex justify-between'
+          style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}
+        >
+          <span>{t('homeToday.todayProgress')}</span>
+          <span style={{ fontWeight: 800 }}>
+            {doneQuests}/{questTotal}
           </span>
         </div>
-        <StreakPips current={streak} total={QUEST_TOTAL} />
+        <div
+          style={{
+            height: 12,
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: 99,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              width: `${progressPct}%`,
+              background:
+                progressPct === 100 ? 'var(--sig-done)' : 'var(--accent)',
+              borderRadius: 99,
+              transition: 'width 0.5s ease',
+            }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -81,6 +187,9 @@ function QuestHero({ currentMember, streak }) {
 
 QuestHero.propTypes = {
   currentMember: PropTypes.object,
+  doneQuests: PropTypes.number.isRequired,
+  pointsAvailable: PropTypes.number.isRequired,
+  questTotal: PropTypes.number.isRequired,
   streak: PropTypes.number.isRequired,
 }
 QuestHero.defaultProps = { currentMember: null }
@@ -249,14 +358,21 @@ export default function QuestHome({
   const questsRemaining = questTasks.filter(
     task => task.status !== 'done',
   ).length
+  const questTotal = questTasks.length
+  const doneQuests = questTotal - questsRemaining
   const firstDone = myDone[0]
   const firstRewardClicked = rewards[0]
 
   return (
     <div style={{ padding: '0 0 40px' }}>
-      <div style={{ padding: '20px 16px 0' }}>
-        <QuestHero currentMember={currentMember} streak={streak} />
-
+      <QuestHero
+        currentMember={currentMember}
+        doneQuests={doneQuests}
+        pointsAvailable={pointsAvailable}
+        questTotal={questTotal}
+        streak={streak}
+      />
+      <div style={{ padding: '20px 16px 0', marginTop: -16 }}>
         {/* Today's quests */}
         <div
           className='section-label mb-3'
