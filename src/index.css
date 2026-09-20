@@ -1834,3 +1834,88 @@ body {
     grid-template-columns: 220px minmax(0, 1fr);
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   PE2 visual scope — Home / Focus / Quest
+   Source of truth: Dydan-AppWebProductExperience02/src/index.css
+   (the `:root` "DayDan" token block plus the shared class rules).
+
+   The production theme maps some tokens differently from the product
+   experience prototype and a few shared classes render differently too:
+   - --line (border gray)      → prototype #D4D8E2 (prod uses #7A8497)
+   - --brand-faint (lavender)  → prototype #EEE9FF (prod uses #DDF9FF)
+   - --t-faint / --surface-3   → prototype #9BA5B7 / #F0EEFF
+   - radii --r-xs..--r-2xl     → prototype 4/8/12/18/24/32
+   - --shadow-md               → prototype 0 4 16 .10 + 0 2 6 .06
+   - .badge/.view-toggle/.toast → prototype pills (--r-full)
+   - .btn base                 → prototype font 14/700 + padding 8/16
+                                 + gap 6 + min-height 38
+
+   These overrides apply ONLY inside `.pe2` (added by App.jsx to the
+   app shell for the home route), so Home/Focus/Quest match the
+   prototype exactly while every other route keeps its existing values.
+   ────────────────────────────────────────────────────────────── */
+.pe2 {
+  --surface-3: #f0eeff;
+  --t-faint: #9ba5b7;
+  --line: #d4d8e2;
+  --brand-faint: #eee9ff;
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --shadow-sm: 0 1px 4px rgba(11, 16, 32, 0.08), 0 2px 8px rgba(11, 16, 32, 0.04);
+  --shadow-md: 0 4px 16px rgba(11, 16, 32, 0.1), 0 2px 6px rgba(11, 16, 32, 0.06);
+  /* Prototype body defaults (16px / 1.5) so inherited text inside the
+     scope matches PE2 instead of the app-wide 15px / 1.55. */
+  font-size: 16px;
+  line-height: 1.5;
+}
+/* Prototype renders these as pills (--r-full); the production rules
+   use --r-sm. */
+.pe2 .view-toggle,
+.pe2 .view-toggle-btn,
+.pe2 .badge,
+.pe2 .toast {
+  border-radius: var(--r-full);
+}
+/* Prototype .btn base for the route content area (topbar keeps its own
+   variants). The variant rules below are re-declared at equal
+   specificity and later in the sheet so they keep winning. */
+.pe2 .main-content .btn {
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 8px 16px;
+  min-height: 38px;
+  transition: all 0.14s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.pe2 .main-content .btn-sm {
+  font-size: 12px;
+  padding: 5px 11px;
+  min-height: 30px;
+  border-radius: var(--r-sm);
+}
+.pe2 .main-content .btn-icon {
+  min-height: 36px;
+  width: 36px;
+  padding: 8px;
+}
+/* PE2 declares `.btn-ghost` (color: var(--t-muted)) AFTER its
+   `.text-brand` utility, so ghost buttons read muted even when the
+   element also carries `text-brand`. Dydan's sheet orders them the other
+   way around; pin the PE2 outcome for the route content area (topbar
+   ghost buttons live outside `main` and are untouched). */
+.pe2 .main-content .btn-ghost {
+  color: var(--t-muted);
+}
+[dir='rtl'] .pe2 .section-label {
+  letter-spacing: 0;
+  text-transform: none;
+}

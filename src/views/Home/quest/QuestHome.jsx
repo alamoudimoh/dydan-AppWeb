@@ -8,7 +8,7 @@ const STREAK_PIPS_TOTAL = 20
 const REWARD_CARDS = 4
 const ACTIVITY_ROWS = 5
 
-function StreakPips({ streak, total }) {
+function StreakPips({ streak, total = STREAK_PIPS_TOTAL }) {
   return (
     <div className='streak-pips flex-wrap'>
       {Array.from({ length: total }).map((_, i) => (
@@ -28,7 +28,6 @@ StreakPips.propTypes = {
   streak: PropTypes.number.isRequired,
   total: PropTypes.number,
 }
-StreakPips.defaultProps = { total: STREAK_PIPS_TOTAL }
 
 /**
  * Brand-gradient hero matching the QuestMode screen of the product
@@ -357,7 +356,12 @@ export default function QuestHome({
   const navigate = useNavigate()
   const openTask = task => navigate(`/chores/${task.choreId}`)
 
-  const questTasks = myTasks.filter(task => task.dueDate === todayKey)
+  // Tasks due today PLUS anything completed today (its dueDate already
+  // advanced to the next occurrence), so the prototype's pending +
+  // "Completed" sections both render.
+  const questTasks = myTasks.filter(
+    task => task.dueDate === todayKey || task.status === 'done',
+  )
   const done = questTasks.filter(task => task.status === 'done')
   const todo = questTasks.filter(task => task.status !== 'done')
   const questTotal = questTasks.length
@@ -376,7 +380,7 @@ export default function QuestHome({
         streak={streak}
       />
 
-      <div className='px-4 md:px-6' style={{ marginTop: -16, paddingTop: 20 }}>
+      <div className='px-4 md:px-6' style={{ marginTop: -16 }}>
         {/* Streak card */}
         <div className='card mb-4 flex items-center gap-4 p-4'>
           <div style={{ fontSize: 32 }}>🔥</div>

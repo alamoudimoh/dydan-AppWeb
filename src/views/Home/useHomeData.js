@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { hasActiveFamilyCircle } from '../../navigation/navModel'
+import { useCategories } from '../../queries/CategoryQueries'
 import {
   useChores,
   useChoresHistory,
@@ -63,6 +64,7 @@ export const useHomeData = () => {
   const membersQuery = useCircleMembers()
   const choresQuery = useChores(false)
   const historyQuery = useChoresHistory(90, false)
+  const categoriesQuery = useCategories(true)
   const reportQuery = useReport('week')
   const streakQuery = useStreak()
   const goalsQuery = useGoals()
@@ -127,14 +129,22 @@ export const useHomeData = () => {
   const chores = useMemo(() => choresQuery.data?.res || [], [choresQuery.data])
   const history = useMemo(() => historyQuery.data || [], [historyQuery.data])
 
+  const categoryById = useMemo(
+    () =>
+      Object.fromEntries(
+        (categoriesQuery.data || []).map(category => [category.id, category]),
+      ),
+    [categoriesQuery.data],
+  )
+
   const lists = useMemo(
-    () => buildHomeLists({ chores, history, now, timeZone }),
-    [chores, history, now, timeZone],
+    () => buildHomeLists({ categoryById, chores, history, now, timeZone }),
+    [categoryById, chores, history, now, timeZone],
   )
 
   const upcoming = useMemo(
-    () => buildUpcoming(chores, { history, now, timeZone }),
-    [chores, history, now, timeZone],
+    () => buildUpcoming(chores, { categoryById, history, now, timeZone }),
+    [categoryById, chores, history, now, timeZone],
   )
 
   // Rewards/goals/balance are readonly adjacent data the home surfaces.

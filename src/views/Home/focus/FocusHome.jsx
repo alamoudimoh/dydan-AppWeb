@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import FigmaIcon from '../../../components/FigmaIcon'
-import { formatDate } from '../homeModel'
+import { dayKeyOf, formatDate } from '../homeModel'
 
 const navTarget = name => {
   switch (name) {
@@ -78,7 +78,7 @@ StatCard.propTypes = {
 }
 StatCard.defaultProps = { sub: null }
 
-function TaskRow({ onComplete, task }) {
+function TaskRow({ membersById = {}, onComplete, task, todayLabel }) {
   const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const statusColor =
@@ -88,6 +88,17 @@ function TaskRow({ onComplete, task }) {
         ? 'var(--sig-done)'
         : 'var(--t-faint)'
   const isDone = task.status === 'done'
+  const assignee = membersById[task.assigneeId]
+  const dateLabel = isDone
+    ? // Completed-today rows show today's date (the chore's dueDate has
+      // already advanced to the *next* occurrence), like the prototype.
+      todayLabel
+    : task.dueDate
+      ? formatDate(task.dueDate, {
+          locale: i18n.resolvedLanguage || 'en',
+          t,
+        })
+      : null
   return (
     <div
       className={`task-row ${isDone ? 'done' : ''}`}
@@ -128,10 +139,7 @@ function TaskRow({ onComplete, task }) {
           )}
           {task.dueDate && (
             <span style={{ fontSize: 11, color: statusColor, fontWeight: 600 }}>
-              {formatDate(task.dueDate, {
-                locale: i18n.resolvedLanguage || 'en',
-                t,
-              })}
+              {dateLabel}
             </span>
           )}
           {task.isRecurring && (
@@ -143,6 +151,19 @@ function TaskRow({ onComplete, task }) {
           )}
         </div>
       </div>
+      {assignee && (
+        <div
+          className='avatar flex-shrink-0'
+          style={{
+            width: 24,
+            height: 24,
+            background: assignee.color,
+            fontSize: 9,
+          }}
+        >
+          {assignee.initials}
+        </div>
+      )}
       {task.priority === 'high' && !isDone && (
         <FigmaIcon
           name='flag'
@@ -155,8 +176,14 @@ function TaskRow({ onComplete, task }) {
 }
 
 TaskRow.propTypes = {
+  membersById: PropTypes.object,
   onComplete: PropTypes.func.isRequired,
   task: PropTypes.object.isRequired,
+  todayLabel: PropTypes.string,
+}
+TaskRow.defaultProps = {
+  membersById: {},
+  todayLabel: null,
 }
 
 function WorkloadRow({ max, member }) {
@@ -208,10 +235,12 @@ export default function FocusHome({
   hasGoal,
   isSolo,
   makeTaskDone,
+  members,
   myTasks,
   now,
   overdue,
   streak,
+  timeZone,
   upcoming,
   workload,
 }) {
@@ -219,6 +248,13 @@ export default function FocusHome({
   const navigate = useNavigate()
   const openCreate = () => navigate('/chores/create')
   const goto = name => navigate(navTarget(name))
+  const membersById = Object.fromEntries(
+    (members || []).map(member => [member.id, member]),
+  )
+  const todayLabel = formatDate(dayKeyOf(now, timeZone), {
+    locale: i18n.resolvedLanguage || 'en',
+    t,
+  })
 
   const done = myTasks.filter(task => task.status === 'done')
   const upcomingList = upcoming.slice(0, 4)
@@ -415,7 +451,9 @@ export default function FocusHome({
                     <TaskRow
                       key={task.id}
                       task={task}
+                      membersById={membersById}
                       onComplete={makeTaskDone}
+                      todayLabel={todayLabel}
                     />
                   ))
                 )}
@@ -451,7 +489,9 @@ export default function FocusHome({
                   <TaskRow
                     key={task.id}
                     task={task}
+                    membersById={membersById}
                     onComplete={makeTaskDone}
+                    todayLabel={todayLabel}
                   />
                 ))}
               </div>
@@ -749,14 +789,18 @@ FocusHome.propTypes = {
   hasGoal: PropTypes.bool.isRequired,
   isSolo: PropTypes.bool.isRequired,
   makeTaskDone: PropTypes.func.isRequired,
+  members: PropTypes.array,
   myTasks: PropTypes.array.isRequired,
   now: PropTypes.instanceOf(Date).isRequired,
   overdue: PropTypes.array.isRequired,
   streak: PropTypes.number.isRequired,
+  timeZone: PropTypes.string,
   upcoming: PropTypes.array.isRequired,
   workload: PropTypes.object.isRequired,
 }
 FocusHome.defaultProps = {
   activeProjects: [],
   currentMember: null,
+  members: [],
+  timeZone: 'UTC',
 }

@@ -39,6 +39,11 @@ const AppContent = () => {
   const { showNotification } = useNotification()
   const location = useLocation()
   const shellVisible = hasAppShell(location.pathname)
+  // The Home / Focus / Quest screens render pixel-for-pixel from Product
+  // Experience 2 (see the `.pe2` scoped block in index.css). Scope the PE2
+  // token/class overrides to this route only so the rest of the app is
+  // untouched.
+  const isHomeRoute = location.pathname === '/'
   useSyncOnReconnect()
 
   // Every route renders through this Outlet, so one listener here gives crash
@@ -108,7 +113,7 @@ const AppContent = () => {
 
   return (
     <RequireAuth>
-      <div>
+      <div className={isHomeRoute ? 'pe2' : undefined}>
         <a href='#main-content' className='skip-link'>
           Skip to content
         </a>
