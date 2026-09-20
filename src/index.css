@@ -1144,19 +1144,21 @@ body {
   }
 }
 
-/* Reward grid cell used by the quest home (Figma ships the markup without a
-   matching rule; mirror the card surface so the reward grid reads as cards). */
+/* Reward grid cell used by the quest home, matching the product-experience
+   prototype rule exactly (padding 16, gap 10, soft shadow + hover lift). */
 .reward-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 10px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  text-align: center;
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s ease;
+  cursor: pointer;
 }
+.reward-card:hover { box-shadow: var(--shadow-md); }
 
 .input {
   width: 100%;

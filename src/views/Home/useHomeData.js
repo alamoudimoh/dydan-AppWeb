@@ -23,6 +23,7 @@ import {
   buildActivityFeed,
   buildHomeLists,
   buildHousehold,
+  buildPersonalGoal,
   buildRewards,
   buildUpcoming,
   buildWorkload,
@@ -155,6 +156,12 @@ export const useHomeData = () => {
         fallbackUnit: t('homeToday.chores'),
       })
   const hasGoal = familyGoal.id !== null
+  const personalGoal =
+    goals.length > 0
+      ? buildPersonalGoal(goals, familyGoal.id, {
+          fallbackUnit: t('homeToday.chores'),
+        })
+      : null
   const balance =
     requestsQuery.data?.balance || (requestsQuery.data ? {} : null)
   const pendingRequests = (requestsQuery.data?.res || []).filter(
@@ -238,6 +245,7 @@ export const useHomeData = () => {
     bestStreak: Number(streakQuery.data?.best) || 0,
     familyGoal,
     hasGoal,
+    personalGoal,
     rewards,
     balance,
     pendingRequests,

@@ -346,6 +346,13 @@ export const buildHousehold = (members, tasks, { myId }) =>
 export const sumTaskPoints = tasks =>
   (tasks || []).reduce((total, task) => total + (task.points || 0), 0)
 
+/** Native goal icon token derived from the goal metric, mirroring FigmaGoalsScreen. */
+export const goalEmoji = goal => {
+  if (goal?.metricType === 'POINTS_EARNED') return '⭐'
+  if (goal?.metricType === 'CATEGORY_COMPLETIONS') return '🎯'
+  return '✅'
+}
+
 /** Family goal card derived from /progress/goals (empty when no goal). */
 export const pickFamilyGoal = (goals, { fallbackName, fallbackUnit }) => {
   const list = Array.isArray(goals) ? goals : []
@@ -357,6 +364,8 @@ export const pickFamilyGoal = (goals, { fallbackName, fallbackUnit }) => {
       target: 1,
       unit: fallbackUnit,
       percent: 0,
+      emoji: '🏆',
+      reward: null,
     }
   }
   const goal =
@@ -370,6 +379,35 @@ export const pickFamilyGoal = (goals, { fallbackName, fallbackUnit }) => {
     target,
     unit: String(goal.unit || fallbackUnit),
     percent: Math.round((progress / target) * 100),
+    emoji: goalEmoji(goal),
+    reward: goal.reward ?? null,
+  }
+}
+
+/**
+ * Personal goal card for the Quest home: the first active goal that is not
+ * the family goal (null when the household has no personal goal configured).
+ */
+export const buildPersonalGoal = (goals, excludeId, { fallbackUnit }) => {
+  const list = Array.isArray(goals) ? goals : []
+  const goal =
+    list.find(
+      candidate =>
+        candidate?.status !== 'INACTIVE' &&
+        String(candidate.id ?? '') !== String(excludeId ?? ''),
+    ) || null
+  if (!goal) return null
+  const target = Math.max(1, Number(goal.target) || 1)
+  const progress = Math.max(0, Number(goal.progress) || 0)
+  return {
+    id: String(goal.id ?? ''),
+    name: String(goal.name || ''),
+    progress,
+    target,
+    unit: String(goal.unit || fallbackUnit),
+    percent: Math.round((progress / target) * 100),
+    emoji: goalEmoji(goal),
+    reward: goal.reward ?? null,
   }
 }
 

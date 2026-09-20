@@ -525,7 +525,9 @@ export default function FocusHome({
                   >
                     {t('homeToday.familyGoal')}
                   </div>
-                  <span style={{ fontSize: 20 }}>🚀</span>
+                  <span style={{ fontSize: 20 }}>
+                    {familyGoal.emoji || '🚀'}
+                  </span>
                 </div>
                 <div
                   className='text-primary mb-1 font-semibold'
@@ -554,6 +556,19 @@ export default function FocusHome({
                     style={{ width: `${familyGoal.percent}%` }}
                   />
                 </div>
+                {familyGoal.reward && (
+                  <div
+                    className='text-faint mt-3 flex items-center gap-1'
+                    style={{ fontSize: 12 }}
+                  >
+                    <FigmaIcon
+                      name='gift'
+                      size={12}
+                      style={{ color: 'var(--sig-flag)' }}
+                    />
+                    {t('homeToday.rewardLabel')}: {familyGoal.reward}
+                  </div>
+                )}
               </div>
             )}
 
