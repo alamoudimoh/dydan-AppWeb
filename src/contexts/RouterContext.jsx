@@ -54,7 +54,6 @@ const MyChores = lazy(() => import('../views/Chores/MyChores'))
 const FigmaTasksScreen = lazy(() => import('../views/Chores/FigmaTasksScreen'))
 const JoinCircleView = lazy(() => import('../views/Circles/JoinCircle'))
 const NotFound = lazy(() => import('../views/components/NotFound'))
-const Dashboard = lazy(() => import('../views/Dashboard/Dashboard'))
 
 // PE2 route ports: each of these renders the matching Product Experience 2
 // screen pixel-for-pixel against the shared `src/pe2` fixtures.
@@ -84,6 +83,7 @@ const FigmaSearchScreen = lazy(() => import('@/views/Search/FigmaSearchScreen'))
 const FigmaShoppingScreen = lazy(
   () => import('@/views/ShoppingLists/pe2/FigmaShoppingScreen'),
 )
+const FigmaHomeScreen = lazy(() => import('@/views/Home/today/FigmaHomeScreen'))
 const FigmaTodayScreen = lazy(
   () => import('@/views/Home/today/FigmaTodayScreen'),
 )
@@ -156,7 +156,7 @@ export const appRouteConfig = [
     children: [
       {
         path: '/',
-        element: <Dashboard />,
+        element: <FigmaHomeScreen />,
       },
       {
         path: '/today',
