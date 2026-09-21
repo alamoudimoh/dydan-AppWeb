@@ -43,7 +43,31 @@ const AppContent = () => {
   // Experience 2 (see the `.pe2` scoped block in index.css). Scope the PE2
   // token/class overrides to this route only so the rest of the app is
   // untouched.
-  const isHomeRoute = location.pathname === '/'
+  //
+  // Trailing slashes are normalized so `/projects/` and `/projects` both take
+  // the PE2-styled shell. Sub-routes (e.g. `/maintenance/assets/:id`,
+  // `/shopping/:id`) are intentionally excluded and keep the default shell.
+  const normalizedPath =
+    location.pathname.length > 1
+      ? location.pathname.replace(/\/+$/, '')
+      : location.pathname
+  const isHomeRoute = [
+    '/',
+    '/settings',
+    '/calendar',
+    '/chores',
+    '/today',
+    '/projects',
+    '/routines',
+    '/maintenance',
+    '/shopping',
+    '/goals',
+    '/rewards',
+    '/activities',
+    '/family',
+    '/search',
+    '/notifications',
+  ].includes(normalizedPath)
   useSyncOnReconnect()
 
   // Every route renders through this Outlet, so one listener here gives crash

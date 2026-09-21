@@ -446,11 +446,11 @@ html {
   }
 }
 
-/* Global focus styles for better accessibility */
-*:focus-visible {
-  outline: 2px solid var(--dydan-focus-outer);
+/* PE2 focus-visible styling inside the .pe2 scope */
+.pe2 *:focus-visible {
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--dydan-focus-inner);
+  border-radius: var(--r-sm);
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus (triggered when font-size < 16px) */
@@ -1855,23 +1855,62 @@ body {
    app shell for the home route), so Home/Focus/Quest match the
    prototype exactly while every other route keeps its existing values.
    ────────────────────────────────────────────────────────────── */
+/* PE2 tokens - exact copy from Product Experience 2 to ensure 100% visual fidelity */
 .pe2 {
-  --surface-3: #f0eeff;
-  --t-faint: #9ba5b7;
-  --line: #d4d8e2;
-  --brand-faint: #eee9ff;
-  --r-xs: 4px;
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 18px;
-  --r-xl: 24px;
-  --r-2xl: 32px;
-  --shadow-sm: 0 1px 4px rgba(11, 16, 32, 0.08), 0 2px 8px rgba(11, 16, 32, 0.04);
-  --shadow-md: 0 4px 16px rgba(11, 16, 32, 0.1), 0 2px 6px rgba(11, 16, 32, 0.06);
+  --page:             #F8FAFF;
+  --surface:          #FFFFFF;
+  --surface-2:        #E9E5FF;
+  --surface-3:        #F0EEFF;
+  --t-primary:        #0B1020;
+  --t-muted:          #5E687B;
+  --t-faint:          #9BA5B7;
+  --line:             #D4D8E2;
+  --line-strong:      #7A8497;
+  --brand:            #4326EA;
+  --brand-hover:      #3216C8;
+  --brand-faint:      #EEE9FF;
+  --brand-contrast:   #FFFFFF;
+  --accent:           #09CCF4;
+  --accent-bg:        #DDF9FF;
+  --accent-text:      #006B80;
+  --callout-bg:       #0B1020;
+  --callout-text:     #F8FAFF;
+  --sig-done:         #0F763F;
+  --sig-done-bg:      #DCFCE7;
+  --sig-due:          #826026;
+  --sig-due-bg:       #FEF3C7;
+  --sig-over:         #C52338;
+  --sig-over-bg:      #FFE4E6;
+  --sig-flag:         #BF1881;
+  --sig-flag-bg:      #FCE7F3;
+  --font-ui:          "Comfortaa", system-ui, -apple-system, sans-serif;
+  --font-mono:        "JetBrains Mono", ui-monospace, monospace;
+  --font-ar:          "Cairo", system-ui, sans-serif;
+  --member-sarah:     #3216C8;
+  --member-daniel:    #0F763F;
+  --member-liam:      #0AB5D9;
+  --project-1:        #BF1881;
+  --project-2:        #EA6C14;
+  --project-3:        #2EA86B;
+  --goal-1:           #4326EA;
+  --goal-2:           #0AB5D9;
+  --goal-3:           #BF1881;
+  --r-xs:             4px;
+  --r-sm:             8px;
+  --r-md:             12px;
+  --r-lg:             18px;
+  --r-xl:             24px;
+  --r-2xl:            32px;
+  --r-full:           9999px;
+  --shadow-xs:        0 1px 2px rgba(11,16,32,.06);
+  --shadow-sm:        0 1px 4px rgba(11,16,32,.08), 0 2px 8px rgba(11,16,32,.04);
+  --shadow-md:        0 4px 16px rgba(11,16,32,.10), 0 2px 6px rgba(11,16,32,.06);
+  --shadow-lg:        0 12px 40px rgba(11,16,32,.12), 0 4px 12px rgba(11,16,32,.06);
   /* Prototype body defaults (16px / 1.5) so inherited text inside the
      scope matches PE2 instead of the app-wide 15px / 1.55. */
-  font-size: 16px;
-  line-height: 1.5;
+  font-size:          16px;
+  line-height:        1.5;
+  font-family:        var(--font-ui);
 }
 /* Prototype renders these as pills (--r-full); the production rules
    use --r-sm. */
@@ -1880,6 +1919,13 @@ body {
 .pe2 .badge,
 .pe2 .toast {
   border-radius: var(--r-full);
+}
+
+/* Toast padding must match PE2 (10px 20px) */
+.pe2 .toast {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
 }
 /* Prototype .btn base for the route content area (topbar keeps its own
    variants). The variant rules below are re-declared at equal
@@ -1915,6 +1961,203 @@ body {
 .pe2 .main-content .btn-ghost {
   color: var(--t-muted);
 }
+
+/* PE2 sidebar collapse and mobile styles - these add missing PE2-specific
+   rules that the base Dydan styles don't have inside the .pe2 scope */
+.pe2 .app-shell.sidebar-collapsed {
+  --sidebar-w: 74px;
+}
+.pe2 .sidebar.collapsed .collapse-hide {
+  display: none !important;
+}
+.pe2 .sidebar.collapsed .section-label {
+  display: none;
+}
+.pe2 .sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+.pe2 .sidebar.collapsed .nav-item > span:not(.badge) {
+  display: none;
+}
+.pe2 .sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  gap: 10px;
+}
+.pe2 .collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--t-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.pe2 .collapse-toggle:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+[dir='rtl'] .pe2 .collapse-toggle svg {
+  transform: scaleX(-1);
+}
+.pe2 .mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 768px) {
+  .pe2 .sidebar {
+    display: none;
+  }
+  .pe2 .mobile-nav {
+    display: flex;
+  }
+  .pe2 .main-content {
+    padding-bottom: 70px;
+  }
+}
+
+/* PE2 overrides for Dydan's figma-* class structure within the home route */
+.pe2 .figma-sidebar {
+  width: var(--sidebar-w);
+}
+.pe2 .figma-topbar {
+  margin-inline-start: var(--sidebar-w);
+}
+.pe2 .figma-brand {
+  padding: 16px 12px 12px;
+}
+.pe2 .figma-brand button {
+  color: var(--brand);
+}
+.pe2 .figma-collapse-button {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--t-muted);
+  border: none;
+}
+.pe2 .figma-collapse-button:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+.pe2 .figma-nav-scroll {
+  padding: 8px 0;
+}
+.pe2 .nav-item {
+  padding: 8px 12px;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pe2 .nav-item:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+.pe2 .nav-item.active {
+  background: var(--brand-faint);
+  color: var(--brand);
+  font-weight: 700;
+}
+.pe2 .section-label {
+  padding: 14px 12px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+.pe2 .figma-nav-footer {
+  padding: 8px;
+  border-top: 1px solid var(--line);
+}
+.pe2 .figma-profile {
+  padding: 8px;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pe2 .figma-profile > span {
+  font-family: var(--font-ui);
+}
+.pe2 .sidebar-collapsed .figma-brand {
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 8px 12px;
+}
+.pe2 .sidebar-collapsed .figma-brand > div {
+  display: none;
+}
+.pe2 .sidebar-collapsed .figma-nav-scroll {
+  padding: 0;
+}
+.pe2 .sidebar-collapsed .section-label {
+  display: none;
+}
+.pe2 .sidebar-collapsed .nav-item {
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+}
+.pe2 .sidebar-collapsed .nav-item > span {
+  display: none;
+}
+.pe2 .figma-topbar {
+  height: 64px;
+  padding: 0 28px;
+}
+.pe2 .figma-menu-button {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+}
+.pe2 .figma-search-button {
+  width: 200px;
+  padding: 8px 12px;
+}
+.pe2 .figma-top-actions {
+  gap: 8px;
+}
+.pe2 .mobile-nav {
+  height: auto;
+}
+.pe2 .mobile-nav button {
+  min-height: 58px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+}
+[dir='rtl'] .pe2 .figma-collapse-button svg {
+  transform: scaleX(-1);
+}
+[dir='rtl'] .pe2 .sidebar {
+  left: auto;
+  right: 0;
+  border-inline-end: 0;
+  border-inline-start: 1px solid var(--line);
+}
+[dir='rtl'] .pe2 .figma-topbar {
+  margin-inline-start: 0;
+  margin-inline-end: var(--sidebar-w);
+}
+
+/* RT L overrides */
 [dir='rtl'] .pe2 .section-label {
   letter-spacing: 0;
   text-transform: none;

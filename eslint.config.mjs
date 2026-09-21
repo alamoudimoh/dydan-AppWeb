@@ -125,7 +125,7 @@ export default [
     },
   },
   {
-    files: ['*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
