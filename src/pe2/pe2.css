@@ -1,0 +1,610 @@
+/* ─────────────────────────────────────────────────────────
+   Product Experience 2 — verbatim port of PE2 ''index.css''
+   (Dydan-AppWebProductExperience02/src/index.css), scoped to the
+   '.pe2' route wrapper so ported screens render pixel-identically
+   while every other route keeps the app's own styles.
+
+   Transform notes (only scoping differs, values are untouched):
+     :root { ........................ -> .pe2 {
+     [data-theme="sovereign"] { ....... -> #root.dark .pe2 {  (app dark mode)
+     body { .......................... -> .pe2 {
+     [dir="rtl"] ... .................. -> [dir="rtl"] .pe2 ...
+     ::-webkit-scrollbar / :focus-visible / ::selection -> .pe2-scoped
+     * box-sizing & html rules dropped (Tailwind preflight / app base)
+   ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   DayDan — Design Token Foundation
+   Two themes × Two views × LTR + RTL
+───────────────────────────────────────── */
+
+.pe2 {
+  /* DayDan (default) */
+  --page:             #F8FAFF;
+  --surface:          #FFFFFF;
+  --surface-2:        #E9E5FF;
+  --surface-3:        #F0EEFF;
+  --t-primary:        #0B1020;
+  --t-muted:          #5E687B;
+  --t-faint:          #9BA5B7;
+  --line:             #D4D8E2;
+  --line-strong:      #7A8497;
+  --brand:            #4326EA;
+  --brand-hover:      #3216C8;
+  --brand-faint:      #EEE9FF;
+  --brand-contrast:   #FFFFFF;
+  --accent:           #09CCF4;
+  --accent-bg:        #DDF9FF;
+  --accent-text:      #006B80;
+  --callout-bg:       #0B1020;
+  --callout-text:     #F8FAFF;
+  --sig-done:         #0F763F;
+  --sig-done-bg:      #DCFCE7;
+  --sig-due:          #826026;
+  --sig-due-bg:       #FEF3C7;
+  --sig-over:         #C52338;
+  --sig-over-bg:      #FFE4E6;
+  --sig-flag:         #BF1881;
+  --sig-flag-bg:      #FCE7F3;
+
+  --font-ui:   "Comfortaa", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-ar:   "Cairo", system-ui, sans-serif;
+
+  /* ── Identity / member accent tokens ── */
+  --member-sarah:   #3216C8;
+  --member-daniel:  #0F763F;
+  --member-liam:    #0AB5D9;
+
+  /* ── Project accent tokens ── */
+  --project-1: #BF1881;
+  --project-2: #EA6C14;
+  --project-3: #2EA86B;
+
+  /* ── Goal accent tokens ── */
+  --goal-1: #4326EA;
+  --goal-2: #0AB5D9;
+  --goal-3: #BF1881;
+
+  --r-xs:  4px;
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  18px;
+  --r-xl:  24px;
+  --r-2xl: 32px;
+  --r-full: 9999px;
+
+  --shadow-xs: 0 1px 2px rgba(11,16,32,.06);
+  --shadow-sm: 0 1px 4px rgba(11,16,32,.08), 0 2px 8px rgba(11,16,32,.04);
+  --shadow-md: 0 4px 16px rgba(11,16,32,.10), 0 2px 6px rgba(11,16,32,.06);
+  --shadow-lg: 0 12px 40px rgba(11,16,32,.12), 0 4px 12px rgba(11,16,32,.06);
+
+  --sidebar-w: 244px;
+}
+
+#root.dark .pe2 {
+  --page:             #1A1A1A;
+  --surface:          #242424;
+  --surface-2:        #2E2E2E;
+  --surface-3:        #333333;
+  --t-primary:        #F2F2F2;
+  --t-muted:          #999999;
+  --t-faint:          #666666;
+  --line:             #3A3A3A;
+  --line-strong:      #4D4D4D;
+  --brand:            #FFC107;
+  --brand-hover:      #FFD04D;
+  --brand-faint:      #2A2200;
+  --brand-contrast:   #1A1A1A;
+  --accent:           #31BFC4;
+  --accent-bg:        #0D2F30;
+  --accent-text:      #31BFC4;
+  --callout-bg:       #F2F2F2;
+  --callout-text:     #1A1A1A;
+  --sig-done:         #31C476;
+  --sig-done-bg:      #0A2E1A;
+  --sig-due:          #FFC107;
+  --sig-due-bg:       #2A2200;
+  --sig-over:         #E87382;
+  --sig-over-bg:      #2E0A10;
+  --sig-flag:         #AC85E0;
+  --sig-flag-bg:      #1E1030;
+
+  --font-ui:   "Comfortaa", system-ui, -apple-system, sans-serif;
+  --font-mono: "Ubuntu Mono", ui-monospace, monospace;
+
+  /* ── Identity / member accent tokens ── */
+  --member-sarah:   #FF8A00;
+  --member-daniel:  #29D6B4;
+  --member-liam:    #B87EF7;
+
+  /* ── Project accent tokens ── */
+  --project-1: #E879BE;
+  --project-2: #FFC107;
+  --project-3: #29D6B4;
+
+  /* ── Goal accent tokens ── */
+  --goal-1: #FFC107;
+  --goal-2: #B87EF7;
+  --goal-3: #E879BE;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.30);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.20);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.40), 0 2px 6px rgba(0,0,0,.25);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.50), 0 4px 12px rgba(0,0,0,.30);
+}
+
+[dir="rtl"] .pe2 { --font-ui: var(--font-ar); }
+
+/* ─── Base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+.pe2 {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.6;
+  background: var(--page);
+  color: var(--t-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.pe2.theme-transitioning,
+.pe2.theme-transitioning * {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.15s ease,
+    box-shadow 0.25s ease !important;
+}
+
+.pe2 ::-webkit-scrollbar { width: 5px; height: 5px; }
+.pe2 ::-webkit-scrollbar-track { background: transparent; }
+.pe2 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 99px; }
+.pe2 ::-webkit-scrollbar-thumb:hover { background: var(--t-muted); }
+
+.pe2 :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.pe2 ::selection { background: var(--brand-faint); color: var(--t-primary); }
+
+/* ─── Semantic CSS helpers ──────────────── */
+.pe2 .bg-page      { background: var(--page); }
+.pe2 .bg-surface   { background: var(--surface); }
+.pe2 .bg-surface-2 { background: var(--surface-2); }
+.pe2 .bg-surface-3 { background: var(--surface-3); }
+.pe2 .bg-brand     { background: var(--brand); }
+.pe2 .bg-brand-faint { background: var(--brand-faint); }
+.pe2 .bg-accent    { background: var(--accent); }
+.pe2 .bg-accent-bg { background: var(--accent-bg); }
+.pe2 .bg-callout   { background: var(--callout-bg); }
+.pe2 .bg-sig-done-bg { background: var(--sig-done-bg); }
+.pe2 .bg-sig-due-bg  { background: var(--sig-due-bg); }
+.pe2 .bg-sig-over-bg { background: var(--sig-over-bg); }
+.pe2 .bg-sig-flag-bg { background: var(--sig-flag-bg); }
+
+.pe2 .text-primary  { color: var(--t-primary); }
+.pe2 .text-muted    { color: var(--t-muted); }
+.pe2 .text-faint    { color: var(--t-faint); }
+.pe2 .text-brand    { color: var(--brand); }
+.pe2 .text-accent   { color: var(--accent-text); }
+.pe2 .text-callout  { color: var(--callout-text); }
+.pe2 .text-sig-done { color: var(--sig-done); }
+.pe2 .text-sig-due  { color: var(--sig-due); }
+.pe2 .text-sig-over { color: var(--sig-over); }
+.pe2 .text-sig-flag { color: var(--sig-flag); }
+
+.pe2 .border-line       { border-color: var(--line); }
+.pe2 .border-line-strong { border-color: var(--line-strong); }
+.pe2 .border-brand      { border-color: var(--brand); }
+
+.pe2 .font-ui   { font-family: var(--font-ui); }
+.pe2 .font-mono { font-family: var(--font-mono); }
+
+.pe2 .shadow-xs { box-shadow: var(--shadow-xs); }
+.pe2 .shadow-sm { box-shadow: var(--shadow-sm); }
+.pe2 .shadow-md { box-shadow: var(--shadow-md); }
+.pe2 .shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* ─── App shell layout ─────────────────── */
+.pe2 .app-shell {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.pe2 .sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  border-inline-end: 1px solid var(--line);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.2s ease;
+}
+
+/* ─── Shared page container — consistent content width ─── */
+.pe2 .page-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+}
+
+/* ─── Collapsible sidebar ─── */
+.pe2 .app-shell.sidebar-collapsed { --sidebar-w: 74px; }
+.pe2 .sidebar.collapsed .collapse-hide { display: none !important; }
+.pe2 .sidebar.collapsed .section-label { display: none; }
+.pe2 .sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
+.pe2 .sidebar.collapsed .nav-item > span:not(.badge) { display: none; }
+.pe2 .sidebar.collapsed .sidebar-header { flex-direction: column; gap: 10px; }
+.pe2 .collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--t-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.pe2 .collapse-toggle:hover { background: var(--surface-2); color: var(--t-primary); }
+[dir="rtl"] .collapse-toggle svg { transform: scaleX(-1); }
+
+.pe2 .main-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--page);
+}
+
+.pe2 .mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 768px) {
+  .pe2 .sidebar { display: none; }
+  .pe2 .mobile-nav { display: flex; }
+  .pe2 .main-content { padding-bottom: 70px; }
+}
+
+/* ─── Navigation ───────────────────────── */
+.pe2 .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t-muted);
+  transition: all 0.12s ease;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  width: 100%;
+  text-align: start;
+}
+
+.pe2 .nav-item:hover { background: var(--surface-2); color: var(--t-primary); }
+
+.pe2 .nav-item.active {
+  background: var(--brand-faint);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.pe2 .section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--t-faint);
+  padding: 14px 12px 4px;
+}
+[dir="rtl"] .section-label { letter-spacing: 0; text-transform: none; }
+
+/* ─── View toggle ──────────────────────── */
+.pe2 .view-toggle {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: var(--r-full);
+  padding: 3px;
+}
+
+.pe2 .view-toggle-btn {
+  flex: 1;
+  padding: 5px 10px;
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  color: var(--t-muted);
+  background: transparent;
+  font-family: var(--font-ui);
+  transition: all 0.14s ease;
+}
+
+.pe2 .view-toggle-btn.active {
+  background: var(--brand);
+  color: var(--brand-contrast);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ─── Buttons ──────────────────────────── */
+.pe2 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--r-md);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 8px 16px;
+  min-height: 38px;
+  transition: all 0.14s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.pe2 .btn-primary { background: var(--brand); color: var(--brand-contrast); border-color: var(--brand); }
+.pe2 .btn-primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+
+.pe2 .btn-secondary { background: var(--surface-2); color: var(--t-primary); border-color: var(--line); }
+.pe2 .btn-secondary:hover { border-color: var(--line-strong); }
+
+.pe2 .btn-ghost { background: transparent; color: var(--t-muted); border-color: transparent; }
+.pe2 .btn-ghost:hover { background: var(--surface-2); color: var(--t-primary); }
+
+.pe2 .btn-danger { background: var(--sig-over-bg); color: var(--sig-over); border-color: var(--sig-over); }
+.pe2 .btn-danger:hover { background: var(--sig-over); color: white; }
+
+.pe2 .btn-sm { font-size: 12px; padding: 5px 11px; min-height: 30px; border-radius: var(--r-sm); }
+.pe2 .btn-lg { font-size: 15px; padding: 12px 24px; min-height: 48px; border-radius: var(--r-lg); }
+.pe2 .btn-icon { padding: 8px; min-height: 36px; width: 36px; }
+
+/* ─── Card ─────────────────────────────── */
+.pe2 .card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── Input ────────────────────────────── */
+.pe2 .input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--t-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.pe2 .input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-faint); }
+.pe2 .input::placeholder { color: var(--t-faint); }
+
+/* ─── Task row ─────────────────────────── */
+.pe2 .task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.pe2 .task-row:hover { background: var(--surface-2); }
+.pe2 .task-row.done .task-title { text-decoration: line-through; color: var(--t-muted); }
+
+.pe2 .task-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--line-strong);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-top: 1px;
+  cursor: pointer;
+}
+.pe2 .task-check:hover { border-color: var(--brand); background: var(--brand-faint); }
+.pe2 .task-check.checked { background: var(--sig-done); border-color: var(--sig-done); }
+
+/* ─── Badge ────────────────────────────── */
+.pe2 .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── Progress ─────────────────────────── */
+.pe2 .progress-track {
+  background: var(--surface-2);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+.pe2 .progress-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--brand);
+  transition: width 0.5s ease;
+}
+.pe2 .progress-fill.done { background: var(--sig-done); }
+.pe2 .progress-fill.accent { background: var(--accent); }
+.pe2 .progress-fill.gold { background: var(--sig-due); }
+
+/* ─── Avatar ───────────────────────────── */
+.pe2 .avatar {
+  border-radius: var(--r-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: white;
+}
+
+/* ─── Modal ────────────────────────────── */
+.pe2 .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+}
+
+.pe2 .modal-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.pe2 .drawer-panel {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(480px, 100vw);
+  background: var(--surface);
+  border-inline-start: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  z-index: 100;
+}
+
+/* ─── Toast ────────────────────────────── */
+.pe2 .toast-container {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (min-width: 769px) { .pe2 .toast-container { bottom: 24px; } }
+
+.pe2 .toast {
+  background: var(--callout-bg);
+  color: var(--callout-text);
+  padding: 10px 20px;
+  border-radius: var(--r-full);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+  animation: toastIn 0.22s ease forwards, toastOut 0.22s ease 2.6s forwards;
+}
+
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(6px); } }
+
+/* ─── Skeleton ─────────────────────────── */
+.pe2 .skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--r-sm);
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ─── Empty state ──────────────────────── */
+.pe2 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 32px;
+  text-align: center;
+}
+
+/* ─── Reward card ──────────────────────── */
+.pe2 .reward-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.pe2 .reward-card:hover { box-shadow: var(--shadow-md); }
+
+/* ─── Streak pips ──────────────────────── */
+.pe2 .streak-pips { display: flex; gap: 3px; }
+.pe2 .streak-pip { width: 8px; height: 8px; border-radius: 2px; background: var(--line); }
+.pe2 .streak-pip.active { background: var(--brand); }
+.pe2 .streak-pip.today { background: var(--accent); }
+
+/* ─── Page header ──────────────────────── */
+.pe2 .page-header {
+  padding: 28px 28px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) { .pe2 .page-header { padding: 20px 16px 0; } }
+
+/* ─── RTL ──────────────────────────────── */
+.pe2 [dir="rtl"] .sidebar { border-inline-end: none; border-inline-start: 1px solid var(--line); }
+.pe2 [dir="rtl"] .drawer-panel { inset-inline-end: auto; inset-inline-start: 0; border-inline-start: none; border-inline-end: 1px solid var(--line); }
+
+/* ─── Responsive ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
+

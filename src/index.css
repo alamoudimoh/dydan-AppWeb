@@ -1,3 +1,9 @@
+/* PE2 loads its typefaces from Google Fonts; load the same family set so the
+   ported screens resolve the exact same font faces PE2 does. */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Ubuntu:wght@300;400;500;700&family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Ubuntu+Mono:wght@400;700&display=swap');
+
+@import './pe2/pe2.css';
+
 @import 'tailwindcss';
 
 /* Figma shell foundation. Route content remains on the legacy Joy boundary.
@@ -1906,11 +1912,17 @@ body {
   --shadow-sm:        0 1px 4px rgba(11,16,32,.08), 0 2px 8px rgba(11,16,32,.04);
   --shadow-md:        0 4px 16px rgba(11,16,32,.10), 0 2px 6px rgba(11,16,32,.06);
   --shadow-lg:        0 12px 40px rgba(11,16,32,.12), 0 4px 12px rgba(11,16,32,.06);
-  /* Prototype body defaults (16px / 1.5) so inherited text inside the
-     scope matches PE2 instead of the app-wide 15px / 1.55. */
+  /* PE2's source declares 15px / 1.6 on body, but the bundled Joy baseline
+     overrides it to 16px / line-height 1.5 at runtime (verified against the
+     live PE2 dev server). Keep the scope at the rendered 16 / 1.5 so both
+     apps compute identically. */
   font-size:          16px;
   line-height:        1.5;
   font-family:        var(--font-ui);
+  /* PE2 renders through Joy's <CssBaseline>, which leaves the body's
+     inherited color at var(--t-muted) for un-colored content; the verbatim
+     body copy above sets t-primary, so pin the PE2 runtime outcome. */
+  color:              var(--t-muted);
 }
 /* Prototype renders these as pills (--r-full); the production rules
    use --r-sm. */
@@ -2027,6 +2039,11 @@ body {
   .pe2 .main-content {
     padding-bottom: 70px;
   }
+  /* PE2 shows no topbar at mobile widths — the bottom mobile-nav is the
+     only chrome. Hiding the app's figma topbar keeps the port faithful. */
+  .pe2 .figma-topbar {
+    display: none;
+  }
 }
 
 /* PE2 overrides for Dydan's figma-* class structure within the home route */
@@ -2138,7 +2155,7 @@ body {
   height: auto;
 }
 .pe2 .mobile-nav button {
-  min-height: 58px;
+  min-height: 53px;
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 600;
