@@ -7,6 +7,7 @@ import path from 'node:path'
 const dir = path.dirname(fileURLToPath(import.meta.url))
 const css = readFileSync(path.join(dir, 'pe2.css'), 'utf8')
 const indexCss = readFileSync(path.join(dir, '..', 'index.css'), 'utf8')
+const app = readFileSync(path.join(dir, '..', 'App.jsx'), 'utf8')
 // Comment text (e.g. the transform-notes header) must not count as rules.
 const cssNoComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
 
@@ -37,7 +38,10 @@ test('pe2.css: keyframes stay global, media + rtl + theme rules stay scoped', ()
     'single-line media rule scoped',
   )
   assert.ok(css.includes('[dir="rtl"] .pe2 {'), 'rtl token rule scoped')
-  assert.ok(css.includes('#root.dark .pe2 {'), 'sovereign theme maps to app dark mode')
+  assert.ok(
+    css.includes('#root.dark .pe2 {'),
+    'sovereign theme maps to app dark mode',
+  )
   assert.ok(!cssNoComments.includes('body {'), 'no unscoped body rule')
   assert.ok(!cssNoComments.includes(':root {'), 'no unscoped :root rule')
 })
@@ -48,5 +52,22 @@ test('index.css: imports PE2 fonts and the scoped stylesheet', () => {
     /@import url\('https:\/\/fonts\.googleapis\.com\/css2\?family=Comfortaa/,
     'PE2 Google Fonts are loaded for the ported screens',
   )
-  assert.match(indexCss, /@import '\.\/pe2\/pe2\.css';/, 'scoped PE2 stylesheet imported')
+  assert.match(
+    indexCss,
+    /@import '\.\/pe2\/pe2\.css';/,
+    'scoped PE2 stylesheet imported',
+  )
+})
+
+test('App: applies the PE2 presentation scope to every route', () => {
+  assert.match(
+    app,
+    /<div className='pe2'>/,
+    'application route wrapper is PE2-scoped',
+  )
+  assert.doesNotMatch(
+    app,
+    /isHomeRoute/,
+    'PE2 styling must not exclude nested or public routes',
+  )
 })

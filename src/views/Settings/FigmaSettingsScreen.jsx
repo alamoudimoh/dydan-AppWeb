@@ -500,7 +500,7 @@ function ConfirmDialog({ config, onClose }) {
 }
 
 /* ─── The PE2 settings screen, bound to Dydan hooks ─── */
-function SettingsScreen({ ctx, isSolo }) {
+function SettingsScreen({ ctx, isSolo, onTabNavigate }) {
   const currentUser = MEMBERS.find(m => m.isCurrentUser) || MEMBERS[0]
   const isRTL = ctx.isRTL
 
@@ -553,7 +553,18 @@ function SettingsScreen({ ctx, isSolo }) {
   const setLocaleField = (field, value) =>
     setLocale(prev => ({ ...prev, [field]: value }))
 
-  const go = id => setTab(id)
+  // The PE2 index uses one tabbed surface.  Dydan owns individual settings
+  // routes because each is backed by real queries, mutations, permissions, and
+  // account/session controls.  Preserve the PE2 tab strip and use it as the
+  // literal presentation navigation to those real route surfaces rather than
+  // exposing the prototype-only state below it.
+  const go = id => {
+    if (id === 'overview' || !onTabNavigate) {
+      setTab(id)
+      return
+    }
+    onTabNavigate(id)
+  }
 
   return (
     <>
@@ -577,7 +588,7 @@ function SettingsScreen({ ctx, isSolo }) {
 
         <Tabs
           value={tab}
-          onChange={(_, v) => setTab(v)}
+          onChange={(_, v) => go(v)}
           sx={{ bgcolor: 'transparent' }}
         >
           {/* Horizontal, scrollable tab strip */}
@@ -2163,6 +2174,23 @@ const FigmaSettingsScreen = () => {
   }
 
   const theme = brand === 'sovereign' ? 'sovereign' : 'daydan'
+  const settingsRoutes = {
+    advanced: '/settings/advanced',
+    billing: '/settings/account',
+    circle: '/settings/circle',
+    data: '/settings/storage',
+    developer: '/settings/developer',
+    household: '/settings/subaccounts',
+    integrations: '/settings/integrations',
+    language: '/settings/localization',
+    notifications: '/settings/notifications',
+    privacy: '/settings/privacy',
+    profile: '/profile',
+    security: '/settings/security',
+    sidepanel: '/settings/sidepanel',
+    theme: '/settings/theme',
+    twofa: '/settings/mfa',
+  }
 
   const ctx = {
     theme,
@@ -2210,7 +2238,11 @@ const FigmaSettingsScreen = () => {
 
   return (
     <>
-      <SettingsScreen ctx={ctx} isSolo={false} />
+      <SettingsScreen
+        ctx={ctx}
+        isSolo={false}
+        onTabNavigate={tab => navigate(settingsRoutes[tab] || '/settings')}
+      />
       {toasts.length > 0 && (
         <div className='toast-container'>
           {toasts.map(t => (

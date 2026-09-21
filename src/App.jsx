@@ -39,35 +39,11 @@ const AppContent = () => {
   const { showNotification } = useNotification()
   const location = useLocation()
   const shellVisible = hasAppShell(location.pathname)
-  // The Home / Focus / Quest screens render pixel-for-pixel from Product
-  // Experience 2 (see the `.pe2` scoped block in index.css). Scope the PE2
-  // token/class overrides to this route only so the rest of the app is
-  // untouched.
-  //
-  // Trailing slashes are normalized so `/projects/` and `/projects` both take
-  // the PE2-styled shell. Sub-routes (e.g. `/maintenance/assets/:id`,
-  // `/shopping/:id`) are intentionally excluded and keep the default shell.
-  const normalizedPath =
-    location.pathname.length > 1
-      ? location.pathname.replace(/\/+$/, '')
-      : location.pathname
-  const isHomeRoute = [
-    '/',
-    '/settings',
-    '/calendar',
-    '/chores',
-    '/today',
-    '/projects',
-    '/routines',
-    '/maintenance',
-    '/shopping',
-    '/goals',
-    '/rewards',
-    '/activities',
-    '/family',
-    '/search',
-    '/notifications',
-  ].includes(normalizedPath)
+  // Product Experience 2 is the presentation authority for the application,
+  // not only for its direct screen routes.  Keep this wrapper around every
+  // route so nested details, settings, authentication, onboarding, loading,
+  // offline, and error states resolve the literal PE2 variables and shared
+  // primitives rather than falling back to the legacy visual system.
   useSyncOnReconnect()
 
   // Every route renders through this Outlet, so one listener here gives crash
@@ -137,7 +113,7 @@ const AppContent = () => {
 
   return (
     <RequireAuth>
-      <div className={isHomeRoute ? 'pe2' : undefined}>
+      <div className='pe2'>
         <a href='#main-content' className='skip-link'>
           Skip to content
         </a>

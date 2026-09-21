@@ -137,20 +137,17 @@ describe('FigmaSettingsScreen (PE2 settings port)', () => {
     ).toBeInTheDocument()
   })
 
-  it('switches tabs and renders the PE2 developer panel content', async () => {
+  it('routes a PE2 tab to its real Dydan settings surface', async () => {
     const user = await restore()
 
     await user.click(screen.getByRole('tab', { name: 'Developer' }))
-    expect(
-      screen.getByText('DayDan 2.4.1 · Build 20260815'),
-    ).toBeInTheDocument()
+    expect(navigate).toHaveBeenCalledWith('/settings/developer')
   })
 
-  it('toggles the sovereign theme through the Theme tab', async () => {
+  it('routes the PE2 Theme tab to Dydan’s persisted theme settings', async () => {
     const user = await restore()
 
     await user.click(screen.getByRole('tab', { name: 'Theme' }))
-    await user.click(screen.getByRole('button', { name: /Sovereign/ }))
-    expect(themeState.setBrand).toHaveBeenCalledWith('sovereign')
+    expect(navigate).toHaveBeenCalledWith('/settings/theme')
   })
 })
