@@ -134,7 +134,7 @@ function RedeemPointsModal({ config }) {
               fontWeight: 500,
               '&:focus-within': {
                 borderColor: 'warning.500',
-                boxShadow: '0 0 0 2px rgba(255, 193, 7, 0.2)',
+                boxShadow: '0 0 0 2px var(--focus-outer)',
               },
             }}
           />

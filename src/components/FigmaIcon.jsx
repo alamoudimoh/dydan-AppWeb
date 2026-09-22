@@ -87,15 +87,15 @@ export const LogoMark = ({ size = 28, sovereign = false }) =>
         cx='50'
         cy='50'
         r='46'
-        fill='#1A1A1A'
-        stroke='#FFC107'
+        fill='#071A2C'
+        stroke='#E0B45A'
         strokeWidth='7'
       />
       <text
         x='50'
         y='66'
         textAnchor='middle'
-        fill='#FFC107'
+        fill='#E0B45A'
         fontSize='40'
         fontWeight='800'
       >
@@ -104,15 +104,15 @@ export const LogoMark = ({ size = 28, sovereign = false }) =>
     </svg>
   ) : (
     <svg width={size} height={size} viewBox='0 0 100 100' aria-hidden='true'>
-      <circle cx='50' cy='50' r='46' fill='#4326EA' />
+      <circle cx='50' cy='50' r='46' fill='#34236D' />
       <path
         d='M30 38 L50 26 L70 38 L65 66 L50 74 L35 66z'
         fill='none'
-        stroke='#09CCF4'
+        stroke='#FFCC5C'
         strokeWidth='5.5'
         strokeLinejoin='round'
       />
-      <circle cx='50' cy='50' r='10' fill='#09CCF4' />
+      <circle cx='50' cy='50' r='10' fill='#FFCC5C' />
     </svg>
   )
 

@@ -594,76 +594,82 @@ body {
    Mirrors design-source/figma-make/src/index.css.
 ────────────────────────────────────────────── */
 :root {
-  --accent-bg: #ddf9ff;
-  --accent-text: #006b80;
-  --callout-bg: #0b1020;
-  --callout-text: #f8faff;
-  --sig-done: #0f763f;
-  --sig-done-bg: #dcfce7;
-  --sig-due: #826026;
-  --sig-due-bg: #fef3c7;
-  --sig-over: #c52338;
-  --sig-over-bg: #ffe4e6;
-  --sig-flag: #bf1881;
-  --sig-flag-bg: #fce7f3;
-  --member-1: #3216c8;
-  --member-2: #0f763f;
-  --member-3: #0ab5d9;
-  --member-4: #bf1881;
-  --member-5: #ea6c14;
-  --member-6: #2ea86b;
-  --project-1: #bf1881;
-  --project-2: #ea6c14;
-  --project-3: #2ea86b;
-  --goal-1: #4326ea;
-  --goal-2: #0ab5d9;
-  --goal-3: #bf1881;
+  --accent-bg: #ffcc5c;
+  --accent-text: #684a00;
+  --callout-bg: #34236d;
+  --callout-text: #fff8e8;
+  --sig-done: #0b5d45;
+  --sig-done-bg: #0b5d45;
+  --sig-due: #704600;
+  --sig-due-bg: #704600;
+  --sig-over: #8e2838;
+  --sig-over-bg: #8e2838;
+  --sig-flag: #174e78;
+  --sig-flag-bg: #174e78;
+  --member-1: #34236d;
+  --member-2: #ffcc5c;
+  --member-3: #7769b6;
+  --member-4: #d16a79;
+  --member-5: #d9d1eb;
+  --member-6: #2f5f8a;
+  --project-1: #d16a79;
+  --project-2: #2f5f8a;
+  --project-3: #d9d1eb;
+  --goal-1: #34236d;
+  --goal-2: #ffcc5c;
+  --goal-3: #d16a79;
   --r-xs: 4px;
   --r-xl: 24px;
   --r-2xl: 32px;
   --shadow-md:
-    0 4px 16px rgba(11, 16, 32, 0.1), 0 2px 6px rgba(11, 16, 32, 0.06);
+    0 4px 16px rgba(52, 35, 109, 0.1), 0 2px 6px rgba(52, 35, 109, 0.06);
   --shadow-lg:
-    0 12px 40px rgba(11, 16, 32, 0.12), 0 4px 12px rgba(11, 16, 32, 0.06);
+    0 12px 40px rgba(52, 35, 109, 0.12), 0 4px 12px rgba(52, 35, 109, 0.06);
 }
 [data-theme='sovereign'] {
-  --accent-bg: #f2f2f2;
-  --accent-text: #6b5200;
-  --callout-bg: #1a1a1a;
-  --callout-text: #f2f2f2;
-  --sig-done: #31c476;
-  --sig-done-bg: #0a2e1a;
-  --sig-due: #ffc107;
-  --sig-due-bg: #2a2200;
-  --sig-over: #e87382;
-  --sig-over-bg: #2e0a10;
-  --sig-flag: #ac85e0;
-  --sig-flag-bg: #1e1030;
+  --accent-bg: #e0b45a;
+  --accent-text: #e0b45a;
+  --callout-bg: #f6f2e8;
+  --callout-text: #071a2c;
+  --sig-done: #0d5a3d;
+  --sig-done-bg: #0d5a3d;
+  --sig-due: #6a4300;
+  --sig-due-bg: #6a4300;
+  --sig-over: #8a222a;
+  --sig-over-bg: #8a222a;
+  --sig-flag: #164d68;
+  --sig-flag-bg: #164d68;
   --member-1: var(--product-member-1);
   --member-2: var(--product-member-2);
   --member-3: var(--product-member-3);
   --member-4: var(--product-member-4);
   --member-5: var(--product-member-5);
   --member-6: var(--product-member-6);
-  --project-1: #e879be;
-  --project-2: #ffc107;
-  --project-3: #29d6b4;
-  --goal-1: #ffc107;
-  --goal-2: #b87ef7;
-  --goal-3: #e879be;
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --project-1: #b86f44;
+  --project-2: #2c6373;
+  --project-3: #d8c9a8;
+  --goal-1: #e0b45a;
+  --goal-2: #4d7794;
+  --goal-3: #b86f44;
+  --shadow-md: 0 4px 16px rgba(4, 17, 29, 0.4), 0 2px 6px rgba(4, 17, 29, 0.25);
+  --shadow-lg:
+    0 12px 40px rgba(4, 17, 29, 0.5), 0 4px 12px rgba(4, 17, 29, 0.3);
 }
 [data-theme='sovereign'][data-joy-color-scheme='light'] {
-  --sig-done: #0f763f;
-  --sig-done-bg: #dcfce7;
-  --sig-due: #6b5200;
-  --sig-due-bg: #fef3c7;
-  --sig-over: #c52338;
-  --sig-over-bg: #ffe4e6;
-  --sig-flag: #bf1881;
-  --sig-flag-bg: #fce7f3;
+  --accent-bg: #e0b45a;
+  --accent-text: #5f421b;
+  --callout-bg: #071a2c;
+  --callout-text: #f6f2e8;
+  --sig-done: #0d5a3d;
+  --sig-done-bg: #0d5a3d;
+  --sig-due: #6a4300;
+  --sig-due-bg: #6a4300;
+  --sig-over: #8a222a;
+  --sig-over-bg: #8a222a;
+  --sig-flag: #164d68;
+  --sig-flag-bg: #164d68;
 }
+
 #root.dark {
   --accent-bg: var(--product-surface-subtle);
   --accent-text: var(--product-gold-text);
@@ -1164,7 +1170,9 @@ body {
   transition: box-shadow 0.15s ease;
   cursor: pointer;
 }
-.reward-card:hover { box-shadow: var(--shadow-md); }
+.reward-card:hover {
+  box-shadow: var(--shadow-md);
+}
 
 .input {
   width: 100%;
@@ -1848,9 +1856,7 @@ body {
 
    The production theme maps some tokens differently from the product
    experience prototype and a few shared classes render differently too:
-   - --line (border gray)      → prototype #D4D8E2 (prod uses #7A8497)
-   - --brand-faint (lavender)  → prototype #EEE9FF (prod uses #DDF9FF)
-   - --t-faint / --surface-3   → prototype #9BA5B7 / #F0EEFF
+   - runtime semantic variables are inherited from the active product theme
    - radii --r-xs..--r-2xl     → prototype 4/8/12/18/24/32
    - --shadow-md               → prototype 0 4 16 .10 + 0 2 6 .06
    - .badge/.view-toggle/.toast → prototype pills (--r-full)
@@ -1863,67 +1869,57 @@ body {
    ────────────────────────────────────────────────────────────── */
 /* PE2 tokens - exact copy from Product Experience 2 to ensure 100% visual fidelity */
 .pe2 {
-  --page:             #F8FAFF;
-  --surface:          #FFFFFF;
-  --surface-2:        #E9E5FF;
-  --surface-3:        #F0EEFF;
-  --t-primary:        #0B1020;
-  --t-muted:          #5E687B;
-  --t-faint:          #9BA5B7;
-  --line:             #D4D8E2;
-  --line-strong:      #7A8497;
-  --brand:            #4326EA;
-  --brand-hover:      #3216C8;
-  --brand-faint:      #EEE9FF;
-  --brand-contrast:   #FFFFFF;
-  --accent:           #09CCF4;
-  --accent-bg:        #DDF9FF;
-  --accent-text:      #006B80;
-  --callout-bg:       #0B1020;
-  --callout-text:     #F8FAFF;
-  --sig-done:         #0F763F;
-  --sig-done-bg:      #DCFCE7;
-  --sig-due:          #826026;
-  --sig-due-bg:       #FEF3C7;
-  --sig-over:         #C52338;
-  --sig-over-bg:      #FFE4E6;
-  --sig-flag:         #BF1881;
-  --sig-flag-bg:      #FCE7F3;
-  --font-ui:          "Comfortaa", system-ui, -apple-system, sans-serif;
-  --font-mono:        "JetBrains Mono", ui-monospace, monospace;
-  --font-ar:          "Cairo", system-ui, sans-serif;
-  --member-sarah:     #3216C8;
-  --member-daniel:    #0F763F;
-  --member-liam:      #0AB5D9;
-  --project-1:        #BF1881;
-  --project-2:        #EA6C14;
-  --project-3:        #2EA86B;
-  --goal-1:           #4326EA;
-  --goal-2:           #0AB5D9;
-  --goal-3:           #BF1881;
-  --r-xs:             4px;
-  --r-sm:             8px;
-  --r-md:             12px;
-  --r-lg:             18px;
-  --r-xl:             24px;
-  --r-2xl:            32px;
-  --r-full:           9999px;
-  --shadow-xs:        0 1px 2px rgba(11,16,32,.06);
-  --shadow-sm:        0 1px 4px rgba(11,16,32,.08), 0 2px 8px rgba(11,16,32,.04);
-  --shadow-md:        0 4px 16px rgba(11,16,32,.10), 0 2px 6px rgba(11,16,32,.06);
-  --shadow-lg:        0 12px 40px rgba(11,16,32,.12), 0 4px 12px rgba(11,16,32,.06);
-  /* PE2's source declares 15px / 1.6 on body, but the bundled Joy baseline
-     overrides it to 16px / line-height 1.5 at runtime (verified against the
-     live PE2 dev server). Keep the scope at the rendered 16 / 1.5 so both
-     apps compute identically. */
-  font-size:          16px;
-  line-height:        1.5;
-  font-family:        var(--font-ui);
-  /* PE2 renders through Joy's <CssBaseline>, which leaves the body's
-     inherited color at var(--t-muted) for un-colored content; the verbatim
-     body copy above sets t-primary, so pin the PE2 runtime outcome. */
-  color:              var(--t-muted);
+  --page: var(--product-page);
+  --surface: var(--product-surface);
+  --surface-2: var(--product-surface-subtle);
+  --surface-3: var(--product-surface-subtle);
+  --t-primary: var(--product-text);
+  --t-muted: var(--product-text-muted);
+  --t-faint: var(--product-text-muted);
+  --line: var(--product-boundary);
+  --line-strong: var(--product-boundary);
+  --brand: var(--product-brand);
+  --brand-hover: var(--product-brand-hover);
+  --brand-faint: var(--product-brand-soft);
+  --brand-contrast: var(--product-brand-contrast);
+  --accent: var(--product-action);
+  --accent-bg: var(--product-brand-soft);
+  --accent-text: var(--product-gold-text);
+  --callout-bg: var(--product-callout);
+  --callout-text: var(--product-callout-text);
+  --sig-done: var(--product-progress-complete);
+  --sig-done-bg: var(--product-progress-complete);
+  --sig-due: var(--product-chart-2);
+  --sig-due-bg: var(--product-chart-2);
+  --sig-over: var(--product-progress-at-risk);
+  --sig-over-bg: var(--product-progress-at-risk);
+  --sig-flag: var(--product-signal);
+  --sig-flag-bg: var(--product-signal);
+  --font-ui: var(--product-font-ui);
+  --font-mono: var(--product-font-data);
+  --font-ar: var(--product-font-arabic);
+  --member-sarah: var(--product-member-1);
+  --member-daniel: var(--product-member-2);
+  --member-liam: var(--product-member-3);
+  --project-1: var(--product-chart-4);
+  --project-2: var(--product-chart-6);
+  --project-3: var(--product-chart-5);
+  --goal-1: var(--product-chart-1);
+  --goal-2: var(--product-chart-2);
+  --goal-3: var(--product-chart-4);
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --r-full: 9999px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: var(--font-ui);
+  color: var(--t-muted);
 }
+
 /* Prototype renders these as pills (--r-full); the production rules
    use --r-sm. */
 .pe2 .view-toggle,
@@ -2009,7 +2005,9 @@ body {
   color: var(--t-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 .pe2 .collapse-toggle:hover {
   background: var(--surface-2);

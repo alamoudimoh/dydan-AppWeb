@@ -9,6 +9,7 @@ import FigmaIcon from '../../components/FigmaIcon'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useProductTheme } from '../../contexts/ThemeContext'
 import { MEMBERS } from '../../pe2/fixtures'
+import { productTokens } from '../../theme/tokens'
 import { apiClient } from '../../utils/ApiClient'
 import {
   readLocalStorageItem,
@@ -1277,7 +1278,9 @@ function SettingsScreen({ ctx, isSolo, onTabNavigate }) {
                               height: 20,
                               borderRadius: '50%',
                               background:
-                                t === 'daydan' ? '#4326EA' : '#1A1A1A',
+                                t === 'daydan'
+                                  ? productTokens.dydan.light.brand
+                                  : productTokens.sovereign.light.brand,
                               border: '2px solid var(--line)',
                             }}
                           />
