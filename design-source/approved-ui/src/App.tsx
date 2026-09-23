@@ -1,0 +1,541 @@
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
+import Button from "@mui/joy/Button";
+import IconButton from "@mui/joy/IconButton";
+import Avatar from "@mui/joy/Avatar";
+import Chip from "@mui/joy/Chip";
+
+import { MEMBERS, Task, NOTIFICATIONS } from "./data";
+import { useTasks, useTaskMutations } from "./hooks/useHousehold";
+import {
+  useProductBrand, useProductView, useProductPersona,
+  Brand, View as CtxView, Persona,
+} from "./contexts/ThemeContext";
+import { useLocalization } from "./contexts/LocalizationContext";
+
+import FocusHome from "./screens/FocusHome";
+import QuestHome from "./screens/QuestHome";
+import TodayScreen from "./screens/TodayScreen";
+import AllTasksScreen from "./screens/AllTasksScreen";
+import CalendarScreen from "./screens/CalendarScreen";
+import ProjectsScreen from "./screens/ProjectsScreen";
+import RoutinesScreen from "./screens/RoutinesScreen";
+import ShoppingScreen from "./screens/ShoppingScreen";
+import GoalsScreen from "./screens/GoalsScreen";
+import ActivityScreen from "./screens/ActivityScreen";
+import SettingsScreen from "./screens/SettingsScreen";
+import SearchScreen from "./screens/SearchScreen";
+import ErrorScreen from "./screens/ErrorScreen";
+import MaintenanceScreen from "./screens/MaintenanceScreen";
+import AuthScreen from "./screens/AuthScreen";
+import OnboardingScreen from "./screens/OnboardingScreen";
+import { OfflineScreen, UnavailableScreen, PermissionDeniedScreen } from "./screens/SharedStatesScreens";
+import NotificationsScreen from "./screens/NotificationsScreen";
+import RewardsScreen from "./screens/RewardsScreen";
+import ProgressScreen from "./screens/ProgressScreen";
+import TaskDetailModal from "./components/TaskDetailModal";
+import CreateTaskModal from "./components/CreateTaskModal";
+import ConfirmDialog from "./components/ConfirmDialog";
+
+/* Types preserved for all existing screens */
+export type Theme = Brand;
+export type View = CtxView;
+export type { Persona };
+export type AppState = "auth" | "onboarding" | "app";
+export type Screen =
+  | "home" | "today" | "all-tasks" | "calendar" | "projects"
+  | "routines" | "maintenance" | "shopping" | "goals" | "activity"
+  | "notifications" | "rewards" | "progress"
+  | "settings" | "search" | "error" | "offline" | "unavailable" | "permission-denied";
+
+export interface ConfirmDialogConfig {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  onConfirm: () => void;
+}
+
+export interface AppCtx {
+  theme: Theme;
+  view: View;
+  persona: Persona;
+  screen: Screen;
+  isRTL: boolean;
+  taskDetail: Task | null;
+  showCreateTask: boolean;
+  navigate: (s: Screen) => void;
+  setView: (v: View) => void;
+  setTheme: (t: Theme) => void;
+  setPersona: (p: Persona) => void;
+  toggleRTL: () => void;
+  openTask: (t: Task) => void;
+  closeTask: () => void;
+  openCreate: () => void;
+  closeCreate: () => void;
+  showToast: (msg: string) => void;
+  signOut: () => void;
+  goToOnboarding: () => void;
+  triggerSessionExpiry: () => void;
+  showConfirm: (config: ConfirmDialogConfig) => void;
+  pendingInvite: string | null;
+  inviteMember: (email: string) => void;
+  acceptInvite: () => void;
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+  setSidebarCollapsed: (v: boolean) => void;
+}
+
+/* ─── Route ⇄ Screen mapping ─────────── */
+const SCREEN_PATH: Record<Screen, string> = {
+  home: "/", today: "/today", "all-tasks": "/all-tasks", calendar: "/calendar",
+  projects: "/projects", routines: "/routines", maintenance: "/maintenance",
+  shopping: "/shopping", goals: "/goals", activity: "/activity",
+  notifications: "/notifications", rewards: "/rewards", progress: "/progress",
+  settings: "/settings", search: "/search", error: "/error", offline: "/offline",
+  unavailable: "/unavailable", "permission-denied": "/permission-denied",
+};
+const PATH_SCREEN: Record<string, Screen> = Object.fromEntries(
+  Object.entries(SCREEN_PATH).map(([s, p]) => [p, s as Screen]),
+) as Record<string, Screen>;
+
+/* ─── Icon system (preserved) ────────── */
+const ICON_PATHS: Record<string, string> = {
+  home: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z|M9 22V12h6v10",
+  today: "M8 7V3m8 4V3m-9 8h10|M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",
+  tasks: "M9 11l3 3L22 4|M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+  calendar: "M8 7V3m8 4V3m-9 8h10|M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",
+  projects: "M2 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z",
+  routines: "M4 6h16|M4 12h16|M4 18h16",
+  maintenance: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",
+  shopping: "M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z|M3 6h18|M16 10a4 4 0 0 1-8 0",
+  goals: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  activity: "M22 12h-4l-3 9L9 3l-3 9H2",
+  settings: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z|M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+  search: "M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z",
+  plus: "M12 5v14|M5 12h14",
+  check: "M20 6 9 17l-5-5",
+  chevron_right: "M9 18l6-6-6-6",
+  chevron_down: "M6 9l6 6 6-6",
+  x: "M18 6 6 18|M6 6l12 12",
+  star: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+  fire: "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z",
+  flame: "M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z",
+  mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z|M22 6l-10 7L2 6",
+  users: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M23 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75",
+  download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4|M7 10l5 5 5-5|M12 15V3",
+  upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4|M17 8l-5-5-5 5|M12 3v12",
+  help: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z|M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3|M12 17h.01",
+  rtl: "M3 9h14|M3 15h14|M7 5l-4 4 4 4|M21 9h-4|M21 15h-4",
+  gift: "M20 12v10H4V12|M2 7h20v5H2z|M12 22V7|M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z|M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z",
+  bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9|M13.73 21a2 2 0 0 1-3.46 0",
+  error: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z|M12 9v4|M12 17h.01",
+  refresh: "M1 4v6h6|M23 20v-6h-6|M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15",
+  user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2|M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+  more: "M5 12h.01|M12 12h.01|M19 12h.01",
+  flag: "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z|M4 22v-7",
+  globe: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z|M2 12h20|M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z",
+  clipboard: "M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2|M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z",
+  edit: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7|M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z",
+  trash: "M3 6h18|M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6|M10 11v6|M14 11v6|M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",
+  lock: "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z|M7 11V7a5 5 0 0 1 10 0v4",
+  info: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z|M12 16v-4|M12 8h.01",
+  send: "M22 2 11 13|M22 2 15 22 9 13 2 9l20-7z",
+  copy: "M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z",
+  eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z|M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  award: "M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z|M8.21 13.89L7 23l5-3 5 3-1.21-9.12",
+  bars: "M3 12h18|M3 6h18|M3 18h18",
+  zap: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  map: "M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z|M8 2v16|M16 6v16",
+  tag: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z|M7 7h.01",
+  repeat: "M17 1l4 4-4 4|M3 11V9a4 4 0 0 1 4-4h14|M7 23l-4-4 4-4|M21 13v2a4 4 0 0 1-4 4H3",
+  sparkle: "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z|M19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75L19 3z|M5 17l.75 2.25L8 20l-2.25.75L5 23l-.75-2.25L2 20l2.25-.75L5 17z",
+  shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  phone: "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.09 6.09l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z",
+  monitor: "M8 21h8|M12 17v4|M2 3h20a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z",
+  log_out: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4|M16 17l5-5-5-5|M21 12H9",
+  external: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6|M15 3h6v6|M10 14 21 3",
+  clock: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z|M12 6v6l4 2",
+  database: "M12 2C6.48 2 2 4.24 2 7s4.48 5 10 5 10-2.24 10-5S17.52 2 12 2z|M2 7v5c0 2.76 4.48 5 10 5s10-2.24 10-5V7|M2 12v5c0 2.76 4.48 5 10 5s10-2.24 10-5v-5",
+  wifi_off: "M1 1l22 22|M16.72 11.06A10.94 10.94 0 0 1 19 12.55|M5 12.55a10.94 10.94 0 0 1 5.17-2.39|M10.71 5.05A16 16 0 0 1 22.58 9|M1.42 9a15.91 15.91 0 0 1 4.7-2.88|M8.53 16.11a6 6 0 0 1 6.95 0|M12 20h.01",
+};
+
+export function Icon({ name, size = 18, className = "", style }: { name: string; size?: number; className?: string; style?: React.CSSProperties }) {
+  const paths = (ICON_PATHS[name] || ICON_PATHS["home"]).split("|");
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style} aria-hidden="true">
+      {paths.map((d, i) => <path key={i} d={d} />)}
+    </svg>
+  );
+}
+
+/* ─── Logo mark (preserved) ──────────── */
+export function LogoMark({ size = 28, theme }: { size?: number; theme: Theme }) {
+  if (theme === "sovereign") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="var(--brand)" stroke="var(--brand-detail)" strokeWidth="7" />
+        <text x="50" y="66" textAnchor="middle" fill="var(--brand-detail)" fontSize="40" fontWeight="800" fontFamily="var(--font-ui)">M</text>
+      </svg>
+    );
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="46" fill="var(--brand)" />
+      <path d="M30 38 L50 26 L70 38 L65 66 L50 74 L35 66z" fill="none" stroke="var(--brand-detail)" strokeWidth="5.5" strokeLinejoin="round" />
+      <circle cx="50" cy="50" r="10" fill="var(--brand-detail)" />
+    </svg>
+  );
+}
+
+/* ─── Nav definition ─────────────────── */
+type NavDef = { id: Screen; labelKey: string; icon: string; childHidden?: boolean; soloHidden?: boolean; badge?: string };
+
+const NAV_PRIMARY: NavDef[] = [
+  { id: "home", labelKey: "nav.home", icon: "home" },
+  { id: "today", labelKey: "nav.today", icon: "today", badge: "2" },
+  { id: "all-tasks", labelKey: "nav.allTasks", icon: "tasks" },
+  { id: "calendar", labelKey: "nav.calendar", icon: "calendar" },
+];
+const NAV_ORGANIZE: NavDef[] = [
+  { id: "projects", labelKey: "nav.projects", icon: "projects", childHidden: true },
+  { id: "routines", labelKey: "nav.routines", icon: "routines" },
+  { id: "maintenance", labelKey: "nav.maintenance", icon: "maintenance", childHidden: true },
+];
+const NAV_TEAM: NavDef[] = [
+  { id: "shopping", labelKey: "nav.shopping", icon: "shopping" },
+  { id: "goals", labelKey: "nav.goals", icon: "goals" },
+  { id: "rewards", labelKey: "nav.rewards", icon: "gift" },
+  { id: "progress", labelKey: "nav.progress", icon: "activity", soloHidden: true, childHidden: true },
+  { id: "activity", labelKey: "nav.activity", icon: "activity", soloHidden: true },
+];
+
+/* ─── Sidebar (Joy chrome) ───────────── */
+function Sidebar({ ctx }: { ctx: AppCtx }) {
+  const { t } = useLocalization();
+  const isChild = ctx.persona === "child";
+  const isSolo = ctx.persona === "solo";
+  const currentMember = isChild ? MEMBERS.find(m => m.role === "child")! : MEMBERS.find(m => m.isCurrentUser)!;
+
+  const renderItem = (item: NavDef) => {
+    if (isChild && item.childHidden) return null;
+    if (isSolo && item.soloHidden) return null;
+    return (
+      <button key={item.id} className={`nav-item ${ctx.screen === item.id ? "active" : ""}`} onClick={() => ctx.navigate(item.id)}>
+        <Icon name={item.icon} size={15} />
+        <span className="flex-1 text-start">{t(item.labelKey)}</span>
+        {item.badge && !isChild && (
+          <Chip size="sm" variant="soft" sx={{ bgcolor: "var(--surface-2)", color: "var(--t-primary)", border: "1px solid var(--line-strong)", fontSize: 10, fontWeight: 700 }}>{item.badge}</Chip>
+        )}
+      </button>
+    );
+  };
+
+  const collapsed = ctx.sidebarCollapsed;
+
+  return (
+    <nav className={`sidebar ${collapsed ? "collapsed" : ""}`} aria-label="Main navigation">
+      <div className="sidebar-header flex items-center gap-2 px-3 pt-4 pb-3 border-b" style={{ borderColor: "var(--line)" }}>
+        <LogoMark size={28} theme={ctx.theme} />
+        <div className="flex-1 min-w-0 collapse-hide">
+          <div className="font-bold text-primary leading-tight" style={{ fontSize: 14 }}>{t("app.name")}</div>
+          <div className="text-faint" style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase" }}>
+            {isChild ? t("mode.quest") : ctx.view === "quest" ? t("mode.questMode") : t("mode.focusMode")}
+          </div>
+        </div>
+        <button className="collapse-toggle" onClick={ctx.toggleSidebar} title={collapsed ? "Expand side panel" : "Collapse side panel"} aria-label="Toggle side panel">
+          <Icon name={collapsed ? "chevron_right" : "bars"} size={16} />
+        </button>
+      </div>
+
+      {!isChild && (
+        <div className="px-3 py-3 border-b collapse-hide" style={{ borderColor: "var(--line)" }}>
+          <div className="view-toggle" role="group" aria-label="View mode">
+            <button type="button" className={`view-toggle-btn ${ctx.view === "focus" ? "active" : ""}`}
+              aria-pressed={ctx.view === "focus"} onClick={() => ctx.setView("focus")}>{t("mode.focus")}</button>
+            <button type="button" className={`view-toggle-btn ${ctx.view === "quest" ? "active" : ""}`}
+              aria-pressed={ctx.view === "quest"} onClick={() => ctx.setView("quest")}>{t("mode.quest")}</button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto px-2 py-2">
+        {NAV_PRIMARY.map(renderItem)}
+        <div className="section-label">{t("nav.organize")}</div>
+        {NAV_ORGANIZE.map(renderItem)}
+        <div className="section-label">{t("nav.team")}</div>
+        {NAV_TEAM.map(renderItem)}
+      </div>
+
+      <div className="border-t px-2 pt-2 pb-3 flex flex-col gap-1" style={{ borderColor: "var(--line)" }}>
+        <div className="px-1 mb-1 collapse-hide">
+          <div className="section-label" style={{ padding: "4px 0 4px", fontSize: 9 }}>{t("demo.persona")}</div>
+          <div className="flex gap-1">
+            {(["parent", "child", "solo"] as Persona[]).map(p => (
+              <Button key={p} size="sm" onClick={() => ctx.setPersona(p)}
+                variant={ctx.persona === p ? "solid" : "soft"}
+                color={ctx.persona === p ? "primary" : "neutral"}
+                sx={{ flex: 1, fontSize: 10, minHeight: 24, px: 0.5, borderRadius: "var(--r-sm)" }}>
+                {t(`demo.${p}`)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="px-1 mb-1 collapse-hide">
+          <div className="section-label" style={{ padding: "4px 0 4px", fontSize: 9 }}>{t("demo.theme")}</div>
+          <div className="view-toggle">
+            <button type="button" className={`view-toggle-btn ${ctx.theme === "dydan" ? "active" : ""}`}
+              aria-pressed={ctx.theme === "dydan"} onClick={() => ctx.setTheme("dydan")}>dydan</button>
+            <button type="button" className={`view-toggle-btn ${ctx.theme === "sovereign" ? "active" : ""}`}
+              aria-pressed={ctx.theme === "sovereign"} onClick={() => ctx.setTheme("sovereign")}>Sovereign</button>
+          </div>
+        </div>
+
+        <button className="nav-item" onClick={ctx.toggleRTL} style={{ fontSize: 12 }}>
+          <Icon name="globe" size={14} />
+          <span>{ctx.isRTL ? t("lang.toEnglish") : t("lang.toArabic")}</span>
+        </button>
+        <button className={`nav-item ${ctx.screen === "error" ? "active" : ""}`} onClick={() => ctx.navigate("error")}>
+          <Icon name="error" size={14} />
+          <span className="flex-1 text-start">{t("demo.errorDemo")}</span>
+        </button>
+        <button className={`nav-item ${ctx.screen === "settings" ? "active" : ""}`} onClick={() => ctx.navigate("settings")}>
+          <Icon name="settings" size={14} />
+          <span>{t("nav.settings")}</span>
+        </button>
+        <div className="flex items-center gap-2 px-2 py-2 cursor-pointer rounded-lg hover:bg-surface-2" style={{ borderRadius: "var(--r-md)" }} onClick={() => ctx.navigate("settings")}>
+          <Avatar size="sm" sx={{ bgcolor: currentMember.avatarColor, color: "var(--pr-cream)", fontWeight: 700, fontSize: 11 }}>{currentMember.initials}</Avatar>
+          <div className="min-w-0 flex-1 collapse-hide">
+            <div className="font-semibold text-primary truncate" style={{ fontSize: 13 }}>{currentMember.name}</div>
+            <div className="text-faint truncate" style={{ fontSize: 10 }}>{t(`role.${currentMember.role}`)}</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── Mobile bottom nav ──────────────── */
+function MobileNav({ ctx }: { ctx: AppCtx }) {
+  const { t } = useLocalization();
+  const items: { id: Screen; icon: string; label: string }[] = [
+    { id: "home", icon: "home", label: t("nav.home") },
+    { id: "today", icon: "today", label: t("nav.today") },
+    { id: "shopping", icon: "shopping", label: t("nav.shopping") },
+    { id: "goals", icon: "goals", label: t("nav.goals") },
+    { id: "settings", icon: "settings", label: t("nav.settings") },
+  ];
+  return (
+    <div className="mobile-nav">
+      <div className="flex w-full">
+        {items.map(item => (
+          <button key={item.id}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2"
+            style={{ color: ctx.screen === item.id ? "var(--brand)" : "var(--t-muted)", fontFamily: "var(--font-ui)", fontSize: 10, fontWeight: 600, border: "none", background: "transparent", cursor: "pointer" }}
+            onClick={() => ctx.navigate(item.id)}>
+            <Icon name={item.icon} size={20} />
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ToastContainer({ toasts }: { toasts: { id: string; msg: string }[] }) {
+  return (
+    <div className="toast-container">
+      {toasts.map(t => <div key={t.id} className="toast">{t.msg}</div>)}
+    </div>
+  );
+}
+
+/* ─── App ────────────────────────────── */
+export default function App() {
+  const routerNav = useNavigate();
+  const location = useLocation();
+
+  const { brand, setBrand } = useProductBrand();
+  const { view, setView } = useProductView();
+  const { persona, setPersona } = useProductPersona();
+  const { isRTL, toggleLang, t } = useLocalization();
+
+  const { data: tasks = [] } = useTasks();
+  const mutations = useTaskMutations();
+
+  const [appState, setAppState] = useState<AppState>("app");
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [taskDetail, setTaskDetail] = useState<Task | null>(null);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [toasts, setToasts] = useState<{ id: string; msg: string }[]>([]);
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
+  const [pendingInvite, setPendingInvite] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [readNotifIds, setReadNotifIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const screen: Screen = PATH_SCREEN[location.pathname] ?? "home";
+  const unreadCount = NOTIFICATIONS.filter(n => !n.isRead && !readNotifIds.has(n.id)).length;
+
+  // One search input: the persistent top-bar field controls the Search results route.
+  useEffect(() => {
+    if (screen === "search") searchInputRef.current?.focus();
+  }, [screen]);
+
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        routerNav("/search");
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onShortcut);
+    return () => window.removeEventListener("keydown", onShortcut);
+  }, [routerNav]);
+
+  const showToast = useCallback((msg: string) => {
+    const id = Date.now().toString() + Math.random();
+    setToasts(prev => [...prev, { id, msg }]);
+    setTimeout(() => setToasts(prev => prev.filter(x => x.id !== id)), 2900);
+  }, []);
+
+  const setThemeCb = useCallback((th: Theme) => { setBrand(th); showToast(`Switched to ${th === "dydan" ? "dydan" : "Sovereign"} theme`); }, [setBrand, showToast]);
+  const setViewCb = useCallback((v: View) => { setView(v); showToast(`${v === "focus" ? "Focus" : "Quest"} view active`); }, [setView, showToast]);
+  const setPersonaCb = useCallback((p: Persona) => { setPersona(p); showToast(`Demo: ${p} persona`); }, [setPersona, showToast]);
+
+  const completeTask = useCallback((id: string) => { mutations.complete.mutate(id); showToast("Task completed ✓"); setTaskDetail(null); }, [mutations.complete, showToast]);
+  const reopenTask = useCallback((id: string) => { mutations.reopen.mutate(id); showToast("Task reopened"); setTaskDetail(null); }, [mutations.reopen, showToast]);
+  const deleteTask = useCallback((id: string) => { mutations.remove.mutate(id); showToast("Task deleted"); setTaskDetail(null); }, [mutations.remove, showToast]);
+
+  const isChild = persona === "child";
+  const isSolo = persona === "solo";
+  const activeView: View = isChild ? "quest" : view;
+
+  const ctx: AppCtx = useMemo(() => ({
+    theme: brand, view: activeView, persona, screen, isRTL, taskDetail, showCreateTask,
+    navigate: (s: Screen) => routerNav(SCREEN_PATH[s]),
+    setView: setViewCb, setTheme: setThemeCb, setPersona: setPersonaCb,
+    toggleRTL: toggleLang,
+    openTask: (tk: Task) => setTaskDetail(tk),
+    closeTask: () => setTaskDetail(null),
+    openCreate: () => setShowCreateTask(true),
+    closeCreate: () => { setShowCreateTask(false); setTaskToEdit(null); },
+    showToast,
+    signOut: () => { setIsSessionExpired(false); setAppState("auth"); showToast("Signed out"); },
+    goToOnboarding: () => setAppState("onboarding"),
+    triggerSessionExpiry: () => { setIsSessionExpired(true); setAppState("auth"); },
+    showConfirm: (c: ConfirmDialogConfig) => setConfirmDialog(c),
+    pendingInvite,
+    inviteMember: (email: string) => { setPendingInvite(email); showToast(`Invitation sent to ${email}`); },
+    acceptInvite: () => { if (pendingInvite) { setPendingInvite(null); setPersona("parent"); showToast(`${pendingInvite} joined! Family mode activated.`); } },
+    sidebarCollapsed,
+    toggleSidebar: () => setSidebarCollapsed(v => !v),
+    setSidebarCollapsed,
+  }), [brand, activeView, persona, screen, isRTL, taskDetail, showCreateTask, pendingInvite, sidebarCollapsed, routerNav, setViewCb, setThemeCb, setPersonaCb, toggleLang, showToast, setPersona]);
+
+  const openEditTask = (tk: Task) => { setTaskDetail(null); setTaskToEdit(tk); };
+
+  /* ─── Auth / Onboarding shells ─── */
+  if (appState === "auth") {
+    return (
+      <>
+        <AuthScreen theme={brand} isSessionExpired={isSessionExpired}
+          onAuthenticated={() => { setAppState("app"); setIsSessionExpired(false); routerNav("/"); showToast("Welcome back, Sarah!"); }} />
+        <ToastContainer toasts={toasts} />
+      </>
+    );
+  }
+  if (appState === "onboarding") {
+    return (
+      <>
+        <OnboardingScreen theme={brand}
+          onComplete={(selectedView) => { setAppState("app"); setView(selectedView); setPersona("solo"); routerNav("/"); showToast("Welcome to dydan!"); }} />
+        <ToastContainer toasts={toasts} />
+      </>
+    );
+  }
+
+  return (
+    <div className={`app-shell ${sidebarCollapsed ? "sidebar-collapsed" : ""}`} style={{ fontFamily: "var(--font-ui)" }}>
+      <Sidebar ctx={ctx} />
+      <main className="main-content" id="main-content">
+        <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-40" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
+          <div className="flex items-center gap-2 md:hidden">
+            <LogoMark size={22} theme={brand} />
+            <span className="font-bold text-primary" style={{ fontSize: 15 }}>{t("app.name")}</span>
+          </div>
+          <div className="top-search flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg min-w-0 flex-1 max-w-[340px] ms-2"
+            style={{ background: "var(--surface-2)", fontSize: 13 }}>
+            <Icon name="search" size={16} style={{ color: "var(--t-muted)", flexShrink: 0 }} />
+            <input ref={searchInputRef} type="search" value={searchQuery}
+              aria-label="Search dydan" placeholder={t("action.searchPlaceholder")}
+              onFocus={() => { if (screen !== "search") routerNav("/search"); }}
+              onChange={e => { setSearchQuery(e.target.value); if (screen !== "search") routerNav("/search"); }}
+              onKeyDown={e => { if (e.key === "Escape") searchInputRef.current?.blur(); }}
+              className="min-w-0 flex-1 bg-transparent text-primary outline-none"
+              style={{ border: "none", fontSize: 13, fontFamily: "var(--font-ui)", width: "100%" }} />
+            {searchQuery && (
+              <button className="btn btn-ghost btn-icon" aria-label="Clear search"
+                onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); }}
+                style={{ padding: 0, width: 22, height: 22, flexShrink: 0 }}>
+                <Icon name="x" size={13} />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 ms-auto">
+            <IconButton variant="solid" color="primary" title="new task" aria-label="new task"
+              onClick={ctx.openCreate} sx={{ borderRadius: "var(--r-md)", flexShrink: 0 }}>
+              <Icon name="plus" size={18} />
+            </IconButton>
+            <div className="relative">
+              <IconButton variant="plain" color="neutral" onClick={() => ctx.navigate("notifications")}><Icon name="bell" size={18} /></IconButton>
+              {unreadCount > 0 && <span className="absolute top-0.5 end-0.5 w-2 h-2 rounded-full bg-sig-over pointer-events-none" style={{ background: "var(--sig-over)" }} />}
+            </div>
+          </div>
+        </div>
+
+        <div className="main-scroll">
+          <Routes>
+          <Route path="/" element={activeView === "quest"
+            ? <QuestHome ctx={ctx} tasks={tasks} isSolo={isSolo} onComplete={completeTask} />
+            : <FocusHome ctx={ctx} tasks={tasks} isSolo={isSolo} onComplete={completeTask} />} />
+          <Route path="/today" element={<TodayScreen ctx={ctx} tasks={tasks} onComplete={completeTask} />} />
+          <Route path="/all-tasks" element={<AllTasksScreen ctx={ctx} tasks={tasks} onComplete={completeTask} />} />
+          <Route path="/calendar" element={<CalendarScreen ctx={ctx} tasks={tasks} />} />
+          <Route path="/projects" element={<ProjectsScreen ctx={ctx} />} />
+          <Route path="/routines" element={<RoutinesScreen ctx={ctx} />} />
+          <Route path="/maintenance" element={<MaintenanceScreen ctx={ctx} />} />
+          <Route path="/shopping" element={<ShoppingScreen ctx={ctx} isSolo={isSolo} />} />
+          <Route path="/goals" element={<GoalsScreen ctx={ctx} isSolo={isSolo} isChild={isChild} />} />
+          <Route path="/activity" element={<ActivityScreen ctx={ctx} isSolo={isSolo} />} />
+          <Route path="/notifications" element={<NotificationsScreen ctx={ctx} readIds={readNotifIds} onMarkRead={(id) => setReadNotifIds(prev => new Set([...prev, id]))} onMarkAllRead={() => setReadNotifIds(new Set(NOTIFICATIONS.map(n => n.id)))} />} />
+          <Route path="/rewards" element={<RewardsScreen ctx={ctx} isChild={isChild} isSolo={isSolo} />} />
+          <Route path="/progress" element={<ProgressScreen ctx={ctx} />} />
+          <Route path="/settings" element={<SettingsScreen ctx={ctx} isSolo={isSolo} />} />
+          <Route path="/search" element={<SearchScreen ctx={ctx} query={searchQuery} tasks={tasks} />} />
+          <Route path="/error" element={<ErrorScreen ctx={ctx} />} />
+          <Route path="/offline" element={<OfflineScreen ctx={ctx} />} />
+          <Route path="/unavailable" element={<UnavailableScreen ctx={ctx} />} />
+          <Route path="/permission-denied" element={<PermissionDeniedScreen ctx={ctx} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </main>
+      <MobileNav ctx={ctx} />
+
+      {taskDetail && <TaskDetailModal task={taskDetail} ctx={ctx} onComplete={completeTask} onDelete={deleteTask} onEdit={openEditTask} onReopen={reopenTask} />}
+      {showCreateTask && <CreateTaskModal ctx={ctx} onCreated={(title, details) => {
+        mutations.create.mutate({ id: `task-${Date.now()}`, title, status: "todo", priority: details?.priority || "medium", assigneeId: details?.assigneeId || (isChild ? "liam" : "sarah"), dueDate: details?.dueDate || "2026-08-15", points: details?.points || 15, category: details?.category });
+      }} />}
+      {taskToEdit && <CreateTaskModal ctx={ctx} taskToEdit={taskToEdit} onCreated={(title, details) => mutations.update.mutate({ id: taskToEdit.id, title, details })} />}
+
+      {confirmDialog && <ConfirmDialog config={confirmDialog} onClose={() => setConfirmDialog(null)} />}
+      <ToastContainer toasts={toasts} />
+    </div>
+  );
+}

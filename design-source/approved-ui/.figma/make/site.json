@@ -1,0 +1,11 @@
+{
+  "description": "dydan | continuous improvement",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  },
+  "title": "dydan | continuous improvement"
+}

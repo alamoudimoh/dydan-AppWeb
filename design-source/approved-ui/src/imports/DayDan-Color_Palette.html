@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F8FAFF" id="theme-color-meta">
+  <title>Taskier — Unified colour system</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Ubuntu+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #4326EA;
+      --logo-gold: #4326EA;
+      /* Taskier Signals — status hues outside the Violet × Aqua band.
+         Each has a light-surface variant (text) and a dark-surface variant (text or fill). */
+      --sig-done-l: #0F763F;    --sig-done-d: #2DC072;
+      --sig-due-l: #826026;     --sig-due-d: #E39B1E;
+      --sig-overdue-l: #C52338; --sig-overdue-d: #F2637A;
+      --sig-flag-l: #BF1881;    --sig-flag-d: #EA8AC7;
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 28px;
+      --shadow: 0 20px 60px rgba(11, 16, 32, .10);
+    }
+
+    /* ---------- Theme tokens (every pair audited; ratios stamped live by JS) ---------- */
+    html[data-theme="light"] {
+      --page: #F8FAFF;
+      --surface: #FFFFFF;
+      --surface-2: #E9E5FF;
+      --text: #0B1020;
+      --muted: #5E687B;
+      --line: #7A8497;
+      --brand: #4326EA;
+      --brand-hover: #3216C8;
+      --brand-contrast: #FFFFFF;
+      --soft: #DDF9FF;
+      --gold-text: #006B80;
+      --action-bg: #09CCF4;
+      --action-text: #0B1020;
+      --callout-bg: #0B1020;
+      --callout-text: #F8FAFF;
+      --callout-muted: #CBD5E1;
+      --hero-wash: rgba(9,204,244,.12);
+      --focus-inner: #FFFFFF;
+      --focus-outer: #4326EA;
+      --logo-a: #4326EA;
+      --logo-b: #09CCF4;
+      --stage-bg: #F8FAFF;
+      --sig-done: var(--sig-done-l); --sig-due: var(--sig-due-l);
+      --sig-overdue: var(--sig-overdue-l); --sig-flag: var(--sig-flag-l);
+    }
+    html[data-theme="dark"] {
+      --page: #080B14;
+      --surface: #0B1220;
+      --surface-2: #111827;
+      --text: #F8FAFC;
+      --muted: #CBD5E1;
+      --line: #64748B;
+      --brand: #C4B5FD;
+      --brand-hover: #DDD6FE;
+      --brand-contrast: #1E1B4B;
+      --soft: #1E1B4B;
+      --gold-text: #7DD3FC;
+      --action-bg: #7DD3FC;
+      --action-text: #0B1220;
+      --callout-bg: #111827;
+      --callout-text: #F8FAFC;
+      --callout-muted: #CBD5E1;
+      --hero-wash: rgba(67,38,234,.16);
+      --focus-inner: #080B14;
+      --focus-outer: #C4B5FD;
+      --logo-a: #4326EA;
+      --logo-b: #09CCF4;
+      --stage-bg: #0B1220;
+      --shadow: 0 20px 70px rgba(0, 0, 0, .26);
+      --sig-done: var(--sig-done-d); --sig-due: var(--sig-due-d);
+      --sig-overdue: var(--sig-overdue-d); --sig-flag: var(--sig-flag-d);
+    }
+
+    @media (prefers-contrast: more) {
+      html[data-theme="light"] { --muted: #0B1020; --line: #0B1020; --gold-text: #0B1020; }
+      html[data-theme="dark"]  { --muted: #F8FAFC; --line: #F8FAFC; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--page);
+      color: var(--text);
+      font-family: "Ubuntu Sans", "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    button, a { font: inherit; }
+    a { color: inherit; }
+    img, svg { max-width: 100%; }
+    code, .hex { direction: ltr; unicode-bidi: isolate; font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3 { letter-spacing: 0; }
+
+    :where(a, button):focus-visible {
+      outline: 3px solid var(--focus-outer);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 2px var(--focus-inner);
+      border-radius: 8px;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      inset-inline-start: 16px;
+      top: 12px;
+      transform: translateY(-180%);
+      padding: 10px 16px;
+      border: 2px solid var(--focus-outer);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important; height: 1px !important;
+      padding: 0 !important; margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    .shell { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
+
+    /* ---------- Control strip: language + theme radiogroups ---------- */
+    .top-strip {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .strip-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-block: 6px;
+    }
+    .concept-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    html[lang="ar"] .concept-label { letter-spacing: 0; text-transform: none; }
+    .concept-label::before {
+      content: "";
+      width: 10px; height: 10px; flex: 0 0 auto;
+      border: 2px solid var(--text);
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .switchers { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .seg {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-2);
+    }
+    .seg-btn {
+      min-width: 72px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .seg-btn[aria-checked="true"] {
+      background: var(--brand);
+      color: var(--brand-contrast);
+      font-weight: 800;
+    }
+
+    /* ---------- Header + hero ---------- */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-block: 22px;
+    }
+    .brand {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 13px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 20px;
+    }
+    .brand-logo { width: 92px; height: 46px; display: block; }
+    .brand-word .ar { font-family: "Amiri", "Cairo", serif; color: var(--gold-text); font-size: 1.1em; }
+    .nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .nav a {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 5px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .nav a:hover { color: var(--text); text-decoration: underline; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+      align-items: center;
+      gap: 56px;
+      padding-block: 64px 84px;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 560px; height: 560px;
+      inset-inline-end: -170px;
+      top: -120px;
+      border-radius: 50%;
+      background: var(--hero-wash);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 18px;
+      color: var(--gold-text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    html[lang="ar"] .eyebrow { letter-spacing: 0; text-transform: none; }
+    .eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(38px, 6vw, 70px);
+      line-height: 1.12;
+      letter-spacing: -.02em;
+      font-weight: 800;
+    }
+    .lead { max-width: 640px; margin-block: 18px 26px; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 15px;
+      border: 2px solid transparent;
+    }
+    .button.primary { background: var(--brand); color: var(--brand-contrast); border-color: var(--brand); }
+    .button.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+    html[data-theme="dark"] .button.primary:hover { color: #1E1B4B; }
+    .button.secondary { border-color: var(--line); color: var(--text); background: var(--surface); }
+    .button.secondary:hover { border-color: var(--text); }
+    .logo-stage {
+      margin: 0;
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+      padding: 40px 24px 22px;
+      background: var(--stage-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .stage-logo { width: min(520px, 88%); height: auto; aspect-ratio: 2236 / 693; }
+    .stage-caption { display: grid; justify-items: center; gap: 3px; color: var(--muted); font-size: 14px; font-weight: 700; }
+    .stage-caption code { color: var(--text); }
+
+    /* ---------- Generic section ---------- */
+    .section { padding-block: 56px; }
+    .section-head { max-width: 720px; margin-bottom: 30px; }
+    .section-head h2 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.15; letter-spacing: -.02em; }
+    .section-head p { margin: 0; color: var(--muted); }
+
+    /* ---------- Tokens (self-auditing) ---------- */
+    .token-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .token-panel {
+      padding: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .token-panel h3 { margin: 0 0 14px; font-size: 20px; }
+    .token-row {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding-block: 10px;
+      border-top: 1px solid var(--surface-2);
+    }
+    .token-row:first-of-type { border-top: 0; }
+    .specimen {
+      width: 56px; height: 44px;
+      display: grid; place-items: center;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      font-weight: 800;
+      font-size: 17px;
+    }
+    .token-meta { min-width: 0; }
+    .token-meta strong { display: block; font-size: 14px; }
+    .token-meta code { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .ratio { display: grid; justify-items: end; gap: 3px; text-align: end; }
+    .ratio strong { font-size: 15px; }
+    .ratio .level {
+      padding: 1px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    /* ---------- Six modes ---------- */
+    .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-bottom: 36px; }
+    .overview-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .overview-card a {
+      display: block;
+      padding: 14px 16px;
+      min-height: 44px;
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .overview-card a:hover { text-decoration: underline; }
+    .overview-strip { display: grid; grid-template-columns: repeat(5, 1fr); height: 34px; }
+    .mode-section {
+      scroll-margin-top: 90px;
+      margin-bottom: 22px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .mode-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+    .mode-head h3 { margin: 0; font-size: clamp(22px, 3vw, 30px); }
+    .mode-head p { margin: 0; max-width: 520px; color: var(--muted); font-size: 15px; }
+    .mode-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 16px; }
+    .preview { display: grid; grid-template-columns: 1.05fr .95fr; gap: 12px; min-height: 300px; }
+    .preview-main {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      background: linear-gradient(135deg, var(--p1), var(--p2));
+      color: var(--preview-ink);
+    }
+    .preview-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; font-weight: 800; }
+    html[lang="ar"] .preview-kicker { letter-spacing: 0; text-transform: none; }
+    .preview-kicker::after { content: ""; display: block; width: 34px; height: 3px; margin-top: 8px; background: currentColor; border-radius: 2px; }
+    .preview-title { max-width: 400px; margin: 14px 0 10px; font-size: clamp(22px, 3vw, 30px); line-height: 1.2; font-weight: 800; }
+    .preview-copy { max-width: 420px; margin: 0; color: var(--preview-ink-2); font-size: 13px; }
+    .preview-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 20px; }
+    .p-primary, .p-secondary {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 11px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .p-primary { background: var(--action-bg); color: var(--action-text); border: 0; }
+    .p-secondary { background: transparent; border: 2px solid currentColor; color: var(--preview-ink); }
+    .preview-side {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      padding: 16px;
+      background: var(--surface-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 11px;
+    }
+    .mini-card { padding: 15px; background: #FFFFFF; border: 1px solid #7A8497; border-radius: 14px; color: #0B1020; }
+    .mini-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #5E687B; font-weight: 800; }
+    html[lang="ar"] .mini-label { letter-spacing: 0; text-transform: none; }
+    .metric { margin: 6px 0 0; font-size: 32px; font-weight: 800; letter-spacing: -.02em; }
+    .progress { height: 8px; margin-top: 12px; background: #E2E8F0; border-radius: 999px; overflow: hidden; }
+    .progress span { display: block; width: 78%; height: 100%; background: var(--mode-ink); }
+    .day-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 12px; }
+    .day-list span { aspect-ratio: 1; border-radius: 7px; opacity: calc(.25 + var(--i) * .15); }
+    .swatches { display: grid; gap: 9px; align-content: start; }
+    .swatch-card {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 60px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding-inline-end: 8px;
+      overflow: hidden;
+    }
+    .swatch-color { height: 100%; min-height: 60px; border-inline-end: 1px solid var(--line); }
+    .swatch-meta strong { display: block; font-size: 14px; }
+    .swatch-meta code { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .copy-button {
+      min-height: 44px; min-width: 64px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .copy-button:hover { background: var(--surface-2); }
+
+    /* ---------- Signals ---------- */
+    .signal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
+    .signal-card {
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .signal-card h3 { margin: 0 0 4px; font-size: 19px; }
+    .signal-card > p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .signal-pair { display: grid; gap: 10px; }
+    .signal-row {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      padding-inline-end: 10px;
+    }
+    .signal-chip { align-self: stretch; display: grid; place-items: center; font-weight: 800; font-size: 15px; border-inline-end: 1px solid var(--line); }
+    .signal-meta strong { display: block; font-size: 13px; }
+    .signal-meta code { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+    .signal-ratio { text-align: end; font-size: 13px; font-weight: 800; }
+    .signal-ratio .level { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+    .signal-note {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-inline-start: 5px solid var(--gold);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .signal-note p { margin: 0; font-size: 15px; }
+
+    /* ---------- Office theme ---------- */
+    .office-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .office-card {
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .office-card h3 { margin: 0 0 8px; font-size: 24px; }
+    .office-card > p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+    .office-list { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .office-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+    .office-swatch { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 9px; border: 1px solid var(--line); }
+    .office-row strong { display: block; font-size: 13px; }
+    .office-row small { display: block; margin-top: 1px; color: var(--muted); font-size: 12px; }
+    .office-row code { font-size: 11px; color: var(--muted); }
+    .office-demo { background: var(--callout-bg); color: var(--callout-text); border-color: var(--line); }
+    .office-demo h3 { color: var(--callout-text); }
+    .office-demo > p { color: var(--callout-muted); }
+    .demo-kicker { margin: 0 0 6px; color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    html[lang="ar"] .demo-kicker { letter-spacing: 0; text-transform: none; }
+    .chart { display: flex; align-items: end; gap: 12px; height: 160px; margin-top: 28px; }
+    .chart span { flex: 1; min-width: 18px; border-radius: 10px 10px 4px 4px; border: 1px solid rgba(255, 255, 255, .35); }
+    .chart-summary { margin-top: 10px; color: var(--callout-muted); font-size: 13px; }
+    .font-note {
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .07);
+      font-size: 14px;
+    }
+    .font-note strong { color: var(--gold); }
+
+    /* ---------- Logo application ---------- */
+    .logo-system { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .logo-rule {
+      padding: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .logo-rule h3 { margin: 0 0 6px; font-size: 20px; }
+    .logo-rule > p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .mini-stage {
+      display: grid; place-items: center;
+      padding: 28px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+    .mini-stage svg { width: min(170px, 55%); height: auto; aspect-ratio: 2048 / 2043; }
+    .on-light { background: #FFFFFF; --logo-a: #4326EA; --logo-b: #006B80; --logo-gold: #4326EA; }
+    .on-dark  { background: #0B1220; --logo-a: #C4B5FD; --logo-b: #7DD3FC; --logo-gold: #C4B5FD; }
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .chip i { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--line); }
+    .chip span { padding-inline-start: 8px; border-inline-start: 1px solid var(--line); color: var(--muted); font-weight: 700; }
+
+    /* ---------- Callout + footer ---------- */
+    .callout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 34px;
+      border-radius: var(--radius-lg);
+      background: var(--callout-bg);
+      color: var(--callout-text);
+      border: 1px solid var(--line);
+    }
+    .callout h2 { margin: 0 0 8px; font-size: clamp(24px, 3.4vw, 34px); line-height: 1.2; }
+    .callout p { margin: 0; max-width: 560px; color: var(--callout-muted); }
+    .callout .button { background: var(--action-bg); color: var(--action-text); border-color: var(--action-bg); }
+    footer { margin-top: 40px; border-top: 1px solid var(--line); }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-block: 24px 36px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      inset-inline-start: 50%;
+      bottom: 28px;
+      z-index: 40;
+      transform: translate(-50%, 20px);
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: var(--brand-contrast);
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s;
+      box-shadow: var(--shadow);
+    }
+    html[dir="rtl"] .toast { transform: translate(50%, 20px); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    html[dir="rtl"] .toast.show { transform: translate(50%, 0); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; gap: 34px; padding-block: 44px 56px; }
+      .mode-layout, .office-grid, .logo-system { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .preview { grid-template-columns: 1fr; }
+      .office-list { grid-template-columns: 1fr; }
+      .strip-inner { justify-content: center; }
+      .mode-section, .office-card, .logo-rule, .token-panel { padding: 17px; }
+      .callout { padding: 22px; }
+    }
+
+    /* ---------- System preferences ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        transition-duration: .001ms !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (forced-colors: active) {
+      :where(a, button):focus-visible { outline: 3px solid Highlight; box-shadow: none; }
+      .seg-btn, .button, .copy-button { forced-color-adjust: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip">Skip to main content</a>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="taskier-mark" viewBox="0 0 2048 2043">
+      <path d="M1002.74 726.224C1164.81 713.83 1306.29 835.036 1318.92 997.086C1331.55 1159.13 1210.54 1300.79 1048.51 1313.65C886.151 1326.54 744.143 1205.23 731.491 1042.85C718.839 880.476 840.346 738.642 1002.74 726.224Z" fill="var(--logo-gold)"/>
+      <path d="M1870.5 1170.54C1896.29 1140.53 1922.21 1100.28 1943.39 1066.58C1951.36 1053.9 1961.03 1032.34 1968.49 1021.42C2053.4 1187.15 2069.77 1379.62 2014.04 1557.32C1958.82 1729.94 1825.76 1882.05 1664.8 1963.43C1493.84 2049.85 1307.93 2058.9 1127.08 2000.53C1105.27 1993.57 1083.82 1985.48 1062.85 1976.29C1057.59 1974.03 1027.95 1960.31 1024.34 1959.55C1020.97 1956.66 1006.31 1949.15 1001.77 1946.69C989.137 1939.95 976.64 1932.97 964.282 1925.75C935.28 1908.59 902.634 1885.21 875.916 1864.51C869.114 1858.43 858.22 1850.47 850.828 1844.17C844.917 1839.13 828.19 1824.56 822.557 1821.26C812.227 1810.7 688.83 1693.97 685.921 1692.6C686.154 1691.96 685.994 1691.24 685.988 1690.56L462.968 1466.34L398.351 1401.36C386.77 1389.49 366.877 1368.02 354.645 1357.49L353.556 1358.78C353.383 1358.41 353.211 1358.04 353.038 1357.68C352.308 1307.13 360.136 1255.57 377.41 1208.06C381.287 1197.4 383.685 1189.36 387.706 1183.26C391.02 1188.15 427.166 1224.58 434.073 1231.58L539.997 1338.68C622.682 1422.72 705.829 1506.3 789.435 1589.42C843.261 1642.54 898.004 1698.28 957.344 1745.16C1010.1 1787.4 1068.53 1822.02 1130.91 1848.02C1265.76 1904.7 1420.25 1910.15 1556.4 1854.46C1692.87 1798.7 1801.78 1691.27 1859.41 1555.57C1901.38 1452.66 1911.11 1339.42 1887.32 1230.85C1883.32 1212.53 1877.53 1187.71 1870.5 1170.54Z" fill="var(--logo-b)"/>
+      <path d="M686.557 349.342C732.166 342.343 791.151 354.026 834.41 369.524C839.241 371.255 854.648 376.575 856.996 380.125C818.746 420.279 776.77 460.346 737.645 500.057L499.464 742.894C459.564 782.766 419.979 822.952 380.714 863.449C318.092 928.033 272.186 974.608 227.58 1053.76C175.775 1146.88 149.366 1251.99 151.001 1358.53C153.799 1505.15 215.992 1644.34 323.335 1744.24C427.143 1842.77 565.558 1896.47 708.65 1893.74C749.887 1892.61 790.881 1887.01 830.909 1877.03C843.045 1874.12 866.373 1866.19 875.916 1864.51C902.634 1885.21 935.28 1908.59 964.282 1925.75C976.64 1932.97 989.137 1939.95 1001.77 1946.69C1006.31 1949.15 1020.97 1956.66 1024.34 1959.55C995.943 1974.9 952.032 1991.33 921.608 2001.41C749.16 2058.53 555.167 2048.56 392.314 1966.58C224.163 1882.36 96.3632 1734.78 37.0393 1556.32C-21.1882 1379.43 -0.739014 1184.42 82.8247 1019.07C83.3015 1016.85 91.0338 1002.43 92.5844 999.467C117.586 951.671 147.243 910.938 180.213 868.634C193.924 854.52 208.479 834.538 224.287 818.081C231.271 811.631 239.399 802.297 246.225 795.224L291.629 748.54L330.309 708.528C338.911 699.798 349.58 690.045 357.333 680.85C407.062 627.985 460.025 577.707 511.171 526.178C569.617 467.294 626.859 406.941 686.557 349.342Z" fill="var(--logo-a)"/>
+      <path d="M1026.95 80.5191C1191.65 -3.69592 1383.11 -18.8271 1558.99 38.4722C1738.07 99.1537 1886.28 227.54 1971.87 396.141C2054.21 561.021 2067.15 751.991 2007.82 926.474C1996.67 958.897 1983.53 990.605 1968.49 1021.42C1961.03 1032.34 1951.36 1053.9 1943.39 1066.58C1922.21 1100.28 1896.29 1140.53 1870.5 1170.54C1859.19 1184.99 1836.98 1208.36 1828.14 1221.28C1816.37 1231.94 1803.79 1245.86 1792.69 1257.48C1776.72 1274.1 1760.65 1290.63 1744.48 1307.06C1733.83 1317.85 1723.1 1328.56 1712.28 1339.19C1709.69 1341.75 1698.11 1352.94 1696.46 1355.25C1668.8 1385.02 1637.86 1415.28 1609.14 1444.12L1480.82 1573.44L1400.96 1653.57C1393.25 1661.28 1370.46 1685.01 1363.03 1690.8C1353.37 1692.1 1342.77 1691.49 1333 1690.98C1284.42 1688.32 1236.82 1676.3 1192.81 1655.57C1308.58 1541.9 1423.39 1427.25 1537.23 1311.64L1643.16 1204.34C1709.39 1137.1 1772.23 1072.43 1819.19 989.81C1895.86 857.75 1916.43 700.474 1876.29 553.139C1836.36 411.565 1741.9 291.607 1613.65 219.579C1512.48 161.999 1395.55 138.272 1279.94 151.864C1242.1 156.499 1214.21 163.348 1177.9 173.495C1168.01 171.578 1144.35 151.433 1133.68 144.497C1112.54 130.759 1092.98 117.933 1071.22 105.156C1061.82 99.64 1033.67 85.8817 1026.95 80.5191Z" fill="var(--logo-a)"/>
+      <path d="M82.8247 1019.07C73.5131 1006.35 58.4132 965.213 52.2721 949.461C-64.9708 648.734 46.8047 312.059 310.865 129.782C478.02 12.0789 688.817 -25.3084 886.255 27.7288C913.551 35.1215 940.396 44.0897 966.655 54.5884C973.96 57.4561 1026.05 80.5075 1026.95 80.519C1033.67 85.8816 1061.82 99.6399 1071.22 105.156C1092.98 117.933 1112.54 130.759 1133.68 144.497C1144.35 151.433 1168.01 171.578 1177.9 173.495L1177.28 174.867C1180.18 178.239 1227.4 216.021 1229.51 216.875C1242.48 229.836 1364.44 347.598 1366.16 348.444C1366.87 351.815 1371.07 355.55 1373.64 358.166C1444.33 430.137 1515.56 501.958 1586.89 573.282L1658.15 644.784C1667.91 654.583 1684.89 672.695 1694.98 681.202C1696.68 735.773 1691.24 780.594 1672.81 832.338C1671.08 837.201 1665.4 853.503 1662.99 856.702L1346.33 535.397C1201.16 388.518 1056.5 221.351 848.976 166.701C802.627 154.318 754.865 148.011 706.89 147.941C560.039 148.767 419.507 207.783 316.096 312.052C211.782 415.827 153.431 557.093 154.104 704.233C154.317 755.494 163.698 819.843 180.213 868.634C147.243 910.938 117.586 951.671 92.5844 999.467C91.0338 1002.43 83.3015 1016.85 82.8247 1019.07Z" fill="var(--logo-b)"/>
+      <path d="M413.664 1131.86C434.878 1096.94 477.14 1047.76 506.619 1019.82C528.012 1044.14 559.268 1074.13 582.666 1097.82L716.523 1233.22L911.448 1429.08C948.302 1465.74 987.792 1505.55 1025.66 1540.84C1050.8 1565.14 1108.61 1613.26 1140.27 1628.56C1149.36 1633.99 1184.06 1653.06 1192.81 1655.57C1236.82 1676.3 1284.42 1688.32 1333 1690.98C1342.77 1691.49 1353.37 1692.1 1363.03 1690.8C1366.85 1692.53 1381 1691.31 1385.68 1690.9C1475.7 1682.99 1558.88 1639.6 1616.88 1570.31C1659.19 1520.02 1686.08 1458.59 1694.33 1393.39C1695.58 1383.25 1697.32 1365.14 1696.46 1355.25C1698.11 1352.94 1709.69 1341.75 1712.28 1339.19C1723.1 1328.56 1733.83 1317.85 1744.48 1307.06C1760.65 1290.63 1776.72 1274.1 1792.69 1257.48C1803.79 1245.86 1816.37 1231.94 1828.14 1221.28C1837.06 1256.07 1842.32 1291.69 1843.83 1327.57C1849.9 1456.69 1803.97 1582.86 1716.29 1677.84C1546.58 1862.32 1287.17 1883.1 1075.62 1758.81C973.562 1698.85 896.444 1618.05 813.129 1535.45L529.235 1249.79L455.353 1174.13C442.065 1160.43 427.561 1144.72 413.664 1131.86Z" fill="var(--logo-b)"/>
+      <path d="M908.876 406.787C934.993 420.726 1004.9 475.982 1024.66 497.339C1013.14 510.36 989.324 531.57 976.024 544.602C949.118 571.27 922.43 598.158 895.962 625.261L648.29 876.376C602.054 923.155 551.246 971.919 506.619 1019.82C477.14 1047.76 434.878 1096.94 413.664 1131.86C405.216 1146.81 394.351 1167.45 387.706 1183.26C383.685 1189.36 381.287 1197.4 377.41 1208.06C360.136 1255.57 352.308 1307.13 353.038 1357.68C353.211 1358.04 353.383 1358.41 353.556 1358.78C361.508 1460.52 396.048 1544.63 475.555 1612.19C521.397 1650.61 576.491 1676.36 635.364 1686.89C651.453 1689.76 669.546 1691.1 685.921 1692.6C688.83 1693.97 812.227 1810.7 822.557 1821.26C781.291 1832.23 738.74 1837.6 696.044 1837.25C566.267 1837.54 441.781 1785.84 350.395 1693.69C257.541 1601.1 205.774 1475.1 206.723 1343.97C207.019 1247.28 233.214 1152.42 282.587 1069.28C322.741 1000.92 383.537 940.048 438.86 883.488C481.531 839.435 524.516 795.689 567.814 752.253C680.584 636.195 794.275 521.036 908.876 406.787Z" fill="var(--logo-a)"/>
+      <path d="M224.287 818.081C192.489 702.813 213.385 563.561 272.091 460.034C337.806 342.951 447.516 256.925 576.894 221.032C715.161 183.121 851.865 206.777 974.357 278.397C1078.73 339.425 1161.59 426.084 1245.67 511.266L1403.53 671.491L1553.35 823.658C1578.97 849.668 1611.95 881.637 1636.03 908.41C1618.32 940.286 1570.94 996.353 1544.01 1020.64C1504.63 981.987 1463.68 938.689 1424.62 898.992L1175.01 646.544L1080.13 550.702C1063.67 534.251 1042.21 511.998 1024.66 497.339C1004.9 475.982 934.993 420.726 908.876 406.787C902.795 402.188 862.448 379.433 856.996 380.125C854.648 376.575 839.241 371.255 834.41 369.524C791.151 354.026 732.166 342.343 686.557 349.342C601.566 350.936 512.284 397.087 453.773 457.675C404.944 507.993 372.606 571.994 361.065 641.153C359.747 649.355 356.935 668.732 357.107 676.808C357.131 678.158 357.207 679.506 357.333 680.85C349.58 690.045 338.911 699.798 330.309 708.528L291.629 748.54L246.225 795.224C239.399 802.297 231.271 811.631 224.287 818.081Z" fill="var(--logo-b)"/>
+      <path d="M1229.51 216.875C1245.74 212.05 1270.79 208.777 1287.81 206.882C1387.32 195.541 1487.92 214.77 1576.23 262.009C1830.04 399.398 1913.14 705.454 1774.58 955.323C1725.42 1043.97 1663.8 1104.18 1593.49 1175.93L1465.53 1306.04C1358.96 1415.4 1250.53 1522.92 1140.27 1628.56C1108.61 1613.26 1050.8 1565.14 1025.66 1540.84C1034.84 1531.14 1046.72 1520.14 1056.37 1510.62C1076.07 1491 1095.88 1471.49 1115.8 1452.09C1151.47 1417.01 1186.94 1381.73 1222.22 1346.24L1544.01 1020.64C1570.94 996.353 1618.32 940.286 1636.03 908.41C1644.06 895.348 1657.28 870.75 1662.99 856.702C1665.4 853.503 1671.08 837.201 1672.81 832.338C1691.24 780.594 1696.68 735.773 1694.98 681.202C1686.48 603.963 1669.74 547.02 1620.85 484.517C1570.13 419.22 1498.14 373.752 1417.39 356.013C1399.06 351.954 1384.63 350.697 1366.16 348.444C1364.44 347.598 1242.48 229.836 1229.51 216.875Z" fill="var(--logo-a)"/>
+    </symbol>
+  </svg>
+
+  <div class="top-strip">
+    <div class="shell strip-inner">
+      <div class="concept-label" data-i18n="concept">Taskier colour reference</div>
+      <div class="switchers">
+        <div class="seg" role="radiogroup" id="lang-group" data-i18n-aria="langLabel" aria-label="Page language">
+          <button class="seg-btn" role="radio" aria-checked="true" data-lang-choice="en" lang="en" type="button">English</button>
+          <button class="seg-btn" role="radio" aria-checked="false" tabindex="-1" data-lang-choice="ar" lang="ar" dir="rtl" type="button">العربية</button>
+        </div>
+        <div class="seg" role="radiogroup" id="theme-group" data-i18n-aria="themeLabel" aria-label="Application surface">
+          <button class="seg-btn" role="radio" aria-checked="true" data-theme-choice="light" type="button" data-i18n="themeLight">Light</button>
+          <button class="seg-btn" role="radio" aria-checked="false" tabindex="-1" data-theme-choice="dark" type="button" data-i18n="themeDark">Dark</button>
+        </div>
+      </div>
+      <p id="live-status" class="visually-hidden" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <header class="shell site-header">
+    <a class="brand" href="#main-content" id="brand-link" data-i18n-aria="brandAria" aria-label="Taskier home, skip to main content">
+      <svg class="brand-logo" aria-hidden="true" focusable="false"><use href="#taskier-mark"></use></svg>
+      <span class="brand-word">Taskier <span class="ar" lang="ar" dir="rtl">تاسكير</span></span>
+    </a>
+    <nav class="nav" data-i18n-aria="navLabel" aria-label="Page sections">
+      <a href="#tokens" data-i18n="navTokens">Tokens</a>
+      <a href="#signals" data-i18n="navSignals">Signals</a>
+      <a href="#modes" data-i18n="navModes">Colour modes</a>
+      <a href="#office" data-i18n="navOffice">Office theme</a>
+      <a href="#logo" data-i18n="navLogo">Logo</a>
+    </nav>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    <section class="shell hero" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">Turn tasks into flow</p>
+        <h1 id="hero-title" data-i18n="h1">One colour system, built for momentum.</h1>
+        <p class="lead" data-i18n="lead">Taskier unifies its WCAG-audited application-surface tokens, the six Adobe colour modes, and the Office document mapping in one bilingual reference. Every contrast ratio below is computed live by this page.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#modes" data-i18n="ctaPrimary">Browse the modes</a>
+          <a class="button secondary" href="#tokens" data-i18n="ctaSecondary">Inspect the tokens</a>
+        </div>
+      </div>
+      <figure class="logo-stage">
+        <svg class="stage-logo" role="img" id="stage-logo" data-i18n-aria="stageAlt" aria-label="Taskier Momentum Violet and Flow Aqua wordmark"><use href="#taskier-mark"></use></svg>
+        <figcaption class="stage-caption">
+          <span id="stage-label" data-i18n="stageLight">Taskier wordmark on a light application surface</span>
+          <code id="stage-code">#F8FAFF</code>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="tokens" aria-labelledby="tokens-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="tokens-title" data-i18n="tokensTitle">Self-auditing tokens.</h2>
+          <p data-i18n="tokensLead">Each row pairs a foreground with its real background. The ratio badge is computed by this page at load time — the document can never claim more than it delivers.</p>
+        </div>
+        <div class="token-panels">
+          <div class="token-panel">
+            <h3 data-i18n="tokensLightH">Light application surface</h3>
+            <div id="tokens-light"></div>
+          </div>
+          <div class="token-panel">
+            <h3 data-i18n="tokensDarkH">Dark application surface</h3>
+            <div id="tokens-dark"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="signals" aria-labelledby="signals-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="signals-title" data-i18n="signalsTitle">Signals: what Violet and Aqua cannot say.</h2>
+          <p data-i18n="signalsLead">Momentum Violet and Flow Aqua sit sixty degrees apart in the same cool band, so the identity pair cannot encode done, due, overdue or blocked — and a task tool lives on exactly those states. Four supporting hues carry them, each supplied in two audited variants: one for light surfaces, one for dark.</p>
+        </div>
+        <div class="signal-grid" id="signal-grid"></div>
+        <div class="signal-note">
+          <p><strong data-i18n="signalRuleK">Standing rule:</strong> <span data-i18n="signalRuleV">Flow Aqua is a fill, not a foreground. At 1.92:1 against white it fails text contrast outright; used as a background with Taskier Ink on top it reaches 9.88:1. Documents take Deep Aqua instead, and state is never expressed by Violet or Aqua alone.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="modes" aria-labelledby="modes-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="modes-title" data-i18n="modesTitle">The six Adobe modes.</h2>
+          <p data-i18n="modesLead">The same Momentum Violet × Flow Aqua identity is carried through all six reference modes; names and HEX values always rest on audited surfaces.</p>
+        </div>
+        <div class="overview-grid" id="overview-grid"></div>
+        <div id="mode-sections"></div>
+      </div>
+    </section>
+
+    <section class="section" id="office" aria-labelledby="office-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="office-title" data-i18n="officeTitle">Microsoft Office document theme.</h2>
+          <p data-i18n="officeLead">Momentum Violet and Flow Aqua fill the core Office accents, with documented Taskier support values for charts, tables, SmartArt and document styles.</p>
+        </div>
+        <div class="office-grid">
+          <article class="office-card">
+            <h3 data-i18n="officeSlotsH">Theme slots</h3>
+            <p data-i18n="officeSlotsP">Twelve slots, each shown as a bounded sample with its value on the surface beside it.</p>
+            <div class="office-list" id="office-list"></div>
+          </article>
+          <article class="office-card office-demo">
+            <p class="demo-kicker" data-i18n="officeDemoK">Theme chart preview</p>
+            <h3 data-i18n="officeDemoH">Office-ready accents</h3>
+            <p data-i18n="officeDemoP">Charts, tables, SmartArt and document styles inherit these accent slots.</p>
+            <div class="chart" aria-hidden="true">
+              <span style="height:94%;background:#C4B5FD"></span>
+              <span style="height:66%;background:#7DD3FC"></span>
+              <span style="height:82%;background:#2DC072"></span>
+              <span style="height:48%;background:#E39B1E"></span>
+              <span style="height:74%;background:#F2637A"></span>
+              <span style="height:58%;background:#EA8AC7"></span>
+            </div>
+            <p class="chart-summary" data-i18n="chartSummary">Decorative bar chart demonstrating the six accent slots at varying heights.</p>
+            <div class="font-note"><strong data-i18n="fontNoteK">Theme fonts:</strong> <span data-i18n="fontNoteV">Ubuntu Sans for Latin UI, Cairo for Arabic, and JetBrains Mono for data and code.</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="logo" aria-labelledby="logo-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="logo-title" data-i18n="logoTitle">Logo application.</h2>
+          <p data-i18n="logoLead">The current Taskier wordmark keeps the fixed colour relationship: Momentum Violet carries the word, Flow Aqua marks the i stem, and the i dot returns to Violet. Application surfaces do not create a second identity.</p>
+        </div>
+        <div class="logo-system">
+          <article class="logo-rule">
+            <h3 data-i18n="logoLightH">On light surfaces</h3>
+            <p data-i18n="logoLightP">Use the Taskier wordmark on light surfaces with its fixed Violet/Aqua relationship. Do not recolour, stretch, rotate, add glow, or replace the primary pair. WCAG exempts logotypes from text contrast minimums; surrounding interface content still follows the measured token rules.</p>
+            <div class="mini-stage on-light">
+              <svg role="img" data-i18n-aria="logoLightAlt" aria-label="Taskier wordmark on a light application surface"><use href="#taskier-mark"></use></svg>
+            </div>
+            <div class="chip-row">
+              <span class="chip"><i style="background:#4326EA"></i><code>#4326EA</code><span>Momentum Violet</span></span>
+              <span class="chip"><i style="background:#09CCF4"></i><code>#09CCF4</code><span>Flow Aqua</span></span>
+              <span class="chip"><i style="background:#0B1020"></i><code>#0B1020</code><span>Taskier Ink</span></span>
+            </div>
+          </article>
+          <article class="logo-rule">
+            <h3 data-i18n="logoDarkH">On dark surfaces</h3>
+            <p data-i18n="logoDarkP">The same wordmark may sit on dark application surfaces. Its primary identity pair remains unchanged; accessible supporting tints belong to interface content, not to a replacement logo identity.</p>
+            <div class="mini-stage on-dark">
+              <svg role="img" data-i18n-aria="logoDarkAlt" aria-label="Taskier wordmark on a dark application surface"><use href="#taskier-mark"></use></svg>
+            </div>
+            <div class="chip-row">
+              <span class="chip"><i style="background:#4326EA"></i><code>#4326EA</code><span>Momentum Violet</span></span>
+              <span class="chip"><i style="background:#09CCF4"></i><code>#09CCF4</code><span>Flow Aqua</span></span>
+              <span class="chip"><i style="background:#0B1020"></i><code>#0B1020</code><span>Taskier Ink</span></span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="contact-title">
+      <div class="shell">
+        <div class="callout">
+          <div>
+            <h2 id="contact-title" data-i18n="contactTitle">Move the task. Keep the flow.</h2>
+            <p data-i18n="contactLead">The call-to-action uses the same Taskier identity while preserving text, button and boundary contrast.</p>
+          </div>
+          <a class="button" href="#logo" data-i18n="contactAction">Review the identity system</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span data-i18n="footerA">Taskier visual colour system</span>
+      <span data-i18n="footerB">Built with WCAG-conscious colour tokens</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      'use strict';
+
+      /* ---------- i18n ---------- */
+      const I18N = {
+        en: {
+          docTitle: 'Taskier — Unified colour system',
+          skip: 'Skip to main content',
+          concept: 'Taskier colour reference',
+          langLabel: 'Page language',
+          themeLabel: 'Application surface',
+          themeLight: 'Light',
+          themeDark: 'Dark',
+          navLabel: 'Page sections',
+          navTokens: 'Tokens',
+          navSignals: 'Signals',
+          navModes: 'Colour modes',
+          navOffice: 'Office theme',
+          navLogo: 'Logo',
+          brandAria: 'Taskier home, skip to main content',
+          eyebrow: 'Turn tasks into flow',
+          h1: 'One colour system, built for momentum.',
+          lead: 'Taskier unifies its WCAG 2.1 AA audited surface tokens, the four Signal state hues, the six Adobe colour modes, and the Office document mapping in one bilingual reference. Every contrast ratio below is computed live by this page.',
+          ctaPrimary: 'Browse the modes',
+          ctaSecondary: 'Inspect the tokens',
+          stageAlt: 'Taskier Momentum Violet and Flow Aqua wordmark',
+          stageLight: 'Taskier wordmark on a light application surface',
+          stageDark: 'Taskier wordmark on a dark application surface',
+          tokensTitle: 'Self-auditing tokens.',
+          tokensLead: 'Each row pairs a foreground with its real background. The ratio badge is computed by this page at load time — the document can never claim more than it delivers.',
+          tokensLightH: 'Light application surface',
+          tokensDarkH: 'Dark application surface',
+          modesTitle: 'The six Adobe modes.',
+          modesLead: 'The same Momentum Violet × Flow Aqua identity is carried through all six reference modes; names and HEX values always rest on audited surfaces.',
+          previewTitle: 'Move the next task with clarity.',
+          previewCopy: 'The same Taskier interface rendered through this palette so contrast, hierarchy and flow stay easy to compare.',
+          previewA: 'Add task',
+          previewB: 'Move next',
+          miniA: 'Weekly momentum',
+          miniB: 'Flow',
+          officeTitle: 'Microsoft Office document theme.',
+          signalsTitle: 'Signals: what Violet and Aqua cannot say.',
+          signalsLead: 'Momentum Violet and Flow Aqua sit sixty degrees apart in the same cool band, so the identity pair cannot encode done, due, overdue or blocked — and a task tool lives on exactly those states. Four supporting hues carry them, each supplied in two audited variants: one for light surfaces, one for dark.',
+          signalRuleK: 'Standing rule:',
+          signalRuleV: 'Flow Aqua is a fill, not a foreground. At 1.92:1 against white it fails text contrast outright; used as a background with Taskier Ink on top it reaches 9.88:1. Documents take Deep Aqua instead, and state is never expressed by Violet or Aqua alone.',
+          officeLead: 'Momentum Violet and Deep Aqua hold Accents 1 and 2; the four Signal hues fill Accents 3–6 so charts, tables and SmartArt separate by hue and by meaning rather than by two cool tones and three near-neutrals. Every accent clears 4.6:1 on a white page.',
+          officeSlotsH: 'Theme slots',
+          officeSlotsP: 'Twelve slots, each shown as a bounded sample with its value on the surface beside it.',
+          officeDemoK: 'Theme chart preview',
+          officeDemoH: 'Office-ready accents',
+          officeDemoP: 'Charts, tables, SmartArt and document styles inherit these accent slots.',
+          chartSummary: 'Decorative bar chart demonstrating the six accent slots at varying heights. Every bar clears 6.4:1 against the Ink panel and carries a boundary, so the series separates without relying on colour alone.',
+          fontNoteK: 'Theme fonts:',
+          fontNoteV: 'Ubuntu Sans for Latin UI, Cairo for Arabic, and JetBrains Mono for data and code.',
+          logoTitle: 'Logo application.',
+          logoLead: 'The current Taskier wordmark keeps the fixed colour relationship: Momentum Violet carries the word, Flow Aqua marks the i stem, and the i dot returns to Violet. Application surfaces do not create a second identity.',
+          logoLightH: 'On light surfaces',
+          logoLightP: 'Use the Taskier wordmark on light surfaces with its fixed Violet/Aqua relationship. Do not recolour, stretch, rotate, add glow, or replace the primary pair. WCAG exempts logotypes from text contrast minimums; surrounding interface content still follows the measured token rules.',
+          logoDarkH: 'On dark surfaces',
+          logoDarkP: 'The same wordmark may sit on dark application surfaces. Its primary identity pair remains unchanged; accessible supporting tints belong to interface content, not to a replacement logo identity.',
+          logoLightAlt: 'Taskier wordmark on a light application surface',
+          logoDarkAlt: 'Taskier wordmark on a dark application surface',
+          contactTitle: 'Move the task. Keep the flow.',
+          contactLead: 'The call-to-action uses the same Taskier identity while preserving text, button and boundary contrast.',
+          contactAction: 'Review the identity system',
+          footerA: 'Taskier visual colour system',
+          footerB: 'Built with WCAG-conscious colour tokens',
+          copy: 'Copy',
+          copied: 'copied',
+          copyAria: 'Copy {hex}',
+          statusThemeLight: 'Light application surface active.',
+          statusThemeDark: 'Dark application surface active.',
+          statusLang: 'Page language: English.',
+          uiBadge: 'UI 3:1',
+          roleBrand: 'Brand token',
+          roleText: 'Text token',
+          roleGold: 'Primary accent',
+          roleNavy: 'Primary dark',
+          roleSage: 'Supporting tone',
+          roleGray: 'Soft neutral'
+        },
+        ar: {
+          docTitle: 'تاسكير — نظام الألوان الموحّد',
+          skip: 'تخطَّ إلى المحتوى الرئيسي',
+          concept: 'مرجع ألوان تاسكير',
+          langLabel: 'لغة الصفحة',
+          themeLabel: 'سطح التطبيق',
+          themeLight: 'فاتح',
+          themeDark: 'داكن',
+          navLabel: 'أقسام الصفحة',
+          navTokens: 'الرموز',
+          navSignals: 'الإشارات',
+          navModes: 'الأنماط اللونية',
+          navOffice: 'سمة Office',
+          navLogo: 'الشعار',
+          brandAria: 'تاسكير — الرئيسية، انتقل إلى المحتوى',
+          eyebrow: 'حوّل المهام إلى تدفّق',
+          h1: 'نظام لوني واحد، مصمم للزخم.',
+          lead: 'يوحّد نظام تاسكير رموز الأسطح المدقّقة وفق WCAG 2.1 AA، ودرجات الحالة الأربع، وأنماط Adobe الستة، وخريطة مستندات Office في مرجع واحد ثنائي اللغة. كل نسبة تباين أدناه تُحسب مباشرة داخل هذه الصفحة.',
+          ctaPrimary: 'استعرض الأنماط',
+          ctaSecondary: 'افحص الرموز',
+          stageAlt: 'شعار تاسكير ببنفسجي الزخم وأكوا التدفق',
+          stageLight: 'شعار تاسكير على سطح تطبيق فاتح',
+          stageDark: 'شعار تاسكير على سطح تطبيق داكن',
+          tokensTitle: 'رموز مدقّقة ذاتياً.',
+          tokensLead: 'يقرن كل صف لوناً أمامياً بخلفيته الفعلية، وتُحسب شارة النسبة عند تحميل الصفحة — فلا يدّعي المستند أكثر مما يحققه.',
+          tokensLightH: 'سطح تطبيق فاتح',
+          tokensDarkH: 'سطح تطبيق داكن',
+          modesTitle: 'أنماط Adobe الستة.',
+          modesLead: 'تحمل هوية بنفسجي الزخم × أكوا التدفق نفسها الأنماط المرجعية الستة؛ الأسماء وقيم HEX تستقر دائماً على أسطح مدقّقة.',
+          previewTitle: 'حرّك المهمة التالية بوضوح.',
+          previewCopy: 'واجهة تاسكير نفسها عبر هذه اللوحة حتى يسهل مقارنة التباين والتسلسل والتدفق.',
+          previewA: 'أضف مهمة',
+          previewB: 'حرّك التالي',
+          miniA: 'الزخم الأسبوعي',
+          miniB: 'التدفّق',
+          officeTitle: 'سمة مستندات Microsoft Office.',
+          signalsTitle: 'الإشارات: ما لا يستطيع البنفسجي والأكوا قوله.',
+          signalsLead: 'يفصل بين بنفسجي الزخم وأكوا التدفق ستون درجة داخل النطاق البارد نفسه، فلا يستطيع زوج الهوية ترميز المنجز أو المستحق أو المتأخر أو المعلّق — وأداة المهام تعيش على هذه الحالات تحديداً. لذلك تحملها أربع درجات مساندة، كل منها بنسختين مدقّقتين: واحدة للأسطح الفاتحة وأخرى للداكنة.',
+          signalRuleK: 'قاعدة ثابتة:',
+          signalRuleV: 'أكوا التدفق تعبئة لا لون مقدمة. فهي عند ١٫٩٢:١ مع الأبيض تخفق في تباين النص تماماً، بينما تبلغ ٩٫٨٨:١ عند استخدامها خلفية يعلوها حبر تاسكير. وتأخذ المستندات الأكوا العميق بدلاً منها، ولا تُعبَّر الحالة بالبنفسجي أو الأكوا وحدهما أبداً.',
+          officeLead: 'يحتفظ بنفسجي الزخم والأكوا العميق باللونين المميزين ١ و٢، وتملأ درجات الإشارة الأربع الألوان ٣–٦ لتفترق المخططات والجداول وSmartArt بالدرجة والمعنى بدل لونين باردين وثلاث درجات شبه محايدة. ويتجاوز كل لون مميز ٤٫٦:١ على الصفحة البيضاء.',
+          officeSlotsH: 'خانات السمة',
+          officeSlotsP: 'اثنتا عشرة خانة، تُعرض كل واحدة كعيّنة محدودة الإطار وقيمتها على السطح بجانبها.',
+          officeDemoK: 'معاينة مخططات السمة',
+          officeDemoH: 'درجات جاهزة لـ Office',
+          officeDemoP: 'ترث المخططات والجداول وSmartArt وأنماط المستندات هذه الخانات.',
+          chartSummary: 'مخطط أعمدة زخرفي يعرض خانات الألوان الست بارتفاعات متفاوتة. يتجاوز كل عمود نسبة ٦٫٤:١ على اللوحة الحبرية ويحمل حدّاً، فتنفصل السلسلة دون الاعتماد على اللون وحده.',
+          fontNoteK: 'خطوط السمة:',
+          fontNoteV: 'Ubuntu Sans للواجهة اللاتينية، Cairo للعربية، وJetBrains Mono للبيانات والكود.',
+          logoTitle: 'تطبيق الشعار.',
+          logoLead: 'يحافظ شعار تاسكير الحالي على العلاقة اللونية الثابتة: يحمل بنفسجي الزخم الكلمة، وتظهر أكوا التدفق في ساق i، وتعود النقطة إلى البنفسجي. أسطح التطبيق لا تنشئ هوية ثانية.',
+          logoLightH: 'على الأسطح الفاتحة',
+          logoLightP: 'استخدم شعار تاسكير على الأسطح الفاتحة بعلاقته البنفسجية/الأكوا الثابتة. لا تعِد تلوينه أو تمدّه أو تدوّره أو تضف توهّجاً أو تستبدل الزوج الأساسي. تعفي WCAG الشعارات من حدود تباين النص، بينما تظل عناصر الواجهة المحيطة خاضعة للرموز المقاسة.',
+          logoDarkH: 'على الأسطح الداكنة',
+          logoDarkP: 'يمكن وضع الشعار نفسه على أسطح تطبيق داكنة. يظل زوج الهوية الأساسي دون تغيير؛ وتخص الدرجات المساندة المتاحة محتوى الواجهة لا هوية بديلة للشعار.',
+          logoLightAlt: 'شعار تاسكير على سطح تطبيق فاتح',
+          logoDarkAlt: 'شعار تاسكير على سطح تطبيق داكن',
+          contactTitle: 'حرّك المهمة. حافظ على التدفق.',
+          contactLead: 'تحافظ دعوة الإجراء على هوية تاسكير نفسها مع صون تباين النص والزر والحدود.',
+          contactAction: 'راجع نظام الهوية',
+          footerA: 'نظام ألوان تاسكير البصري',
+          footerB: 'بُني برموز لونية بوعي WCAG',
+          copy: 'نسخ',
+          copied: 'تم النسخ',
+          copyAria: 'نسخ {hex}',
+          statusThemeLight: 'سطح التطبيق الفاتح مفعّل.',
+          statusThemeDark: 'سطح التطبيق الداكن مفعّل.',
+          statusLang: 'لغة الصفحة: العربية.',
+          uiBadge: 'واجهة 3:1',
+          roleBrand: 'رمز العلامة',
+          roleText: 'رمز النص',
+          roleGold: 'لون أساسي',
+          roleNavy: 'داكن أساسي',
+          roleSage: 'درجة مساندة',
+          roleGray: 'محايد ناعم'
+        }
+      };
+
+      /* ---------- WCAG contrast (relative luminance, WCAG 2.x) ---------- */
+      function luminance(hex) {
+        const n = parseInt(hex.slice(1), 16);
+        const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+          const c = v / 255;
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+      }
+      function contrast(a, b) {
+        const l1 = luminance(a), l2 = luminance(b);
+        const hi = Math.max(l1, l2), lo = Math.min(l1, l2);
+        return (hi + 0.05) / (lo + 0.05);
+      }
+
+      /* ---------- Data ---------- */
+      const TOKENS = {
+        light: [
+          { name: { en: 'Body text on page', ar: 'نص أساسي على الصفحة' }, fg: '#0B1020', bg: '#F8FAFF' },
+          { name: { en: 'Muted text on page', ar: 'نص ثانوي على الصفحة' }, fg: '#5E687B', bg: '#F8FAFF' },
+          { name: { en: 'Momentum Violet on page', ar: 'بنفسجي الزخم على الصفحة' }, fg: '#4326EA', bg: '#F8FAFF' },
+          { name: { en: 'Flow Aqua deep text', ar: 'نص أكوا التدفق العميق' }, fg: '#006B80', bg: '#F8FAFF' },
+          { name: { en: 'Action text on Flow Aqua', ar: 'نص الإجراء على أكوا التدفق' }, fg: '#0B1020', bg: '#09CCF4' },
+          { name: { en: 'Done — Signal Verdant', ar: 'منجز — أخضر الإشارة' }, fg: '#0F763F', bg: '#F8FAFF' },
+          { name: { en: 'Due soon — Signal Amber', ar: 'يستحق قريباً — كهرماني الإشارة' }, fg: '#826026', bg: '#F8FAFF' },
+          { name: { en: 'Overdue — Signal Crimson', ar: 'متأخر — قرمزي الإشارة' }, fg: '#C52338', bg: '#F8FAFF' },
+          { name: { en: 'Control boundary', ar: 'حدود عناصر التحكم' }, fg: '#7A8497', bg: '#F8FAFF', ui: true }
+        ],
+        dark: [
+          { name: { en: 'Body text on page', ar: 'نص أساسي على الصفحة' }, fg: '#F8FAFC', bg: '#080B14' },
+          { name: { en: 'Muted text on page', ar: 'نص ثانوي على الصفحة' }, fg: '#CBD5E1', bg: '#080B14' },
+          { name: { en: 'Violet tint on page', ar: 'درجة بنفسجية على الصفحة' }, fg: '#C4B5FD', bg: '#080B14' },
+          { name: { en: 'Aqua tint on page', ar: 'درجة أكوا على الصفحة' }, fg: '#7DD3FC', bg: '#080B14' },
+          { name: { en: 'Action text on Aqua', ar: 'نص الإجراء على أكوا' }, fg: '#0B1220', bg: '#7DD3FC' },
+          { name: { en: 'Done — Signal Verdant', ar: 'منجز — أخضر الإشارة' }, fg: '#2DC072', bg: '#080B14' },
+          { name: { en: 'Due soon — Signal Amber', ar: 'يستحق قريباً — كهرماني الإشارة' }, fg: '#E39B1E', bg: '#080B14' },
+          { name: { en: 'Overdue — Signal Crimson', ar: 'متأخر — قرمزي الإشارة' }, fg: '#F2637A', bg: '#080B14' },
+          { name: { en: 'Control boundary', ar: 'حدود عناصر التحكم' }, fg: '#64748B', bg: '#111827', ui: true }
+        ]
+      };
+
+      const ROLES = {
+        p1: { en: 'Momentum Violet', ar: 'بنفسجي الزخم' },
+        p2: { en: 'Flow Aqua', ar: 'أكوا التدفق' },
+        p3: { en: 'Deep Violet', ar: 'بنفسجي عميق' },
+        p4: { en: 'Deep Aqua', ar: 'أكوا عميق' },
+        p5: { en: 'Taskier Ink', ar: 'حبر تاسكير' },
+        p6: { en: 'Soft Violet', ar: 'بنفسجي ناعم' },
+        p7: { en: 'Canvas', ar: 'سطح أساسي' },
+        p8: { en: 'Boundary Gray', ar: 'رمادي الحدود' },
+        p9: { en: 'Secondary Ink', ar: 'حبر ثانوي' },
+        p10: { en: 'White', ar: 'أبيض' },
+        d1: { en: 'Signal Verdant', ar: 'أخضر الإشارة' },
+        d2: { en: 'Signal Verdant — bright', ar: 'أخضر الإشارة — ساطع' },
+        w1: { en: 'Signal Amber', ar: 'كهرماني الإشارة' },
+        w2: { en: 'Signal Amber — bright', ar: 'كهرماني الإشارة — ساطع' },
+        e1: { en: 'Signal Crimson', ar: 'قرمزي الإشارة' },
+        e2: { en: 'Signal Crimson — bright', ar: 'قرمزي الإشارة — ساطع' },
+        f1: { en: 'Signal Magenta', ar: 'أرجواني الإشارة' },
+        f2: { en: 'Signal Magenta — bright', ar: 'أرجواني الإشارة — ساطع' }
+      };
+
+      /* Violet and Aqua stay the identity pair. These four carry task state,
+         which two cool hues 60 degrees apart cannot encode on their own. */
+      const SIGNALS = [
+        { key: 'done', name: { en: 'Signal Verdant', ar: 'أخضر الإشارة' },
+          role: { en: 'Done, complete, on track, upward movement.', ar: 'منجز، مكتمل، على المسار، اتجاه صاعد.' },
+          light: '#0F763F', dark: '#2DC072' },
+        { key: 'due', name: { en: 'Signal Amber', ar: 'كهرماني الإشارة' },
+          role: { en: 'Due soon, at risk, awaiting input. The only warm hue in the system.', ar: 'يستحق قريباً، معرّض للخطر، بانتظار مدخلات. الدرجة الدافئة الوحيدة في النظام.' },
+          light: '#826026', dark: '#E39B1E' },
+        { key: 'overdue', name: { en: 'Signal Crimson', ar: 'قرمزي الإشارة' },
+          role: { en: 'Overdue, blocked, failed. Never Momentum Violet — violet already means brand.', ar: 'متأخر، معلّق، أخفق. لا يُستخدم بنفسجي الزخم — فالبنفسجي يعني الهوية.' },
+          light: '#C52338', dark: '#F2637A' },
+        { key: 'flag', name: { en: 'Signal Magenta', ar: 'أرجواني الإشارة' },
+          role: { en: 'Priority flag, tertiary categories, data series 5.', ar: 'علامة أولوية، فئات ثالثة، سلسلة بيانات ٥.' },
+          light: '#BF1881', dark: '#EA8AC7' }
+      ];
+
+      const MODES = [
+        { key: 'colorful', name: { en: 'Colorful', ar: 'ملوّن' },
+          desc: { en: 'Momentum Violet and Flow Aqua leading the full signal range — the mode that carries task state.', ar: 'بنفسجي الزخم وأكوا التدفق يقودان مدى الإشارات الكامل — النمط الذي يحمل حالة المهام.' },
+          colors: [['#4326EA', 'p1'], ['#09CCF4', 'p2'], ['#2DC072', 'd2'], ['#E39B1E', 'w2'], ['#F2637A', 'e2']],
+          panel: ['#4326EA', '#3216C8'], pink: '#FFFFFF', pmuted: '#E9E5FF', ink: '#4326EA' },
+        { key: 'none', name: { en: 'None', ar: 'بدون تعديل' },
+          desc: { en: 'The canonical Taskier identity, unmodified: Violet, Aqua and the documented neutrals.', ar: 'هوية تاسكير الأساسية دون تعديل: بنفسجي وأكوا والمحايدات الموثقة.' },
+          colors: [['#4326EA', 'p1'], ['#09CCF4', 'p2'], ['#3216C8', 'p3'], ['#006B80', 'p4'], ['#F8FAFF', 'p7']],
+          panel: ['#0B1020', '#3216C8'], pink: '#FFFFFF', pmuted: '#CBD5E1', ink: '#0B1020' },
+        { key: 'darkmode', name: { en: 'Dark', ar: 'داكن' },
+          desc: { en: 'A focused dark application: layered ink surfaces with aqua signal and verdant state.', ar: 'تطبيق داكن مركّز: أسطح حبرية متدرّجة مع إشارة أكوا وحالة خضراء.' },
+          colors: [['#0B1020', 'p5'], ['#111827', 'p9'], ['#7DD3FC', 'p2'], ['#2DC072', 'd2'], ['#C4B5FD', 'p6']],
+          panel: ['#0B1020', '#111827'], pink: '#F8FAFC', pmuted: '#CBD5E1', ink: '#006B80' },
+        { key: 'deep', name: { en: 'Deep', ar: 'عميق' },
+          desc: { en: 'A denser hierarchy: Deep Violet and Deep Aqua anchored by the saturated signal hues.', ar: 'تسلسل أكثر كثافة: بنفسجي وأكوا عميقان ترسّخهما درجات الإشارة المشبعة.' },
+          colors: [['#3216C8', 'p3'], ['#006B80', 'p4'], ['#BF1881', 'f1'], ['#0F763F', 'd1'], ['#0B1020', 'p5']],
+          panel: ['#3216C8', '#0B1020'], pink: '#FFFFFF', pmuted: '#CBD5E1', ink: '#3216C8' },
+        { key: 'muted', name: { en: 'Muted', ar: 'هادئ' },
+          desc: { en: 'Reduced chroma for dense boards and documents: the neutral ladder with one amber state.', ar: 'تشبّع مخفّض للوحات والمستندات الكثيفة: سلّم محايد مع حالة كهرمانية واحدة.' },
+          colors: [['#5E687B', 'p9'], ['#7A8497', 'p8'], ['#E9E5FF', 'p6'], ['#826026', 'w1'], ['#F8FAFF', 'p7']],
+          panel: ['#5E687B', '#0B1020'], pink: '#FFFFFF', pmuted: '#E2E8F0', ink: '#5E687B' },
+        { key: 'bright', name: { en: 'Bright', ar: 'ساطع' },
+          desc: { en: 'High-clarity aqua-led application for presentation and print, with Ink doing all the reading work.', ar: 'تطبيق فاتح عالي الوضوح تقوده الأكوا للعرض والطباعة، مع الحبر لكل أعمال القراءة.' },
+          colors: [['#09CCF4', 'p2'], ['#7DD3FC', 'p2'], ['#2DC072', 'd2'], ['#E39B1E', 'w2'], ['#0B1020', 'p5']],
+          panel: ['#09CCF4', '#7DD3FC'], pink: '#0B1020', pmuted: '#243049', ink: '#0B1020' }
+      ];
+
+      const OFFICE = [
+        { slot: 'Dark 1', hex: '#0B1020', use: { en: 'Primary text / Taskier Ink', ar: 'النص الأساسي / حبر تاسكير' } },
+        { slot: 'Light 1', hex: '#FFFFFF', use: { en: 'Primary background', ar: 'الخلفية الأساسية' } },
+        { slot: 'Dark 2', hex: '#3216C8', use: { en: 'Deep Violet', ar: 'بنفسجي عميق' } },
+        { slot: 'Light 2', hex: '#F8FAFF', use: { en: 'Canvas', ar: 'السطح الأساسي' } },
+        { slot: 'Accent 1', hex: '#4326EA', use: { en: 'Momentum Violet — 7.77:1 on white', ar: 'بنفسجي الزخم — ٧٫٧٧:١ على الأبيض' } },
+        { slot: 'Accent 2', hex: '#006B80', use: { en: 'Deep Aqua — document-safe stand-in for Flow Aqua', ar: 'أكوا عميق — بديل أكوا التدفق الآمن للمستندات' } },
+        { slot: 'Accent 3', hex: '#0F763F', use: { en: 'Signal Verdant — done', ar: 'أخضر الإشارة — منجز' } },
+        { slot: 'Accent 4', hex: '#826026', use: { en: 'Signal Amber — due soon', ar: 'كهرماني الإشارة — يستحق قريباً' } },
+        { slot: 'Accent 5', hex: '#C52338', use: { en: 'Signal Crimson — overdue', ar: 'قرمزي الإشارة — متأخر' } },
+        { slot: 'Accent 6', hex: '#BF1881', use: { en: 'Signal Magenta — priority flag', ar: 'أرجواني الإشارة — علامة أولوية' } },
+        { slot: 'Hyperlink', hex: '#006B80', use: { en: 'Deep Aqua — 6.15:1 on white', ar: 'أكوا عميق — ٦٫١٥:١ على الأبيض' } },
+        { slot: 'Followed', hex: '#3216C8', use: { en: 'Deep Violet — 10.07:1 on white', ar: 'بنفسجي عميق — ١٠٫٠٧:١ على الأبيض' } }
+      ];
+
+      /* ---------- State ---------- */
+      const html = document.documentElement;
+      const live = document.getElementById('live-status');
+      const themeMeta = document.getElementById('theme-color-meta');
+      const stageLabel = document.getElementById('stage-label');
+      const stageCode = document.getElementById('stage-code');
+      const toast = document.getElementById('toast');
+      let lang = 'en';
+      let theme = 'light';
+      let followsSystem = true;
+      const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      const store = {
+        get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
+      };
+      const t = (key) => I18N[lang][key];
+
+      /* ---------- Renderers (re-run on language change) ---------- */
+      function ratioBadge(pair) {
+        const r = contrast(pair.fg, pair.bg);
+        const shown = (Math.round(r * 100) / 100).toFixed(2);
+        const level = pair.ui ? t('uiBadge') : (r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : t('uiBadge'));
+        return { shown, level };
+      }
+      function renderTokens() {
+        ['light', 'dark'].forEach((mode) => {
+          const host = document.getElementById('tokens-' + mode);
+          host.innerHTML = TOKENS[mode].map((p) => {
+            const { shown, level } = ratioBadge(p);
+            const glyph = p.ui ? '' : 'Aa';
+            const border = p.ui ? `border-color:${p.fg};border-width:3px;` : '';
+            return `<div class="token-row">
+              <span class="specimen" aria-hidden="true" style="background:${p.bg};color:${p.fg};${border}">${glyph}</span>
+              <span class="token-meta"><strong>${p.name[lang]}</strong><code>${p.fg} / ${p.bg}</code></span>
+              <span class="ratio"><strong>${shown}:1</strong><span class="level">${level}</span></span>
+            </div>`;
+          }).join('');
+        });
+      }
+      function renderModes() {
+        const overview = document.getElementById('overview-grid');
+        overview.innerHTML = MODES.map((m) => `
+          <article class="overview-card">
+            <a href="#mode-${m.key}">${m.name[lang]}</a>
+            <div class="overview-strip" aria-hidden="true">${m.colors.map(([c]) => `<span style="background:${c}"></span>`).join('')}</div>
+          </article>`).join('');
+
+        const host = document.getElementById('mode-sections');
+        host.innerHTML = MODES.map((m) => `
+          <section class="mode-section" id="mode-${m.key}" aria-labelledby="mode-${m.key}-h">
+            <div class="mode-head">
+              <h3 id="mode-${m.key}-h">${m.name[lang]}</h3>
+              <p>${m.desc[lang]}</p>
+            </div>
+            <div class="mode-layout">
+              <div class="preview" style="--p1:${m.panel[0]};--p2:${m.panel[1]};--preview-ink:${m.pink};--preview-ink-2:${m.pmuted};--mode-ink:${m.ink}">
+                <div class="preview-main">
+                  <p class="preview-kicker">${m.name[lang]}</p>
+                  <p class="preview-title">${t('previewTitle')}</p>
+                  <p class="preview-copy">${t('previewCopy')}</p>
+                  <div class="preview-actions">
+                    <button class="p-primary" type="button">${t('previewA')}</button>
+                    <button class="p-secondary" type="button">${t('previewB')}</button>
+                  </div>
+                </div>
+                <div class="preview-side">
+                  <div class="mini-card">
+                    <span class="mini-label">${t('miniA')}</span>
+                    <p class="metric" style="color:${m.ink}">94%</p>
+                    <div class="progress" aria-hidden="true"><span></span></div>
+                  </div>
+                  <div class="mini-card">
+                    <span class="mini-label">${t('miniB')}</span>
+                    <div class="day-list" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<span style="--i:${i};background:${m.ink}"></span>`).join('')}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="swatches">${m.colors.map(([c, role]) => `
+                <article class="swatch-card">
+                  <span class="swatch-color" style="background:${c}" aria-hidden="true"></span>
+                  <span class="swatch-meta"><strong>${ROLES[role][lang]}</strong><code>${c}</code></span>
+                  <button class="copy-button" type="button" data-copy="${c}" aria-label="${t('copyAria').replace('{hex}', c)}">${t('copy')}</button>
+                </article>`).join('')}
+              </div>
+            </div>
+          </section>`).join('');
+      }
+      function renderSignals() {
+        const host = document.getElementById('signal-grid');
+        host.innerHTML = SIGNALS.map((s) => {
+          const rows = [
+            { hex: s.light, bg: '#FFFFFF', label: { en: 'On light surfaces', ar: 'على الأسطح الفاتحة' } },
+            { hex: s.dark, bg: '#080B14', label: { en: 'On dark surfaces', ar: 'على الأسطح الداكنة' } }
+          ].map((r) => {
+            const ratio = contrast(r.hex, r.bg);
+            const shown = (Math.round(ratio * 100) / 100).toFixed(2);
+            const level = ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : t('uiBadge');
+            return `<div class="signal-row">
+              <span class="signal-chip" aria-hidden="true" style="background:${r.bg};color:${r.hex}">Aa</span>
+              <span class="signal-meta"><strong>${r.label[lang]}</strong><code>${r.hex} / ${r.bg}</code></span>
+              <span class="signal-ratio">${shown}:1<span class="level">${level}</span></span>
+            </div>`;
+          }).join('');
+          return `<article class="signal-card">
+            <h3>${s.name[lang]}</h3>
+            <p>${s.role[lang]}</p>
+            <div class="signal-pair">${rows}</div>
+          </article>`;
+        }).join('');
+      }
+      function renderOffice() {
+        document.getElementById('office-list').innerHTML = OFFICE.map((s) => `
+          <div class="office-row">
+            <span class="office-swatch" style="background:${s.hex}" aria-hidden="true"></span>
+            <div><strong>${s.slot}</strong><small>${s.use[lang]}</small><code>${s.hex}</code></div>
+          </div>`).join('');
+      }
+
+      /* ---------- Language ---------- */
+      function applyLang(next, { announce = true, save = false } = {}) {
+        lang = next;
+        html.lang = lang;
+        html.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.title = t('docTitle');
+        document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+        document.querySelectorAll('[data-lang-choice]').forEach((btn) => {
+          const active = btn.dataset.langChoice === lang;
+          btn.setAttribute('aria-checked', String(active));
+          btn.tabIndex = active ? 0 : -1;
+        });
+        renderTokens();
+        renderSignals();
+        renderModes();
+        renderOffice();
+        stageLabel.textContent = theme === 'light' ? t('stageLight') : t('stageDark');
+        if (save) store.set('taskier-lang', lang);
+        if (announce) live.textContent = t('statusLang');
+      }
+
+      /* ---------- Theme ---------- */
+      function applyTheme(next, { announce = true, save = false } = {}) {
+        theme = next;
+        html.dataset.theme = theme;
+        document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
+          const active = btn.dataset.themeChoice === theme;
+          btn.setAttribute('aria-checked', String(active));
+          btn.tabIndex = active ? 0 : -1;
+        });
+        stageLabel.textContent = theme === 'light' ? t('stageLight') : t('stageDark');
+        stageCode.textContent = theme === 'light' ? '#F8FAFF' : '#0B1220';
+        themeMeta.setAttribute('content', theme === 'light' ? '#F8FAFF' : '#080B14');
+        if (save) { followsSystem = false; store.set('taskier-surface', theme); }
+        if (announce) live.textContent = theme === 'light' ? t('statusThemeLight') : t('statusThemeDark');
+      }
+
+      /* ---------- Radiogroup wiring (click + arrows + Home/End) ---------- */
+      function wireGroup(groupId, attr, onPick) {
+        const group = document.getElementById(groupId);
+        const radios = [...group.querySelectorAll('[' + attr + ']')];
+        radios.forEach((radio, index) => {
+          radio.addEventListener('click', () => onPick(radio.getAttribute(attr), false));
+          radio.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            let next = index;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % radios.length;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + radios.length) % radios.length;
+            if (event.key === 'Home') next = 0;
+            if (event.key === 'End') next = radios.length - 1;
+            onPick(radios[next].getAttribute(attr), true);
+            radios[next].focus();
+          });
+        });
+      }
+      wireGroup('lang-group', 'data-lang-choice', (value) => applyLang(value, { save: true }));
+      wireGroup('theme-group', 'data-theme-choice', (value) => applyTheme(value, { save: true }));
+
+      /* ---------- Copy to clipboard ---------- */
+      document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-copy]');
+        if (!button) return;
+        const value = button.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(value);
+        } catch (_) {
+          const area = document.createElement('textarea');
+          area.value = value;
+          document.body.append(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
+        }
+        toast.textContent = value + ' — ' + t('copied');
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 1400);
+      });
+
+      /* ---------- Boot ---------- */
+      const savedLang = store.get('taskier-lang');
+      const savedTheme = store.get('taskier-surface');
+      applyLang(savedLang === 'ar' || savedLang === 'en' ? savedLang : 'en', { announce: false });
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        followsSystem = false;
+        applyTheme(savedTheme, { announce: false });
+      } else {
+        applyTheme(media && media.matches ? 'dark' : 'light', { announce: false });
+      }
+      if (media && typeof media.addEventListener === 'function') {
+        media.addEventListener('change', (event) => {
+          if (followsSystem) applyTheme(event.matches ? 'dark' : 'light');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
