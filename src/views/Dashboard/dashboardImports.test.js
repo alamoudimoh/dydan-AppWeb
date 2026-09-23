@@ -9,14 +9,22 @@ const dashboardPath = path.join(
   'Dashboard.jsx',
 )
 
-test('Dashboard imports dashboard bucket helpers from dashboardModel', () => {
+test('Dashboard renders the PE2 Home / Focus / Quest views', () => {
   const source = readFileSync(dashboardPath, 'utf8')
 
   assert.match(
     source,
-    /import\s*\{[^}]*dashboardBuckets[^}]*\}\s*from\s*['"]\.\/dashboardModel['"]/s,
-    'Dashboard must import dashboardBuckets from ./dashboardModel',
+    /import\s+FocusHome\s+from\s+['"][^'"]*[Ff]ocus\/FocusHome['"]/,
+    'Dashboard must render the Focus home (product-experience clone)',
   )
-  assert.match(source, /groupUpcoming/)
-  assert.match(source, /maintenanceLabel/)
+  assert.match(
+    source,
+    /import\s+QuestHome\s+from\s+['"][^'"]*[Qq]uest\/QuestHome['"]/,
+    'Dashboard must render the Quest home (product-experience clone)',
+  )
+  assert.match(
+    source,
+    /home\.view\s*===\s*'quest'\s*\?/,
+    'Dashboard must switch between Quest and Focus from the home view state',
+  )
 })

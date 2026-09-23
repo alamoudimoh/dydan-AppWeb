@@ -16,6 +16,13 @@ import {
 import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useGlobalSearch } from '../../search/GlobalSearchContext'
 import { apiClient } from '../../utils/ApiClient'
+import {
+  EFFECTIVE_ROLES,
+  resolveEffectiveRole,
+} from '../../utils/PermissionModel'
+import { readLocalStorageItem } from '../../utils/storage'
+import { STORAGE_KEYS } from '../../utils/storageKeys'
+import { resolveHomeView } from '../Home/useHomeData'
 import ErrorReportModal from '../Modals/ErrorReportModal'
 import FeedbackModal from '../Modals/FeedbackModal'
 import SyncStatusIndicator from './SyncStatusIndicator'
@@ -104,6 +111,14 @@ const NavBar = () => {
         .filter(link => link.label),
     }))
   }, [circleMembersData, openSearch, t, userProfile])
+  // Sidebar mode chip mirrors the prototype: children always Quest,
+  // adults follow the stored home view (Focus default).
+  const role = resolveEffectiveRole(userProfile, circleMembersData?.res)
+  const homeView = resolveHomeView(
+    role === EFFECTIVE_ROLES.CHILD,
+    readLocalStorageItem(STORAGE_KEYS.homeView),
+  )
+  const modeLabel = homeView === 'quest' ? 'QUEST MODE' : 'FOCUS MODE'
   if (shellMode === 'spacer')
     return <div style={{ paddingTop: 'var(--safe-area-inset-top, 0px)' }} />
   if (shellMode === 'none') return null
@@ -125,7 +140,7 @@ const NavBar = () => {
         <LogoMark size={28} sovereign={brand === 'sovereign'} />
         <div>
           <strong>{APP_DISPLAY_NAME}</strong>
-          <small>FOCUS MODE</small>
+          <small>{modeLabel}</small>
         </div>
         <button
           className='btn btn-ghost btn-icon btn-top-compact'

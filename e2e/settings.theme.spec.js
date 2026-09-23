@@ -18,6 +18,7 @@ test('settings: theme (Dydan/Sovereign) and mode (Light/Dark/Automatic) switch l
 
   await page.goto('/settings', { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
+  await page.getByRole('tab', { name: /^theme$/i }).click()
 
   const html = page.locator('html')
   await expect(page.getByRole('button', { name: /sovereign/i })).toBeVisible()
@@ -35,7 +36,7 @@ test('settings: theme (Dydan/Sovereign) and mode (Light/Dark/Automatic) switch l
   // Defaults: Dydan theme, light style (smoke session persists light).
   await expect(html).toHaveAttribute('data-theme', 'dydan')
   await expect(html).toHaveAttribute('data-joy-color-scheme', 'light')
-  expect((await cssVar('--brand')).toLowerCase()).toBe('#4326ea')
+  expect((await cssVar('--brand')).toLowerCase()).toBe('#34236d')
 
   // Switch to Sovereign: data-theme flips and the shell palette follows.
   await page.getByRole('button', { name: /^sovereign$/i }).click()
@@ -43,9 +44,9 @@ test('settings: theme (Dydan/Sovereign) and mode (Light/Dark/Automatic) switch l
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('dydan.theme')))
     .toBe('sovereign')
-  expect((await cssVar('--brand')).toLowerCase()).toBe('#1a1a1a')
-  expect((await cssVar('--action-bg')).toLowerCase()).toBe('#ffc107')
-  expect((await cssVar('--page')).toLowerCase()).toBe('#ffffff')
+  expect((await cssVar('--brand')).toLowerCase()).toBe('#071a2c')
+  expect((await cssVar('--action-bg')).toLowerCase()).toBe('#071a2c')
+  expect((await cssVar('--page')).toLowerCase()).toBe('#f6f2e8')
 
   // Dark style over Sovereign: onyx page, gold action, dark palette.
   await page.getByRole('button', { name: /^dark$/i }).click()
@@ -53,9 +54,10 @@ test('settings: theme (Dydan/Sovereign) and mode (Light/Dark/Automatic) switch l
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('themeMode')))
     .toBe('"dark"')
-  expect((await cssVar('--brand')).toLowerCase()).toBe('#ffc107')
-  expect((await cssVar('--page')).toLowerCase()).toBe('#1a1a1a')
-  expect((await cssVar('--surface-2')).toLowerCase()).toBe('#2e2e2e')
+  expect((await cssVar('--brand')).toLowerCase()).toBe('#f6f2e8')
+  expect((await cssVar('--action-bg')).toLowerCase()).toBe('#e0b45a')
+  expect((await cssVar('--page')).toLowerCase()).toBe('#071a2c')
+  expect((await cssVar('--surface-2')).toLowerCase()).toBe('#142d40')
 
   // The persisted Sovereign brand survives a reload (dydan.theme is not
   // touched by the smoke fixture). The fixture's addInitScript re-applies
@@ -64,14 +66,14 @@ test('settings: theme (Dydan/Sovereign) and mode (Light/Dark/Automatic) switch l
   await page.reload({ waitUntil: 'networkidle' })
   await expect(html).toHaveAttribute('data-theme', 'sovereign')
   await expect(html).toHaveAttribute('data-joy-color-scheme', 'light')
-  expect((await cssVar('--brand')).toLowerCase()).toBe('#1a1a1a')
+  expect((await cssVar('--brand')).toLowerCase()).toBe('#071a2c')
 
   // Back to Dydan + Automatic.
   await page.getByRole('button', { name: /^dydan$/i }).click()
   await page.getByRole('button', { name: /^automatic$/i }).click()
   await expect(html).toHaveAttribute('data-theme', 'dydan')
   await expect(html).toHaveAttribute('data-joy-color-scheme', 'light')
-  expect((await cssVar('--brand')).toLowerCase()).toBe('#4326ea')
+  expect((await cssVar('--brand')).toLowerCase()).toBe('#34236d')
 
   runtimeGuard.assertClean()
 })

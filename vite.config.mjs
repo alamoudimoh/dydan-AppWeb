@@ -141,7 +141,13 @@ export default defineConfig(({ command, mode }) => {
     server: {
       // Development-only seam for installation-specific trusted hostnames.
       // Public/canonical URLs remain separate runtime configuration concerns.
-      allowedHosts: parseAllowedHosts(resolveAllowedHostsEnv(process.env)),
+      // Resolved from the Vite-loaded env so .env, .env.local and mode-specific
+      // Vite env files work, while an explicitly exported process env var still
+      // takes precedence.
+      allowedHosts: parseAllowedHosts(resolveAllowedHostsEnv(env)),
+      // Dydan development server: port 9999, LAN accessible (0.0.0.0)
+      port: 9999,
+      host: '0.0.0.0',
       proxy: {
         '/api': {
           // Development-only seam so the dev server can be pointed at the

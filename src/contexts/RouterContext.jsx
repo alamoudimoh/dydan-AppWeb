@@ -23,14 +23,15 @@ const IntegrationsSettings = lazy(
 const PrivacySettings = lazy(() => import('@/views/Settings/PrivacySettings'))
 const SecuritySettings = lazy(() => import('@/views/Settings/SecuritySettings'))
 const Settings = lazy(() => import('@/views/Settings/Settings'))
-const SettingsOverview = lazy(() => import('@/views/Settings/SettingsOverview'))
+const FigmaSettingsScreen = lazy(
+  () => import('@/views/Settings/FigmaSettingsScreen'),
+)
 const SettingsPermissionGuard = lazy(
   () => import('@/views/Settings/SettingsPermissionGuard'),
 )
 const SettingsRoutes = lazy(() => import('@/views/Settings/SettingsRoutes'))
 const ThemeSettings = lazy(() => import('@/views/Settings/ThemeSettings'))
 
-const GlobalSearchPage = lazy(() => import('../search/GlobalSearchPage'))
 const AuthenticationLoading = lazy(
   () => import('../views/Authorization/Authenticating'),
 )
@@ -43,34 +44,60 @@ const SignupView = lazy(() => import('../views/Authorization/Signup'))
 const UpdatePasswordView = lazy(
   () => import('../views/Authorization/UpdatePasswordView'),
 )
-const CalendarView = lazy(() => import('../views/Calendar/CalendarView'))
+const FigmaCalendarScreen = lazy(
+  () => import('../views/Calendar/FigmaCalendarScreen'),
+)
 const CategoryView = lazy(() => import('../views/Categories/CategoryView'))
 const ChoreView = lazy(() => import('../views/ChoreEdit/ChoreView'))
 const ArchivedTasks = lazy(() => import('../views/Chores/ArchivedTasks'))
 const MyChores = lazy(() => import('../views/Chores/MyChores'))
+const FigmaTasksScreen = lazy(() => import('../views/Chores/FigmaTasksScreen'))
 const JoinCircleView = lazy(() => import('../views/Circles/JoinCircle'))
 const NotFound = lazy(() => import('../views/components/NotFound'))
-const Dashboard = lazy(() => import('../views/Dashboard/Dashboard'))
-const TodayView = lazy(() => import('../views/Home/today/TodayView'))
-const FamilyProgress = lazy(
-  () => import('../views/FamilyProgress/FamilyProgress'),
+
+// PE2 route ports: each of these renders the matching Product Experience 2
+// screen pixel-for-pixel against the shared `src/pe2` fixtures.
+const FigmaActivityScreen = lazy(
+  () => import('@/views/User/pe2/FigmaActivityScreen'),
 )
+const FigmaGoalsScreen = lazy(() => import('@/views/Goals/FigmaGoalsScreen'))
+const FigmaMaintenanceScreen = lazy(
+  () => import('@/views/Maintenance/pe2/FigmaMaintenanceScreen'),
+)
+const FigmaNotificationsScreen = lazy(
+  () => import('@/views/Notifications/FigmaNotificationsScreen'),
+)
+const FigmaProgressScreen = lazy(
+  () => import('@/views/FamilyProgress/FigmaProgressScreen'),
+)
+const FigmaProjectsScreen = lazy(
+  () => import('@/views/Projects/pe2/FigmaProjectsScreen'),
+)
+const FigmaRewardsScreen = lazy(
+  () => import('@/views/Rewards/FigmaRewardsScreen'),
+)
+const FigmaRoutinesScreen = lazy(
+  () => import('@/views/Routines/pe2/FigmaRoutinesScreen'),
+)
+const FigmaSearchScreen = lazy(() => import('@/views/Search/FigmaSearchScreen'))
+const FigmaShoppingScreen = lazy(
+  () => import('@/views/ShoppingLists/pe2/FigmaShoppingScreen'),
+)
+const FigmaHomeScreen = lazy(() => import('@/views/Home/today/FigmaHomeScreen'))
+const FigmaTodayScreen = lazy(
+  () => import('@/views/Home/today/FigmaTodayScreen'),
+)
+
 const FamilyCircleGuard = lazy(() => import('../components/FamilyCircleGuard'))
 const FilterView = lazy(() => import('../views/Filters/FilterView'))
 const ChoreHistory = lazy(() => import('../views/History/ChoreHistory'))
 const Landing = lazy(() => import('../views/Landing/Landing'))
-const MaintenanceViewLazy = lazy(
-  () => import('../views/Maintenance/MaintenanceView'),
-)
 const AssetDetailLazy = lazy(() =>
   import('../views/Maintenance/MaintenanceView').then(m => ({
     default: m.AssetDetail,
   })),
 )
 const MetersView = lazy(() => import('../views/Meters/MetersView'))
-const NotificationsView = lazy(
-  () => import('../views/Notifications/NotificationsView'),
-)
 const CircleSetupView = lazy(
   () => import('../views/Onboarding/CircleSetupView'),
 )
@@ -89,15 +116,9 @@ const PaymentSuccessView = lazy(
 const PrivacyPolicyView = lazy(
   () => import('../views/PrivacyPolicy/PrivacyPolicyView'),
 )
-const ProjectView = lazy(() => import('../views/Projects/ProjectView'))
 const ShoppingListDetail = lazy(
   () => import('../views/ShoppingLists/ShoppingListDetail'),
 )
-const ShoppingListsView = lazy(
-  () => import('../views/ShoppingLists/ShoppingListsView'),
-)
-const RewardsView = lazy(() => import('../views/Rewards/RewardsView'))
-const RoutinesView = lazy(() => import('../views/Routines/RoutinesView'))
 const APITokenSettings = lazy(() => import('@/views/Settings/APITokenSettings'))
 const LocalizationSettings = lazy(
   () => import('@/views/Settings/LocalizationSettings'),
@@ -115,7 +136,6 @@ const TermsView = lazy(() => import('../views/Terms/TermsView'))
 const ThingsHistory = lazy(() => import('../views/Things/ThingsHistory'))
 const ThingsView = lazy(() => import('../views/Things/ThingsView'))
 const TimerDetails = lazy(() => import('../views/Timer/TimerDetails'))
-const UserActivities = lazy(() => import('../views/User/UserActivities'))
 const UserPoints = lazy(() => import('../views/User/UserPoints'))
 
 import { PERMISSIONS } from '../utils/PermissionModel'
@@ -136,11 +156,11 @@ export const appRouteConfig = [
     children: [
       {
         path: '/',
-        element: <Dashboard />,
+        element: <FigmaHomeScreen />,
       },
       {
         path: '/today',
-        element: <TodayView />,
+        element: <FigmaTodayScreen />,
       },
       {
         path: '/profile',
@@ -152,7 +172,7 @@ export const appRouteConfig = [
         children: [
           {
             index: true,
-            element: <SettingsOverview />,
+            element: <FigmaSettingsScreen />,
           },
           {
             path: 'detailed',
@@ -253,19 +273,23 @@ export const appRouteConfig = [
       },
       {
         path: '/chores',
-        element: <MyChores />,
+        element: <FigmaTasksScreen />,
       },
       {
         path: '/calendar',
-        element: <CalendarView />,
+        element: <FigmaCalendarScreen />,
       },
       {
         path: '/family',
-        element: familyRoute(<FamilyProgress />),
+        element: familyRoute(<FigmaProgressScreen />),
+      },
+      {
+        path: '/goals',
+        element: <FigmaGoalsScreen />,
       },
       {
         path: '/search',
-        element: <GlobalSearchPage />,
+        element: <FigmaSearchScreen />,
       },
       {
         path: '/archived',
@@ -297,7 +321,7 @@ export const appRouteConfig = [
       },
       {
         path: '/activities',
-        element: familyRoute(<UserActivities />),
+        element: familyRoute(<FigmaActivityScreen />),
       },
       {
         path: '/points',
@@ -305,11 +329,11 @@ export const appRouteConfig = [
       },
       {
         path: '/rewards',
-        element: familyRoute(<RewardsView />),
+        element: familyRoute(<FigmaRewardsScreen />),
       },
       {
         path: '/notifications',
-        element: <NotificationsView />,
+        element: <FigmaNotificationsScreen />,
       },
       {
         path: '/login',
@@ -390,11 +414,11 @@ export const appRouteConfig = [
       },
       {
         path: 'maintenance',
-        element: <MaintenanceViewLazy />,
+        element: <FigmaMaintenanceScreen />,
       },
       {
         path: 'routines',
-        element: <RoutinesView />,
+        element: <FigmaRoutinesScreen />,
       },
       {
         path: 'maintenance/assets/:id',
@@ -410,11 +434,11 @@ export const appRouteConfig = [
       },
       {
         path: 'projects/',
-        element: <ProjectView />,
+        element: <FigmaProjectsScreen />,
       },
       {
         path: 'shopping',
-        element: <ShoppingListsView />,
+        element: <FigmaShoppingScreen />,
       },
       {
         path: 'shopping/:id',

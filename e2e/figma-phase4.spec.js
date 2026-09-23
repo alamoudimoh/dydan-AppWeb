@@ -9,7 +9,7 @@ const tasks = [
     id: 42,
     name: 'Overdue task',
     assignedTo: 1,
-    category: { id: 1, name: 'Home', color: '#4326EA' },
+    category: { id: 1, name: 'Home', color: '#34236D' },
     frequencyType: 'once',
     isActive: true,
     nextDueDate: '2026-01-14T09:00:00Z',
@@ -34,7 +34,7 @@ const calendarResponse = {
     occurrences: [
       {
         actionable: true,
-        category: { id: 1, name: 'Home', color: '#4326EA' },
+        category: { id: 1, name: 'Home', color: '#34236D' },
         choreId: 42,
         dueAt: '2026-01-15T09:00:00Z',
         name: 'Calendar task',

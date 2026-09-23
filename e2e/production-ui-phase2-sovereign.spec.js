@@ -26,42 +26,42 @@ const CASES = [
 
 const PALETTES = {
   light: {
-    '--product-page': '#ffffff',
-    '--product-surface': '#f2f2f2',
-    '--product-surface-subtle': '#ffffff',
-    '--product-text': '#1a1a1a',
-    '--product-text-muted': '#4d4d4d',
-    '--product-boundary': '#666666',
-    '--product-brand': '#1a1a1a',
-    '--product-brand-hover': '#2e2e2e',
-    '--product-brand-contrast': '#ffc107',
-    '--product-action': '#ffc107',
-    '--product-action-text': '#1a1a1a',
-    '--product-gold-text': '#4d4d4d',
-    '--product-callout': '#1a1a1a',
-    '--product-callout-text': '#f2f2f2',
-    '--product-callout-muted': '#999999',
-    '--product-focus-inner': '#ffffff',
-    '--product-focus-outer': '#1a1a1a',
+    '--product-page': '#f6f2e8',
+    '--product-surface': '#ffffff',
+    '--product-surface-subtle': '#ebe7de',
+    '--product-text': '#071a2c',
+    '--product-text-muted': '#5f421b',
+    '--product-boundary': '#4d7794',
+    '--product-brand': '#071a2c',
+    '--product-brand-hover': '#142d40',
+    '--product-brand-contrast': '#f6f2e8',
+    '--product-action': '#071a2c',
+    '--product-action-text': '#f6f2e8',
+    '--product-gold-text': '#5f421b',
+    '--product-callout': '#071a2c',
+    '--product-callout-text': '#f6f2e8',
+    '--product-callout-muted': '#756f68',
+    '--product-focus-inner': '#f6f2e8',
+    '--product-focus-outer': '#071a2c',
   },
   dark: {
-    '--product-page': '#1a1a1a',
-    '--product-surface': '#242424',
-    '--product-surface-subtle': '#2e2e2e',
-    '--product-text': '#f2f2f2',
-    '--product-text-muted': '#999999',
-    '--product-boundary': '#999999',
-    '--product-brand': '#ffc107',
-    '--product-brand-hover': '#ffd04d',
-    '--product-brand-contrast': '#1a1a1a',
-    '--product-action': '#ffc107',
-    '--product-action-text': '#1a1a1a',
-    '--product-gold-text': '#ffc107',
-    '--product-callout': '#242424',
-    '--product-callout-text': '#f2f2f2',
-    '--product-callout-muted': '#999999',
-    '--product-focus-inner': '#1a1a1a',
-    '--product-focus-outer': '#ffc107',
+    '--product-page': '#071a2c',
+    '--product-surface': '#142d40',
+    '--product-surface-subtle': '#142d40',
+    '--product-text': '#f6f2e8',
+    '--product-text-muted': '#aec1cf',
+    '--product-boundary': '#829fb4',
+    '--product-brand': '#f6f2e8',
+    '--product-brand-hover': '#e8c97d',
+    '--product-brand-contrast': '#071a2c',
+    '--product-action': '#e0b45a',
+    '--product-action-text': '#071a2c',
+    '--product-gold-text': '#e0b45a',
+    '--product-callout': '#f6f2e8',
+    '--product-callout-text': '#071a2c',
+    '--product-callout-muted': '#aec1cf',
+    '--product-focus-inner': '#071a2c',
+    '--product-focus-outer': '#e0b45a',
   },
 }
 
@@ -90,6 +90,7 @@ for (const scenario of CASES) {
       ({ locale, theme }) => {
         localStorage.setItem('joy-mode', theme)
         localStorage.setItem('themeMode', JSON.stringify(theme))
+        localStorage.setItem('dydan.theme', 'sovereign')
         localStorage.setItem('i18nextLng', locale)
         localStorage.setItem('language', JSON.stringify(locale))
       },
@@ -123,8 +124,8 @@ for (const scenario of CASES) {
     })
     expect(wordmark).toBeTruthy()
     expect(wordmark.label).toBe('Sovereign')
-    expect(wordmark.color).not.toContain('77, 64, 219') // #4D40DB
-    expect(wordmark.color).not.toContain('#4D40DB')
+    expect(wordmark.color).not.toContain('52, 35, 109') // #34236D
+    expect(wordmark.color).not.toContain('#34236D')
     await assertSovereignVariables(page, scenario.mode)
     if (scenario.tab) {
       await expect(page.locator('#root')).not.toContainText(
@@ -158,6 +159,7 @@ test('sovereign: mobile task controls stay inside the dialog', async ({
   await page.addInitScript(() => {
     localStorage.setItem('joy-mode', 'dark')
     localStorage.setItem('themeMode', JSON.stringify('dark'))
+    localStorage.setItem('dydan.theme', 'sovereign')
   })
 
   await page.goto('/chores', { waitUntil: 'networkidle' })
@@ -192,6 +194,7 @@ for (const mode of ['light', 'dark']) {
     await page.addInitScript(theme => {
       localStorage.setItem('joy-mode', theme)
       localStorage.setItem('themeMode', JSON.stringify(theme))
+      localStorage.setItem('dydan.theme', 'sovereign')
     }, mode)
 
     await page.goto('/login', { waitUntil: 'networkidle' })
@@ -217,11 +220,11 @@ for (const mode of ['light', 'dark']) {
     })
     await expect(page.locator('.btn-primary').first()).toHaveCSS(
       'background-color',
-      'rgb(255, 193, 7)',
+      'rgb(224, 180, 90)',
     )
     await expect(page.locator('.btn-primary').first()).toHaveCSS(
       'color',
-      'rgb(26, 26, 26)',
+      'rgb(7, 26, 44)',
     )
   })
 }

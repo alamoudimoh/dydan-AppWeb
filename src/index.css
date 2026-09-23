@@ -1,3 +1,9 @@
+/* PE2 loads its typefaces from Google Fonts; load the same family set so the
+   ported screens resolve the exact same font faces PE2 does. */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Ubuntu:wght@300;400;500;700&family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Ubuntu+Mono:wght@400;700&display=swap');
+
+@import './pe2/pe2.css';
+
 @import 'tailwindcss';
 
 /* Figma shell foundation. Route content remains on the legacy Joy boundary.
@@ -446,11 +452,11 @@ html {
   }
 }
 
-/* Global focus styles for better accessibility */
-*:focus-visible {
-  outline: 2px solid var(--dydan-focus-outer);
+/* PE2 focus-visible styling inside the .pe2 scope */
+.pe2 *:focus-visible {
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--dydan-focus-inner);
+  border-radius: var(--r-sm);
 }
 
 /* Prevent iOS Safari from auto-zooming on input focus (triggered when font-size < 16px) */
@@ -588,76 +594,82 @@ body {
    Mirrors design-source/figma-make/src/index.css.
 ────────────────────────────────────────────── */
 :root {
-  --accent-bg: #ddf9ff;
-  --accent-text: #006b80;
-  --callout-bg: #0b1020;
-  --callout-text: #f8faff;
-  --sig-done: #0f763f;
-  --sig-done-bg: #dcfce7;
-  --sig-due: #826026;
-  --sig-due-bg: #fef3c7;
-  --sig-over: #c52338;
-  --sig-over-bg: #ffe4e6;
-  --sig-flag: #bf1881;
-  --sig-flag-bg: #fce7f3;
-  --member-1: #3216c8;
-  --member-2: #0f763f;
-  --member-3: #0ab5d9;
-  --member-4: #bf1881;
-  --member-5: #ea6c14;
-  --member-6: #2ea86b;
-  --project-1: #bf1881;
-  --project-2: #ea6c14;
-  --project-3: #2ea86b;
-  --goal-1: #4326ea;
-  --goal-2: #0ab5d9;
-  --goal-3: #bf1881;
+  --accent-bg: #ffcc5c;
+  --accent-text: #684a00;
+  --callout-bg: #34236d;
+  --callout-text: #fff8e8;
+  --sig-done: #0b5d45;
+  --sig-done-bg: #0b5d45;
+  --sig-due: #704600;
+  --sig-due-bg: #704600;
+  --sig-over: #8e2838;
+  --sig-over-bg: #8e2838;
+  --sig-flag: #174e78;
+  --sig-flag-bg: #174e78;
+  --member-1: #34236d;
+  --member-2: #ffcc5c;
+  --member-3: #7769b6;
+  --member-4: #d16a79;
+  --member-5: #d9d1eb;
+  --member-6: #2f5f8a;
+  --project-1: #d16a79;
+  --project-2: #2f5f8a;
+  --project-3: #d9d1eb;
+  --goal-1: #34236d;
+  --goal-2: #ffcc5c;
+  --goal-3: #d16a79;
   --r-xs: 4px;
   --r-xl: 24px;
   --r-2xl: 32px;
   --shadow-md:
-    0 4px 16px rgba(11, 16, 32, 0.1), 0 2px 6px rgba(11, 16, 32, 0.06);
+    0 4px 16px rgba(52, 35, 109, 0.1), 0 2px 6px rgba(52, 35, 109, 0.06);
   --shadow-lg:
-    0 12px 40px rgba(11, 16, 32, 0.12), 0 4px 12px rgba(11, 16, 32, 0.06);
+    0 12px 40px rgba(52, 35, 109, 0.12), 0 4px 12px rgba(52, 35, 109, 0.06);
 }
 [data-theme='sovereign'] {
-  --accent-bg: #f2f2f2;
-  --accent-text: #6b5200;
-  --callout-bg: #1a1a1a;
-  --callout-text: #f2f2f2;
-  --sig-done: #31c476;
-  --sig-done-bg: #0a2e1a;
-  --sig-due: #ffc107;
-  --sig-due-bg: #2a2200;
-  --sig-over: #e87382;
-  --sig-over-bg: #2e0a10;
-  --sig-flag: #ac85e0;
-  --sig-flag-bg: #1e1030;
+  --accent-bg: #e0b45a;
+  --accent-text: #e0b45a;
+  --callout-bg: #f6f2e8;
+  --callout-text: #071a2c;
+  --sig-done: #0d5a3d;
+  --sig-done-bg: #0d5a3d;
+  --sig-due: #6a4300;
+  --sig-due-bg: #6a4300;
+  --sig-over: #8a222a;
+  --sig-over-bg: #8a222a;
+  --sig-flag: #164d68;
+  --sig-flag-bg: #164d68;
   --member-1: var(--product-member-1);
   --member-2: var(--product-member-2);
   --member-3: var(--product-member-3);
   --member-4: var(--product-member-4);
   --member-5: var(--product-member-5);
   --member-6: var(--product-member-6);
-  --project-1: #e879be;
-  --project-2: #ffc107;
-  --project-3: #29d6b4;
-  --goal-1: #ffc107;
-  --goal-2: #b87ef7;
-  --goal-3: #e879be;
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --project-1: #b86f44;
+  --project-2: #2c6373;
+  --project-3: #d8c9a8;
+  --goal-1: #e0b45a;
+  --goal-2: #4d7794;
+  --goal-3: #b86f44;
+  --shadow-md: 0 4px 16px rgba(4, 17, 29, 0.4), 0 2px 6px rgba(4, 17, 29, 0.25);
+  --shadow-lg:
+    0 12px 40px rgba(4, 17, 29, 0.5), 0 4px 12px rgba(4, 17, 29, 0.3);
 }
 [data-theme='sovereign'][data-joy-color-scheme='light'] {
-  --sig-done: #0f763f;
-  --sig-done-bg: #dcfce7;
-  --sig-due: #6b5200;
-  --sig-due-bg: #fef3c7;
-  --sig-over: #c52338;
-  --sig-over-bg: #ffe4e6;
-  --sig-flag: #bf1881;
-  --sig-flag-bg: #fce7f3;
+  --accent-bg: #e0b45a;
+  --accent-text: #5f421b;
+  --callout-bg: #071a2c;
+  --callout-text: #f6f2e8;
+  --sig-done: #0d5a3d;
+  --sig-done-bg: #0d5a3d;
+  --sig-due: #6a4300;
+  --sig-due-bg: #6a4300;
+  --sig-over: #8a222a;
+  --sig-over-bg: #8a222a;
+  --sig-flag: #164d68;
+  --sig-flag-bg: #164d68;
 }
+
 #root.dark {
   --accent-bg: var(--product-surface-subtle);
   --accent-text: var(--product-gold-text);
@@ -1144,18 +1156,22 @@ body {
   }
 }
 
-/* Reward grid cell used by the quest home (Figma ships the markup without a
-   matching rule; mirror the card surface so the reward grid reads as cards). */
+/* Reward grid cell used by the quest home, matching the product-experience
+   prototype rule exactly (padding 16, gap 10, soft shadow + hover lift). */
 .reward-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 10px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  text-align: center;
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.reward-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .input {
@@ -1831,4 +1847,333 @@ body {
   .figma-shopping-grid {
     grid-template-columns: 220px minmax(0, 1fr);
   }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   PE2 visual scope — Home / Focus / Quest
+   Source of truth: Dydan-AppWebProductExperience02/src/index.css
+   (the `:root` "DayDan" token block plus the shared class rules).
+
+   The production theme maps some tokens differently from the product
+   experience prototype and a few shared classes render differently too:
+   - runtime semantic variables are inherited from the active product theme
+   - radii --r-xs..--r-2xl     → prototype 4/8/12/18/24/32
+   - --shadow-md               → prototype 0 4 16 .10 + 0 2 6 .06
+   - .badge/.view-toggle/.toast → prototype pills (--r-full)
+   - .btn base                 → prototype font 14/700 + padding 8/16
+                                 + gap 6 + min-height 38
+
+   These overrides apply ONLY inside `.pe2` (added by App.jsx to the
+   app shell for the home route), so Home/Focus/Quest match the
+   prototype exactly while every other route keeps its existing values.
+   ────────────────────────────────────────────────────────────── */
+/* PE2 tokens - exact copy from Product Experience 2 to ensure 100% visual fidelity */
+.pe2 {
+  --page: var(--product-page);
+  --surface: var(--product-surface);
+  --surface-2: var(--product-surface-subtle);
+  --surface-3: var(--product-surface-subtle);
+  --t-primary: var(--product-text);
+  --t-muted: var(--product-text-muted);
+  --t-faint: var(--product-text-muted);
+  --line: var(--product-boundary);
+  --line-strong: var(--product-boundary);
+  --brand: var(--product-brand);
+  --brand-hover: var(--product-brand-hover);
+  --brand-faint: var(--product-brand-soft);
+  --brand-contrast: var(--product-brand-contrast);
+  --accent: var(--product-action);
+  --accent-bg: var(--product-brand-soft);
+  --accent-text: var(--product-gold-text);
+  --callout-bg: var(--product-callout);
+  --callout-text: var(--product-callout-text);
+  --sig-done: var(--product-progress-complete);
+  --sig-done-bg: var(--product-progress-complete);
+  --sig-due: var(--product-chart-2);
+  --sig-due-bg: var(--product-chart-2);
+  --sig-over: var(--product-progress-at-risk);
+  --sig-over-bg: var(--product-progress-at-risk);
+  --sig-flag: var(--product-signal);
+  --sig-flag-bg: var(--product-signal);
+  --font-ui: var(--product-font-ui);
+  --font-mono: var(--product-font-data);
+  --font-ar: var(--product-font-arabic);
+  --member-sarah: var(--product-member-1);
+  --member-daniel: var(--product-member-2);
+  --member-liam: var(--product-member-3);
+  --project-1: var(--product-chart-4);
+  --project-2: var(--product-chart-6);
+  --project-3: var(--product-chart-5);
+  --goal-1: var(--product-chart-1);
+  --goal-2: var(--product-chart-2);
+  --goal-3: var(--product-chart-4);
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --r-full: 9999px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: var(--font-ui);
+  color: var(--t-muted);
+}
+
+/* Prototype renders these as pills (--r-full); the production rules
+   use --r-sm. */
+.pe2 .view-toggle,
+.pe2 .view-toggle-btn,
+.pe2 .badge,
+.pe2 .toast {
+  border-radius: var(--r-full);
+}
+
+/* Toast padding must match PE2 (10px 20px) */
+.pe2 .toast {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+/* Prototype .btn base for the route content area (topbar keeps its own
+   variants). The variant rules below are re-declared at equal
+   specificity and later in the sheet so they keep winning. */
+.pe2 .main-content .btn {
+  gap: 6px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 8px 16px;
+  min-height: 38px;
+  transition: all 0.14s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.pe2 .main-content .btn-sm {
+  font-size: 12px;
+  padding: 5px 11px;
+  min-height: 30px;
+  border-radius: var(--r-sm);
+}
+.pe2 .main-content .btn-icon {
+  min-height: 36px;
+  width: 36px;
+  padding: 8px;
+}
+/* PE2 declares `.btn-ghost` (color: var(--t-muted)) AFTER its
+   `.text-brand` utility, so ghost buttons read muted even when the
+   element also carries `text-brand`. Dydan's sheet orders them the other
+   way around; pin the PE2 outcome for the route content area (topbar
+   ghost buttons live outside `main` and are untouched). */
+.pe2 .main-content .btn-ghost {
+  color: var(--t-muted);
+}
+
+/* PE2 sidebar collapse and mobile styles - these add missing PE2-specific
+   rules that the base Dydan styles don't have inside the .pe2 scope */
+.pe2 .app-shell.sidebar-collapsed {
+  --sidebar-w: 74px;
+}
+.pe2 .sidebar.collapsed .collapse-hide {
+  display: none !important;
+}
+.pe2 .sidebar.collapsed .section-label {
+  display: none;
+}
+.pe2 .sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+.pe2 .sidebar.collapsed .nav-item > span:not(.badge) {
+  display: none;
+}
+.pe2 .sidebar.collapsed .sidebar-header {
+  flex-direction: column;
+  gap: 10px;
+}
+.pe2 .collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--t-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+.pe2 .collapse-toggle:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+[dir='rtl'] .pe2 .collapse-toggle svg {
+  transform: scaleX(-1);
+}
+.pe2 .mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 768px) {
+  .pe2 .sidebar {
+    display: none;
+  }
+  .pe2 .mobile-nav {
+    display: flex;
+  }
+  .pe2 .main-content {
+    padding-bottom: 70px;
+  }
+  /* PE2 shows no topbar at mobile widths — the bottom mobile-nav is the
+     only chrome. Hiding the app's figma topbar keeps the port faithful. */
+  .pe2 .figma-topbar {
+    display: none;
+  }
+}
+
+/* PE2 overrides for Dydan's figma-* class structure within the home route */
+.pe2 .figma-sidebar {
+  width: var(--sidebar-w);
+}
+.pe2 .figma-topbar {
+  margin-inline-start: var(--sidebar-w);
+}
+.pe2 .figma-brand {
+  padding: 16px 12px 12px;
+}
+.pe2 .figma-brand button {
+  color: var(--brand);
+}
+.pe2 .figma-collapse-button {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--t-muted);
+  border: none;
+}
+.pe2 .figma-collapse-button:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+.pe2 .figma-nav-scroll {
+  padding: 8px 0;
+}
+.pe2 .nav-item {
+  padding: 8px 12px;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pe2 .nav-item:hover {
+  background: var(--surface-2);
+  color: var(--t-primary);
+}
+.pe2 .nav-item.active {
+  background: var(--brand-faint);
+  color: var(--brand);
+  font-weight: 700;
+}
+.pe2 .section-label {
+  padding: 14px 12px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+.pe2 .figma-nav-footer {
+  padding: 8px;
+  border-top: 1px solid var(--line);
+}
+.pe2 .figma-profile {
+  padding: 8px;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pe2 .figma-profile > span {
+  font-family: var(--font-ui);
+}
+.pe2 .sidebar-collapsed .figma-brand {
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 8px 12px;
+}
+.pe2 .sidebar-collapsed .figma-brand > div {
+  display: none;
+}
+.pe2 .sidebar-collapsed .figma-nav-scroll {
+  padding: 0;
+}
+.pe2 .sidebar-collapsed .section-label {
+  display: none;
+}
+.pe2 .sidebar-collapsed .nav-item {
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+}
+.pe2 .sidebar-collapsed .nav-item > span {
+  display: none;
+}
+.pe2 .figma-topbar {
+  height: 64px;
+  padding: 0 28px;
+}
+.pe2 .figma-menu-button {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 700;
+}
+.pe2 .figma-search-button {
+  width: 200px;
+  padding: 8px 12px;
+}
+.pe2 .figma-top-actions {
+  gap: 8px;
+}
+.pe2 .mobile-nav {
+  height: auto;
+}
+.pe2 .mobile-nav button {
+  min-height: 53px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+}
+[dir='rtl'] .pe2 .figma-collapse-button svg {
+  transform: scaleX(-1);
+}
+[dir='rtl'] .pe2 .sidebar {
+  left: auto;
+  right: 0;
+  border-inline-end: 0;
+  border-inline-start: 1px solid var(--line);
+}
+[dir='rtl'] .pe2 .figma-topbar {
+  margin-inline-start: 0;
+  margin-inline-end: var(--sidebar-w);
+}
+
+/* RT L overrides */
+[dir='rtl'] .pe2 .section-label {
+  letter-spacing: 0;
+  text-transform: none;
 }

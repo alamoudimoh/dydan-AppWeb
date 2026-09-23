@@ -39,6 +39,11 @@ const AppContent = () => {
   const { showNotification } = useNotification()
   const location = useLocation()
   const shellVisible = hasAppShell(location.pathname)
+  // Product Experience 2 is the presentation authority for the application,
+  // not only for its direct screen routes.  Keep this wrapper around every
+  // route so nested details, settings, authentication, onboarding, loading,
+  // offline, and error states resolve the literal PE2 variables and shared
+  // primitives rather than falling back to the legacy visual system.
   useSyncOnReconnect()
 
   // Every route renders through this Outlet, so one listener here gives crash
@@ -108,7 +113,7 @@ const AppContent = () => {
 
   return (
     <RequireAuth>
-      <div>
+      <div className='pe2'>
         <a href='#main-content' className='skip-link'>
           Skip to content
         </a>

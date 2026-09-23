@@ -32,12 +32,30 @@ describe('SettingsRoutes', () => {
     authState.profile = { id: 1, userType: 0, displayName: 'Dana' }
   })
 
-  it('renders the settings tab strip above the routed content', () => {
+  it('renders the settings index bare, without the shell wrapper', () => {
     render(
       <MemoryRouter initialEntries={['/settings']}>
         <Routes>
           <Route path='/settings' element={<SettingsRoutes />}>
             <Route index element={<div>overview panel</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(document.querySelector('.figma-settings-shell')).toBeNull()
+    expect(document.querySelector('.figma-settings-nav')).toBeNull()
+    expect(document.querySelector('.figma-settings-content')).toBeNull()
+    expect(screen.getByText('overview panel')).toBeInTheDocument()
+  })
+
+  it('renders the settings tab strip above detail route content', () => {
+    render(
+      <MemoryRouter initialEntries={['/settings/detailed']}>
+        <Routes>
+          <Route path='/settings' element={<SettingsRoutes />}>
+            <Route index element={<div>overview panel</div>} />
+            <Route path='detailed' element={<div>detail panel</div>} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -56,7 +74,7 @@ describe('SettingsRoutes', () => {
     // area below it.
     expect(shell.firstElementChild).toBe(nav)
     expect(nav).toContainElement(screen.getByLabelText('settingsNav.title'))
-    expect(content).toContainElement(screen.getByText('overview panel'))
+    expect(content).toContainElement(screen.getByText('detail panel'))
     expect(
       screen.getByRole('link', { name: 'settingsNav.overview' }),
     ).toHaveAttribute('href', '/settings')
