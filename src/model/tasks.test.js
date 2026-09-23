@@ -50,13 +50,12 @@ test('completion today marks an active chore as done', () => {
 })
 
 test('archived chore with a completion surfaces as a done task', () => {
-  const archived = activeChore({ id: 7, name: 'UI roundtrip task', isActive: false })
-  const tasks = toTasks(
-    [],
-    [archived],
-    [historyDone(7, '2026-09-23')],
-    today,
-  )
+  const archived = activeChore({
+    id: 7,
+    name: 'UI roundtrip task',
+    isActive: false,
+  })
+  const tasks = toTasks([], [archived], [historyDone(7, '2026-09-23')], today)
   assert.equal(tasks.length, 1)
   assert.equal(tasks[0].id, '7')
   assert.equal(tasks[0].status, 'done')
@@ -64,7 +63,11 @@ test('archived chore with a completion surfaces as a done task', () => {
 })
 
 test('archived chore without a completion stays hidden', () => {
-  const archived = activeChore({ id: 8, name: 'Trigger chore', isActive: false })
+  const archived = activeChore({
+    id: 8,
+    name: 'Trigger chore',
+    isActive: false,
+  })
   const tasks = toTasks([], [archived], [], today)
   assert.equal(tasks.length, 0)
 })

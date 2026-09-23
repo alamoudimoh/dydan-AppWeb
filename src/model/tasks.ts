@@ -11,38 +11,40 @@
    reconciled from the archived list to stay visible
    as "done" in the UI.
 ───────────────────────────────────────────── */
-import type { ApiChore, ApiChoreHistory } from "./api";
-import type { Task } from "../data";
+import type { Task } from '../data'
+import type { ApiChore, ApiChoreHistory } from './api'
 
 export function dayKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 export function todayKey(): string {
-  return dayKey(new Date());
+  return dayKey(new Date())
 }
 
-export function latestCompletions(history: ApiChoreHistory[]): Map<number, Date> {
-  const map = new Map<number, Date>();
+export function latestCompletions(
+  history: ApiChoreHistory[],
+): Map<number, Date> {
+  const map = new Map<number, Date>()
   for (const row of history) {
-    if (!row || row.status !== 1) continue;
-    const at = row.performedAt ?? row.createdAt;
-    if (!at) continue;
-    const d = new Date(at);
-    const prev = map.get(row.choreId);
-    if (!prev || d > prev) map.set(row.choreId, d);
+    if (!row || row.status !== 1) continue
+    const at = row.performedAt ?? row.createdAt
+    if (!at) continue
+    const d = new Date(at)
+    const prev = map.get(row.choreId)
+    if (!prev || d > prev) map.set(row.choreId, d)
   }
-  return map;
+  return map
 }
 
-function toPriority(priority: number | null | undefined): Task["priority"] {
-  if (priority == null) return "medium";
-  if (priority >= 4) return "high";
-  if (priority <= 2) return "low";
-  return "medium";
+function toPriority(priority: number | null | undefined): Task['priority'] {
+  if (priority == null) return 'medium'
+  if (priority >= 4) return 'high'
+  if (priority <= 2) return 'low'
+  return 'medium'
 }
 
 function isTaskDone(
@@ -50,9 +52,9 @@ function isTaskDone(
   completed: Date | undefined,
   today: string,
 ): boolean {
-  if (!completed) return false;
-  if (!chore.nextDueDate) return dayKey(completed) === today;
-  return completed.getTime() >= new Date(chore.nextDueDate).getTime();
+  if (!completed) return false
+  if (!chore.nextDueDate) return dayKey(completed) === today
+  return completed.getTime() >= new Date(chore.nextDueDate).getTime()
 }
 
 function toTask(
@@ -61,18 +63,18 @@ function toTask(
   today: string,
   forceDone: boolean,
 ): Task {
-  const done = forceDone || isTaskDone(chore, completedFor, today);
-  const dueDate = chore.nextDueDate ? new Date(chore.nextDueDate) : null;
-  let status: Task["status"];
-  if (done) status = "done";
-  else if (!dueDate) status = "todo";
+  const done = forceDone || isTaskDone(chore, completedFor, today)
+  const dueDate = chore.nextDueDate ? new Date(chore.nextDueDate) : null
+  let status: Task['status']
+  if (done) status = 'done'
+  else if (!dueDate) status = 'todo'
   else {
-    const dueDay = dayKey(dueDate);
-    if (dueDay < today) status = "overdue";
-    else if (dueDay === today) status = "todo";
-    else status = "upcoming";
+    const dueDay = dayKey(dueDate)
+    if (dueDay < today) status = 'overdue'
+    else if (dueDay === today) status = 'todo'
+    else status = 'upcoming'
   }
-  const assignee = chore.assignedTo ?? chore.assignees?.[0]?.userId ?? null;
+  const assignee = chore.assignedTo ?? chore.assignees?.[0]?.userId ?? null
   return {
     id: String(chore.id),
     title: chore.name,
@@ -86,7 +88,7 @@ function toTask(
     categoryColor: chore.category?.color,
     projectId: chore.projectId != null ? String(chore.projectId) : undefined,
     points: chore.points ?? undefined,
-    isRecurring: Boolean(chore.frequencyType && chore.frequencyType !== "once"),
+    isRecurring: Boolean(chore.frequencyType && chore.frequencyType !== 'once'),
     recurrence: chore.frequencyType,
     tags: [],
     subtasks: (chore.subTasks ?? []).map(st => ({
@@ -96,7 +98,7 @@ function toTask(
     })),
     completedAt: done && completedFor ? completedFor.toISOString() : undefined,
     notes: chore.description ?? undefined,
-  };
+  }
 }
 
 export function toTasks(
@@ -105,18 +107,18 @@ export function toTasks(
   history: ApiChoreHistory[],
   today: string,
 ): Task[] {
-  const completed = latestCompletions(history);
-  const activeIds = new Set(chores.map(chore => chore.id));
+  const completed = latestCompletions(history)
+  const activeIds = new Set(chores.map(chore => chore.id))
 
   const active = chores.map(chore =>
     toTask(chore, completed.get(chore.id), today, false),
-  );
+  )
 
   // Archived chores with a recorded completion surface as done tasks so
   // completed work stays visible (the server archives chores on completion).
   const archivedDone = archived
     .filter(chore => !activeIds.has(chore.id) && completed.has(chore.id))
-    .map(chore => toTask(chore, completed.get(chore.id), today, true));
+    .map(chore => toTask(chore, completed.get(chore.id), today, true))
 
-  return [...active, ...archivedDone];
+  return [...active, ...archivedDone]
 }

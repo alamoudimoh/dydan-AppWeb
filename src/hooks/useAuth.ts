@@ -1,15 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { login, logout, VerifyMFA, GetUserProfile } from "../utils/Fetcher";
-import { apiClient } from "../utils/ApiClient";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import type { ApiProfile } from '../model/api'
+import { useNotification } from '../service/NotificationProvider'
+import { apiClient } from '../utils/ApiClient'
+import { GetUserProfile, login, logout, VerifyMFA } from '../utils/Fetcher'
 import {
+  clearAllTokens,
   getAccessToken,
   hasAccessToken,
   saveTokens,
-  clearAllTokens,
-} from "../utils/TokenStorage";
-import { useNotification } from "../service/NotificationProvider";
-import type { ApiProfile } from "../model/api";
+} from '../utils/TokenStorage'
 
 /* ─────────────────────────────────────────────
    Real authentication hook.
@@ -22,49 +23,49 @@ import type { ApiProfile } from "../model/api";
    the web; this hook only manages auth state.
 ───────────────────────────────────────────── */
 
-export interface LoginResult {
-  mfaRequired: boolean;
-  sessionToken?: string;
-  access_token?: string;
+export type LoginResult = {
+  mfaRequired: boolean
+  sessionToken?: string
+  access_token?: string
 }
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isSessionExpired: boolean;
-  user: ApiProfile | null;
-  error: string | null;
+export type AuthState = {
+  isAuthenticated: boolean
+  isLoading: boolean
+  isSessionExpired: boolean
+  user: ApiProfile | null
+  error: string | null
 }
 
 export function useAuth() {
-  const queryClient = useQueryClient();
-  const { showError, showSuccess } = useNotification();
+  const queryClient = useQueryClient()
+  const { showError, showSuccess } = useNotification()
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isLoading: true,
     isSessionExpired: false,
     user: null,
     error: null,
-  });
+  })
 
   // Fetch user profile (enabled only when an access token exists).
   const {
     data: userProfile,
+    error: profileError,
     isLoading: profileLoading,
     refetch: refetchProfile,
-    error: profileError,
   } = useQuery({
-    queryKey: ["userProfile"],
+    queryKey: ['userProfile'],
     queryFn: async () => {
-      const resp = await GetUserProfile();
-      const result = await resp.json().catch(() => ({}));
-      if (!resp.ok) throw new Error(result?.error || "Failed to load profile");
-      return result?.res as ApiProfile;
+      const resp = await GetUserProfile()
+      const result = await resp.json().catch(() => ({}))
+      if (!resp.ok) throw new Error(result?.error || 'Failed to load profile')
+      return result?.res as ApiProfile
     },
     enabled: Boolean(getAccessToken()),
     staleTime: 5 * 60 * 1000,
     retry: 0,
-  });
+  })
 
   useEffect(() => {
     if (userProfile) {
@@ -74,15 +75,15 @@ export function useAuth() {
         isSessionExpired: false,
         user: userProfile,
         error: null,
-      });
+      })
     } else if (hasAccessToken() && !profileLoading && profileError) {
       setAuthState({
         isAuthenticated: false,
         isLoading: false,
         isSessionExpired: true,
         user: null,
-        error: "Session expired. Please sign in again.",
-      });
+        error: 'Session expired. Please sign in again.',
+      })
     } else if (!hasAccessToken()) {
       setAuthState(prev => ({
         ...prev,
@@ -90,41 +91,47 @@ export function useAuth() {
         isAuthenticated: false,
         isSessionExpired: false,
         user: null,
-      }));
+      }))
     }
-  }, [userProfile, profileLoading, profileError]);
+  }, [userProfile, profileLoading, profileError])
 
   // Web session restore: a page reload starts with no in-memory access token;
   // the HttpOnly refresh cookie still exists, so try a single-flight refresh
   // (no forced-logout fallback) before giving up on the session.
-  const restoreAttemptedRef = useRef(false);
+  const restoreAttemptedRef = useRef(false)
   useEffect(() => {
-    if (hasAccessToken() || restoreAttemptedRef.current) return;
-    restoreAttemptedRef.current = true;
-    let cancelled = false;
+    if (hasAccessToken() || restoreAttemptedRef.current) return
+    restoreAttemptedRef.current = true
+    let cancelled = false
     apiClient.refreshToken({ allowLogoutFallback: false }).then(result => {
-      if (cancelled) return;
+      if (cancelled) return
       if (result?.success) {
         // Access token landed in memory via saveTokens; drop any stale
         // profile and let the re-enabled query fetch the fresh one.
-        queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+        queryClient.invalidateQueries({ queryKey: ['userProfile'] })
       }
       // Re-render so the profile query re-evaluates `enabled` now that the
       // token presence may have changed.
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    });
+      setAuthState(prev => ({ ...prev, isLoading: false }))
+    })
     return () => {
-      cancelled = true;
-    };
-  }, [apiClient, queryClient]);
+      cancelled = true
+    }
+  }, [apiClient, queryClient])
 
   // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const resp = await login(username, password);
-      const result = await resp.json().catch(() => ({}));
-      if (!resp.ok) throw new Error(result?.error || "Login failed");
-      return result as LoginResult;
+  const { mutateAsync: loginAsync } = useMutation({
+    mutationFn: async ({
+      password,
+      username,
+    }: {
+      username: string
+      password: string
+    }) => {
+      const resp = await login(username, password)
+      const result = await resp.json().catch(() => ({}))
+      if (!resp.ok) throw new Error(result?.error || 'Login failed')
+      return result as LoginResult
     },
     onSuccess: async data => {
       if (!data.mfaRequired) {
@@ -133,96 +140,108 @@ export function useAuth() {
           accessTokenExpiry: undefined,
           refreshToken: null,
           refreshTokenExpiry: null,
-        });
-        queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+        })
+        queryClient.invalidateQueries({ queryKey: ['userProfile'] })
       }
     },
     onError: error => {
       showError({
-        title: "Login failed",
-        message: error instanceof Error ? error.message : "Invalid credentials",
-      });
+        title: 'Login failed',
+        message: error instanceof Error ? error.message : 'Invalid credentials',
+      })
     },
-  });
+  })
 
   // MFA verification
-  const mfaMutation = useMutation({
-    mutationFn: async ({ sessionToken, code }: { sessionToken: string; code: string }) => {
-      const resp = await VerifyMFA(sessionToken, code);
-      const result = await resp.json().catch(() => ({}));
+  const { mutateAsync: mfaAsync } = useMutation({
+    mutationFn: async ({
+      code,
+      sessionToken,
+    }: {
+      sessionToken: string
+      code: string
+    }) => {
+      const resp = await VerifyMFA(sessionToken, code)
+      const result = await resp.json().catch(() => ({}))
       if (!resp.ok) {
         throw new Error(
           result?.error ||
-            (resp.status === 400 ? "Invalid code. Please try again." : "Verification failed"),
-        );
+            (resp.status === 400
+              ? 'Invalid code. Please try again.'
+              : 'Verification failed'),
+        )
       }
       await saveTokens({
         accessToken: result?.access_token,
         accessTokenExpiry: result?.access_token_expiry,
         refreshToken: null,
         refreshTokenExpiry: null,
-      });
-      return result;
+      })
+      return result
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] })
     },
     onError: error => {
       showError({
-        title: "Verification failed",
-        message: error instanceof Error ? error.message : "Invalid code",
-      });
+        title: 'Verification failed',
+        message: error instanceof Error ? error.message : 'Invalid code',
+      })
     },
-  });
+  })
 
   // Logout mutation
-  const logoutMutation = useMutation({
+  const { mutateAsync: logoutAsync } = useMutation({
     mutationFn: async () => {
       try {
-        await logout();
+        await logout()
       } catch {
         // Local cleanup proceeds even if the server can't be reached.
       }
-      await clearAllTokens();
+      await clearAllTokens()
     },
     onSuccess: () => {
-      queryClient.clear();
+      queryClient.clear()
       setAuthState({
         isAuthenticated: false,
         isLoading: false,
         isSessionExpired: false,
         user: null,
         error: null,
-      });
+      })
     },
-  });
+  })
 
   const signIn = useCallback(
     async (username: string, password: string): Promise<LoginResult> => {
-      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
-      return loginMutation.mutateAsync({ username, password });
+      setAuthState(prev => ({ ...prev, isLoading: true, error: null }))
+      return loginAsync({ username, password })
     },
-    [loginMutation],
-  );
+    [loginAsync],
+  )
 
   const verifyMfa = useCallback(
     async (sessionToken: string, code: string) => {
-      await mfaMutation.mutateAsync({ sessionToken, code });
+      await mfaAsync({ sessionToken, code })
     },
-    [mfaMutation],
-  );
+    [mfaAsync],
+  )
 
   const signOut = useCallback(async () => {
-    await logoutMutation.mutateAsync();
-  }, [logoutMutation]);
+    await logoutAsync()
+  }, [logoutAsync])
 
   const triggerSessionExpiry = useCallback(() => {
-    setAuthState(prev => ({ ...prev, isSessionExpired: true, isAuthenticated: false }));
-  }, []);
+    setAuthState(prev => ({
+      ...prev,
+      isSessionExpired: true,
+      isAuthenticated: false,
+    }))
+  }, [])
 
   const clearSessionExpired = useCallback(() => {
-    setAuthState(prev => ({ ...prev, isSessionExpired: false, error: null }));
-  }, []);
+    setAuthState(prev => ({ ...prev, isSessionExpired: false, error: null }))
+  }, [])
 
   return {
     ...authState,
@@ -235,5 +254,5 @@ export function useAuth() {
     profileLoading,
     showError,
     showSuccess,
-  };
+  }
 }
