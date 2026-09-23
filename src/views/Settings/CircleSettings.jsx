@@ -33,6 +33,8 @@ import {
   GetCircleMemberRequests,
   JoinCircle,
   LeaveCircle,
+  RegenerateCircleInviteCode,
+  UpdateCircleSettings,
   UpdateMemberRole,
 } from '../../utils/Fetcher'
 import {
@@ -61,6 +63,9 @@ const CircleSettings = () => {
   const [lastRefresh, setLastRefresh] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [confirmModalConfig, setConfirmModalConfig] = useState({})
+  const [circleName, setCircleName] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [isRegeneratingCode, setIsRegeneratingCode] = useState(false)
 
   const showConfirmation = (
     message,
@@ -161,6 +166,68 @@ const CircleSettings = () => {
     }
   }
 
+  const handleRenameCircle = async () => {
+    if (!circleName.trim()) return
+    setIsRenaming(true)
+    try {
+      const resp = await UpdateCircleSettings(circleName.trim())
+      if (resp.ok) {
+        showNotification({
+          type: 'success',
+          message: t('circleSettings.renameSuccess'),
+        })
+        queryClient.invalidateQueries(['userCircles'])
+        queryClient.invalidateQueries(['activeCircle'])
+      } else {
+        const body = await resp.json().catch(() => ({}))
+        throw new Error(body?.error || 'Failed to rename circle')
+      }
+    } catch (err) {
+      showNotification({
+        type: 'error',
+        message: t('circleSettings.renameFailed'),
+      })
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+
+  const handleRegenerateInviteCode = async () => {
+    showConfirmation(
+      t('circleSettings.regenerateCodeConfirm'),
+      t('circleSettings.regenerateCodeTitle'),
+      async () => {
+        setIsRegeneratingCode(true)
+        try {
+          const resp = await RegenerateCircleInviteCode()
+          if (resp.ok) {
+            const data = await resp.json()
+            setCircleInviteCode(data.res?.invite_code || '')
+            showNotification({
+              type: 'success',
+              message: t('circleSettings.regenerateCodeSuccess'),
+            })
+            queryClient.invalidateQueries(['userCircles'])
+            queryClient.invalidateQueries(['activeCircle'])
+          } else {
+            const body = await resp.json().catch(() => ({}))
+            throw new Error(body?.error || 'Failed to regenerate invite code')
+          }
+        } catch (err) {
+          showNotification({
+            type: 'error',
+            message: t('circleSettings.regenerateCodeFailed'),
+          })
+        } finally {
+          setIsRegeneratingCode(false)
+        }
+      },
+      t('circleSettings.regenerate'),
+      t('circleSettings.cancel'),
+      'primary',
+    )
+  }
+
   if (!userProfile) {
     return <LoadingComponent />
   }
@@ -199,6 +266,50 @@ const CircleSettings = () => {
               ? `You part of ${activeCircle?.name} `
               : `You circle code is:`}
           </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 1,
+              alignItems: 'center',
+            }}
+          >
+            <Input
+              value={circleName || activeCircle?.name || ''}
+              size='lg'
+              sx={{
+                width: { xs: '100%', sm: '220px' },
+                mb: { xs: 1, sm: 0 },
+              }}
+              onChange={e => setCircleName(e.target.value)}
+              disabled={!canManageCircle}
+            />
+            {canManageCircle && (
+              <>
+                <Button
+                  variant='soft'
+                  onClick={handleRenameCircle}
+                  disabled={
+                    isRenaming ||
+                    !circleName.trim() ||
+                    circleName.trim() === activeCircle?.name
+                  }
+                  loading={isRenaming}
+                >
+                  {t('circleSettings.save')}
+                </Button>
+                <Button
+                  variant='soft'
+                  onClick={() => setCircleName(activeCircle?.name || '')}
+                  disabled={
+                    isRenaming || circleName.trim() === activeCircle?.name
+                  }
+                >
+                  {t('circleSettings.cancel')}
+                </Button>
+              </>
+            )}
+          </Box>
           <Input
             value={inviteCode}
             disabled
@@ -237,6 +348,17 @@ const CircleSettings = () => {
             >
               Share Invite
             </Button>
+            {canManageCircle && (
+              <Button
+                variant='soft'
+                startDecorator={<Refresh />}
+                onClick={handleRegenerateInviteCode}
+                disabled={isRegeneratingCode}
+                loading={isRegeneratingCode}
+              >
+                {t('circleSettings.regenerate')}
+              </Button>
+            )}
             {activeCircle && activeCircle?.userRole === 'member' && (
               <Button
                 color='danger'

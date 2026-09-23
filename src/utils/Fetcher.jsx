@@ -360,6 +360,21 @@ const GetUserCircle = () => {
   })
 }
 
+const UpdateCircleSettings = name => {
+  return Fetch(`/circles/settings`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify({ name }),
+  })
+}
+
+const RegenerateCircleInviteCode = () => {
+  return Fetch(`/circles/invite-code/regenerate`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+}
+
 const JoinCircle = inviteCode => {
   return Fetch(`/circles/join?invite_code=${inviteCode}`, {
     method: 'POST',
@@ -1274,6 +1289,7 @@ export {
   RedeemPoints,
   RefreshToken,
   RegenerateBackupCodes,
+  RegenerateCircleInviteCode,
   RegisterDeviceToken,
   RejectChore,
   ResetAllPoints,
@@ -1300,6 +1316,7 @@ export {
   UpdateChoreAssignee,
   UpdateChoreHistory,
   UpdateChorePriority,
+  UpdateCircleSettings,
   UpdateDueDate,
   UpdateFilter,
   UpdateLabel,
