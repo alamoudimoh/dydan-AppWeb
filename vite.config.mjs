@@ -145,9 +145,12 @@ export default defineConfig(({ command, mode }) => {
       // Vite env files work, while an explicitly exported process env var still
       // takes precedence.
       allowedHosts: parseAllowedHosts(resolveAllowedHostsEnv(env)),
-      // Dydan development server: port 9999, LAN accessible (0.0.0.0)
-      port: 9999,
+      // Development only: keep the production listener unchanged while making
+      // the approved UI available to local and LAN reviewers on its standard
+      // integration port. Vite's React plugin provides the HMR boundary.
+      port: Number(env.VITE_DEV_PORT || 2925),
       host: '0.0.0.0',
+      hmr: true,
       proxy: {
         '/api': {
           // Development-only seam so the dev server can be pointed at the
