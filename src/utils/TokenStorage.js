@@ -59,6 +59,28 @@ const isNativePlatform = () => {
 let memoryAccessToken = null
 let memoryAccessTokenExpiry = null
 
+// Minimal change-notification channel so providers that gate their queries on
+// token presence (e.g. LiveDataProvider, mounted above the auth gate) can
+// re-render when credentials are stored/cleared. React Query re-evaluates
+// each query's `enabled` option on render, so a single re-render is enough.
+const tokenListeners = new Set()
+let tokenVersion = 0
+const notifyTokenChange = () => {
+  tokenVersion += 1
+  for (const listener of tokenListeners) listener(tokenVersion)
+}
+
+/** Subscribe to access-token lifecycle changes. Returns an unsubscribe fn. */
+export const subscribeTokenChanges = listener => {
+  tokenListeners.add(listener)
+  return () => {
+    tokenListeners.delete(listener)
+  }
+}
+
+/** Monotonic version bumped on every save/clear of the access credential. */
+export const getTokenVersion = () => tokenVersion
+
 /**
  * Synchronously read the current access token.
  * Web and native: module memory.
@@ -82,6 +104,7 @@ export const setAccessToken = ({ accessToken, accessTokenExpiry }) => {
   }
   memoryAccessToken = accessToken
   memoryAccessTokenExpiry = accessTokenExpiry || null
+  notifyTokenChange()
 }
 
 // Track if we're currently clearing tokens to prevent race conditions
@@ -225,6 +248,7 @@ export const clearAllTokens = async () => {
 
     memoryAccessToken = null
     memoryAccessTokenExpiry = null
+    notifyTokenChange()
 
     const errors = []
     if (isNativePlatform()) {

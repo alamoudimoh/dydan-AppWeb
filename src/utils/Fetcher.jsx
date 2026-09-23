@@ -188,13 +188,8 @@ const MarkChoreComplete = (id, body, completedDate, performer) => {
       headers: HEADERS(),
       body: JSON.stringify(request.payload),
     }).then(response => {
-      if (response?.ok) {
-        // Single choke point for completions, so queued offline completions are
-        // counted once, when they sync.
-        import('../service/FeedbackService')
-          .then(({ recordTaskCompleted }) => recordTaskCompleted())
-          .catch(() => {})
-      }
+      // Completion success is handled by the caller; offline completions are
+      // queued and replayed by SubmissionGuards/ChoreCompletionRequest.
       return response
     }),
   )
@@ -738,6 +733,113 @@ const VerifyMFA = async (sessionToken, code) => {
   })
 }
 
+const GetRoutines = () => {
+  return Fetch('/routines', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const GetRewards = () => {
+  return Fetch('/rewards', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const CreateReward = reward => {
+  return Fetch('/rewards', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(reward),
+  })
+}
+
+const UpdateReward = (id, reward) => {
+  return Fetch(`/rewards/${id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(reward),
+  })
+}
+
+const GetRewardRequests = (mine = false) => {
+  return Fetch(mine ? '/rewards/requests/mine' : '/rewards/requests', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const CreateRewardRequest = rewardId => {
+  return Fetch('/rewards/requests', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({ rewardId }),
+  })
+}
+
+const ApproveRewardRequest = id => {
+  return Fetch(`/rewards/requests/${id}/approve`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({}),
+  })
+}
+
+const RejectRewardRequest = id => {
+  return Fetch(`/rewards/requests/${id}/reject`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({}),
+  })
+}
+
+const CancelRewardRequest = id => {
+  return Fetch(`/rewards/requests/${id}/cancel`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({}),
+  })
+}
+
+const GetNotifications = () => {
+  return Fetch('/notifications', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const MarkNotificationRead = id => {
+  return Fetch(`/notifications/${id}/read`, {
+    method: 'PATCH',
+    headers: HEADERS(),
+    body: JSON.stringify({}),
+  })
+}
+
+const MarkAllNotificationsRead = () => {
+  return Fetch('/notifications/read-all', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({}),
+  })
+}
+
+const GetGoals = () => {
+  return Fetch('/progress/goals', {
+    method: 'GET',
+    headers: HEADERS(),
+  })
+}
+
+const CreateGoal = goal => {
+  return Fetch('/progress/goals', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(goal),
+  })
+}
+
 const UpdateDueDate = (id, dueDate) => {
   return Fetch(`/chores/${id}/dueDate`, {
     method: 'PUT',
@@ -1195,9 +1297,11 @@ export {
   AcceptCircleMemberRequest,
   AddMeterReading,
   ApproveChore,
+  ApproveRewardRequest,
   ArchiveAsset,
   ArchiveChore,
   ArchiveShoppingList,
+  CancelRewardRequest,
   CancelSubscription,
   ChangePassword,
   CheckUserDeletion,
@@ -1213,10 +1317,13 @@ export {
   CreateChore,
   createChore,
   CreateFilter,
+  CreateGoal,
   CreateLabel,
   CreateLongLiveToken,
   CreateMeter,
   CreateProject,
+  CreateReward,
+  CreateRewardRequest,
   CreateShoppingList,
   CreateShoppingListItem,
   CreateThing,
@@ -1257,17 +1364,22 @@ export {
   GetFilterById,
   GetFilters,
   GetFiltersByUsage,
+  GetGoals,
   GetLabels,
   GetLongLiveTokens,
   GetMaintenance,
   GetMeterHistory,
   GetMeters,
   GetMFAStatus,
+  GetNotifications,
   GetPersonalChores,
   GetPinnedFilters,
   GetPointsHistory,
   GetProjects,
   GetResource,
+  GetRewardRequests,
+  GetRewards,
+  GetRoutines,
   GetShoppingList,
   GetShoppingLists,
   GetStorageUsage,
@@ -1281,7 +1393,9 @@ export {
   LinkAsset,
   login,
   logout,
+  MarkAllNotificationsRead,
   MarkChoreComplete,
+  MarkNotificationRead,
   NudgeChore,
   PauseChore,
   PutNotificationTarget,
@@ -1292,6 +1406,7 @@ export {
   RegenerateCircleInviteCode,
   RegisterDeviceToken,
   RejectChore,
+  RejectRewardRequest,
   ResetAllPoints,
   ResetChoreTimer,
   ResetPassword,
@@ -1324,6 +1439,7 @@ export {
   UpdateNotificationTarget,
   UpdatePassword,
   UpdateProject,
+  UpdateReward,
   UpdateShoppingList,
   UpdateShoppingListItem,
   UpdateThingState,

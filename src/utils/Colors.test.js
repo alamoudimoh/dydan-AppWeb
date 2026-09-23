@@ -46,9 +46,12 @@ test('contrast helper stays mode-independent over persisted hexes', () => {
 })
 
 test('default project identity is centralized', () => {
-  const hookSource = fs.readFileSync(
-    path.resolve(__dirname, '../views/Chores/hooks/useProjectFilter.js'),
+  // Approved-UI runtime keeps project color identity in the shared Colors
+  // module instead of a view-local constant.
+  const colorsSource = fs.readFileSync(
+    path.join(__dirname, 'Colors.js'),
     'utf8',
   )
-  assert.ok(hookSource.includes('DEFAULT_PROJECT_COLOR'))
+  assert.ok(colorsSource.includes('DEFAULT_PROJECT_COLOR'))
+  assert.equal(DEFAULT_PROJECT_COLOR, '#1976d2')
 })
