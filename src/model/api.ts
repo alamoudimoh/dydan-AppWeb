@@ -274,6 +274,7 @@ export type ApiNotification = {
   createdAt: string
   read?: boolean
   isRead?: boolean
+  readAt?: string | null
   metadata?: Record<string, unknown> | null
 }
 
