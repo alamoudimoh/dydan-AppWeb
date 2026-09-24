@@ -150,6 +150,7 @@ test('home-today: today shows a due chore and completes it live', async ({
   await preparePage(page, { width: 1024, mode: 'light', language: 'en' })
 
   await page.goto('/today', { waitUntil: 'networkidle' })
+  await expect(page.getByText('Smoke chore today')).toHaveCount(1)
   await expect(page.getByText('Smoke chore today')).toBeVisible()
 
   const responsePromise = page.waitForResponse(
