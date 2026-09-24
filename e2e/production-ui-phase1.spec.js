@@ -1,17 +1,34 @@
 import { expect, test } from '@playwright/test'
 
-import { installApiMocks } from './fixtures/apiMocks.js'
+import {
+  installApiMocks,
+  overrideUserPreferences,
+  smokePreferences,
+} from './fixtures/apiMocks.js'
 import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
+// Phase 1 responsive matrix across the approved shell: the desktop .sidebar is
+// the navigation rail above 768px, the .mobile-nav bottom bar at and below it.
+// Cases cover both in light/dark and LTR/RTL.
 const CASES = [
   { width: 390, mode: 'light', language: 'en', path: '/' },
-  { width: 390, mode: 'dark', language: 'ar-SA', path: '/chores' },
+  { width: 390, mode: 'dark', language: 'ar-SA', path: '/all-tasks' },
   { width: 768, mode: 'light', language: 'ar-SA', path: '/settings' },
-  { width: 768, mode: 'dark', language: 'en', path: '/settings/account' },
+  { width: 768, mode: 'dark', language: 'en', path: '/today' },
   { width: 1440, mode: 'light', language: 'en', path: '/' },
-  { width: 1440, mode: 'dark', language: 'ar-SA', path: '/settings' },
+  { width: 1440, mode: 'dark', language: 'ar-SA', path: '/shopping' },
 ]
+
+const installPresentation = async (page, { language, mode }) => {
+  // Language and appearance are server-driven in the approved runtime: the
+  // LocalizationContext language and the theme boot effect read the mocked
+  // preferences endpoint, not i18next/localStorage keys.
+  await overrideUserPreferences(
+    page,
+    smokePreferences({ appearance: mode, language }),
+  )
+}
 
 const disableAnimations = async page => {
   await page.addInitScript(() => {
@@ -27,18 +44,6 @@ const disableAnimations = async page => {
       inject()
     }
   })
-}
-
-const installPresentation = async (page, { language, mode }) => {
-  await page.addInitScript(
-    ({ locale, theme }) => {
-      localStorage.setItem('joy-mode', theme)
-      localStorage.setItem('themeMode', JSON.stringify(theme))
-      localStorage.setItem('i18nextLng', locale)
-      localStorage.setItem('language', JSON.stringify(locale))
-    },
-    { locale: language, theme: mode },
-  )
 }
 
 for (const scenario of CASES) {
@@ -63,25 +68,17 @@ for (const scenario of CASES) {
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(scenario.width)
 
-    if (scenario.width >= 900) {
+    if (scenario.width > 768) {
       const sidebar = page.locator('.sidebar')
       await expect(sidebar).toBeVisible()
       const bounds = await sidebar.boundingBox()
       expect(bounds?.width).toBe(244)
       if (direction === 'rtl') expect(bounds?.x).toBe(scenario.width - 244)
       else expect(bounds?.x).toBe(0)
+      await expect(page.locator('.mobile-nav')).toBeHidden()
     } else {
-      const menu = page.getByRole('button', { name: /open menu|فتح القائمة/i })
-      await expect(menu).toBeVisible()
-      await menu.click()
-      const drawer = page.locator('.figma-mobile-drawer')
-      await expect(drawer).toBeVisible()
-      const bounds = await drawer.boundingBox()
-      if (direction === 'rtl')
-        expect(bounds?.x + bounds?.width).toBe(scenario.width)
-      else expect(bounds?.x).toBe(0)
-      await page.keyboard.press('Escape')
-      await expect(drawer).toBeHidden()
+      await expect(page.locator('.mobile-nav')).toBeVisible()
+      await expect(page.locator('.sidebar')).toBeHidden()
     }
 
     await page.keyboard.press('Tab')

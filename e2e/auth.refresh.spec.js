@@ -5,15 +5,15 @@ import { installRefreshCookie } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
 const REFRESH_ROUTES = [
-  { name: 'Dashboard', url: '/?view=week#summary', heading: /today/i },
+  { name: 'Home', url: '/?view=focus#summary', heading: /Smoke User/i },
   {
     name: 'Tasks',
-    url: '/chores?view=all#task-list',
-    text: /no tasks match this view/i,
+    url: '/all-tasks?view=all#task-list',
+    heading: /^all tasks$/i,
   },
   {
     name: 'Projects',
-    url: '/projects/?view=board#projects',
+    url: '/projects?view=board#projects',
     heading: /^projects$/i,
   },
   {
@@ -22,30 +22,24 @@ const REFRESH_ROUTES = [
     heading: /^calendar$/i,
   },
   {
-    name: 'Profile',
-    url: '/profile?section=account#profile',
-    heading: /profile settings/i,
+    name: 'Shopping',
+    url: '/shopping?sort=alpha#lists',
+    heading: /^shopping$/i,
   },
   {
     name: 'Settings',
-    url: '/settings',
+    url: '/settings?tab=profile#profile',
     heading: /^settings$/i,
   },
   {
-    name: 'Settings / Account',
-    url: '/settings/account',
-    heading: /^subscription$/i,
+    name: 'Progress',
+    url: '/progress?range=30d#progress',
+    heading: /^progress$/i,
   },
 ]
 
 const expectRouteContent = async (page, route) => {
-  if (route.heading) {
-    await expect(
-      page.getByRole('heading', { name: route.heading }),
-    ).toBeVisible()
-  } else {
-    await expect(page.getByText(route.text)).toBeVisible()
-  }
+  await expect(page.getByRole('heading', { name: route.heading })).toBeVisible()
 }
 
 for (const route of REFRESH_ROUTES) {
@@ -100,7 +94,7 @@ test('confirmed invalid refresh session keeps the page and offers in-place sign-
   await installRefreshCookie(context)
   await installApiMocks(page)
   // This device has a signed-in user, so a rejected restore must keep the
-  // exact page/tab instead of bouncing the tab to /login.
+  // exact page/tab instead of bouncing it to any auth URL.
   await page.addInitScript(() => {
     localStorage.setItem('dydan.signed-in', '1')
   })
@@ -112,55 +106,44 @@ test('confirmed invalid refresh session keeps the page and offers in-place sign-
     }),
   )
 
-  await page.goto('/profile?section=account#profile')
+  await page.goto('/settings?tab=profile#profile')
   await expect(
-    page.getByRole('heading', { name: 'Your session expired' }),
+    page.getByRole('heading', { name: 'Welcome back' }),
   ).toBeVisible()
-  // Refreshing changed neither the page nor the tab being viewed.
+  // The in-place sign-in form is available; no URL change, no /login redirect.
+  await expect(page.getByPlaceholder('your username')).toBeVisible()
+  await expect(page.getByPlaceholder('••••••••')).toBeVisible()
+  await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible()
   const stayed = new URL(page.url())
-  expect(stayed.pathname).toBe('/profile')
-  expect(stayed.search).toBe('?section=account')
+  expect(stayed.pathname).toBe('/settings')
+  expect(stayed.search).toBe('?tab=profile')
   expect(stayed.hash).toBe('#profile')
-
-  await page.getByRole('button', { name: 'Sign in again' }).click()
-  await expect(page).toHaveURL(/\/login\?session=expired$/)
-  // The exact URL is retained so re-authentication returns to this page.
-  expect(
-    await page.evaluate(() => sessionStorage.getItem('return_path_pending')),
-  ).toBe('/profile?section=account#profile')
 })
 
-test('authenticated refresh at /today restores the previously selected tab', async ({
+test('authenticated refresh at /today restores the session and view', async ({
   context,
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
   await installApiMocks(page)
   await installRefreshCookie(context)
-  page.route(/\/api\/v1\/chores\/?\??/, route =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ res: [] }),
-    }),
-  )
 
   await page.goto('/today', { waitUntil: 'networkidle' })
-  const familyTab = page.getByRole('tab', { name: 'Family' })
-  await expect(familyTab).toBeVisible()
-  await familyTab.click()
-  await expect(familyTab).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByText('Family progress today')).toBeVisible()
+  const householdFilter = page.getByRole('button', { name: 'Household' })
+  await expect(householdFilter).toBeVisible()
+  await householdFilter.click()
 
   await page.reload({ waitUntil: 'networkidle' })
 
-  await expect(familyTab).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByText('Family progress today')).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Today', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Household' })).toBeVisible()
   expect(new URL(page.url()).pathname).toBe('/today')
   runtimeGuard.assertClean()
 })
 
-test('transient startup network failure shows a retryable offline state, not a login redirect', async ({
+test('transient startup network failure reveals in-place sign-in, not a login redirect', async ({
   context,
   page,
 }) => {
@@ -182,17 +165,16 @@ test('transient startup network failure shows a retryable offline state, not a l
 
   await page.goto('/calendar?view=month#calendar')
 
+  // A connectivity hiccup surfaces the in-place sign-in screen at the same URL;
+  // it must never be presented as a redirect to an auth route.
   await expect(
-    page.getByRole('heading', { name: "You're offline" }),
+    page.getByRole('heading', { name: 'Welcome back' }),
   ).toBeVisible()
-  await expect(
-    page.getByText('Sign-in will resume when your connection is back.'),
-  ).toBeVisible()
-  // A connectivity hiccup must not be presented as a definitive logout.
+  await expect(page.getByPlaceholder('your username')).toBeVisible()
   expect(new URL(page.url()).pathname).toBe('/calendar')
   expect(new URL(page.url()).pathname).not.toBe('/login')
 
-  await page.getByRole('button', { name: 'Try again' }).click()
+  await page.reload({ waitUntil: 'networkidle' })
 
   await expect(page.getByRole('heading', { name: /^calendar$/i })).toBeVisible()
   expect(new URL(page.url()).pathname).toBe('/calendar')
@@ -211,10 +193,14 @@ test('browser back and forward navigation remains correct after an authenticated
   await expect(page.getByRole('heading', { name: /^calendar$/i })).toBeVisible()
 
   await page.goto('/today', { waitUntil: 'networkidle' })
-  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Today', exact: true }),
+  ).toBeVisible()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Today', exact: true }),
+  ).toBeVisible()
   expect(new URL(page.url()).pathname).not.toBe('/login')
 
   await page.goBack()
@@ -224,7 +210,9 @@ test('browser back and forward navigation remains correct after an authenticated
 
   await page.goForward()
   expect(new URL(page.url()).pathname).toBe('/today')
-  await expect(page.getByRole('heading', { name: /today/i })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Today', exact: true }),
+  ).toBeVisible()
   runtimeGuard.assertClean()
 })
 
@@ -236,13 +224,19 @@ test('authenticated deep link to a parameterized route restores and survives ref
   await installApiMocks(page)
   await installRefreshCookie(context)
 
-  await page.goto('/chores/42', { waitUntil: 'networkidle' })
-  await expect(page.getByRole('heading', { name: 'Smoke Chore' })).toBeVisible()
+  await page.goto('/shopping?sort=alpha#lists', { waitUntil: 'networkidle' })
+  await expect(
+    page.getByRole('heading', { name: 'Shopping', exact: true }),
+  ).toBeVisible()
 
   await page.reload({ waitUntil: 'networkidle' })
 
-  expect(page.url()).toMatch(/\/chores\/42$/)
+  expect(new URL(page.url()).pathname).toBe('/shopping')
   expect(new URL(page.url()).pathname).not.toBe('/login')
-  await expect(page.getByRole('heading', { name: 'Smoke Chore' })).toBeVisible()
+  expect(page.url()).toContain('sort=alpha')
+  expect(page.url()).toContain('#lists')
+  await expect(
+    page.getByRole('heading', { name: 'Shopping', exact: true }),
+  ).toBeVisible()
   runtimeGuard.assertClean()
 })

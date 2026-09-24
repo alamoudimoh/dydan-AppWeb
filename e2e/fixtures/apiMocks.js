@@ -18,6 +18,29 @@ export const hasRefreshCookie = request =>
     request.headers().cookie || '',
   )
 
+/**
+ * A session cookie present in the browser's cookie jar is authoritative. The
+ * Playwright WebKit implementation never materializes cookies on intercepted
+ * request header snapshots, so a strictly header-based check leaves every
+ * WebKit smoke session signed out. Reading the jar is engine-agnostic and
+ * still honors the signed-out specs, which clear the cookie before boot.
+ * `page` comes from the handler closure; the optional fallback keeps the
+ * fixture's unit tests (which pass a request stub without a frame) working.
+ */
+const hasRefreshCookieInJar = async (page, request) => {
+  const target = page ?? request.frame?.()?.page()
+  if (!target) return false
+  try {
+    return (await target.context().cookies()).some(
+      cookie =>
+        cookie.name === 'refresh_token' &&
+        cookie.value === 'smoke-refresh-token',
+    )
+  } catch {
+    return false
+  }
+}
+
 const smokeProfile = {
   id: 1,
   circleID: 3,
@@ -101,6 +124,89 @@ const maintenanceEnvelope = {
   res: { due: [], approaching: [], upcoming: [], assets: [] },
 }
 
+/**
+ * User settings preferences (GET /users/preferences, PUT, reset). The current
+ * approved runtime reads appearance/theme/language/etc. from this endpoint on
+ * every boot (useSettingsPreferences), so the fixture must serve a full,
+ * server-shaped envelope and remember PUT mutations across reloads within a
+ * test (routes registered via page.route outlive individual navigations).
+ */
+const defaultPreferences = () => ({
+  theme: 'dydan',
+  appearance: 'light',
+  defaultView: 'focus',
+  compactMode: false,
+  language: 'en',
+  dateFormat: 'MM/DD/YYYY',
+  timeFormat: 'h:mm A',
+  firstDayOfWeek: 0,
+  currency: 'USD',
+  sidebarCollapsed: false,
+  showItemBadges: true,
+  rememberSidebar: true,
+  notifications: {
+    taskReminders: true,
+    routineNudges: true,
+    familyActivity: false,
+    rewards: true,
+    weeklySummary: false,
+    quietHours: false,
+    pushChannel: true,
+    emailChannel: false,
+  },
+  privacy: { activityVisible: true, analytics: true, personalization: true },
+  betaFeatures: false,
+  verboseLogging: false,
+})
+
+/**
+ * User settings preferences (GET /users/preferences, PUT, reset). The current
+ * approved runtime reads appearance/theme/language/etc. from this endpoint on
+ * every boot (useSettingsPreferences), so the fixture must serve a full,
+ * server-shaped envelope and remember PUT mutations across reloads within a
+ * single test run. State is created per handler so tests never leak theme or
+ * layout choices into one another.
+ */
+const createPreferenceEndpoints = () => {
+  let state = defaultPreferences()
+  const merge = incoming => {
+    if (!incoming || typeof incoming !== 'object') return state
+    return {
+      ...defaultPreferences(),
+      ...incoming,
+      notifications: {
+        ...defaultPreferences().notifications,
+        ...(incoming.notifications ?? {}),
+      },
+      privacy: { ...defaultPreferences().privacy, ...(incoming.privacy ?? {}) },
+    }
+  }
+  return [
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/users\/preferences$/,
+      response: () => json({ res: state }),
+    }),
+    endpoint({
+      method: 'PUT',
+      path: /^\/api\/v1\/users\/preferences$/,
+      validate: parseBody,
+      response: request => {
+        state = merge(parseBody(request))
+        return json({ res: state })
+      },
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/users\/preferences\/reset$/,
+      response: () => {
+        state = defaultPreferences()
+        return json({ res: state })
+      },
+    }),
+  ]
+}
+
 const parseBody = request => {
   const body = request.postData()
   if (!body) return null
@@ -163,8 +269,10 @@ export const apiMockContract = [
   endpoint({
     method: 'POST',
     path: /^\/api\/v1\/auth\/refresh$/,
-    response: request =>
-      hasAuthorization(request) || hasRefreshCookie(request)
+    response: async (request, url, page) =>
+      hasAuthorization(request) ||
+      hasRefreshCookie(request) ||
+      (await hasRefreshCookieInJar(page, request))
         ? json({
             token: 'smoke-test-token',
             access_token: 'smoke-test-token',
@@ -492,14 +600,24 @@ export const apiMockContract = [
   endpoint({
     method: 'GET',
     path: /^\/api\/v1\/notifications$/,
-    query: url =>
-      noUnexpectedQuery(['limit', 'before'])(url) && hasQuery('limit')(url),
+    // The current runtime calls GetNotifications() with no query parameters.
+    query: noUnexpectedQuery(['limit', 'before']),
     response: () => json({ res: [], unreadCount: 0 }),
   }),
   endpoint({
     method: 'GET',
     path: /^\/api\/v1\/notifications\/unread-count$/,
     response: () => json({ unreadCount: 0 }),
+  }),
+  endpoint({
+    method: 'PATCH',
+    path: /^\/api\/v1\/notifications\/\d+\/read$/,
+    response: () => json({ ok: true }),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/notifications\/read-all$/,
+    response: () => json({ ok: true }),
   }),
   endpoint({
     method: 'GET',
@@ -530,35 +648,69 @@ export const apiMockContract = [
   }),
 ]
 
-export const createApiMockHandler = () => async route => {
-  const request = route.request()
-  const url = new URL(request.url())
-  const matchingPath = apiMockContract.filter(entry =>
-    entry.path.test(url.pathname),
-  )
-  const sameMethod = matchingPath.filter(
-    entry => entry.method === request.method(),
-  )
-  const contract = sameMethod.find(
-    entry => entry.query(url) && entry.validate(request),
-  )
+export const createApiMockHandler = page => {
+  const contract = [...createPreferenceEndpoints(), ...apiMockContract]
+  return async route => {
+    const request = route.request()
+    const url = new URL(request.url())
+    const matchingPath = contract.filter(entry => entry.path.test(url.pathname))
+    const sameMethod = matchingPath.filter(
+      entry => entry.method === request.method(),
+    )
+    const matching = sameMethod.find(
+      entry => entry.query(url) && entry.validate(request),
+    )
 
-  if (contract) return route.fulfill(contract.response(request, url))
-  if (matchingPath.length === 0) {
+    if (matching)
+      return route.fulfill(await matching.response(request, url, page))
+    if (matchingPath.length === 0) {
+      return route.fulfill(
+        error(
+          404,
+          `Unregistered API request: ${request.method()} ${url.pathname}`,
+        ),
+      )
+    }
+    if (sameMethod.length === 0) {
+      return route.fulfill(error(405, `Unsupported method for ${url.pathname}`))
+    }
     return route.fulfill(
-      error(
-        404,
-        `Unregistered API request: ${request.method()} ${url.pathname}`,
-      ),
+      error(400, `Invalid request contract for ${url.pathname}`),
     )
   }
-  if (sameMethod.length === 0) {
-    return route.fulfill(error(405, `Unsupported method for ${url.pathname}`))
-  }
-  return route.fulfill(
-    error(400, `Invalid request contract for ${url.pathname}`),
-  )
 }
 
 export const installApiMocks = page =>
-  page.route('**/api/v1/**', createApiMockHandler())
+  page.route('**/api/v1/**', createApiMockHandler(page))
+
+/**
+ * A full, server-shaped preferences payload for a smoke test, with `patch`
+ * applied (shallow, plus nested notifications/privacy merges).
+ */
+export const smokePreferences = (patch = {}) => ({
+  ...defaultPreferences(),
+  ...patch,
+  notifications: {
+    ...defaultPreferences().notifications,
+    ...(patch.notifications ?? {}),
+  },
+  privacy: { ...defaultPreferences().privacy, ...(patch.privacy ?? {}) },
+})
+
+/**
+ * Present fixed user preferences for one page. Registered after
+ * installApiMocks, this route resolves first (later page.route handlers take
+ * precedence), so the strict mock's own GET/PUT preference endpoints stay
+ * available for everything else.
+ */
+export const overrideUserPreferences = (page, preferences) =>
+  page.route('**/api/v1/users/preferences', route => {
+    if (route.request().method() === 'GET') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ res: preferences }),
+      })
+    }
+    return route.fallback()
+  })

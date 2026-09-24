@@ -8,7 +8,7 @@ import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 // settle before measuring geometry.
 const SETTLE = 350
 
-test('shell: sidebar collapses to an icon rail, persists, and restores', async ({
+test('shell: sidebar collapses to an icon rail and restores', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -19,95 +19,112 @@ test('shell: sidebar collapses to an icon rail, persists, and restores', async (
   await page.waitForLoadState('networkidle')
 
   const sidebar = page.locator('.sidebar')
+  const appShell = page.locator('.app-shell')
   await expect(sidebar).toBeVisible()
   await expect(
-    page.getByRole('button', { name: 'Collapse sidebar' }),
+    page.getByRole('button', { name: 'Toggle side panel' }),
   ).toBeVisible()
 
-  // Default is the expanded rail.
+  // Default is the expanded 244px rail.
   const expandedWidth = await sidebar.evaluate(el =>
     Math.round(el.getBoundingClientRect().width),
   )
-  expect(expandedWidth).toBeGreaterThan(200)
+  expect(expandedWidth).toBe(244)
 
-  // Collapse to the icon rail.
-  await page.getByRole('button', { name: 'Collapse sidebar' }).click()
-  await expect(page.locator('html')).toHaveClass(/sidebar-collapsed/)
-  await expect
-    .poll(() =>
-      page.evaluate(() => localStorage.getItem('dydan.sidebarCollapsed')),
-    )
-    .toBe('1')
+  // Collapse to the 74px icon rail.
+  await page.getByRole('button', { name: 'Toggle side panel' }).click()
+  await expect(appShell).toHaveClass(/sidebar-collapsed/)
   await page.waitForTimeout(SETTLE)
   const collapsedWidth = await sidebar.evaluate(el =>
     Math.round(el.getBoundingClientRect().width),
   )
-  expect(collapsedWidth).toBeLessThanOrEqual(80)
-  await expect(
-    page.getByRole('button', { name: 'Expand sidebar' }),
-  ).toBeVisible()
-
-  // The collapsed state survives a reload.
-  await page.reload({ waitUntil: 'networkidle' })
-  await expect(page.locator('html')).toHaveClass(/sidebar-collapsed/)
-  await expect(
-    page.getByRole('button', { name: 'Expand sidebar' }),
-  ).toBeVisible()
+  expect(collapsedWidth).toBe(74)
 
   // Expand again and the rail returns to its original width.
-  await page.getByRole('button', { name: 'Expand sidebar' }).click()
-  await expect(page.locator('html')).not.toHaveClass(/sidebar-collapsed/)
-  await expect
-    .poll(() =>
-      page.evaluate(() => localStorage.getItem('dydan.sidebarCollapsed')),
-    )
-    .toBe('0')
+  await page.getByRole('button', { name: 'Toggle side panel' }).click()
+  await expect(appShell).not.toHaveClass(/sidebar-collapsed/)
   await page.waitForTimeout(SETTLE)
   const restoredWidth = await sidebar.evaluate(el =>
     Math.round(el.getBoundingClientRect().width),
   )
   expect(restoredWidth).toBe(expandedWidth)
 
+  // The in-memory toggle does not persist; a reload restores the mocked
+  // preferences (sidebarCollapsed: false).
+  await page.reload({ waitUntil: 'networkidle' })
+  await expect(appShell).not.toHaveClass(/sidebar-collapsed/)
+
   runtimeGuard.assertClean()
 })
 
-test('shell: mobile drawer stays a full labeled drawer even while the rail is collapsed', async ({
+test('shell: collapsed sidebar state persists through Settings → Side panel', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
   await installApiMocks(page)
   await installSmokeSession(page)
 
-  // Collapse the desktop rail, then switch to a phone viewport.
-  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.goto('/settings', { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
-  await page.getByRole('button', { name: 'Collapse sidebar' }).click()
-  await expect(page.locator('html')).toHaveClass(/sidebar-collapsed/)
+  await page.getByRole('tab', { name: /^side panel$/i }).click()
 
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/', { waitUntil: 'domcontentloaded' })
-  await page.waitForLoadState('networkidle')
+  const appShell = page.locator('.app-shell')
+  const collapseSwitch = page
+    .locator('.MuiTabPanel-root', { hasText: 'Collapse side panel' })
+    .getByRole('switch')
+    .first()
 
-  const drawer = page.locator('.figma-mobile-drawer')
-  await page.locator('.figma-menu-button').click()
-  await expect(drawer).toBeVisible()
+  await expect(collapseSwitch).not.toBeChecked()
+  await collapseSwitch.check()
+  await expect(collapseSwitch).toBeChecked()
+  await expect(appShell).toHaveClass(/sidebar-collapsed/)
 
-  // The drawer opens at the full brand width with labels intact, and the
-  // collapse/expand toggle (a desktop-rail affordance) is hidden.
-  const drawerWidth = await drawer.evaluate(el =>
-    Math.round(el.getBoundingClientRect().width),
-  )
-  expect(drawerWidth).toBeGreaterThan(200)
-  await expect(
-    drawer.getByRole('button', { name: /collapse sidebar|expand sidebar/i }),
-  ).toHaveCount(0)
-  await expect(drawer.locator('.figma-brand > div')).toBeVisible()
-  await expect(drawer.locator('.nav-item span').first()).toBeVisible()
+  // The choice is persisted through the mocked preferences and restored on
+  // reload (rememberSidebar defaults to true).
+  await page.reload({ waitUntil: 'networkidle' })
+  await expect(appShell).toHaveClass(/sidebar-collapsed/)
+
+  await page.getByRole('tab', { name: /^side panel$/i }).click()
+  const resumedSwitch = page
+    .locator('.MuiTabPanel-root', { hasText: 'Collapse side panel' })
+    .getByRole('switch')
+    .first()
+  await expect(resumedSwitch).toBeChecked()
+  await resumedSwitch.uncheck()
+  await expect(appShell).not.toHaveClass(/sidebar-collapsed/)
 
   runtimeGuard.assertClean()
 })
 
-test('shell: settings navigation renders as a horizontal tab strip above the content', async ({
+test('shell: mobile bottom navigation renders five labeled items and navigates', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installSmokeSession(page)
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.waitForLoadState('networkidle')
+
+  const mobileNav = page.locator('.mobile-nav')
+  await expect(mobileNav).toBeVisible()
+  await expect(page.locator('.sidebar')).toBeHidden()
+
+  for (const label of ['Home', 'Today', 'Shopping', 'Goals', 'Settings']) {
+    await expect(mobileNav.getByRole('button', { name: label })).toBeVisible()
+  }
+
+  await mobileNav.getByRole('button', { name: 'Shopping' }).click()
+  await expect(page).toHaveURL(/\/shopping$/)
+  await expect(
+    page.getByRole('heading', { name: 'Shopping', exact: true }),
+  ).toBeVisible()
+
+  runtimeGuard.assertClean()
+})
+
+test('shell: settings renders a horizontal tab strip above the content', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -117,43 +134,37 @@ test('shell: settings navigation renders as a horizontal tab strip above the con
   await page.goto('/settings', { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
 
-  const nav = page.locator('.figma-settings-nav')
-  const content = page.locator('.figma-settings-content')
-  await expect(nav).toBeVisible()
-  await expect(content).toBeVisible()
+  const tabs = page.getByRole('tab')
+  await expect(tabs.first()).toBeVisible()
+  await expect(tabs).toHaveCount(13)
 
-  const layout = await page.evaluate(() => {
-    const navEl = document.querySelector('.figma-settings-nav')
-    const contentEl = document.querySelector('.figma-settings-content')
-    const navRect = navEl.getBoundingClientRect()
-    const contentRect = contentEl.getBoundingClientRect()
+  // The strip sits in one horizontal row above the tab panels.
+  const stripBounds = await page.evaluate(() => {
+    const tabEls = [...document.querySelectorAll('[role="tab"]')]
+    const ys = tabEls.map(el => el.getBoundingClientRect().top)
+    const tabPanel = document.querySelector('.MuiTabPanel-root')
     return {
-      navDirection: getComputedStyle(navEl).flexDirection,
-      navWidth: Math.round(navRect.width),
-      navAboveContent: navRect.bottom <= contentRect.top + 1,
-      tabCount: navEl.querySelectorAll('.figma-settings-nav-item').length,
+      singleRow: Math.max(...ys) - Math.min(...ys) <= 2,
+      stripAboveContent:
+        Math.min(...ys) <
+        (tabPanel?.getBoundingClientRect().top ?? Number.MAX_SAFE_INTEGER),
     }
   })
+  expect(stripBounds.singleRow).toBe(true)
+  expect(stripBounds.stripAboveContent).toBe(true)
 
-  // The tab strip spans the content width horizontally and sits on top.
-  expect(layout.navDirection).toBe('row')
-  expect(layout.navWidth).toBeGreaterThan(300)
-  expect(layout.navAboveContent).toBe(true)
-  expect(layout.tabCount).toBeGreaterThan(5)
-
-  // The active tab uses the Figma nav-item vocabulary: brand-faint fill.
-  const active = page.locator('.figma-settings-nav-item.active')
-  await expect(active).toBeVisible()
-  const activeBackground = await active.evaluate(
-    el => getComputedStyle(el).backgroundColor,
-  )
-  expect(activeBackground).not.toBe('rgba(0, 0, 0, 0)')
-  expect(activeBackground).not.toBe('transparent')
+  // Switching a tab swaps the rendered panel.
+  await page.getByRole('tab', { name: /^theme$/i }).click()
+  await expect(
+    page.locator('.MuiTabPanel-root', {
+      hasText: 'Choose your visual identity',
+    }),
+  ).toBeVisible()
 
   runtimeGuard.assertClean()
 })
 
-test('shell: notifications bell is clearly visible beside Add a task', async ({
+test('shell: top bar exposes new task and notifications beside search', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -163,54 +174,18 @@ test('shell: notifications bell is clearly visible beside Add a task', async ({
   await page.goto('/', { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
 
-  const actions = page.locator('.figma-top-actions')
-  const bell = actions.getByRole('button', { name: 'Notifications' })
-  const addTask = actions.getByRole('button', { name: /add a task/i })
+  const topBar = page.locator('.main-content > div').first()
+  await expect(topBar.locator('.top-search')).toBeVisible()
+  await expect(topBar.getByRole('button', { name: 'new task' })).toBeVisible()
+
+  // The notifications bell is the plain icon button without an explicit label.
+  const bell = topBar.locator('.relative > button')
   await expect(bell).toBeVisible()
-  await expect(addTask).toBeVisible()
-
-  // The bell is a surface + border control with the full-strength icon color.
-  const bellStyle = await bell.evaluate(el => {
-    const style = getComputedStyle(el)
-    return {
-      borderWidth: style.borderTopWidth,
-      borderStyle: style.borderTopStyle,
-      backgroundColor: style.backgroundColor,
-      color: style.color,
-    }
-  })
-  expect(bellStyle.borderStyle).not.toBe('none')
-  expect(bellStyle.borderWidth).not.toBe('0px')
-  expect(bellStyle.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
-  expect(bellStyle.backgroundColor).not.toBe('transparent')
-
-  // It sits immediately to the left of the Add a task primary button.
-  const order = await page.evaluate(() => {
-    const buttons = [
-      ...document
-        .querySelector('.figma-top-actions')
-        .querySelectorAll('button'),
-    ]
-    const indexOf = pattern =>
-      buttons.findIndex(button =>
-        (button.getAttribute('aria-label') || '').match(pattern),
-      )
-    return { bell: indexOf(/notifications/i), add: indexOf(/add a task/i) }
-  })
-  expect(order.bell).toBeGreaterThanOrEqual(0)
-  expect(order.add).toBeGreaterThan(order.bell)
-
-  // Hover raises the bell to the brand treatment (faint fill, brand border and
-  // icon) so it reads as an interactive control next to the primary button.
-  // Assertions auto-retry past the 140ms button transition to final values.
-  await bell.hover()
-  // Wait past the button's 140ms transition for color to settle, then
-  // verify the hover state uses the known dydan light brand values.
-  // (Avoids probing custom-properties which have inheritance flakiness.)
-  await page.waitForTimeout(200)
-  await expect(bell).toHaveCSS('color', 'rgb(67, 38, 234)')
-  await expect(bell).toHaveCSS('background-color', 'rgb(221, 249, 255)')
-  await expect(bell).toHaveCSS('border-color', 'rgb(67, 38, 234)')
+  await bell.click()
+  await expect(page).toHaveURL(/\/notifications$/)
+  await expect(
+    page.getByRole('heading', { name: 'Notifications', exact: true }),
+  ).toBeVisible()
 
   runtimeGuard.assertClean()
 })

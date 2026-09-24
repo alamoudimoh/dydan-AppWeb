@@ -1,17 +1,16 @@
 import { expect, test } from '@playwright/test'
 
-import { installApiMocks } from './fixtures/apiMocks.js'
+import {
+  installApiMocks,
+  overrideUserPreferences,
+  smokePreferences,
+} from './fixtures/apiMocks.js'
 import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
-// Phase 2 workflow surfaces: dense lists, dialogs, filters, and side cards.
-const ROUTES = [
-  '/chores',
-  '/routines',
-  '/projects/',
-  '/shopping',
-  '/shopping/7',
-]
+// Phase 2 workflow surfaces on the approved runtime: dense lists, shopping,
+// project boards, and the local search surface.
+const ROUTES = ['/routines', '/shopping', '/all-tasks', '/projects', '/search']
 
 const CASES = [
   { width: 390, mode: 'light', language: 'en' },
@@ -22,14 +21,12 @@ const CASES = [
 ]
 
 const installPresentation = async (page, { language, mode }) => {
-  await page.addInitScript(
-    ({ locale, theme }) => {
-      localStorage.setItem('joy-mode', theme)
-      localStorage.setItem('themeMode', JSON.stringify(theme))
-      localStorage.setItem('i18nextLng', locale)
-      localStorage.setItem('language', JSON.stringify(locale))
-    },
-    { locale: language, theme: mode },
+  // Language and appearance are server-driven in the approved runtime: the
+  // LocalizationContext language and the theme boot effect read the mocked
+  // preferences endpoint, not i18next/localStorage keys.
+  await overrideUserPreferences(
+    page,
+    smokePreferences({ appearance: mode, language }),
   )
 }
 
@@ -72,12 +69,11 @@ for (const path of ROUTES) {
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(scenario.width)
 
-      if (scenario.width >= 900) {
+      if (scenario.width > 768) {
         await expect(page.locator('.sidebar')).toBeVisible()
       } else {
-        await expect(
-          page.getByRole('button', { name: /open menu|فتح القائمة/i }),
-        ).toBeVisible()
+        await expect(page.locator('.mobile-nav')).toBeVisible()
+        await expect(page.locator('.sidebar')).toBeHidden()
       }
 
       runtimeGuard.assertClean()

@@ -1,18 +1,24 @@
 import { expect, test } from '@playwright/test'
 
-import { installApiMocks } from './fixtures/apiMocks.js'
+import {
+  installApiMocks,
+  overrideUserPreferences,
+  smokePreferences,
+} from './fixtures/apiMocks.js'
 import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
+// Phase 3 remaining live surfaces: calendar, notifications, maintenance, and
+// the family/progress screens, plus preferences-backed settings.
 const ROUTES = [
   '/calendar',
-  '/archived',
   '/notifications',
-  '/meters',
   '/maintenance',
-  '/family',
+  '/goals',
+  '/activity',
   '/rewards',
-  '/chores/42',
+  '/progress',
+  '/settings',
 ]
 
 const CASES = [
@@ -24,14 +30,12 @@ const CASES = [
 ]
 
 const installPresentation = async (page, { language, mode }) => {
-  await page.addInitScript(
-    ({ locale, theme }) => {
-      localStorage.setItem('joy-mode', theme)
-      localStorage.setItem('themeMode', JSON.stringify(theme))
-      localStorage.setItem('i18nextLng', locale)
-      localStorage.setItem('language', JSON.stringify(locale))
-    },
-    { locale: language, theme: mode },
+  // Language and appearance are server-driven in the approved runtime: the
+  // LocalizationContext language and the theme boot effect read the mocked
+  // preferences endpoint, not i18next/localStorage keys.
+  await overrideUserPreferences(
+    page,
+    smokePreferences({ appearance: mode, language }),
   )
 }
 
@@ -55,72 +59,84 @@ for (const path of ROUTES) {
       await page.evaluate(() => document.fonts.ready)
 
       await expect(page.locator('#root')).toBeVisible()
-      await expect(page.locator('html')).toHaveAttribute(
-        'dir',
-        scenario.language.startsWith('ar') ? 'rtl' : 'ltr',
-      )
+      const direction = scenario.language.startsWith('ar') ? 'rtl' : 'ltr'
+      await expect(page.locator('html')).toHaveAttribute('dir', direction)
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(scenario.width)
+
+      if (scenario.width > 768) {
+        await expect(page.locator('.sidebar')).toBeVisible()
+      } else {
+        await expect(page.locator('.mobile-nav')).toBeVisible()
+      }
 
       runtimeGuard.assertClean()
     })
   }
 }
 
-test('phase 3: chore detail uses the shared routine dialog', async ({
+test('phase 3: the shared task modal confines its controls at phone widths', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
   await preparePage(page, { width: 390, mode: 'dark', language: 'en' })
 
-  await page.goto('/chores/42', { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: 'Save to routine' }).click()
+  await page.goto('/all-tasks?create=1', { waitUntil: 'networkidle' })
+  const panel = page.locator('.modal-panel')
+  await expect(panel).toBeVisible()
+  await expect(panel.getByRole('heading', { name: 'new task' })).toBeVisible()
 
-  const dialog = page.getByRole('dialog', { name: 'Save task to routine' })
-  await expect(dialog).toBeVisible()
-  await expect(dialog).toContainText('Reusable settings are copied.')
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
-    390,
-  )
+  await panel.getByRole('button', { name: 'household' }).click()
+  await panel
+    .getByPlaceholder('What needs to be done?')
+    .fill('Phase 3 smoke task')
+
+  const bounds = await panel.boundingBox()
+  expect(bounds?.x ?? -1).toBeGreaterThanOrEqual(0)
+  expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(390)
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(390)
   runtimeGuard.assertClean()
 })
 
-test('phase 3: archived tasks use the shared restore toolbar', async ({
+test('phase 3: opening a task from All Tasks renders the shared detail surface', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
   await preparePage(page, { width: 390, mode: 'light', language: 'en' })
-  await page.route('**/api/v1/chores/archived', route =>
+  page.route(/\/api\/v1\/chores\/?(?:\?.*)?$/, route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         res: [
           {
-            id: 84,
-            name: 'Archived smoke chore',
-            assignedTo: 2,
-            priority: 2,
-            isActive: false,
-            isArchived: true,
+            id: 42,
+            name: 'Detail smoke task',
+            description: 'Opened from the All Tasks list',
+            assignedTo: 1,
+            priority: 4,
+            nextDueDate: new Date().toISOString(),
+            isActive: true,
+            isArchived: false,
+            frequencyType: 'once',
             labels: [],
             createdAt: '2026-01-01T00:00:00Z',
-            updatedAt: '2026-01-02T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
           },
         ],
       }),
     }),
   )
 
-  await page.goto('/archived', { waitUntil: 'networkidle' })
-  await page.getByTitle('Enable Multi-select Mode (Ctrl+S)').click()
-  await page.getByRole('button', { name: 'All', exact: true }).click()
+  await page.goto('/all-tasks', { waitUntil: 'networkidle' })
+  await page.locator('.task-row', { hasText: 'Detail smoke task' }).click()
 
-  await expect(page.getByRole('button', { name: 'Restore' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
-    390,
-  )
+  const drawer = page.locator('.drawer-panel')
+  await expect(drawer).toBeVisible()
+  await expect(drawer).toContainText('Detail smoke task')
+  await expect(drawer).toContainText('Opened from the All Tasks list')
   runtimeGuard.assertClean()
 })

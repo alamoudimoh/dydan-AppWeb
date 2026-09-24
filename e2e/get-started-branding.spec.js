@@ -15,17 +15,19 @@ test('get-started renders the canonical dydan identity without legacy Donetick b
   await page.waitForLoadState('networkidle')
 
   await expect(
-    page.getByRole('heading', { level: 1, name: 'dydan', exact: true }),
+    page.getByRole('heading', { level: 1, name: 'Welcome back', exact: true }),
   ).toBeVisible()
+  await expect(page.locator('#root')).toContainText('dydan')
+  await expect(page.locator('#root')).toContainText('Household Management')
   await expect(page.locator('#root')).not.toContainText(/donetick/i)
   await expect(page.locator('#root')).toContainText(
-    'Create an account to sync everywhere, or sign in and pick up where you left off.',
+    'Sign in to manage your household.',
   )
 
   runtimeGuard.assertClean()
 })
 
-test('get-started navigation still routes to signup and login', async ({
+test('get-started toggles between the sign-in and account-creation surfaces', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -34,16 +36,22 @@ test('get-started navigation still routes to signup and login', async ({
 
   await page.goto('/get-started', { waitUntil: 'networkidle' })
   await page.getByRole('button', { name: 'Create an account' }).click()
-  await expect(page).toHaveURL(/\/signup$/)
+  await expect(
+    page.getByRole('heading', {
+      name: 'Keep your whole household running smoothly',
+      exact: true,
+    }),
+  ).toBeVisible()
 
-  await page.goto('/get-started', { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: 'Already have an account?' }).click()
-  await expect(page).toHaveURL(/\/login$/)
+  await page.getByRole('button', { name: 'Sign in instead' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Welcome back', exact: true }),
+  ).toBeVisible()
 
   runtimeGuard.assertClean()
 })
 
-test('get-started keeps the canonical identity valid under Arabic (ar-SA) RTL', async ({
+test('get-started stays on the canonical English identity at ar-SA storage before sign-in', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -54,21 +62,18 @@ test('get-started keeps the canonical identity valid under Arabic (ar-SA) RTL', 
   await installApiMocks(page)
   await clearSmokeSession(page)
 
+  // Preferences never load while signed out, so direction/language resolve to
+  // the default identity (ltr/en) even when storage requests ar-SA. Arabic RTL
+  // coverage for authenticated screens lives in smoke.arabic.spec.js.
   await page.goto('/get-started', { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
 
-  expect(
-    await page.evaluate(() => document.documentElement.getAttribute('dir')),
-  ).toBe('rtl')
-  expect(
-    await page.evaluate(() => document.documentElement.getAttribute('lang')),
-  ).toBe('ar-SA')
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'dydan', exact: true }),
+    page.getByRole('heading', { name: 'Welcome back', exact: true }),
   ).toBeVisible()
-  await expect(page.locator('#root')).toContainText(
-    'أنشئ حسابًا للمزامنة في كل مكان، أو سجّل الدخول لتكمل من حيث توقفت.',
-  )
+  await expect(page.locator('#root')).not.toContainText(/donetick/i)
 
   runtimeGuard.assertClean()
 })

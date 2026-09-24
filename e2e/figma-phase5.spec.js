@@ -20,23 +20,21 @@ test('Phase 5 Figma household routes render their live screen headings', async (
     ['/routines', 'Routines'],
     ['/shopping', 'Shopping'],
     ['/maintenance', 'Maintenance'],
-    ['/activities', 'Activity'],
+    ['/goals', 'Goals'],
+    ['/activity', 'Activity'],
+    ['/notifications', 'Notifications'],
+    ['/rewards', 'Rewards'],
+    ['/progress', 'Progress'],
   ]) {
     await page.goto(path, { waitUntil: 'networkidle' })
     await expect(
       page.getByRole('heading', { name: heading, exact: true }),
     ).toBeVisible()
   }
-
-  await page.goto('/family', { waitUntil: 'networkidle' })
-  await page.getByRole('tab', { name: /Goals/ }).click()
-  await expect(
-    page.getByRole('heading', { name: 'Family goals', exact: true }),
-  ).toBeVisible()
   runtimeGuard.assertClean()
 })
 
-test('Phase 5 household navigation preserves the Family Progress sidebar link', async ({
+test('Phase 5 household navigation preserves the Progress sidebar link', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -45,12 +43,13 @@ test('Phase 5 household navigation preserves the Family Progress sidebar link', 
 
   await page.goto('/', { waitUntil: 'networkidle' })
   await page
-    .getByRole('button', { name: 'Family Progress', exact: true })
+    .locator('.sidebar')
+    .getByRole('button', { name: 'Progress', exact: true })
     .click()
   await page.waitForLoadState('networkidle')
-  await expect(page).toHaveURL(/\/family$/)
+  await expect(page).toHaveURL(/\/progress$/)
   await expect(
-    page.getByRole('heading', { name: 'Family Progress', exact: true }),
+    page.getByRole('heading', { name: 'Progress', exact: true }),
   ).toBeVisible()
   runtimeGuard.assertClean()
 })

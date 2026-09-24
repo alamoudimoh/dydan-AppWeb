@@ -133,3 +133,89 @@ test('strict mock validates mutation payloads and supported public auth flows', 
   assert.equal(publicRefresh.status, 400)
   assert.equal(cookieRefresh.status, 200)
 })
+
+test('notifications list accepts the query-less contract the runtime uses', async () => {
+  const withoutQuery = await callMock({ path: '/api/v1/notifications' })
+  const withLimit = await callMock({ path: '/api/v1/notifications?limit=10' })
+  const unexpected = await callMock({ path: '/api/v1/notifications?offset=1' })
+
+  assert.equal(withoutQuery.status, 200)
+  assert.equal(JSON.parse(withoutQuery.body).unreadCount, 0)
+  assert.equal(withLimit.status, 200)
+  assert.equal(unexpected.status, 400)
+})
+
+test('user preferences are served, mutatable, and resettable per handler', async () => {
+  const handler = createApiMockHandler()
+  const call = async ({ body, method = 'GET', path }) => {
+    const fulfillCalls = []
+    const route = {
+      request: () => ({
+        headers: () => ({}),
+        method: () => method,
+        postData: () => body,
+        url: () => `http://dydan.test${path}`,
+      }),
+      fulfill: response => fulfillCalls.push(response),
+    }
+    await handler(route)
+    return fulfillCalls[0]
+  }
+
+  const initial = await call({ path: '/api/v1/users/preferences' })
+  assert.equal(initial.status, 200)
+  const initialBody = JSON.parse(initial.body).res
+  assert.equal(initialBody.defaultView, 'focus')
+  assert.equal(initialBody.theme, 'dydan')
+
+  const updated = await call({
+    method: 'PUT',
+    path: '/api/v1/users/preferences',
+    body: JSON.stringify({ ...initialBody, theme: 'sovereign' }),
+  })
+  assert.equal(updated.status, 200)
+  assert.equal(JSON.parse(updated.body).res.theme, 'sovereign')
+
+  const persisted = await call({ path: '/api/v1/users/preferences' })
+  assert.equal(JSON.parse(persisted.body).res.theme, 'sovereign')
+
+  const reset = await call({
+    method: 'POST',
+    path: '/api/v1/users/preferences/reset',
+  })
+  assert.equal(reset.status, 200)
+  const afterReset = await call({ path: '/api/v1/users/preferences' })
+  assert.equal(JSON.parse(afterReset.body).res.theme, 'dydan')
+})
+
+test('preferences state never leaks between independent handlers', async () => {
+  const first = createApiMockHandler()
+  const second = createApiMockHandler()
+  const respond = async (handler, { body, method = 'GET', path }) => {
+    const fulfillCalls = []
+    const route = {
+      request: () => ({
+        headers: () => ({}),
+        method: () => method,
+        postData: () => body,
+        url: () => `http://dydan.test${path}`,
+      }),
+      fulfill: response => fulfillCalls.push(response),
+    }
+    await handler(route)
+    return fulfillCalls[0]
+  }
+
+  await respond(first, {
+    method: 'PUT',
+    path: '/api/v1/users/preferences',
+    body: JSON.stringify({ theme: 'sovereign' }),
+  })
+  const firstRead = await respond(first, { path: '/api/v1/users/preferences' })
+  const secondRead = await respond(second, {
+    path: '/api/v1/users/preferences',
+  })
+
+  assert.equal(JSON.parse(firstRead.body).res.theme, 'sovereign')
+  assert.equal(JSON.parse(secondRead.body).res.theme, 'dydan')
+})

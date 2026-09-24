@@ -1,41 +1,127 @@
 import { expect, test } from '@playwright/test'
 
-import { installApiMocks } from './fixtures/apiMocks.js'
+import {
+  installApiMocks,
+  overrideUserPreferences,
+  smokePreferences,
+} from './fixtures/apiMocks.js'
 import { clearSmokeSession, installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
-// Representative Arabic (ar-SA) route smoke. Sets the app language through the
-// same localStorage keys the i18n detector and LocalizationContext read, then
-// verifies RTL direction, rendered Arabic copy where i18n drives the UI, and a
-// clean runtime.
+// Representative Arabic (ar-SA) route smoke. Direction and language are app
+// state driven by the mocked preferences endpoint: the boot effect applies
+// `language` from GET /users/preferences, so authenticated routes render RTL
+// once the override presents ar-SA. Signed-out routes never load preferences
+// (the query is token-gated), so the auth surface keeps the default English
+// identity — asserted here as documented runtime behavior.
 //
-// Login, dashboard, chores and routines now render Arabic copy for their
-// previously hardcoded English surfaces, so all routes assert Arabic content.
+// The approved runtime localizes the shell: navigation labels and the top-bar
+// search placeholder come from the i18n catalogue, while screen headings stay
+// on their approved English reference copy. Routes with a sidebar entry assert
+// their Arabic navigation label; /notifications and /search have no sidebar
+// entry, so they assert the Arabic top-bar search placeholder instead.
 const AR_ROUTES = [
-  { path: '/login', auth: false, arabic: /نسيت كلمة المرور؟/ },
-  { path: '/', auth: true, arabic: /كل مهام اليوم مكتملة!/ },
-  { path: '/family', auth: true, arabic: /تقدم العائلة/ },
-  { path: '/shopping', auth: true, arabic: /التسوق/ },
-  { path: '/chores', auth: true, arabic: /لا توجد مهام تطابق هذا العرض/ },
-  { path: '/calendar', auth: true, arabic: /التقويم/ },
-  { path: '/routines', auth: true, arabic: /الروتينات/ },
-  { path: '/settings', auth: true, arabic: /الإعدادات/ },
-  { path: '/profile', auth: true, arabic: /الملف الشخصي/ },
-  { path: '/settings/account', auth: true, arabic: /الاشتراك/ },
+  { path: '/login', auth: false, dir: 'ltr', lang: 'en' },
+  { path: '/', auth: true, dir: 'rtl', lang: 'ar-SA', arabic: /الرئيسية/ },
+  { path: '/today', auth: true, dir: 'rtl', lang: 'ar-SA', arabic: /اليوم/ },
   {
-    path: '/settings/localization',
+    path: '/all-tasks',
     auth: true,
-    arabic: /اللغة والإعدادات الإقليمية/,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /كل المهام/,
+  },
+  {
+    path: '/calendar',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /التقويم/,
+  },
+  {
+    path: '/projects',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /المشاريع/,
+  },
+  {
+    path: '/routines',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /الروتين/,
+  },
+  {
+    path: '/maintenance',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /الصيانة/,
+  },
+  {
+    path: '/shopping',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /التسوق/,
+  },
+  { path: '/goals', auth: true, dir: 'rtl', lang: 'ar-SA', arabic: /الأهداف/ },
+  {
+    path: '/activity',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /النشاط/,
+  },
+  {
+    path: '/notifications',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    placeholder: 'بحث…',
+  },
+  {
+    path: '/rewards',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /المكافآت/,
+  },
+  {
+    path: '/progress',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /التقدم/,
+  },
+  {
+    path: '/settings',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    arabic: /الإعدادات/,
+  },
+  {
+    path: '/search',
+    auth: true,
+    dir: 'rtl',
+    lang: 'ar-SA',
+    placeholder: 'بحث…',
   },
 ]
 
-const installArabicLanguage = async page => {
+const installArabicLanguage = async (page, auth) => {
   await page.addInitScript(() => {
-    // i18next-browser-languagedetector stores a plain string in i18nextLng;
-    // LocalizationContext reads the app `language` key as JSON.
     localStorage.setItem('i18nextLng', 'ar-SA')
     localStorage.setItem('language', JSON.stringify('ar-SA'))
   })
+  // For authenticated routes the app resolves its language from preferences
+  // (LocalizationContext state), not from i18next storage, so the override is
+  // what actually flips direction and label copy.
+  if (auth) {
+    await overrideUserPreferences(page, smokePreferences({ language: 'ar-SA' }))
+  }
 }
 
 test.describe('Arabic (ar-SA) UI smoke', () => {
@@ -43,7 +129,7 @@ test.describe('Arabic (ar-SA) UI smoke', () => {
     test(`ar smoke: ${route.path}`, async ({ page }) => {
       const runtimeGuard = attachRuntimeErrorGuard(page)
       await installApiMocks(page)
-      await installArabicLanguage(page)
+      await installArabicLanguage(page, route.auth)
 
       if (route.auth) {
         await installSmokeSession(page)
@@ -56,17 +142,13 @@ test.describe('Arabic (ar-SA) UI smoke', () => {
 
       await expect(page.locator('#root')).toBeVisible()
       await expect(page.locator('#root')).not.toBeEmpty()
-
-      const dir = await page.evaluate(() =>
-        document.documentElement.getAttribute('dir'),
-      )
-      expect(dir).toBe('rtl')
-      const lang = await page.evaluate(() =>
-        document.documentElement.getAttribute('lang'),
-      )
-      expect(lang).toBe('ar-SA')
+      await expect(page.locator('html')).toHaveAttribute('dir', route.dir)
+      await expect(page.locator('html')).toHaveAttribute('lang', route.lang)
       if (route.arabic) {
         await expect(page.locator('#root')).toContainText(route.arabic)
+      }
+      if (route.placeholder) {
+        await expect(page.getByPlaceholder(route.placeholder)).toBeVisible()
       }
 
       runtimeGuard.assertClean()

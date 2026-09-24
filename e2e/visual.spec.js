@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
 
-import { installApiMocks } from './fixtures/apiMocks.js'
+import {
+  installApiMocks,
+  overrideUserPreferences,
+  smokePreferences,
+} from './fixtures/apiMocks.js'
 import { clearSmokeSession, installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 import { assertPageShell } from './helpers/smokeRunner.js'
@@ -10,10 +14,11 @@ import { BROWSER_SMOKE_PAGES } from './smoke.manifest.js'
 // runs and CI. January 15, 2026 12:00 UTC.
 const FIXED_NOW = Date.UTC(2026, 0, 15, 12, 0, 0)
 
-// Representative critical surfaces: the 10 original routes in light theme,
-// plus a small dark-mode subset.
+// Representative critical surfaces: the shared critical routes in light
+// theme, plus a small dark-mode subset. Appearance is server-driven, so the
+// dark cases present the choice through the mocked preferences endpoint.
 const LIGHT_ROUTES = BROWSER_SMOKE_PAGES.map(page => page.path)
-const DARK_ROUTES = ['/', '/family', '/settings']
+const DARK_ROUTES = ['/', '/settings', '/shopping']
 
 const ROUTE_BY_PATH = Object.fromEntries(
   BROWSER_SMOKE_PAGES.map(page => [page.path, page]),
@@ -27,16 +32,12 @@ const freezeClock = async page => {
 }
 
 const setThemeMode = async (page, theme) => {
-  await page.addInitScript(
-    ({ mode }) => {
-      // 'joy-mode' is the MUI Joy color-scheme storage key (stored raw);
-      // 'themeMode' drives the app's own dark-class logic (stored as JSON).
-      // Both must agree for a deterministic theme.
-      localStorage.setItem('joy-mode', mode)
-      localStorage.setItem('themeMode', JSON.stringify(mode))
-    },
-    { mode: theme },
-  )
+  if (theme === 'dark') {
+    await overrideUserPreferences(
+      page,
+      smokePreferences({ appearance: 'dark' }),
+    )
+  }
 }
 
 const disableAnimations = async page => {
@@ -80,7 +81,7 @@ const prepareRoute = async (page, descriptor, theme) => {
 const captureRoute = async (page, descriptor, theme) => {
   await page.goto(descriptor.path, { waitUntil: 'domcontentloaded' })
   await page.waitForLoadState('networkidle')
-  await assertPageShell(page, descriptor)
+  await assertPageShell(page, descriptor, { viewportWidth: 1440 })
   await page.evaluate(() => document.fonts.ready)
   // Allow layout to settle after fonts load for stable output.
   await page.waitForTimeout(250)
