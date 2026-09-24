@@ -20,7 +20,18 @@ import {
   useMFAStatus,
   useUserCircles,
 } from '../hooks/useAccountSettings'
-import { KEYS } from '../hooks/useHousehold'
+import {
+  DEFAULT_SETTINGS_PREFERENCES,
+  type SettingsPreferences,
+  useSettingsPreferences,
+  useSettingsPreferencesMutation,
+} from '../hooks/useSettingsPreferences'
+import {
+  type CreatedApiToken,
+  useApiTokenMutations,
+  useApiTokens,
+  useStorageUsage,
+} from '../hooks/useSettingsResources'
 import { useLiveData } from '../model/liveData'
 import { offlineDB } from '../utils/OfflineDB'
 import { clearAllTokens } from '../utils/TokenStorage'
@@ -94,11 +105,20 @@ function Row({
   )
 }
 
-function JoyToggle({ on, onChange }: { on: boolean; onChange: () => void }) {
+function JoyToggle({
+  disabled = false,
+  on,
+  onChange,
+}: {
+  disabled?: boolean
+  on: boolean
+  onChange?: () => void
+}) {
   return (
     <Switch
       checked={on}
       onChange={onChange}
+      disabled={disabled}
       color={on ? 'primary' : 'neutral'}
       variant='solid'
     />
@@ -106,10 +126,12 @@ function JoyToggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 function SelectField({
+  disabled = false,
   onChange,
   options,
   value,
 }: {
+  disabled?: boolean
   value: string
   onChange: (v: string) => void
   options: { value: string; label: string }[]
@@ -118,6 +140,7 @@ function SelectField({
     <Select
       value={value}
       onChange={(_, v) => v && onChange(v)}
+      disabled={disabled}
       size='sm'
       variant='outlined'
       sx={{
@@ -980,6 +1003,165 @@ function RecoveryCodesModal({
   )
 }
 
+function ApiTokenModal({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void
+  onCreate: (name: string, mfaCode: string) => Promise<void>
+}) {
+  const [name, setName] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const submit = async () => {
+    if (!name.trim()) {
+      setError('Give this token a name so you can identify it later.')
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onCreate(name.trim(), mfaCode.trim())
+      onClose()
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not create API token.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 420 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Create personal access token
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p className='text-muted' style={{ fontSize: 13, margin: 0 }}>
+            The secret is shown once. Store it securely and revoke it when no
+            longer needed.
+          </p>
+          <input
+            autoFocus
+            className='input'
+            onChange={e => setName(e.target.value)}
+            placeholder='Token name (for example, Home dashboard)'
+            value={name}
+          />
+          <input
+            autoComplete='one-time-code'
+            className='input'
+            inputMode='numeric'
+            onChange={e => setMfaCode(e.target.value)}
+            placeholder='Authenticator code (required if 2FA is enabled)'
+            value={mfaCode}
+          />
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              disabled={submitting}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              disabled={submitting}
+              onClick={() => void submit()}
+            >
+              {submitting ? 'Creating…' : 'Create token'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TokenSecretModal({
+  onClose,
+  token,
+}: {
+  onClose: () => void
+  token: CreatedApiToken
+}) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    await navigator.clipboard.writeText(token.token)
+    setCopied(true)
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 460 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Copy your new token
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p className='text-sig-over' style={{ fontSize: 13, margin: 0 }}>
+            This secret is shown only once.
+          </p>
+          <code
+            className='p-3 rounded-lg text-primary'
+            style={{ background: 'var(--surface-2)', wordBreak: 'break-all' }}
+          >
+            {token.token}
+          </code>
+          <div className='flex gap-3'>
+            <button className='btn btn-secondary flex-1' onClick={onClose}>
+              I saved it
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              onClick={() => void copy()}
+            >
+              {copied ? 'Copied' : 'Copy token'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const TABS: { id: string; label: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', icon: 'home' },
   { id: 'profile', label: 'Profile', icon: 'user' },
@@ -1002,6 +1184,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const { data: sessions = [], isLoading: sessionsLoading } = useAuthSessions()
   const { data: circles = [] } = useUserCircles()
   const account = useAccountSettingsMutations()
+  const { data: savedPreferences } = useSettingsPreferences()
+  const preferenceMutations = useSettingsPreferencesMutation()
+  const { data: apiTokens = [] } = useApiTokens()
+  const { data: storageUsage } = useStorageUsage()
+  const apiTokenMutations = useApiTokenMutations()
+  const preferences = savedPreferences ?? DEFAULT_SETTINGS_PREFERENCES
   const currentUser = liveUser ?? members[0]
   const { mode, setMode } = useProductTheme()
   const {
@@ -1041,6 +1229,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const [showPassword, setShowPassword] = useState(false)
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
   const [showRenameTeam, setShowRenameTeam] = useState(false)
+  const [showCreateApiToken, setShowCreateApiToken] = useState(false)
+  const [createdApiToken, setCreatedApiToken] =
+    useState<CreatedApiToken | null>(null)
   const profilePhotoInputRef = useRef<HTMLInputElement>(null)
   const handlePhotoChange = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -1062,38 +1253,16 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
     }
   }
 
-  const [notifToggles, setNotifToggles] = useState({
-    taskReminders: true,
-    routineNudges: true,
-    familyActivity: false,
-    rewards: true,
-    weeklySummary: false,
-    quietHours: false,
-    pushChannel: true,
-    emailChannel: false,
-  })
-  const toggleNotif = (key: keyof typeof notifToggles) =>
-    setNotifToggles(prev => ({ ...prev, [key]: !prev[key] }))
-
   const mfaEnabled = Boolean(mfaStatus?.mfaEnabled)
-  const [activityVisible, setActivityVisible] = useState(true)
-  const [analytics, setAnalytics] = useState(true)
-  const [personalization, setPersonalization] = useState(true)
-
-  const [panelPrefs, setPanelPrefs] = useState({
-    showBadges: true,
-    rememberState: true,
-  })
-  const [integrations, setIntegrations] = useState({
-    gcal: true,
-    apple: false,
-    alexa: false,
-    webhooks: false,
-  })
-  const [devFlags, setDevFlags] = useState({
-    verboseLogs: false,
-    betaFeatures: false,
-  })
+  const savePreferences = (next: SettingsPreferences, message?: string) =>
+    void preferenceMutations.update
+      .mutateAsync(next)
+      .then(() => message && ctx.showToast(message))
+      .catch(err =>
+        ctx.showToast(
+          err instanceof Error ? err.message : 'Could not save this setting',
+        ),
+      )
 
   const locale = {
     language,
@@ -1359,10 +1528,15 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Change
                   </button>
                 </Row>
-                <Row icon='mail' label='Email' sub={currentUser.email}>
+                <Row
+                  icon='mail'
+                  label='Email'
+                  sub={`${currentUser.email} — unavailable: changing an email requires verified delivery, which is not configured`}
+                >
                   <button
                     className='btn btn-ghost btn-sm text-brand'
-                    onClick={() => setShowEditProfile(true)}
+                    disabled
+                    title='Verified email change is unavailable'
                   >
                     Change
                   </button>
@@ -1855,7 +2029,17 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     {(['dydan', 'sovereign'] as Theme[]).map(t => (
                       <button
                         key={t}
-                        onClick={() => ctx.setTheme(t)}
+                        onClick={() => {
+                          ctx.setTheme(t)
+                          savePreferences({
+                            ...preferences,
+                            theme: t,
+                            appearance:
+                              t === 'sovereign'
+                                ? 'dark'
+                                : preferences.appearance,
+                          })
+                        }}
                         className='settings-choice-card'
                         aria-pressed={ctx.theme === t}
                       >
@@ -1916,13 +2100,20 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     className='view-toggle'
                     style={{ display: 'inline-flex' }}
                   >
-                    {(['light', 'dark'] as const).map(m => (
+                    {(['light', 'dark', 'system'] as const).map(m => (
                       <button
                         key={m}
                         className={`view-toggle-btn ${mode === m ? 'active' : ''}`}
-                        onClick={() => setMode(m)}
+                        onClick={() => {
+                          setMode(m)
+                          savePreferences({ ...preferences, appearance: m })
+                        }}
                       >
-                        {m === 'light' ? 'Light' : 'Dark'}
+                        {m === 'light'
+                          ? 'Light'
+                          : m === 'dark'
+                            ? 'Dark'
+                            : 'Automatic'}
                       </button>
                     ))}
                   </div>
@@ -1938,7 +2129,10 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       <button
                         key={v}
                         className={`view-toggle-btn ${ctx.view === v ? 'active' : ''}`}
-                        onClick={() => ctx.setView(v)}
+                        onClick={() => {
+                          ctx.setView(v)
+                          savePreferences({ ...preferences, defaultView: v })
+                        }}
                       >
                         {v === 'focus' ? '⚡ Focus' : '✨ Quest'}
                       </button>
@@ -1950,9 +2144,15 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   label='Compact mode'
                   sub='Reduce spacing for more content density'
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <JoyToggle
+                    on={preferences.compactMode}
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        compactMode: !preferences.compactMode,
+                      })
+                    }
+                  />
                 </Row>
               </Section>
             </TabPanel>
@@ -1973,6 +2173,10 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     value={locale.language}
                     onChange={v => {
                       setLanguage(v as typeof language)
+                      savePreferences({
+                        ...preferences,
+                        language: v as SettingsPreferences['language'],
+                      })
                       ctx.showToast('Language updated')
                     }}
                     options={[
@@ -1989,13 +2193,27 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   label='Right-to-left layout'
                   sub='Mirror the entire interface for RTL languages'
                 >
-                  <JoyToggle on={isRTL} onChange={ctx.toggleRTL} />
+                  <JoyToggle
+                    on={isRTL}
+                    onChange={() => {
+                      const nextLanguage = isRTL ? 'en' : 'ar-SA'
+                      setLanguage(nextLanguage)
+                      savePreferences({
+                        ...preferences,
+                        language: nextLanguage,
+                      })
+                    }}
+                  />
                 </Row>
                 <Row icon='calendar' label='Date format'>
                   <SelectField
                     value={locale.dateFormat}
                     onChange={v => {
                       setDateFormat(v as typeof dateFormat)
+                      savePreferences({
+                        ...preferences,
+                        dateFormat: v as SettingsPreferences['dateFormat'],
+                      })
                       ctx.showToast('Date format updated')
                     }}
                     options={[
@@ -2009,7 +2227,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <SelectField
                     value={locale.timeFormat}
                     onChange={v => {
-                      setTimeFormat(v === '12h' ? 'h:mm A' : 'HH:mm')
+                      setTimeFormat(v as typeof timeFormat)
+                      savePreferences({
+                        ...preferences,
+                        timeFormat: v as SettingsPreferences['timeFormat'],
+                      })
                       ctx.showToast('Time format updated')
                     }}
                     options={[
@@ -2023,6 +2245,10 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     value={locale.firstDay}
                     onChange={v => {
                       setFirstDayOfWeek(Number(v))
+                      savePreferences({
+                        ...preferences,
+                        firstDayOfWeek: Number(v),
+                      })
                       ctx.showToast('Week start updated')
                     }}
                     options={[
@@ -2035,11 +2261,20 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='tag'
                   label='Currency'
-                  sub='Currency preference is not stored by this server.'
+                  sub='Unavailable — shopping and budget totals do not use a currency preference yet'
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <SelectField
+                    disabled
+                    value={preferences.currency}
+                    onChange={() => undefined}
+                    options={[
+                      { value: 'GBP', label: '£ GBP' },
+                      { value: 'USD', label: '$ USD' },
+                      { value: 'EUR', label: '€ EUR' },
+                      { value: 'AED', label: 'AED' },
+                      { value: 'SAR', label: 'SAR' },
+                    ]}
+                  />
                 </Row>
                 <Row icon='map' label='Timezone' sub={locale.timezone}>
                   <SelectField
@@ -2086,7 +2321,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <JoyToggle
                     on={ctx.sidebarCollapsed}
-                    onChange={ctx.toggleSidebar}
+                    onChange={() => {
+                      ctx.toggleSidebar()
+                      savePreferences({
+                        ...preferences,
+                        sidebarCollapsed: !ctx.sidebarCollapsed,
+                      })
+                    }}
                   />
                 </Row>
                 <Row
@@ -2095,9 +2336,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   sub='Display counts (e.g. Today) on nav items'
                 >
                   <JoyToggle
-                    on={panelPrefs.showBadges}
+                    on={preferences.showItemBadges}
                     onChange={() =>
-                      setPanelPrefs(p => ({ ...p, showBadges: !p.showBadges }))
+                      savePreferences({
+                        ...preferences,
+                        showItemBadges: !preferences.showItemBadges,
+                      })
                     }
                   />
                 </Row>
@@ -2107,12 +2351,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   sub='Keep the panel collapsed between sessions'
                 >
                   <JoyToggle
-                    on={panelPrefs.rememberState}
+                    on={preferences.rememberSidebar}
                     onChange={() =>
-                      setPanelPrefs(p => ({
-                        ...p,
-                        rememberState: !p.rememberState,
-                      }))
+                      savePreferences({
+                        ...preferences,
+                        rememberSidebar: !preferences.rememberSidebar,
+                      })
                     }
                   />
                 </Row>
@@ -2158,11 +2402,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     sub: 'Suppress notifications during this window',
                   },
                 ].map(n => (
-                  <Row key={n.key} label={n.label} sub={n.sub}>
-                    <JoyToggle
-                      on={notifToggles[n.key]}
-                      onChange={() => toggleNotif(n.key)}
-                    />
+                  <Row
+                    key={n.key}
+                    label={n.label}
+                    sub={`${n.sub} — unavailable: the server does not support category delivery preferences`}
+                  >
+                    <JoyToggle on={false} disabled />
                   </Row>
                 ))}
               </Section>
@@ -2170,22 +2415,16 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='phone'
                   label='Push notifications'
-                  sub='On this device'
+                  sub='Unavailable — device delivery cannot be disabled per account yet'
                 >
-                  <JoyToggle
-                    on={notifToggles.pushChannel}
-                    onChange={() => toggleNotif('pushChannel')}
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='mail'
                   label='Email notifications'
-                  sub={currentUser.email}
+                  sub='Unavailable — no email delivery service is configured'
                 >
-                  <JoyToggle
-                    on={notifToggles.emailChannel}
-                    onChange={() => toggleNotif('emailChannel')}
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
               </Section>
             </TabPanel>
@@ -2200,43 +2439,36 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='eye'
                   label='Activity visible to team'
-                  sub='Other members can see your completed tasks'
+                  sub='Unavailable — the server does not yet support per-account activity visibility'
                 >
-                  <JoyToggle
-                    on={activityVisible}
-                    onChange={() => setActivityVisible(v => !v)}
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='activity'
                   label='Usage analytics'
-                  sub='Share anonymous usage to help improve dydan'
+                  sub='Unavailable — this build does not collect configurable usage analytics'
                 >
-                  <JoyToggle
-                    on={analytics}
-                    onChange={() => setAnalytics(v => !v)}
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='sparkle'
                   label='Personalized suggestions'
-                  sub='Use your patterns to suggest tasks and routines'
+                  sub='Unavailable — personalized suggestions are not provided by this server'
                 >
-                  <JoyToggle
-                    on={personalization}
-                    onChange={() => setPersonalization(v => !v)}
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='eye'
                   label='Privacy policy'
-                  sub='How we handle your data'
+                  sub='Unavailable — no published policy URL is configured'
                 >
-                  <Icon
-                    name='external'
-                    size={14}
-                    style={{ color: 'var(--t-faint)' }}
-                  />
+                  <button
+                    className='btn btn-ghost btn-icon'
+                    disabled
+                    title='No privacy policy URL is configured'
+                  >
+                    <Icon name='external' size={14} />
+                  </button>
                 </Row>
               </Section>
             </TabPanel>
@@ -2360,72 +2592,61 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='calendar'
                   label='Google Calendar'
-                  sub='Two-way sync of tasks and events'
+                  sub='Unavailable — this server has no Google Calendar credential configured'
                 >
-                  <JoyToggle
-                    on={integrations.gcal}
-                    onChange={() =>
-                      setIntegrations(i => ({ ...i, gcal: !i.gcal }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='calendar'
                   label='Apple Calendar'
-                  sub='Sync via CalDAV'
+                  sub='Unavailable — CalDAV account authorization is not configured'
                 >
-                  <JoyToggle
-                    on={integrations.apple}
-                    onChange={() =>
-                      setIntegrations(i => ({ ...i, apple: !i.apple }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='bell'
                   label='Amazon Alexa'
-                  sub='Add tasks and hear reminders by voice'
+                  sub='Unavailable — Alexa skill credentials are not configured'
                 >
-                  <JoyToggle
-                    on={integrations.alexa}
-                    onChange={() =>
-                      setIntegrations(i => ({ ...i, alexa: !i.alexa }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='external'
                   label='Webhooks'
-                  sub='Send events to your own endpoint'
+                  sub='Unavailable — configure an endpoint before enabling webhook delivery'
                 >
-                  <JoyToggle
-                    on={integrations.webhooks}
-                    onChange={() =>
-                      setIntegrations(i => ({ ...i, webhooks: !i.webhooks }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
               </Section>
               <Section title='API access'>
                 <Row
                   icon='lock'
                   label='Personal access token'
-                  sub='Token creation requires a named token flow, which is not exposed in this approved UI yet.'
+                  sub={
+                    apiTokens.length
+                      ? `${apiTokens.length} active token${apiTokens.length === 1 ? '' : 's'}`
+                      : 'Use for API requests on your behalf'
+                  }
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={() => setShowCreateApiToken(true)}
+                  >
+                    Generate
+                  </button>
                 </Row>
                 <Row
                   icon='external'
                   label='API documentation'
-                  sub='REST reference and guides'
+                  sub='Unavailable — interactive API documentation is disabled on this server'
                 >
-                  <Icon
-                    name='external'
-                    size={14}
-                    style={{ color: 'var(--t-faint)' }}
-                  />
+                  <button
+                    className='btn btn-ghost btn-icon'
+                    disabled
+                    title='Interactive API documentation is disabled'
+                  >
+                    <Icon name='external' size={14} />
+                  </button>
                 </Row>
               </Section>
             </TabPanel>
@@ -2440,31 +2661,41 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='download'
                   label='Export my data'
-                  sub='The encrypted backup flow requires a passphrase UI and is not available from this screen yet.'
+                  sub='Unavailable — secure server backup export is not configured'
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    disabled
+                    title='Secure backup export is unavailable on this server'
+                  >
+                    Export
+                  </button>
                 </Row>
                 <Row
                   icon='upload'
                   label='Import data'
-                  sub='Restore from a previous export'
+                  sub='Unavailable — secure server backup restore is not configured'
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    disabled
+                    title='Secure backup restore is unavailable on this server'
+                  >
+                    Import
+                  </button>
                 </Row>
                 <Row
                   icon='database'
                   label='Storage used'
-                  sub='Approximately 1.2 MB of data'
+                  sub='Server-reported account storage'
                 >
                   <span
                     className='text-faint font-mono'
                     style={{ fontSize: 12 }}
                   >
-                    1.2 MB
+                    {storageUsage
+                      ? `${(storageUsage.used / (1024 * 1024)).toFixed(1)} MB`
+                      : 'Loading…'}
                   </span>
                 </Row>
                 <Row
@@ -2504,38 +2735,47 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='zap'
                   label='Beta features'
-                  sub="Try features before they're released"
+                  sub='Unavailable — this server has no per-account beta feature flags'
                 >
-                  <JoyToggle
-                    on={devFlags.betaFeatures}
-                    onChange={() =>
-                      setDevFlags(f => ({
-                        ...f,
-                        betaFeatures: !f.betaFeatures,
-                      }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='clipboard'
                   label='Verbose logging'
-                  sub='Emit detailed logs to the console'
+                  sub='Unavailable — the production diagnostics logger has no per-account verbosity control'
                 >
-                  <JoyToggle
-                    on={devFlags.verboseLogs}
-                    onChange={() =>
-                      setDevFlags(f => ({ ...f, verboseLogs: !f.verboseLogs }))
-                    }
-                  />
+                  <JoyToggle on={false} disabled />
                 </Row>
                 <Row
                   icon='refresh'
                   label='Reset all settings'
-                  sub='A complete server-backed preference reset is not available.'
+                  sub='Restore every preference to its default'
                 >
-                  <span className='text-faint' style={{ fontSize: 12 }}>
-                    Not available
-                  </span>
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={() =>
+                      ctx.showConfirm({
+                        title: 'Reset all settings?',
+                        message:
+                          'Your preferences will return to defaults. Your data is not affected.',
+                        confirmLabel: 'Reset',
+                        danger: true,
+                        onConfirm: () =>
+                          void preferenceMutations.reset
+                            .mutateAsync()
+                            .then(() => ctx.showToast('Settings reset'))
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not reset settings',
+                              ),
+                            ),
+                      })
+                    }
+                  >
+                    Reset
+                  </button>
                 </Row>
               </Section>
             </TabPanel>
@@ -2694,6 +2934,25 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
         <RecoveryCodesModal
           codes={recoveryCodes}
           onClose={() => setRecoveryCodes(null)}
+        />
+      )}
+      {showCreateApiToken && (
+        <ApiTokenModal
+          onClose={() => setShowCreateApiToken(false)}
+          onCreate={async (name, mfaCode) => {
+            const token = await apiTokenMutations.create.mutateAsync({
+              name,
+              mfaCode,
+            })
+            setCreatedApiToken(token)
+            ctx.showToast('Personal access token created')
+          }}
+        />
+      )}
+      {createdApiToken && (
+        <TokenSecretModal
+          token={createdApiToken}
+          onClose={() => setCreatedApiToken(null)}
         />
       )}
       {showDeleteAccount && (

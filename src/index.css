@@ -1128,6 +1128,12 @@ html[data-joy-color-scheme="dark"] input[type="date"].input { color-scheme: dark
 [dir="rtl"] .sidebar { border-inline-end: none; border-inline-start: 1px solid var(--line); }
 [dir="rtl"] .drawer-panel { inset-inline-end: auto; inset-inline-start: 0; border-inline-start: none; border-inline-end: 1px solid var(--line); }
 
+/* Compact mode preserves the approved layout while reducing card row density. */
+html[data-density="compact"] .page-container .card > .px-5.py-4,
+html[data-density="compact"] .page-container .card > .px-5.py-5 {
+  padding-block: 0.65rem !important;
+}
+
 /* ─── Responsive ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
