@@ -97,12 +97,22 @@ test('specific routes retain their server envelopes without collection shadowing
   const workload = await callMock({
     path: '/api/v1/progress/workload?range=week',
   })
+  const ticketSSE = await callMock({
+    path: '/api/v1/realtime/sse?ticket=smoke-sse-ticket',
+  })
+  const refreshCookieSSE = await callMock({
+    path: '/api/v1/realtime/sse',
+    headers: { cookie: 'refresh_token=smoke-refresh-token' },
+  })
 
   assert.equal(JSON.parse(profile.body).res.id, 1)
   assert.equal(JSON.parse(ticket.body).expiresIn, 60)
   assert.equal(ticket.headers['Cache-Control'], 'no-store')
   assert.equal(JSON.parse(workload.body).res, undefined)
   assert.ok(Array.isArray(JSON.parse(workload.body).members))
+  assert.equal(ticketSSE.status, 200)
+  assert.match(ticketSSE.headers['Content-Type'], /text\/event-stream/)
+  assert.equal(refreshCookieSSE.status, 400)
 })
 
 test('strict mock validates mutation payloads and supported public auth flows', async () => {
