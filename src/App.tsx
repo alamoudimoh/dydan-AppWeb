@@ -22,6 +22,7 @@ import {
   Persona,
   useProductBrand,
   useProductPersona,
+  useProductTheme,
   useProductView,
   View as CtxView,
 } from './contexts/ThemeContext'
@@ -29,6 +30,7 @@ import type { Task } from './data'
 import { useAuth } from './hooks/useAuth'
 import { useTaskMutations } from './hooks/useHousehold'
 import { useRealtimeSync } from './hooks/useRealtimeSync'
+import { useSettingsPreferences } from './hooks/useSettingsPreferences'
 import { useStatusBar } from './hooks/useStatusBar'
 import { useSyncOnReconnect } from './hooks/useSyncOnReconnect'
 import { useLiveData } from './model/liveData'
@@ -645,9 +647,18 @@ export default function App() {
   useSyncOnReconnect()
 
   const { brand, setBrand } = useProductBrand()
+  const { setMode } = useProductTheme()
   const { setView, view } = useProductView()
   const { persona, setPersona } = useProductPersona()
-  const { isRTL, t, toggleLang } = useLocalization()
+  const {
+    isRTL,
+    setDateFormat,
+    setFirstDayOfWeek,
+    setLanguage,
+    setTimeFormat,
+    t,
+    toggleLang,
+  } = useLocalization()
 
   const live = useLiveData()
   const { currentUser, members, notifications, tasks } = live
@@ -663,6 +674,7 @@ export default function App() {
     triggerSessionExpiry: realSessionExpiry,
   } = useAuth()
   useRealtimeSync(isAuthenticated)
+  const { data: settingsPreferences } = useSettingsPreferences()
 
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [taskDetail, setTaskDetail] = useState<Task | null>(null)
@@ -675,6 +687,32 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!settingsPreferences) return
+    setBrand(settingsPreferences.theme)
+    setMode(settingsPreferences.appearance)
+    setView(settingsPreferences.defaultView)
+    setLanguage(settingsPreferences.language)
+    setDateFormat(settingsPreferences.dateFormat)
+    setTimeFormat(settingsPreferences.timeFormat)
+    setFirstDayOfWeek(settingsPreferences.firstDayOfWeek)
+    if (settingsPreferences.rememberSidebar) {
+      setSidebarCollapsed(settingsPreferences.sidebarCollapsed)
+    }
+    document.documentElement.dataset.density = settingsPreferences.compactMode
+      ? 'compact'
+      : 'comfortable'
+  }, [
+    setBrand,
+    setDateFormat,
+    setFirstDayOfWeek,
+    setLanguage,
+    setMode,
+    setTimeFormat,
+    setView,
+    settingsPreferences,
+  ])
 
   /* Persona is derived from the real account, never picked in a demo panel. */
   const effectivePersona: Persona = useMemo(() => {
@@ -940,12 +978,13 @@ export default function App() {
               >
                 <Icon name='bell' size={18} />
               </IconButton>
-              {unreadCount > 0 && (
-                <span
-                  className='absolute top-0.5 end-0.5 w-2 h-2 rounded-full bg-sig-over pointer-events-none'
-                  style={{ background: 'var(--sig-over)' }}
-                />
-              )}
+              {settingsPreferences?.showItemBadges !== false &&
+                unreadCount > 0 && (
+                  <span
+                    className='absolute top-0.5 end-0.5 w-2 h-2 rounded-full bg-sig-over pointer-events-none'
+                    style={{ background: 'var(--sig-over)' }}
+                  />
+                )}
             </div>
           </div>
         </div>

@@ -413,6 +413,19 @@ const UpdateUserDetails = userDetails => {
   })
 }
 
+const GetUserPreferences = () =>
+  Fetch(`/users/preferences`, { method: 'GET', headers: HEADERS() })
+
+const UpdateUserPreferences = preferences =>
+  Fetch(`/users/preferences`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(preferences),
+  })
+
+const ResetUserPreferences = () =>
+  Fetch(`/users/preferences/reset`, { method: 'POST', headers: HEADERS() })
+
 const UploadProfilePhoto = file => {
   const formData = new FormData()
   formData.append('file', file, file.name || 'profile.jpg')
@@ -581,11 +594,11 @@ const GetPointsHistory = (circleID, userId) =>
     { method: 'GET', headers: HEADERS() },
   )
 
-const CreateLongLiveToken = name => {
+const CreateLongLiveToken = (name, mfaCode = '') => {
   return Fetch(`/users/tokens`, {
     method: 'POST',
     headers: HEADERS(),
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...(mfaCode ? { mfaCode } : {}) }),
   })
 }
 const DeleteLongLiveToken = id => {
@@ -1412,6 +1425,7 @@ export {
   GetThingHistory,
   GetThings,
   GetUserCircle,
+  GetUserPreferences,
   GetUserProfile,
   JoinCircle,
   LeaveCircle,
@@ -1436,6 +1450,7 @@ export {
   ResetChoreTimer,
   ResetPassword,
   ResetUserPoints,
+  ResetUserPreferences,
   RestoreBackup,
   RevokeAuthSession,
   RevokeOtherAuthSessions,
@@ -1472,6 +1487,7 @@ export {
   UpdateThingState,
   UpdateTimeSession,
   UpdateUserDetails,
+  UpdateUserPreferences,
   UploadChoreAttachment,
   UploadProfilePhoto,
   VerifyMFA,

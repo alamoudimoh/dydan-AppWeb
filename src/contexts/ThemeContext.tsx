@@ -16,7 +16,7 @@ import {
 ───────────────────────────────────────────── */
 
 export type Brand = 'dydan' | 'sovereign'
-export type Mode = 'light' | 'dark'
+export type Mode = 'light' | 'dark' | 'system'
 export type View = 'quest' | 'focus'
 export type Persona = 'parent' | 'child' | 'solo'
 
@@ -54,15 +54,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   /* Drive the CSS token set + Joy color scheme. */
   useEffect(() => {
     const html = document.documentElement
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const apply = () => {
+      const resolvedMode =
+        mode === 'system' ? (media.matches ? 'dark' : 'light') : mode
+      html.setAttribute('data-joy-color-scheme', resolvedMode)
+    }
     document.body.classList.add('theme-transitioning')
     if (brand === 'sovereign') html.setAttribute('data-theme', 'sovereign')
     else html.removeAttribute('data-theme')
-    html.setAttribute('data-joy-color-scheme', mode)
+    apply()
+    if (mode === 'system') media.addEventListener('change', apply)
     const t = setTimeout(
       () => document.body.classList.remove('theme-transitioning'),
       350,
     )
-    return () => clearTimeout(t)
+    return () => {
+      clearTimeout(t)
+      media.removeEventListener('change', apply)
+    }
   }, [brand, mode])
 
   return (
