@@ -1359,7 +1359,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 desc='A snapshot of your account and quick access to every setting.'
               />
               <Section>
-                <div className='flex items-center gap-5 px-5 py-5'>
+                <div className='flex items-center gap-5 px-5 py-5 settings-profile-row'>
                   {profileImage ? (
                     <img
                       src={profileImage}
@@ -1380,7 +1380,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       {currentUser.initials}
                     </div>
                   )}
-                  <div className='flex-1'>
+                  <div className='flex-1 settings-profile-main'>
                     <div
                       className='font-bold text-primary'
                       style={{ fontSize: 16 }}

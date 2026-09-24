@@ -551,6 +551,31 @@ html[dir="ltr"] .main-scroll > * { direction: ltr; }
   .main-content { padding-bottom: 70px; }
 }
 
+/* ─── Mobile responsive layout fixes ────
+   These rules only change how the approved layout stacks on small screens;
+   desktop/tablet (min-width 769px) behavior is untouched. */
+@media (max-width: 768px) {
+  /* Home: stack the "Today / Upcoming" + "Household / goals" columns. */
+  .home-columns { grid-template-columns: 1fr !important; }
+  /* Shopping: stack the list sidebar above the list content. */
+  .shopping-lists-grid { grid-template-columns: 1fr !important; }
+  /* Enlarge the task-check hit area without changing its 20px visual. */
+  .task-check { position: relative; }
+  .task-check::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Profile card: let the identity block and actions wrap and wrap long text
+     instead of clipping the email address on narrow screens. */
+  .settings-profile-row { flex-wrap: wrap; }
+  .settings-profile-main { min-width: 0; }
+  .settings-profile-main .text-muted { overflow-wrap: anywhere; }
+}
+
 
 /* Settings and shared header action alignment. */
 .settings-choice-grid {
