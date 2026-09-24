@@ -51,9 +51,7 @@
     "bump:minor": "node bump-version.js minor",
     "bump:major": "node bump-version.js major",
     "bump:patch": "node bump-version.js patch",
-    "postinstall": "patch-package",
-    "approved:dev": "vite design-source/approved-ui --config design-source/approved-ui/vite.config.ts --host 0.0.0.0 --port 2925 --strictPort",
-    "approved:build": "vite build design-source/approved-ui --config design-source/approved-ui/vite.config.ts"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@aparajita/capacitor-secure-storage": "8.0.0",
