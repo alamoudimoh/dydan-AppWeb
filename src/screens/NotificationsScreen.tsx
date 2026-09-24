@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AppCtx, Icon } from '../App'
 import type { Notification, NotificationType } from '../data'
 import { formatTimestamp } from '../data'
+import { useRewardMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
 const TYPE_META: Record<
@@ -44,7 +45,8 @@ export default function NotificationsScreen({
   onMarkRead,
   readIds,
 }: Props) {
-  const { memberById, notifications } = useLiveData()
+  const { memberById, notifications, rewardRequests, rewards } = useLiveData()
+  const rewardMutations = useRewardMutations()
   const [filter, setFilter] = useState<FilterMode>('all')
 
   const isRead = (n: Notification) => n.isRead || readIds.has(n.id)
@@ -52,6 +54,9 @@ export default function NotificationsScreen({
 
   const visible =
     filter === 'unread' ? notifications.filter(n => !isRead(n)) : notifications
+  const pendingRewardRequests = rewardRequests.filter(
+    request => request.status === 'pending',
+  )
 
   const handleNotifClick = (n: Notification) => {
     if (!isRead(n)) onMarkRead(n.id)
@@ -228,54 +233,100 @@ export default function NotificationsScreen({
           </div>
         )}
 
-        {/* Action row for reward requests */}
-        {visible.some(n => n.type === 'reward_request' && !isRead(n)) &&
-          ctx.persona !== 'child' && (
-            <div className='card mt-4 p-4 flex items-center gap-4'>
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 'var(--r-md)',
-                  background: 'var(--sig-flag-bg)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Icon
-                  name='gift'
-                  size={18}
-                  style={{ color: 'var(--sig-flag)' }}
-                />
-              </div>
-              <div className='flex-1'>
+        {/* Live pending reward requests */}
+        {pendingRewardRequests.length > 0 && ctx.persona !== 'child' && (
+          <div className='card mt-4 overflow-hidden'>
+            {pendingRewardRequests.map((request, index) => {
+              const requester = memberById(request.requesterId)
+              const reward = rewards.find(item => item.id === request.rewardId)
+              const requesterName = requester?.name ?? 'A member'
+              const rewardName = reward?.name ?? 'a reward'
+              const busy =
+                rewardMutations.approveRequest.isPending ||
+                rewardMutations.rejectRequest.isPending
+
+              return (
                 <div
-                  className='font-bold text-primary'
-                  style={{ fontSize: 13 }}
+                  key={request.id}
+                  className='p-4 flex items-center gap-4'
+                  style={{
+                    borderBottom:
+                      index === pendingRewardRequests.length - 1
+                        ? 'none'
+                        : '1px solid var(--line)',
+                  }}
                 >
-                  Pending reward requests
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 'var(--r-md)',
+                      background: 'var(--sig-flag-bg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Icon
+                      name='gift'
+                      size={18}
+                      style={{ color: 'var(--sig-flag)' }}
+                    />
+                  </div>
+                  <div className='flex-1 min-w-0'>
+                    <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 13 }}
+                    >
+                      Pending reward request
+                    </div>
+                    <div className='text-muted' style={{ fontSize: 12 }}>
+                      {requesterName} has requested {rewardName}
+                    </div>
+                  </div>
+                  <div className='flex gap-2'>
+                    <button
+                      className='btn btn-sm btn-secondary'
+                      disabled={busy}
+                      onClick={() =>
+                        rewardMutations.rejectRequest.mutate(request.id, {
+                          onSuccess: () =>
+                            ctx.showToast('Reward request rejected'),
+                          onError: error =>
+                            ctx.showToast(
+                              error instanceof Error
+                                ? error.message
+                                : 'Could not reject reward request',
+                            ),
+                        })
+                      }
+                    >
+                      Reject
+                    </button>
+                    <button
+                      className='btn btn-sm btn-primary'
+                      disabled={busy}
+                      onClick={() =>
+                        rewardMutations.approveRequest.mutate(request.id, {
+                          onSuccess: () =>
+                            ctx.showToast('Reward request approved'),
+                          onError: error =>
+                            ctx.showToast(
+                              error instanceof Error
+                                ? error.message
+                                : 'Could not approve reward request',
+                            ),
+                        })
+                      }
+                    >
+                      Approve
+                    </button>
+                  </div>
                 </div>
-                <div className='text-muted' style={{ fontSize: 12 }}>
-                  Liam has requested Takeaway Night — approve or reject
-                </div>
-              </div>
-              <div className='flex gap-2'>
-                <button
-                  className='btn btn-sm btn-secondary'
-                  onClick={() => ctx.showToast('Reward request rejected')}
-                >
-                  Reject
-                </button>
-                <button
-                  className='btn btn-sm btn-primary'
-                  onClick={() => ctx.showToast('Reward approved! 🎉')}
-                >
-                  Approve
-                </button>
-              </div>
-            </div>
-          )}
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
