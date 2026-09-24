@@ -198,7 +198,7 @@ export default function ShoppingScreen({
 
       <div className='px-4 md:px-7'>
         <div
-          className='grid gap-5'
+          className='grid gap-5 shopping-lists-grid'
           style={{ gridTemplateColumns: '220px 1fr' }}
         >
           {/* List sidebar */}

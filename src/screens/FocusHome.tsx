@@ -343,8 +343,11 @@ export default function FocusHome({
           </div>
         )}
 
-        {/* Two-column layout */}
-        <div className='grid gap-6' style={{ gridTemplateColumns: '1fr 1fr' }}>
+        {/* Two-column layout (single column on mobile) */}
+        <div
+          className='grid gap-6 home-columns'
+          style={{ gridTemplateColumns: '1fr 1fr' }}
+        >
           {/* Left: Today's tasks */}
           <div className='flex flex-col gap-6'>
             {/* Today section */}
