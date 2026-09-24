@@ -430,7 +430,7 @@ function toNotifications(list: ApiNotification[]): Notification[] {
     type: mapNotificationType(n.type),
     title: n.title ?? n.type ?? 'Notification',
     body: n.body ?? n.message ?? '',
-    isRead: n.isRead ?? n.read ?? false,
+    isRead: n.readAt != null || n.isRead === true || n.read === true,
     timestamp: n.createdAt,
     actorId: undefined,
   }))
