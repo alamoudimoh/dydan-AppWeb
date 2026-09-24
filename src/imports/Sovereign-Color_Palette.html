@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FFFFFF" id="theme-color-meta">
+  <title>Sovereign — Unified colour system</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Ubuntu:wght@400;500;600;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #FFC107;
+      --logo-gold: #FFC107;
+      /* Sovereign Signals — supporting hues (each has a light-surface and an onyx-surface variant) */
+      --sig-teal-l: #21787B;    --sig-teal-d: #31BFC4;
+      --sig-azure-l: #306EB5;   --sig-azure-d: #559AEA;
+      --sig-verdant-l: #1A7C48; --sig-verdant-d: #31C476;
+      --sig-crimson-l: #C73549; --sig-crimson-d: #E87382;
+      --sig-violet-l: #7B43C4;  --sig-violet-d: #AC85E0;
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 28px;
+      --shadow: 0 20px 60px rgba(15, 62, 54, .10);
+    }
+
+    /* ---------- Theme tokens (every pair audited; ratios stamped live by JS) ---------- */
+    html[data-theme="light"] {
+      --page: #FFFFFF;
+      --surface: #F2F2F2;
+      --surface-2: #FFFFFF;
+      --text: #1A1A1A;
+      --muted: #4D4D4D;
+      --line: #666666;
+      --brand: #1A1A1A;
+      --brand-hover: #2E2E2E;
+      --brand-contrast: #FFC107;
+      --soft: #F2F2F2;
+      --gold-text: #4D4D4D;
+      --action-bg: #FFC107;
+      --action-text: #1A1A1A;
+      --callout-bg: #1A1A1A;
+      --callout-text: #F2F2F2;
+      --callout-muted: #999999;
+      --hero-wash: rgba(255,193,7,.10);
+      --focus-inner: #FFFFFF;
+      --focus-outer: #1A1A1A;
+      --logo-a: #1A1A1A;
+      --logo-b: #FFC107;
+      --stage-bg: #FFFFFF;
+      --link: var(--sig-azure-l);
+      --link-visited: var(--sig-violet-l);
+      --sig-teal: var(--sig-teal-l); --sig-azure: var(--sig-azure-l); --sig-verdant: var(--sig-verdant-l);
+      --sig-crimson: var(--sig-crimson-l); --sig-violet: var(--sig-violet-l);
+    }
+    html[data-theme="dark"] {
+      --page: #1A1A1A;
+      --surface: #242424;
+      --surface-2: #2E2E2E;
+      --text: #F2F2F2;
+      --muted: #999999;
+      --line: #999999;
+      --brand: #FFC107;
+      --brand-hover: #FFD04D;
+      --brand-contrast: #1A1A1A;
+      --soft: #2E2E2E;
+      --gold-text: #FFC107;
+      --action-bg: #FFC107;
+      --action-text: #1A1A1A;
+      --callout-bg: #242424;
+      --callout-text: #F2F2F2;
+      --callout-muted: #999999;
+      --hero-wash: rgba(255,193,7,.08);
+      --focus-inner: #1A1A1A;
+      --focus-outer: #FFC107;
+      --logo-a: #1A1A1A;
+      --logo-b: #FFC107;
+      --stage-bg: #2E2E2E;
+      --shadow: 0 20px 70px rgba(0, 0, 0, .26);
+      --link: var(--sig-azure-d);
+      --link-visited: var(--sig-violet-d);
+      --sig-teal: var(--sig-teal-d); --sig-azure: var(--sig-azure-d); --sig-verdant: var(--sig-verdant-d);
+      --sig-crimson: var(--sig-crimson-d); --sig-violet: var(--sig-violet-d);
+    }
+
+    @media (prefers-contrast: more) {
+      html[data-theme="light"] { --muted: #1A1A1A; --line: #1A1A1A; --gold-text: #1A1A1A; }
+      html[data-theme="dark"]  { --muted: #F2F2F2; --line: #F2F2F2; }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--page);
+      color: var(--text);
+      font-family: "Ubuntu", "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    button, a { font: inherit; }
+    a { color: inherit; }
+    img, svg { max-width: 100%; }
+    code, .hex { direction: ltr; unicode-bidi: isolate; font-family: "Ubuntu Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3 { letter-spacing: 0; }
+
+    :where(a, button):focus-visible {
+      outline: 3px solid var(--focus-outer);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 2px var(--focus-inner);
+      border-radius: 8px;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      inset-inline-start: 16px;
+      top: 12px;
+      transform: translateY(-180%);
+      padding: 10px 16px;
+      border: 2px solid var(--focus-outer);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important; height: 1px !important;
+      padding: 0 !important; margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    .shell { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
+
+    /* ---------- Control strip: language + theme radiogroups ---------- */
+    .top-strip {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .strip-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-block: 6px;
+    }
+    .concept-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    html[lang="ar"] .concept-label { letter-spacing: 0; text-transform: none; }
+    .concept-label::before {
+      content: "";
+      width: 10px; height: 10px; flex: 0 0 auto;
+      border: 2px solid var(--text);
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .switchers { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .seg {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-2);
+    }
+    .seg-btn {
+      min-width: 72px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .seg-btn[aria-checked="true"] {
+      background: var(--brand);
+      color: var(--brand-contrast);
+      font-weight: 800;
+    }
+
+    /* ---------- Header + hero ---------- */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-block: 22px;
+    }
+    .brand {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 13px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 20px;
+    }
+    .brand-logo { width: 46px; height: 46px; display: block; }
+    .brand-word .ar { font-family: "Amiri", "Cairo", serif; color: var(--gold-text); font-size: 1.1em; }
+    .nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .nav a {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 5px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .nav a:hover { color: var(--text); text-decoration: underline; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+      align-items: center;
+      gap: 56px;
+      padding-block: 64px 84px;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 560px; height: 560px;
+      inset-inline-end: -170px;
+      top: -120px;
+      border-radius: 50%;
+      background: var(--hero-wash);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 18px;
+      color: var(--gold-text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    html[lang="ar"] .eyebrow { letter-spacing: 0; text-transform: none; }
+    .eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(38px, 6vw, 70px);
+      line-height: 1.12;
+      letter-spacing: -.02em;
+      font-weight: 800;
+    }
+    .lead { max-width: 640px; margin-block: 18px 26px; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 15px;
+      border: 2px solid transparent;
+    }
+    .button.primary { background: var(--brand); color: var(--brand-contrast); border-color: var(--brand); }
+    .button.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+    html[data-theme="dark"] .button.primary:hover { color: #1A1A1A; }
+    .button.secondary { border-color: var(--line); color: var(--text); background: var(--surface); }
+    .button.secondary:hover { border-color: var(--text); }
+    .logo-stage {
+      margin: 0;
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+      padding: 40px 24px 22px;
+      background: var(--stage-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .stage-logo { width: min(260px, 60%); height: auto; aspect-ratio: 1 / 1; }
+    .stage-caption { display: grid; justify-items: center; gap: 3px; color: var(--muted); font-size: 14px; font-weight: 700; }
+    .stage-caption code { color: var(--text); }
+
+    /* ---------- Generic section ---------- */
+    .section { padding-block: 56px; }
+    .section-head { max-width: 720px; margin-bottom: 30px; }
+    .section-head h2 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 42px); line-height: 1.15; letter-spacing: -.02em; }
+    .section-head p { margin: 0; color: var(--muted); }
+
+    /* ---------- Tokens (self-auditing) ---------- */
+    .token-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .token-panel {
+      padding: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .token-panel h3 { margin: 0 0 14px; font-size: 20px; }
+    .token-row {
+      display: grid;
+      grid-template-columns: 56px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding-block: 10px;
+      border-top: 1px solid var(--surface-2);
+    }
+    .token-row:first-of-type { border-top: 0; }
+    .specimen {
+      width: 56px; height: 44px;
+      display: grid; place-items: center;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      font-weight: 800;
+      font-size: 17px;
+    }
+    .token-meta { min-width: 0; }
+    .token-meta strong { display: block; font-size: 14px; }
+    .token-meta code { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .ratio { display: grid; justify-items: end; gap: 3px; text-align: end; }
+    .ratio strong { font-size: 15px; }
+    .ratio .level {
+      padding: 1px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    /* ---------- Six modes ---------- */
+    .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-bottom: 36px; }
+    .overview-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .overview-card a {
+      display: block;
+      padding: 14px 16px;
+      min-height: 44px;
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .overview-card a:hover { text-decoration: underline; }
+    .overview-strip { display: grid; grid-template-columns: repeat(5, 1fr); height: 34px; }
+    .mode-section {
+      scroll-margin-top: 90px;
+      margin-bottom: 22px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .mode-head { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+    .mode-head h3 { margin: 0; font-size: clamp(22px, 3vw, 30px); }
+    .mode-head p { margin: 0; max-width: 520px; color: var(--muted); font-size: 15px; }
+    .mode-layout { display: grid; grid-template-columns: 1.05fr .95fr; gap: 16px; }
+    .preview { display: grid; grid-template-columns: 1.05fr .95fr; gap: 12px; min-height: 300px; }
+    .preview-main {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      background: linear-gradient(135deg, var(--p1), var(--p2));
+      color: var(--preview-ink);
+    }
+    .preview-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; font-weight: 800; }
+    html[lang="ar"] .preview-kicker { letter-spacing: 0; text-transform: none; }
+    .preview-kicker::after { content: ""; display: block; width: 34px; height: 3px; margin-top: 8px; background: currentColor; border-radius: 2px; }
+    .preview-title { max-width: 400px; margin: 14px 0 10px; font-size: clamp(22px, 3vw, 30px); line-height: 1.2; font-weight: 800; }
+    .preview-copy { max-width: 420px; margin: 0; color: var(--preview-ink-2); font-size: 13px; }
+    .preview-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 20px; }
+    .p-primary, .p-secondary {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: 11px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .p-primary { background: var(--action-bg); color: var(--action-text); border: 0; }
+    .p-secondary { background: transparent; border: 2px solid currentColor; color: var(--preview-ink); }
+    .preview-side {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      padding: 16px;
+      background: var(--surface-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 11px;
+    }
+    .mini-card { padding: 15px; background: #FFFFFF; border: 1px solid #666666; border-radius: 14px; color: #1A1A1A; }
+    .mini-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #4D4D4D; font-weight: 800; }
+    html[lang="ar"] .mini-label { letter-spacing: 0; text-transform: none; }
+    .metric { margin: 6px 0 0; font-size: 32px; font-weight: 800; letter-spacing: -.02em; }
+    .progress { height: 8px; margin-top: 12px; background: #E6E6E6; border-radius: 999px; overflow: hidden; }
+    .progress span { display: block; width: 78%; height: 100%; background: var(--mode-ink); }
+    .day-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 12px; }
+    .day-list span { aspect-ratio: 1; border-radius: 7px; opacity: calc(.25 + var(--i) * .15); }
+    .swatches { display: grid; gap: 9px; align-content: start; }
+    .swatch-card {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 60px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding-inline-end: 8px;
+      overflow: hidden;
+    }
+    .swatch-color { height: 100%; min-height: 60px; border-inline-end: 1px solid var(--line); }
+    .swatch-meta strong { display: block; font-size: 14px; }
+    .swatch-meta code { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .copy-button {
+      min-height: 44px; min-width: 64px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .copy-button:hover { background: var(--surface-2); }
+
+    /* ---------- Signals ---------- */
+    .signal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
+    .signal-card {
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .signal-card h3 { margin: 0 0 4px; font-size: 19px; }
+    .signal-card > p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .signal-pair { display: grid; gap: 10px; }
+    .signal-row {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      padding-inline-end: 10px;
+    }
+    .signal-chip { align-self: stretch; display: grid; place-items: center; font-weight: 800; font-size: 15px; border-inline-end: 1px solid var(--line); }
+    .signal-meta strong { display: block; font-size: 13px; }
+    .signal-meta code { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+    .signal-ratio { text-align: end; font-size: 13px; font-weight: 800; }
+    .signal-ratio .level { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+    .signal-note {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-inline-start: 5px solid var(--gold);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .signal-note p { margin: 0; font-size: 15px; }
+
+    /* ---------- Office theme ---------- */
+    .office-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .office-card {
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .office-card h3 { margin: 0 0 8px; font-size: 24px; }
+    .office-card > p { margin: 0 0 18px; color: var(--muted); font-size: 15px; }
+    .office-list { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .office-row {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+    .office-swatch { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 9px; border: 1px solid var(--line); }
+    .office-row strong { display: block; font-size: 13px; }
+    .office-row small { display: block; margin-top: 1px; color: var(--muted); font-size: 12px; }
+    .office-row code { font-size: 11px; color: var(--muted); }
+    .office-demo { background: var(--callout-bg); color: var(--callout-text); border-color: var(--line); }
+    .office-demo h3 { color: var(--callout-text); }
+    .office-demo > p { color: var(--callout-muted); }
+    .demo-kicker { margin: 0 0 6px; color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    html[lang="ar"] .demo-kicker { letter-spacing: 0; text-transform: none; }
+    .chart { display: flex; align-items: end; gap: 12px; height: 160px; margin-top: 28px; }
+    .chart span { flex: 1; min-width: 18px; border-radius: 10px 10px 4px 4px; border: 1px solid rgba(255, 255, 255, .35); }
+    .chart-summary { margin-top: 10px; color: var(--callout-muted); font-size: 13px; }
+    .font-note {
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .07);
+      font-size: 14px;
+    }
+    .font-note strong { color: var(--gold); }
+
+    /* ---------- Logo application ---------- */
+    .logo-system { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .logo-rule {
+      padding: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .logo-rule h3 { margin: 0 0 6px; font-size: 20px; }
+    .logo-rule > p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+    .mini-stage {
+      display: grid; place-items: center;
+      padding: 28px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+    .mini-stage svg { width: min(170px, 55%); height: auto; aspect-ratio: 1 / 1; }
+    .on-light { background: #FFFFFF; --logo-a: #1A1A1A; --logo-b: #FFC107; --logo-gold: #FFC107; }
+    .on-dark  { background: #2E2E2E; --logo-a: #1A1A1A; --logo-b: #FFC107; --logo-gold: #FFC107; }
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .chip i { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--line); }
+    .chip span { padding-inline-start: 8px; border-inline-start: 1px solid var(--line); color: var(--muted); font-weight: 700; }
+
+    /* ---------- Callout + footer ---------- */
+    .callout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 34px;
+      border-radius: var(--radius-lg);
+      background: var(--callout-bg);
+      color: var(--callout-text);
+      border: 1px solid var(--line);
+    }
+    .callout h2 { margin: 0 0 8px; font-size: clamp(24px, 3.4vw, 34px); line-height: 1.2; }
+    .callout p { margin: 0; max-width: 560px; color: var(--callout-muted); }
+    .callout .button { background: var(--action-bg); color: var(--action-text); border-color: var(--action-bg); }
+    footer { margin-top: 40px; border-top: 1px solid var(--line); }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-block: 24px 36px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      inset-inline-start: 50%;
+      bottom: 28px;
+      z-index: 40;
+      transform: translate(-50%, 20px);
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: var(--brand-contrast);
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s;
+      box-shadow: var(--shadow);
+    }
+    html[dir="rtl"] .toast { transform: translate(50%, 20px); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    html[dir="rtl"] .toast.show { transform: translate(50%, 0); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; gap: 34px; padding-block: 44px 56px; }
+      .mode-layout, .office-grid, .logo-system { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .preview { grid-template-columns: 1fr; }
+      .office-list { grid-template-columns: 1fr; }
+      .strip-inner { justify-content: center; }
+      .mode-section, .office-card, .logo-rule, .token-panel { padding: 17px; }
+      .callout { padding: 22px; }
+    }
+
+    /* ---------- System preferences ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        transition-duration: .001ms !important;
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    @media (forced-colors: active) {
+      :where(a, button):focus-visible { outline: 3px solid Highlight; box-shadow: none; }
+      .seg-btn, .button, .copy-button { forced-color-adjust: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content" data-i18n="skip">Skip to main content</a>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="sovereign-mark" viewBox="0 0 2048 2048">
+      <circle cx="1022" cy="1023.5" r="949" fill="var(--logo-a)"/>
+      <circle cx="1022" cy="1023.5" r="949" fill="none" stroke="var(--logo-b)" stroke-width="68"/>
+      <path fill="var(--logo-b)" fill-rule="evenodd" d="M994.9 1601.3C992.4 1594.5 607.6 597.0 605.9 593.0C604.2 588.6 604.1 601.6 604.1 1018.8L604.0 1449.0L667.0 1449.0L730.0 1449.0L730.0 1520.5L730.0 1592.0L595.8 1592.0L461.5 1592.0L461.5 1018.0L461.5 444.0L589.3 444.2L717.2 444.5L867.9 837.3C950.8 1053.3 1018.9 1230.2 1019.1 1230.4C1019.3 1230.6 1088.1 1053.9 1172.0 837.6L1324.5 444.5L1454.3 444.2L1584.0 444.0L1584.0 594.2C1584.0 676.9 1583.7 935.2 1583.3 1168.2L1582.7 1592.0L1435.8 1592.0L1289.0 1592.0L1289.0 1520.5L1289.0 1449.0L1357.5 1449.0L1426.0 1449.0L1426.0 1317.5L1426.0 1186.0L1309.4 1186.2L1192.8 1186.5L1111.5 1395.0L1030.2 1603.5L1013.1 1603.8L996.0 1604.0L994.9 1601.3ZM1426.0 826.3C1426.0 696.2 1425.8 589.9 1425.6 590.1C1425.2 590.4 1251.8 1034.6 1243.4 1056.8L1241.0 1063.0L1333.5 1063.0L1426.0 1063.0L1426.0 826.3Z"/>
+    </symbol>
+  </svg>
+
+  <div class="top-strip">
+    <div class="shell strip-inner">
+      <div class="concept-label" data-i18n="concept">Sovereign colour reference</div>
+      <div class="switchers">
+        <div class="seg" role="radiogroup" id="lang-group" data-i18n-aria="langLabel" aria-label="Page language">
+          <button class="seg-btn" role="radio" aria-checked="true" data-lang-choice="en" lang="en" type="button">English</button>
+          <button class="seg-btn" role="radio" aria-checked="false" tabindex="-1" data-lang-choice="ar" lang="ar" dir="rtl" type="button">العربية</button>
+        </div>
+        <div class="seg" role="radiogroup" id="theme-group" data-i18n-aria="themeLabel" aria-label="Application surface">
+          <button class="seg-btn" role="radio" aria-checked="true" data-theme-choice="light" type="button" data-i18n="themeLight">Light</button>
+          <button class="seg-btn" role="radio" aria-checked="false" tabindex="-1" data-theme-choice="dark" type="button" data-i18n="themeDark">Dark</button>
+        </div>
+      </div>
+      <p id="live-status" class="visually-hidden" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <header class="shell site-header">
+    <a class="brand" href="#main-content" id="brand-link" data-i18n-aria="brandAria" aria-label="Sovereign home, skip to main content">
+      <svg class="brand-logo" aria-hidden="true" focusable="false"><use href="#sovereign-mark"></use></svg>
+      <span class="brand-word">Sovereign <span class="ar" lang="ar" dir="rtl">السيادة</span></span>
+    </a>
+    <nav class="nav" data-i18n-aria="navLabel" aria-label="Page sections">
+      <a href="#tokens" data-i18n="navTokens">Tokens</a>
+      <a href="#signals" data-i18n="navSignals">Signals</a>
+      <a href="#modes" data-i18n="navModes">Colour modes</a>
+      <a href="#office" data-i18n="navOffice">Office theme</a>
+      <a href="#logo" data-i18n="navLogo">Logo</a>
+    </nav>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    <section class="shell hero" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow" data-i18n="eyebrow">Signal with purpose</p>
+        <h1 id="hero-title" data-i18n="h1">One fixed identity, measured end to end.</h1>
+        <p class="lead" data-i18n="lead">Sovereign unifies its WCAG-audited application-surface tokens, the six Adobe colour modes, and the Office document mapping in one bilingual reference. Every contrast ratio below is computed live by this page.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#modes" data-i18n="ctaPrimary">Browse the modes</a>
+          <a class="button secondary" href="#tokens" data-i18n="ctaSecondary">Inspect the tokens</a>
+        </div>
+      </div>
+      <figure class="logo-stage">
+        <svg class="stage-logo" role="img" id="stage-logo" data-i18n-aria="stageAlt" aria-label="Sovereign Onyx and Golden Yellow logo"><use href="#sovereign-mark"></use></svg>
+        <figcaption class="stage-caption">
+          <span id="stage-label" data-i18n="stageLight">Sovereign logo on a light application surface</span>
+          <code id="stage-code">#FFFFFF</code>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="tokens" aria-labelledby="tokens-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="tokens-title" data-i18n="tokensTitle">Self-auditing tokens.</h2>
+          <p data-i18n="tokensLead">Each row pairs a foreground with its real background. The ratio badge is computed by this page at load time — the document can never claim more than it delivers.</p>
+        </div>
+        <div class="token-panels">
+          <div class="token-panel">
+            <h3 data-i18n="tokensLightH">Light application surface</h3>
+            <div id="tokens-light"></div>
+          </div>
+          <div class="token-panel">
+            <h3 data-i18n="tokensDarkH">Onyx application surface</h3>
+            <div id="tokens-dark"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="signals" aria-labelledby="signals-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="signals-title" data-i18n="signalsTitle">Signals: what gold cannot say.</h2>
+          <p data-i18n="signalsLead">Golden Yellow is the brand accent, not a vocabulary. It cannot encode success, failure or a hyperlink, and it fails text contrast on every light surface. Five supporting hues carry meaning instead — each supplied in two audited variants, one for light surfaces and one for Onyx.</p>
+        </div>
+        <div class="signal-grid" id="signal-grid"></div>
+        <div class="signal-note">
+          <p><strong data-i18n="signalRuleK">Standing rule:</strong> <span data-i18n="signalRuleV">Golden Yellow is a surface, a fill and a signal shape — never body text, never a link, and never a foreground on white. On light surfaces gold reads at 1.63:1 against white, well under the 4.5:1 minimum. Use Onyx on gold, never gold on white.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="modes" aria-labelledby="modes-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="modes-title" data-i18n="modesTitle">The six Adobe modes.</h2>
+          <p data-i18n="modesLead">One Sovereign identity expressed through the same six reference modes; names and HEX values always rest on audited surfaces.</p>
+        </div>
+        <div class="overview-grid" id="overview-grid"></div>
+        <div id="mode-sections"></div>
+      </div>
+    </section>
+
+    <section class="section" id="office" aria-labelledby="office-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="office-title" data-i18n="officeTitle">Microsoft Office document theme.</h2>
+          <p data-i18n="officeLead">The canonical Onyx × Golden Yellow system fills the core Office slots with supporting Sovereign neutrals for charts, tables, SmartArt and document styles.</p>
+        </div>
+        <div class="office-grid">
+          <article class="office-card">
+            <h3 data-i18n="officeSlotsH">Theme slots</h3>
+            <p data-i18n="officeSlotsP">Twelve slots, each shown as a bounded sample with its value on the surface beside it.</p>
+            <div class="office-list" id="office-list"></div>
+          </article>
+          <article class="office-card office-demo">
+            <p class="demo-kicker" data-i18n="officeDemoK">Theme chart preview</p>
+            <h3 data-i18n="officeDemoH">Office-ready accents</h3>
+            <p data-i18n="officeDemoP">Charts, tables, SmartArt and document styles inherit these accent slots.</p>
+            <div class="chart" aria-hidden="true">
+              <span style="height:94%;background:#FFC107"></span>
+              <span style="height:66%;background:#31BFC4"></span>
+              <span style="height:82%;background:#559AEA"></span>
+              <span style="height:48%;background:#31C476"></span>
+              <span style="height:74%;background:#E87382"></span>
+              <span style="height:58%;background:#AC85E0"></span>
+            </div>
+            <p class="chart-summary" data-i18n="chartSummary">Decorative bar chart demonstrating the six accent slots at varying heights.</p>
+            <div class="font-note"><strong data-i18n="fontNoteK">Theme fonts:</strong> <span data-i18n="fontNoteV">Ubuntu for Latin UI, Cairo for Arabic, and Ubuntu Mono for data and code.</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="logo" aria-labelledby="logo-title">
+      <div class="shell">
+        <div class="section-head">
+          <h2 id="logo-title" data-i18n="logoTitle">Logo application.</h2>
+          <p data-i18n="logoLead">The supplied Sovereign mark is the identity authority. Its Onyx and Golden Yellow relationship remains fixed; the two examples below are application-surface proofs, not separate themes.</p>
+        </div>
+        <div class="logo-system">
+          <article class="logo-rule">
+            <h3 data-i18n="logoLightH">On light surfaces</h3>
+            <p data-i18n="logoLightP">Use the supplied Sovereign mark without recolouring, distortion, glow or foreign palette changes. WCAG exempts logotypes from text contrast minimums; surrounding interface content still follows the measured token rules.</p>
+            <div class="mini-stage on-light">
+              <svg role="img" data-i18n-aria="logoLightAlt" aria-label="Sovereign logo on a light application surface"><use href="#sovereign-mark"></use></svg>
+            </div>
+            <div class="chip-row">
+              <span class="chip"><i style="background:#1A1A1A"></i><code>#1A1A1A</code><span>Onyx</span></span>
+              <span class="chip"><i style="background:#FFC107"></i><code>#FFC107</code><span>Golden Yellow</span></span>
+              <span class="chip"><i style="background:#FFFFFF"></i><code>#FFFFFF</code><span>White</span></span>
+            </div>
+          </article>
+          <article class="logo-rule">
+            <h3 data-i18n="logoDarkH">On dark surfaces</h3>
+            <p data-i18n="logoDarkP">The same supplied mark is shown on the native Onyx environment. The identity colours remain fixed and are not replaced by a second theme.</p>
+            <div class="mini-stage on-dark">
+              <svg role="img" data-i18n-aria="logoDarkAlt" aria-label="Sovereign logo on an Onyx application surface"><use href="#sovereign-mark"></use></svg>
+            </div>
+            <div class="chip-row">
+              <span class="chip"><i style="background:#1A1A1A"></i><code>#1A1A1A</code><span>Onyx</span></span>
+              <span class="chip"><i style="background:#FFC107"></i><code>#FFC107</code><span>Golden Yellow</span></span>
+              <span class="chip"><i style="background:#F2F2F2"></i><code>#F2F2F2</code><span>Soft Gray</span></span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="contact-title">
+      <div class="shell">
+        <div class="callout">
+          <div>
+            <h2 id="contact-title" data-i18n="contactTitle">Signal what matters. Remove the rest.</h2>
+            <p data-i18n="contactLead">The call-to-action uses the same fixed Sovereign identity while preserving text, button and boundary contrast.</p>
+          </div>
+          <a class="button" href="#logo" data-i18n="contactAction">Review the identity system</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span data-i18n="footerA">Sovereign visual colour system</span>
+      <span data-i18n="footerB">Built with WCAG-conscious colour tokens</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      'use strict';
+
+      /* ---------- i18n ---------- */
+      const I18N = {
+        en: {
+          docTitle: 'Sovereign — Unified colour system',
+          skip: 'Skip to main content',
+          concept: 'Sovereign colour reference',
+          langLabel: 'Page language',
+          themeLabel: 'Application surface',
+          themeLight: 'Light',
+          themeDark: 'Dark',
+          navLabel: 'Page sections',
+          navTokens: 'Tokens',
+          navSignals: 'Signals',
+          navModes: 'Colour modes',
+          navOffice: 'Office theme',
+          navLogo: 'Logo',
+          brandAria: 'Sovereign home, skip to main content',
+          eyebrow: 'Signal with purpose',
+          h1: 'One fixed identity, measured end to end.',
+          lead: 'Sovereign unifies its WCAG 2.1 AA audited surface tokens, the five Signal hues, the six Adobe colour modes, and the Office document mapping in one bilingual reference. Every contrast ratio below is computed live by this page.',
+          ctaPrimary: 'Browse the modes',
+          ctaSecondary: 'Inspect the tokens',
+          stageAlt: 'Sovereign 2026 mark: gold ring and MA monogram on an Onyx disc',
+          stageLight: 'Sovereign logo on a light application surface',
+          stageDark: 'Sovereign logo on a lifted Onyx surface',
+          tokensTitle: 'Self-auditing tokens.',
+          tokensLead: 'Each row pairs a foreground with its real background. The ratio badge is computed by this page at load time — the document can never claim more than it delivers.',
+          tokensLightH: 'Light application surface',
+          tokensDarkH: 'Onyx application surface',
+          modesTitle: 'The six Adobe modes.',
+          modesLead: 'One Sovereign identity expressed through the same six reference modes; names and HEX values always rest on audited surfaces.',
+          previewTitle: 'Control the signal. Keep the hierarchy clear.',
+          previewCopy: 'The same Sovereign identity rendered through each reference mode so contrast, hierarchy and emphasis stay comparable.',
+          previewA: 'Primary action',
+          previewB: 'Secondary action',
+          miniA: 'Signal clarity',
+          miniB: 'Consistency',
+          officeTitle: 'Microsoft Office document theme.',
+          signalsTitle: 'Signals: what gold cannot say.',
+          signalsLead: 'Golden Yellow is the brand accent, not a vocabulary. It cannot encode success, failure or a hyperlink, and it fails text contrast on every light surface. Five supporting hues carry meaning instead — each supplied in two audited variants, one for light surfaces and one for Onyx.',
+          signalRuleK: 'Standing rule:',
+          signalRuleV: 'Golden Yellow is a surface, a fill and a signal shape — never body text, never a link, and never a foreground on white. On light surfaces gold reads at 1.63:1 against white, well under the 4.5:1 minimum. Use Onyx on gold, never gold on white.',
+          officeLead: 'Onyx and Golden Yellow hold the core slots; the five Signal hues fill Accent 2–6 so charts, tables and SmartArt separate by hue rather than by three near-identical golds. Hyperlink and Followed use audited Azure and Violet.',
+          officeSlotsH: 'Theme slots',
+          officeSlotsP: 'Twelve slots, each shown as a bounded sample with its value on the surface beside it.',
+          officeDemoK: 'Theme chart preview',
+          officeDemoH: 'Office-ready accents',
+          officeDemoP: 'Charts, tables, SmartArt and document styles inherit these accent slots.',
+          chartSummary: 'Decorative bar chart demonstrating the six accent slots at varying heights. Every bar clears 5.9:1 against the Onyx panel and carries a boundary, so the series separates without relying on colour alone.',
+          fontNoteK: 'Theme fonts:',
+          fontNoteV: 'Ubuntu for Latin UI, Cairo for Arabic, and Ubuntu Mono for data and code.',
+          logoTitle: 'Logo application.',
+          logoLead: 'The 2026 Sovereign mark is the identity authority. Its Onyx disc and Golden Yellow ring-and-monogram relationship is fixed and is never recoloured into the Signal hues; the two examples below are application-surface proofs, not separate themes.',
+          logoLightH: 'On light surfaces',
+          logoLightP: 'Use the supplied Sovereign mark without recolouring, distortion, glow or foreign palette changes. WCAG exempts logotypes from text contrast minimums; surrounding interface content still follows the measured token rules.',
+          logoDarkH: 'On dark surfaces',
+          logoDarkP: 'The same mark on the Onyx environment. The disc sits at #1A1A1A against a #2E2E2E stage so the Onyx form stays readable; the gold ring and monogram carry the mark at 8.5:1. Identity colours are never swapped for Signal hues.',
+          logoLightAlt: 'Sovereign 2026 logo on a light application surface',
+          logoDarkAlt: 'Sovereign 2026 logo on an Onyx application surface',
+          contactTitle: 'Signal what matters. Remove the rest.',
+          contactLead: 'The call-to-action uses the same fixed Sovereign identity while preserving text, button and boundary contrast.',
+          contactAction: 'Review the identity system',
+          footerA: 'Sovereign visual colour system',
+          footerB: 'Built with WCAG-conscious colour tokens',
+          copy: 'Copy',
+          copied: 'copied',
+          copyAria: 'Copy {hex}',
+          statusThemeLight: 'Light application surface active.',
+          statusThemeDark: 'Dark application surface active.',
+          statusLang: 'Page language: English.',
+          uiBadge: 'UI 3:1',
+          roleBrand: 'Brand token',
+          roleText: 'Text token',
+          roleGold: 'Primary accent',
+          roleNavy: 'Primary dark',
+          roleSage: 'Supporting tone',
+          roleGray: 'Soft neutral'
+        },
+        ar: {
+          docTitle: 'السيادة — نظام الألوان الموحّد',
+          skip: 'تخطَّ إلى المحتوى الرئيسي',
+          concept: 'مرجع ألوان السيادة',
+          langLabel: 'لغة الصفحة',
+          themeLabel: 'سطح التطبيق',
+          themeLight: 'فاتح',
+          themeDark: 'داكن',
+          navLabel: 'أقسام الصفحة',
+          navTokens: 'الرموز',
+          navSignals: 'الإشارات',
+          navModes: 'الأنماط اللونية',
+          navOffice: 'سمة Office',
+          navLogo: 'الشعار',
+          brandAria: 'السيادة — الرئيسية، انتقل إلى المحتوى',
+          eyebrow: 'إشارة ذات غرض',
+          h1: 'هوية واحدة ثابتة، مُقاسة من طرفها إلى طرفها.',
+          lead: 'يوحّد نظام السيادة رموز أسطح التطبيق المدقّقة وفق WCAG، وأنماط Adobe الستة، وخريطة مستندات Office في مرجع واحد ثنائي اللغة. كل نسبة تباين أدناه تُحسب مباشرة داخل هذه الصفحة.',
+          ctaPrimary: 'استعرض الأنماط',
+          ctaSecondary: 'افحص الرموز',
+          stageAlt: 'شعار السيادة ٢٠٢٦: حلقة ذهبية وحرفا MA على قرص أونيكس',
+          stageLight: 'شعار السيادة على سطح تطبيق فاتح',
+          stageDark: 'شعار السيادة على سطح أونيكس مرتفع',
+          tokensTitle: 'رموز مدقّقة ذاتياً.',
+          tokensLead: 'يقرن كل صف لوناً أمامياً بخلفيته الفعلية، وتُحسب شارة النسبة عند تحميل الصفحة — فلا يدّعي المستند أكثر مما يحققه.',
+          tokensLightH: 'سطح تطبيق فاتح',
+          tokensDarkH: 'سطح تطبيق أونيكس',
+          modesTitle: 'أنماط Adobe الستة.',
+          modesLead: 'هوية سيادة واحدة عبر الأنماط المرجعية الستة؛ الأسماء وقيم HEX تستقر دائماً على أسطح مدقّقة.',
+          previewTitle: 'اضبط الإشارة. حافظ على وضوح التسلسل.',
+          previewCopy: 'الهوية نفسها معروضة عبر كل نمط مرجعي لتبقى مقارنة التباين والتسلسل والتأكيد واضحة.',
+          previewA: 'إجراء أساسي',
+          previewB: 'إجراء ثانوي',
+          miniA: 'وضوح الإشارة',
+          miniB: 'الاتساق',
+          officeTitle: 'سمة مستندات Microsoft Office.',
+          signalsTitle: 'الإشارات: ما لا يستطيع الذهبي قوله.',
+          signalsLead: 'الأصفر الذهبي لون هوية لا مفردات. لا يستطيع ترميز النجاح أو الإخفاق أو الرابط، ويخفق في تباين النص على كل سطح فاتح. لذلك تحمل خمس درجات مساندة المعنى — كل منها بنسختين مدقّقتين: واحدة للأسطح الفاتحة وأخرى للأونيكس.',
+          signalRuleK: 'قاعدة ثابتة:',
+          signalRuleV: 'الأصفر الذهبي سطح وتعبئة وشكل إشارة — لا يكون نصاً أساسياً ولا رابطاً ولا لون مقدمة على الأبيض. على الأسطح الفاتحة يبلغ تباين الذهبي مع الأبيض ١٫٦٣:١ فقط، أي دون الحد الأدنى ٤٫٥:١ بكثير. استخدم الأونيكس على الذهبي، لا الذهبي على الأبيض.',
+          officeLead: 'يحتفظ الأونيكس والأصفر الذهبي بالخانات الأساسية، وتملأ درجات الإشارة الخمس الألوان المميزة ٢–٦ لتفترق المخططات والجداول وSmartArt بالدرجة اللونية بدل ثلاثة درجات ذهبية شبه متطابقة. ويستخدم الرابط والرابط المُزار الأزرق والبنفسجي المدقّقين.',
+          officeSlotsH: 'خانات السمة',
+          officeSlotsP: 'اثنتا عشرة خانة، تُعرض كل واحدة كعيّنة محدودة الإطار وقيمتها على السطح بجانبها.',
+          officeDemoK: 'معاينة مخططات السمة',
+          officeDemoH: 'درجات جاهزة لـ Office',
+          officeDemoP: 'ترث المخططات والجداول وSmartArt وأنماط المستندات هذه الخانات.',
+          chartSummary: 'مخطط أعمدة زخرفي يعرض خانات الألوان الست بارتفاعات متفاوتة. يتجاوز كل عمود نسبة ٥٫٩:١ على لوحة الأونيكس ويحمل حدّاً، فتنفصل السلسلة دون الاعتماد على اللون وحده.', 
+          fontNoteK: 'خطوط السمة:',
+          fontNoteV: 'Ubuntu للواجهة اللاتينية، Cairo للعربية، وUbuntu Mono للبيانات والكود.',
+          logoTitle: 'تطبيق الشعار.',
+          logoLead: 'شعار السيادة ٢٠٢٦ هو مرجع الهوية. علاقة قرص الأونيكس مع الحلقة والحرفين بالأصفر الذهبي ثابتة ولا تُعاد صياغتها بدرجات الإشارة؛ والمثالان أدناه إثباتا تطبيق على سطحين وليسا سمتين منفصلتين.',
+          logoLightH: 'على الأسطح الفاتحة',
+          logoLightP: 'استخدم شعار السيادة المرفق دون إعادة تلوين أو تشويه أو توهّج أو لوحة أجنبية. تعفي WCAG الشعارات من حدود تباين النص، بينما تظل عناصر الواجهة المحيطة خاضعة للرموز المقاسة.',
+          logoDarkH: 'على الأسطح الداكنة',
+          logoDarkP: 'الشعار نفسه على بيئة الأونيكس. يستقر القرص على ‎#1A1A1A‎ فوق منصّة ‎#2E2E2E‎ ليبقى شكل الأونيكس مقروءاً، بينما تحمل الحلقة والحرفان الذهبيان الشعار بنسبة ٨٫٥:١. ولا تُستبدل ألوان الهوية بدرجات الإشارة أبداً.',
+          logoLightAlt: 'شعار السيادة على سطح تطبيق فاتح',
+          logoDarkAlt: 'شعار السيادة على سطح تطبيق أونيكس',
+          contactTitle: 'أبرز ما يهم. أزل ما سواه.',
+          contactLead: 'تحافظ دعوة الإجراء على هوية السيادة الثابتة مع صون تباين النص والزر والحدود.',
+          contactAction: 'راجع نظام الهوية',
+          footerA: 'نظام ألوان السيادة البصري',
+          footerB: 'بُني برموز لونية بوعي WCAG',
+          copy: 'نسخ',
+          copied: 'تم النسخ',
+          copyAria: 'نسخ {hex}',
+          statusThemeLight: 'سطح التطبيق الفاتح مفعّل.',
+          statusThemeDark: 'سطح التطبيق الداكن مفعّل.',
+          statusLang: 'لغة الصفحة: العربية.',
+          uiBadge: 'واجهة 3:1',
+          roleBrand: 'رمز العلامة',
+          roleText: 'رمز النص',
+          roleGold: 'لون أساسي',
+          roleNavy: 'داكن أساسي',
+          roleSage: 'درجة مساندة',
+          roleGray: 'محايد ناعم'
+        }
+      };
+
+      /* ---------- WCAG contrast (relative luminance, WCAG 2.x) ---------- */
+      function luminance(hex) {
+        const n = parseInt(hex.slice(1), 16);
+        const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+          const c = v / 255;
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+      }
+      function contrast(a, b) {
+        const l1 = luminance(a), l2 = luminance(b);
+        const hi = Math.max(l1, l2), lo = Math.min(l1, l2);
+        return (hi + 0.05) / (lo + 0.05);
+      }
+
+      /* ---------- Data ---------- */
+      const TOKENS = {
+        light: [
+          { name: { en: 'Body text on page', ar: 'نص أساسي على الصفحة' }, fg: '#1A1A1A', bg: '#FFFFFF' },
+          { name: { en: 'Muted text on page', ar: 'نص ثانوي على الصفحة' }, fg: '#4D4D4D', bg: '#FFFFFF' },
+          { name: { en: 'Gold signal on Onyx', ar: 'الإشارة الذهبية على الأونيكس' }, fg: '#FFC107', bg: '#1A1A1A' },
+          { name: { en: 'Onyx action text on gold', ar: 'نص أونيكس على الذهبي' }, fg: '#1A1A1A', bg: '#FFC107' },
+          { name: { en: 'Primary text on soft surface', ar: 'نص أساسي على سطح ناعم' }, fg: '#1A1A1A', bg: '#F2F2F2' },
+          { name: { en: 'Link — Signal Azure', ar: 'رابط — أزرق الإشارة' }, fg: '#306EB5', bg: '#FFFFFF' },
+          { name: { en: 'Visited link — Signal Violet', ar: 'رابط مُزار — بنفسجي الإشارة' }, fg: '#7B43C4', bg: '#FFFFFF' },
+          { name: { en: 'Error text — Signal Crimson', ar: 'نص خطأ — قرمزي الإشارة' }, fg: '#C73549', bg: '#FFFFFF' },
+          { name: { en: 'Control boundary', ar: 'حدود عناصر التحكم' }, fg: '#666666', bg: '#FFFFFF', ui: true }
+        ],
+        dark: [
+          { name: { en: 'Body text on Onyx', ar: 'نص أساسي على الأونيكس' }, fg: '#F2F2F2', bg: '#1A1A1A' },
+          { name: { en: 'Muted text on Onyx', ar: 'نص ثانوي على الأونيكس' }, fg: '#999999', bg: '#1A1A1A' },
+          { name: { en: 'Golden Yellow on Onyx', ar: 'الذهبي على الأونيكس' }, fg: '#FFC107', bg: '#1A1A1A' },
+          { name: { en: 'Onyx text on Golden Yellow', ar: 'نص أونيكس على الذهبي' }, fg: '#1A1A1A', bg: '#FFC107' },
+          { name: { en: 'Primary text on panel', ar: 'نص أساسي على اللوحة' }, fg: '#F2F2F2', bg: '#242424' },
+          { name: { en: 'Link — Signal Azure', ar: 'رابط — أزرق الإشارة' }, fg: '#559AEA', bg: '#1A1A1A' },
+          { name: { en: 'Success — Signal Verdant', ar: 'نجاح — أخضر الإشارة' }, fg: '#31C476', bg: '#1A1A1A' },
+          { name: { en: 'Error text — Signal Crimson', ar: 'نص خطأ — قرمزي الإشارة' }, fg: '#E87382', bg: '#1A1A1A' },
+          { name: { en: 'Control boundary', ar: 'حدود عناصر التحكم' }, fg: '#999999', bg: '#2E2E2E', ui: true }
+        ]
+      };
+
+      const ROLES = {
+        p1: { en: 'Onyx', ar: 'أونيكس' },
+        p2: { en: 'Golden Yellow', ar: 'أصفر ذهبي' },
+        p3: { en: 'Bright Gold', ar: 'ذهبي ساطع' },
+        p4: { en: 'Deep Gold', ar: 'ذهبي عميق' },
+        p5: { en: 'Soft Gray', ar: 'رمادي ناعم' },
+        p6: { en: 'Panel Charcoal', ar: 'فحمي اللوحة' },
+        p7: { en: 'Card Charcoal', ar: 'فحمي البطاقة' },
+        p8: { en: 'Mid Gray', ar: 'رمادي متوسط' },
+        p9: { en: 'Boundary Gray', ar: 'رمادي الحدود' },
+        p10: { en: 'White', ar: 'أبيض' },
+        p11: { en: 'Slate Gray', ar: 'رمادي إردوازي' },
+        t1: { en: 'Signal Teal', ar: 'فيروزي الإشارة' },
+        t2: { en: 'Signal Teal — bright', ar: 'فيروزي الإشارة — ساطع' },
+        a1: { en: 'Signal Azure', ar: 'أزرق الإشارة' },
+        a2: { en: 'Signal Azure — bright', ar: 'أزرق الإشارة — ساطع' },
+        v1: { en: 'Signal Verdant', ar: 'أخضر الإشارة' },
+        v2: { en: 'Signal Verdant — bright', ar: 'أخضر الإشارة — ساطع' },
+        c1: { en: 'Signal Crimson', ar: 'قرمزي الإشارة' },
+        c2: { en: 'Signal Crimson — bright', ar: 'قرمزي الإشارة — ساطع' },
+        u1: { en: 'Signal Violet', ar: 'بنفسجي الإشارة' },
+        u2: { en: 'Signal Violet — bright', ar: 'بنفسجي الإشارة — ساطع' }
+      };
+
+      /* Supporting hues. Gold stays the single brand accent; these carry meaning
+         (link, success, warning, error, category) that gold alone cannot encode. */
+      const SIGNALS = [
+        { key: 't', name: { en: 'Signal Teal', ar: 'فيروزي الإشارة' },
+          role: { en: 'Neutral information, secondary categories, data series 2.', ar: 'معلومات محايدة، فئات ثانوية، سلسلة بيانات ٢.' },
+          light: '#21787B', dark: '#31BFC4' },
+        { key: 'a', name: { en: 'Signal Azure', ar: 'أزرق الإشارة' },
+          role: { en: 'Hyperlinks and interactive text. The one role gold must never take.', ar: 'الروابط والنصوص التفاعلية — الدور الوحيد الممنوع على الذهبي.' },
+          light: '#306EB5', dark: '#559AEA' },
+        { key: 'v', name: { en: 'Signal Verdant', ar: 'أخضر الإشارة' },
+          role: { en: 'Success, pass, compliant, upward movement.', ar: 'نجاح، اجتياز، ملتزم، اتجاه صاعد.' },
+          light: '#1A7C48', dark: '#31C476' },
+        { key: 'c', name: { en: 'Signal Crimson', ar: 'قرمزي الإشارة' },
+          role: { en: 'Error, breach, failure, downward movement.', ar: 'خطأ، إخلال، إخفاق، اتجاه هابط.' },
+          light: '#C73549', dark: '#E87382' },
+        { key: 'u', name: { en: 'Signal Violet', ar: 'بنفسجي الإشارة' },
+          role: { en: 'Visited links, tertiary categories, data series 5.', ar: 'روابط مُزارة، فئات ثالثة، سلسلة بيانات ٥.' },
+          light: '#7B43C4', dark: '#AC85E0' }
+      ];
+
+      const MODES = [
+        { key: 'colorful', name: { en: 'Colorful', ar: 'ملوّن' },
+          desc: { en: 'Onyx and gold leading a full signal range — the mode that carries categorical data.', ar: 'الأونيكس والذهبي يقودان مدى الإشارات الكامل — النمط الذي يحمل البيانات الفئوية.' },
+          colors: [['#1A1A1A', 'p1'], ['#FFC107', 'p2'], ['#31BFC4', 't2'], ['#559AEA', 'a2'], ['#E87382', 'c2']],
+          panel: ['#1A1A1A', '#242424'], pink: '#F2F2F2', pmuted: '#B3B3B3', ink: '#306EB5' },
+        { key: 'none', name: { en: 'None', ar: 'بدون تعديل' },
+          desc: { en: 'The canonical Sovereign identity, unmodified: Onyx, Golden Yellow and neutrals only.', ar: 'هوية السيادة الأساسية دون تعديل: أونيكس وأصفر ذهبي ومحايدات فقط.' },
+          colors: [['#1A1A1A', 'p1'], ['#FFC107', 'p2'], ['#2E2E2E', 'p7'], ['#F2F2F2', 'p5'], ['#FFFFFF', 'p10']],
+          panel: ['#1A1A1A', '#2E2E2E'], pink: '#F2F2F2', pmuted: '#B3B3B3', ink: '#1A1A1A' },
+        { key: 'darkmode', name: { en: 'Dark', ar: 'داكن' },
+          desc: { en: 'The native Sovereign environment: layered Onyx surfaces, gold signal, teal support.', ar: 'بيئة السيادة الأصلية: أسطح أونيكس متدرّجة، إشارة ذهبية، ودعم فيروزي.' },
+          colors: [['#1A1A1A', 'p1'], ['#242424', 'p6'], ['#2E2E2E', 'p7'], ['#FFC107', 'p2'], ['#31BFC4', 't2']],
+          panel: ['#1A1A1A', '#2E2E2E'], pink: '#F2F2F2', pmuted: '#B3B3B3', ink: '#21787B' },
+        { key: 'deep', name: { en: 'Deep', ar: 'عميق' },
+          desc: { en: 'A denser hierarchy: deep gold anchored by the saturated signal hues.', ar: 'تسلسل أكثر كثافة: ذهبي عميق ترسّخه درجات الإشارة المشبعة.' },
+          colors: [['#1A1A1A', 'p1'], ['#CC9900', 'p4'], ['#1A7C48', 'v1'], ['#7B43C4', 'u1'], ['#306EB5', 'a1']],
+          panel: ['#1A1A1A', '#242424'], pink: '#F2F2F2', pmuted: '#B3B3B3', ink: '#7B43C4' },
+        { key: 'muted', name: { en: 'Muted', ar: 'هادئ' },
+          desc: { en: 'Reduced chroma for dense documents: the neutral ladder with a single teal accent.', ar: 'تشبّع مخفّض للمستندات الكثيفة: سلّم محايد مع لمسة فيروزية واحدة.' },
+          colors: [['#4D4D4D', 'p11'], ['#666666', 'p9'], ['#999999', 'p8'], ['#21787B', 't1'], ['#F2F2F2', 'p5']],
+          panel: ['#4D4D4D', '#2E2E2E'], pink: '#F2F2F2', pmuted: '#D9D9D9', ink: '#4D4D4D' },
+        { key: 'bright', name: { en: 'Bright', ar: 'ساطع' },
+          desc: { en: 'High-clarity light application for presentation and print, with Onyx doing all the reading work.', ar: 'تطبيق فاتح عالي الوضوح للعرض والطباعة، مع الأونيكس لكل أعمال القراءة.' },
+          colors: [['#FFC107', 'p2'], ['#FFD04D', 'p3'], ['#31BFC4', 't2'], ['#F2F2F2', 'p5'], ['#1A1A1A', 'p1']],
+          panel: ['#FFC107', '#F2F2F2'], pink: '#1A1A1A', pmuted: '#3D3D3D', ink: '#1A1A1A' }
+      ];
+
+      const OFFICE = [
+        { slot: 'Dark 1', hex: '#1A1A1A', use: { en: 'Primary text / Onyx', ar: 'النص الأساسي / أونيكس' } },
+        { slot: 'Light 1', hex: '#FFFFFF', use: { en: 'Primary background', ar: 'الخلفية الأساسية' } },
+        { slot: 'Dark 2', hex: '#242424', use: { en: 'Secondary dark', ar: 'داكن ثانوي' } },
+        { slot: 'Light 2', hex: '#F2F2F2', use: { en: 'Secondary light', ar: 'فاتح ثانوي' } },
+        { slot: 'Accent 1', hex: '#FFC107', use: { en: 'Golden Yellow — brand accent', ar: 'الأصفر الذهبي — لون الهوية' } },
+        { slot: 'Accent 2', hex: '#21787B', use: { en: 'Signal Teal', ar: 'فيروزي الإشارة' } },
+        { slot: 'Accent 3', hex: '#306EB5', use: { en: 'Signal Azure', ar: 'أزرق الإشارة' } },
+        { slot: 'Accent 4', hex: '#1A7C48', use: { en: 'Signal Verdant', ar: 'أخضر الإشارة' } },
+        { slot: 'Accent 5', hex: '#C73549', use: { en: 'Signal Crimson', ar: 'قرمزي الإشارة' } },
+        { slot: 'Accent 6', hex: '#7B43C4', use: { en: 'Signal Violet', ar: 'بنفسجي الإشارة' } },
+        { slot: 'Hyperlink', hex: '#306EB5', use: { en: 'Signal Azure — 5.22:1 on white', ar: 'أزرق الإشارة — ٥٫٢٢:١ على الأبيض' } },
+        { slot: 'Followed', hex: '#7B43C4', use: { en: 'Signal Violet — 6.10:1 on white', ar: 'بنفسجي الإشارة — ٦٫١٠:١ على الأبيض' } }
+      ];
+
+      /* ---------- State ---------- */
+      const html = document.documentElement;
+      const live = document.getElementById('live-status');
+      const themeMeta = document.getElementById('theme-color-meta');
+      const stageLabel = document.getElementById('stage-label');
+      const stageCode = document.getElementById('stage-code');
+      const toast = document.getElementById('toast');
+      let lang = 'en';
+      let theme = 'light';
+      let followsSystem = true;
+      const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      const store = {
+        get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
+      };
+      const t = (key) => I18N[lang][key];
+
+      /* ---------- Renderers (re-run on language change) ---------- */
+      function ratioBadge(pair) {
+        const r = contrast(pair.fg, pair.bg);
+        const shown = (Math.round(r * 100) / 100).toFixed(2);
+        const level = pair.ui ? t('uiBadge') : (r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : t('uiBadge'));
+        return { shown, level };
+      }
+      function renderTokens() {
+        ['light', 'dark'].forEach((mode) => {
+          const host = document.getElementById('tokens-' + mode);
+          host.innerHTML = TOKENS[mode].map((p) => {
+            const { shown, level } = ratioBadge(p);
+            const glyph = p.ui ? '' : 'Aa';
+            const border = p.ui ? `border-color:${p.fg};border-width:3px;` : '';
+            return `<div class="token-row">
+              <span class="specimen" aria-hidden="true" style="background:${p.bg};color:${p.fg};${border}">${glyph}</span>
+              <span class="token-meta"><strong>${p.name[lang]}</strong><code>${p.fg} / ${p.bg}</code></span>
+              <span class="ratio"><strong>${shown}:1</strong><span class="level">${level}</span></span>
+            </div>`;
+          }).join('');
+        });
+      }
+      function renderModes() {
+        const overview = document.getElementById('overview-grid');
+        overview.innerHTML = MODES.map((m) => `
+          <article class="overview-card">
+            <a href="#mode-${m.key}">${m.name[lang]}</a>
+            <div class="overview-strip" aria-hidden="true">${m.colors.map(([c]) => `<span style="background:${c}"></span>`).join('')}</div>
+          </article>`).join('');
+
+        const host = document.getElementById('mode-sections');
+        host.innerHTML = MODES.map((m) => `
+          <section class="mode-section" id="mode-${m.key}" aria-labelledby="mode-${m.key}-h">
+            <div class="mode-head">
+              <h3 id="mode-${m.key}-h">${m.name[lang]}</h3>
+              <p>${m.desc[lang]}</p>
+            </div>
+            <div class="mode-layout">
+              <div class="preview" style="--p1:${m.panel[0]};--p2:${m.panel[1]};--preview-ink:${m.pink};--preview-ink-2:${m.pmuted};--mode-ink:${m.ink}">
+                <div class="preview-main">
+                  <p class="preview-kicker">${m.name[lang]}</p>
+                  <p class="preview-title">${t('previewTitle')}</p>
+                  <p class="preview-copy">${t('previewCopy')}</p>
+                  <div class="preview-actions">
+                    <button class="p-primary" type="button">${t('previewA')}</button>
+                    <button class="p-secondary" type="button">${t('previewB')}</button>
+                  </div>
+                </div>
+                <div class="preview-side">
+                  <div class="mini-card">
+                    <span class="mini-label">${t('miniA')}</span>
+                    <p class="metric" style="color:${m.ink}">94%</p>
+                    <div class="progress" aria-hidden="true"><span></span></div>
+                  </div>
+                  <div class="mini-card">
+                    <span class="mini-label">${t('miniB')}</span>
+                    <div class="day-list" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<span style="--i:${i};background:${m.ink}"></span>`).join('')}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="swatches">${m.colors.map(([c, role]) => `
+                <article class="swatch-card">
+                  <span class="swatch-color" style="background:${c}" aria-hidden="true"></span>
+                  <span class="swatch-meta"><strong>${ROLES[role][lang]}</strong><code>${c}</code></span>
+                  <button class="copy-button" type="button" data-copy="${c}" aria-label="${t('copyAria').replace('{hex}', c)}">${t('copy')}</button>
+                </article>`).join('')}
+              </div>
+            </div>
+          </section>`).join('');
+      }
+      function renderSignals() {
+        const host = document.getElementById('signal-grid');
+        host.innerHTML = SIGNALS.map((s) => {
+          const rows = [
+            { hex: s.light, bg: '#FFFFFF', label: { en: 'On light surfaces', ar: 'على الأسطح الفاتحة' } },
+            { hex: s.dark, bg: '#1A1A1A', label: { en: 'On Onyx surfaces', ar: 'على أسطح الأونيكس' } }
+          ].map((r) => {
+            const ratio = contrast(r.hex, r.bg);
+            const shown = (Math.round(ratio * 100) / 100).toFixed(2);
+            const level = ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : t('uiBadge');
+            return `<div class="signal-row">
+              <span class="signal-chip" aria-hidden="true" style="background:${r.bg};color:${r.hex}">Aa</span>
+              <span class="signal-meta"><strong>${r.label[lang]}</strong><code>${r.hex} / ${r.bg}</code></span>
+              <span class="signal-ratio">${shown}:1<span class="level">${level}</span></span>
+            </div>`;
+          }).join('');
+          return `<article class="signal-card">
+            <h3>${s.name[lang]}</h3>
+            <p>${s.role[lang]}</p>
+            <div class="signal-pair">${rows}</div>
+          </article>`;
+        }).join('');
+      }
+      function renderOffice() {
+        document.getElementById('office-list').innerHTML = OFFICE.map((s) => `
+          <div class="office-row">
+            <span class="office-swatch" style="background:${s.hex}" aria-hidden="true"></span>
+            <div><strong>${s.slot}</strong><small>${s.use[lang]}</small><code>${s.hex}</code></div>
+          </div>`).join('');
+      }
+
+      /* ---------- Language ---------- */
+      function applyLang(next, { announce = true, save = false } = {}) {
+        lang = next;
+        html.lang = lang;
+        html.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.title = t('docTitle');
+        document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+        document.querySelectorAll('[data-lang-choice]').forEach((btn) => {
+          const active = btn.dataset.langChoice === lang;
+          btn.setAttribute('aria-checked', String(active));
+          btn.tabIndex = active ? 0 : -1;
+        });
+        renderTokens();
+        renderSignals();
+        renderModes();
+        renderOffice();
+        stageLabel.textContent = theme === 'light' ? t('stageLight') : t('stageDark');
+        if (save) store.set('sovereign-lang', lang);
+        if (announce) live.textContent = t('statusLang');
+      }
+
+      /* ---------- Theme ---------- */
+      function applyTheme(next, { announce = true, save = false } = {}) {
+        theme = next;
+        html.dataset.theme = theme;
+        document.querySelectorAll('[data-theme-choice]').forEach((btn) => {
+          const active = btn.dataset.themeChoice === theme;
+          btn.setAttribute('aria-checked', String(active));
+          btn.tabIndex = active ? 0 : -1;
+        });
+        stageLabel.textContent = theme === 'light' ? t('stageLight') : t('stageDark');
+        stageCode.textContent = theme === 'light' ? '#FFFFFF' : '#2E2E2E';
+        themeMeta.setAttribute('content', theme === 'light' ? '#FFFFFF' : '#1A1A1A');
+        if (save) { followsSystem = false; store.set('sovereign-surface', theme); }
+        if (announce) live.textContent = theme === 'light' ? t('statusThemeLight') : t('statusThemeDark');
+      }
+
+      /* ---------- Radiogroup wiring (click + arrows + Home/End) ---------- */
+      function wireGroup(groupId, attr, onPick) {
+        const group = document.getElementById(groupId);
+        const radios = [...group.querySelectorAll('[' + attr + ']')];
+        radios.forEach((radio, index) => {
+          radio.addEventListener('click', () => onPick(radio.getAttribute(attr), false));
+          radio.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            let next = index;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % radios.length;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + radios.length) % radios.length;
+            if (event.key === 'Home') next = 0;
+            if (event.key === 'End') next = radios.length - 1;
+            onPick(radios[next].getAttribute(attr), true);
+            radios[next].focus();
+          });
+        });
+      }
+      wireGroup('lang-group', 'data-lang-choice', (value) => applyLang(value, { save: true }));
+      wireGroup('theme-group', 'data-theme-choice', (value) => applyTheme(value, { save: true }));
+
+      /* ---------- Copy to clipboard ---------- */
+      document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-copy]');
+        if (!button) return;
+        const value = button.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(value);
+        } catch (_) {
+          const area = document.createElement('textarea');
+          area.value = value;
+          document.body.append(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
+        }
+        toast.textContent = value + ' — ' + t('copied');
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 1400);
+      });
+
+      /* ---------- Boot ---------- */
+      const savedLang = store.get('sovereign-lang');
+      const savedTheme = store.get('sovereign-surface');
+      applyLang(savedLang === 'ar' || savedLang === 'en' ? savedLang : 'en', { announce: false });
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        followsSystem = false;
+        applyTheme(savedTheme, { announce: false });
+      } else {
+        applyTheme(media && media.matches ? 'dark' : 'light', { announce: false });
+      }
+      if (media && typeof media.addEventListener === 'function') {
+        media.addEventListener('change', (event) => {
+          if (followsSystem) applyTheme(event.matches ? 'dark' : 'light');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -126,14 +126,11 @@ describe('TokenStorage (native)', () => {
     expect(localStorage.length).toBe(0)
   })
 
-  it('account deletion uses the same secure credential cleanup', () => {
-    const source = readFileSync(
-      resolve('src/views/Modals/Inputs/UserDeletionModal.jsx'),
-      'utf8',
-    )
-    expect(source).toContain(
-      "import { clearAllTokens } from '../../../utils/TokenStorage'",
-    )
+  it('sign-out uses the shared secure credential cleanup', () => {
+    // Approved-UI runtime clears credentials only through the shared
+    // TokenStorage.clearAllTokens path (auth sign-out / session expiry).
+    const source = readFileSync(resolve('src/hooks/useAuth.ts'), 'utf8')
+    expect(source).toContain('clearAllTokens')
     expect(source).toContain('await clearAllTokens()')
     expect(source).not.toContain("localStorage.removeItem('ca_token')")
   })
