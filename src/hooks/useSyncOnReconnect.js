@@ -3,7 +3,6 @@ import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 
-import { commandQueue } from '../utils/CommandQueue'
 import { isOAuthExchangeInProgress } from '../utils/OAuthExchangeState'
 import { offlineDB } from '../utils/OfflineDB'
 import { isOfflineFeatureEnabled } from '../utils/OfflineFeatureToggle'
@@ -11,7 +10,6 @@ import { syncEngine } from '../utils/SyncEngine'
 import { getAccessToken } from '../utils/TokenStorage'
 import { networkManager } from './NetworkManager'
 
-export const PENDING_POLL_MS = 30_000 // retry pending commands every 30s
 export const SERVER_PROBE_MS = 15_000 // probe server when marked unreachable but device has network
 const CACHE_REFRESH_MS = 5 * 60_000 // refresh IDB cache every 5 min while online
 
@@ -20,7 +18,6 @@ export function useSyncOnReconnect() {
   const initialized = useRef(false)
 
   useEffect(() => {
-    let pendingPollInterval
     let cacheRefreshInterval
     let serverProbeInterval
     let resumeListener
@@ -70,20 +67,12 @@ export function useSyncOnReconnect() {
         )
       }
 
-      // 4. Retry pending commands every 30s (catches backend restart)
-      pendingPollInterval = setInterval(async () => {
-        const pending = await commandQueue.getPending()
-        if (pending.length > 0) {
-          runSync()
-        }
-      }, PENDING_POLL_MS)
-
-      // 5. Keep IDB cache fresh every 5 min while online (so offline reads are current)
+      // 4. Keep IDB cache fresh every 5 min while online (so offline reads are current)
       cacheRefreshInterval = setInterval(() => {
         runSync()
       }, CACHE_REFRESH_MS)
 
-      // 6. Probe server every 15s when server is unreachable but device has network
+      // 5. Probe server every 15s when server is unreachable but device has network
       serverProbeInterval = setInterval(async () => {
         if (!networkManager.isOnline && networkManager.deviceOnline) {
           await runSync()
@@ -121,10 +110,6 @@ export function useSyncOnReconnect() {
     init()
 
     return () => {
-      if (pendingPollInterval) {
-        clearInterval(pendingPollInterval)
-      }
-
       if (cacheRefreshInterval) {
         clearInterval(cacheRefreshInterval)
       }

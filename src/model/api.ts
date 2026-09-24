@@ -115,7 +115,7 @@ export type ApiRoutineItem = {
   assignedTo?: number | null
   assignStrategy?: string
   points?: number | null
-  requiresApproval?: boolean
+  requireApproval?: boolean
 }
 
 export type ApiRoutinePack = {
@@ -166,6 +166,8 @@ export type ApiGoal = {
   createdBy?: number
   createdAt?: string
   updatedAt?: string
+  progress?: number
+  percent?: number
 }
 
 export type ApiReward = {
@@ -263,6 +265,8 @@ export type ApiThing = {
   category?: { id: number; name: string } | null
   createdAt?: string
   isActive?: boolean
+  type?: 'toggle' | 'numeric' | 'text'
+  state?: string
 }
 
 export type ApiNotification = {
