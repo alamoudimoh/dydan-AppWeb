@@ -1,17 +1,13 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
-import DateField from '../components/DateField'
 import IconPicker from '../components/IconPicker'
-import MemberPicker from '../components/MemberPicker'
 import ThemeSelect from '../components/ThemeSelect'
 import type { Project } from '../data'
+import { useProjectMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
 type EditorMode = 'new' | 'modify' | null
-const makeId = () =>
-  globalThis.crypto?.randomUUID?.() ??
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
 
 export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
   const {
@@ -20,21 +16,19 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
     projects: liveProjects,
     tasks,
   } = useLiveData()
-  const [projectItems, setProjectItems] = useState<Project[]>(liveProjects)
+  const projectMutations = useProjectMutations()
   const [selected, setSelected] = useState<string | null>(null)
   const [editorMode, setEditorMode] = useState<EditorMode>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftName, setDraftName] = useState('')
   const [draftDescription, setDraftDescription] = useState('')
-  const [draftOwner, setDraftOwner] = useState(currentUser?.id ?? '')
-  const [draftDueDate, setDraftDueDate] = useState('')
   const [draftColor, setDraftColor] = useState('var(--project-1)')
   const [draftIcon, setDraftIcon] = useState('📁')
 
   const isChild = ctx.persona === 'child'
   const projects = isChild
-    ? projectItems.filter(p => p.owner === (currentUser?.id ?? 'none'))
-    : projectItems
+    ? liveProjects.filter(p => p.owner === (currentUser?.id ?? 'none'))
+    : liveProjects
   const selectedProject = selected
     ? projects.find(p => p.id === selected)
     : null
@@ -53,8 +47,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
     setEditingId(null)
     setDraftName('')
     setDraftDescription('')
-    setDraftOwner(currentUser?.id ?? '')
-    setDraftDueDate('')
     setDraftColor('var(--project-1)')
     setDraftIcon('📁')
   }
@@ -64,8 +56,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
     setEditingId(project.id)
     setDraftName(project.name)
     setDraftDescription(project.description)
-    setDraftOwner(project.owner)
-    setDraftDueDate(project.dueDate ?? '')
     setDraftColor(project.color)
     setDraftIcon(project.icon ?? '📁')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -78,59 +68,39 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
     }
 
     if (editorMode === 'new') {
-      const id = `proj-${makeId()}`
-      setProjectItems(prev => [
-        ...prev,
+      projectMutations.createProject.mutate(
         {
-          id,
           name: draftName.trim(),
           description: draftDescription.trim(),
           color: draftColor,
           icon: draftIcon,
-          progress: 0,
-          taskIds: [],
-          owner: draftOwner,
-          dueDate: draftDueDate || undefined,
-          status: 'active',
         },
-      ])
-      setSelected(id)
-      ctx.showToast('Project created')
-    } else if (editorMode === 'modify' && editingId) {
-      setProjectItems(prev =>
-        prev.map(p =>
-          p.id === editingId
-            ? {
-                ...p,
-                name: draftName.trim(),
-                description: draftDescription.trim(),
-                owner: draftOwner,
-                dueDate: draftDueDate || undefined,
-                color: draftColor,
-                icon: draftIcon,
-              }
-            : p,
-        ),
+        {
+          onError: error => ctx.showToast(error.message),
+          onSuccess: project => {
+            setSelected(String(project.id))
+            ctx.showToast('Project created')
+          },
+        },
       )
-      ctx.showToast('Project modified')
+    } else if (editorMode === 'modify' && editingId) {
+      projectMutations.updateProject.mutate(
+        {
+          id: Number(editingId),
+          name: draftName.trim(),
+          description: draftDescription.trim(),
+          color: draftColor,
+          icon: draftIcon,
+        },
+        {
+          onError: error => ctx.showToast(error.message),
+          onSuccess: () => ctx.showToast('Project modified'),
+        },
+      )
     }
 
     setEditorMode(null)
     setEditingId(null)
-  }
-
-  const deactivateProject = (project: Project) => {
-    setProjectItems(prev =>
-      prev.map(p => (p.id === project.id ? { ...p, status: 'paused' } : p)),
-    )
-    ctx.showToast('Project deactivated')
-  }
-
-  const reactivateProject = (project: Project) => {
-    setProjectItems(prev =>
-      prev.map(p => (p.id === project.id ? { ...p, status: 'active' } : p)),
-    )
-    ctx.showToast('Project activated')
   }
 
   const deleteProject = (project: Project) => {
@@ -140,9 +110,13 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
       confirmLabel: 'Delete',
       danger: true,
       onConfirm: () => {
-        setProjectItems(prev => prev.filter(p => p.id !== project.id))
-        setSelected(null)
-        ctx.showToast('Project deleted')
+        projectMutations.deleteProject.mutate(Number(project.id), {
+          onError: error => ctx.showToast(error.message),
+          onSuccess: () => {
+            setSelected(null)
+            ctx.showToast('Project deleted')
+          },
+        })
       },
     })
   }
@@ -227,27 +201,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                     value={draftIcon}
                     onChange={setDraftIcon}
                     label='Project icon'
-                  />
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <span className='section-label' style={{ padding: 0 }}>
-                    OWNER
-                  </span>
-                  <MemberPicker
-                    value={draftOwner}
-                    onChange={setDraftOwner}
-                    label='Project owner'
-                  />
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <span className='section-label' style={{ padding: 0 }}>
-                    DUE DATE (OPTIONAL)
-                  </span>
-                  <DateField
-                    value={draftDueDate}
-                    onChange={setDraftDueDate}
-                    label='Project due date'
-                    allowClear
                   />
                 </div>
                 <div className='flex flex-col gap-1.5'>
@@ -441,21 +394,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                 >
                   Modify
                 </button>
-                {selectedProject.status === 'paused' ? (
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => reactivateProject(selectedProject)}
-                  >
-                    Activate
-                  </button>
-                ) : (
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => deactivateProject(selectedProject)}
-                  >
-                    Deactivate
-                  </button>
-                )}
                 <button
                   className='btn btn-ghost btn-sm'
                   style={{ color: 'var(--sig-over)' }}

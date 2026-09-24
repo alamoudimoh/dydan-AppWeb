@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
-import IconPicker from '../components/IconPicker'
-import type { ShoppingItem, ShoppingList } from '../data'
 import { useShoppingMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
@@ -13,16 +11,9 @@ export default function ShoppingScreen({
   ctx: AppCtx
   isSolo: boolean
 }) {
-  const { currentUser, memberById, shoppingLists } = useLiveData()
+  const { memberById, shoppingLists } = useLiveData()
   const shoppingMutations = useShoppingMutations()
-  const [lists, setLists] = useState<ShoppingList[]>([])
-  const seededRef = useRef(false)
-  useEffect(() => {
-    if (!seededRef.current && shoppingLists.length) {
-      seededRef.current = true
-      setLists(shoppingLists)
-    }
-  }, [shoppingLists])
+  const lists = shoppingLists
   const [activeListId, setActiveListId] = useState<string | null>(null)
   const activeId = activeListId ?? lists[0]?.id ?? null
   const [newItem, setNewItem] = useState('')
@@ -31,13 +22,10 @@ export default function ShoppingScreen({
 
   const [isCreatingList, setIsCreatingList] = useState(false)
   const [newListName, setNewListName] = useState('')
-  const [newListEmoji, setNewListEmoji] = useState('🛒')
   const [newListShared, setNewListShared] = useState(false)
 
   const [isEditingList, setIsEditingList] = useState(false)
   const [editListName, setEditListName] = useState('')
-  const [editListEmoji, setEditListEmoji] = useState('')
-  const [editListShared, setEditListShared] = useState(false)
 
   const visibleLists = isSolo ? lists.filter(l => !l.isShared) : lists
   const currentList =
@@ -45,39 +33,27 @@ export default function ShoppingScreen({
 
   const handleCreateList = () => {
     if (!newListName.trim()) return
-    const newList: ShoppingList = {
-      id: `sl-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: newListName.trim(),
-      emoji: newListEmoji,
-      ownerId: currentUser?.id ?? '',
-      isShared: !isSolo && newListShared,
-      items: [],
-    }
-    setLists(prev => [...prev, newList])
-    setActiveListId(newList.id)
-    setIsCreatingList(false)
-    setNewListName('')
-    setNewListEmoji('🛒')
-    ctx.showToast(`List "${newList.name}" created`)
-    shoppingMutations.createList.mutate(newList.name)
+    shoppingMutations.createList.mutate(
+      {
+        name: newListName.trim(),
+        scope: !isSolo && newListShared ? 'circle' : 'personal',
+      },
+      {
+        onError: error => ctx.showToast(error.message),
+        onSuccess: list => {
+          setActiveListId(String((list as { id: number }).id))
+          setIsCreatingList(false)
+          setNewListName('')
+          ctx.showToast(`List "${newListName.trim()}" created`)
+        },
+      },
+    )
   }
 
   const toggleItem = (listId: string, itemId: string) => {
-    setLists(prev =>
-      prev.map(l =>
-        l.id !== listId
-          ? l
-          : {
-              ...l,
-              items: l.items.map(i =>
-                i.id !== itemId ? i : { ...i, done: !i.done },
-              ),
-            },
-      ),
-    )
     const nlistId = Number(listId)
     if (!Number.isFinite(nlistId)) {
-      ctx.showToast('This list is not synced to the server yet')
+      ctx.showToast('Invalid shopping list')
       return
     }
     const item = lists
@@ -86,88 +62,70 @@ export default function ShoppingScreen({
     if (!item) return
     const nitemId = Number(itemId)
     if (!Number.isFinite(nitemId)) {
-      ctx.showToast('This item is not synced to the server yet')
+      ctx.showToast('Invalid shopping item')
       return
     }
-    shoppingMutations.toggleItem.mutate({
-      listId: nlistId,
-      itemId: nitemId,
-      checked: !item.done,
-    })
+    shoppingMutations.toggleItem.mutate(
+      { listId: nlistId, itemId: nitemId, checked: !item.done },
+      { onError: error => ctx.showToast(error.message) },
+    )
   }
 
   const addItem = (listId: string) => {
     if (!newItem.trim()) return
-    const item: ShoppingItem = {
-      id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      text: newItem.trim(),
-      done: false,
-      addedById: currentUser?.id ?? '',
-    }
-    setLists(prev =>
-      prev.map(l =>
-        l.id !== listId ? l : { ...l, items: [...l.items, item] },
-      ),
-    )
-    setNewItem('')
-    ctx.showToast(`"${item.text}" added`)
     const nlistId = Number(listId)
     if (!Number.isFinite(nlistId)) {
-      ctx.showToast('This list is not synced to the server yet')
+      ctx.showToast('Invalid shopping list')
       return
     }
-    shoppingMutations.addItem.mutate({
-      listId: nlistId,
-      name: item.text,
-      quantity: item.quantity,
-    })
+    shoppingMutations.addItem.mutate(
+      {
+        listId: nlistId,
+        name: newItem.trim(),
+      },
+      {
+        onError: error => ctx.showToast(error.message),
+        onSuccess: () => {
+          ctx.showToast(`"${newItem.trim()}" added`)
+          setNewItem('')
+        },
+      },
+    )
   }
 
   const removeItem = (listId: string, itemId: string) => {
-    setLists(prev =>
-      prev.map(l =>
-        l.id !== listId
-          ? l
-          : { ...l, items: l.items.filter(i => i.id !== itemId) },
-      ),
-    )
     const nlistId = Number(listId)
     if (!Number.isFinite(nlistId)) {
-      ctx.showToast('This list is not synced to the server yet')
+      ctx.showToast('Invalid shopping list')
       return
     }
     const nitemId = Number(itemId)
     if (!Number.isFinite(nitemId)) {
-      ctx.showToast('This item is not synced to the server yet')
+      ctx.showToast('Invalid shopping item')
       return
     }
-    shoppingMutations.removeItem.mutate({ listId: nlistId, itemId: nitemId })
+    shoppingMutations.removeItem.mutate(
+      { listId: nlistId, itemId: nitemId },
+      { onError: error => ctx.showToast(error.message) },
+    )
   }
 
   const clearDone = (listId: string) => {
-    setLists(prev =>
-      prev.map(l =>
-        l.id !== listId ? l : { ...l, items: l.items.filter(i => !i.done) },
-      ),
-    )
-    ctx.showToast('Completed items cleared')
+    shoppingMutations.clearCompleted.mutate(Number(listId), {
+      onError: error => ctx.showToast(error.message),
+      onSuccess: () => ctx.showToast('Completed items cleared'),
+    })
   }
 
   const saveEdit = (listId: string, itemId: string) => {
     if (!editText.trim()) return
-    setLists(prev =>
-      prev.map(l =>
-        l.id !== listId
-          ? l
-          : {
-              ...l,
-              items: l.items.map(i =>
-                i.id !== itemId ? i : { ...i, text: editText.trim() },
-              ),
-            },
-      ),
+    shoppingMutations.updateItem.mutate(
+      { listId: Number(listId), itemId: Number(itemId), name: editText.trim() },
+      {
+        onError: error => ctx.showToast(error.message),
+        onSuccess: () => setEditingId(null),
+      },
     )
-    setEditingId(null)
   }
 
   const todo = currentList?.items.filter(i => !i.done) ?? []
@@ -268,19 +226,6 @@ export default function ShoppingScreen({
                 </div>
                 <div className='flex flex-col gap-4'>
                   <div className='flex gap-3'>
-                    <div
-                      className='shopping-icon-field flex flex-col gap-1'
-                      style={{ width: 108, flexShrink: 0 }}
-                    >
-                      <span className='section-label' style={{ padding: 0 }}>
-                        ICON
-                      </span>
-                      <IconPicker
-                        value={newListEmoji}
-                        onChange={setNewListEmoji}
-                        label='Shopping list icon'
-                      />
-                    </div>
                     <div className='flex flex-col gap-1 flex-1'>
                       <label className='section-label' style={{ padding: 0 }}>
                         LIST NAME
@@ -352,19 +297,6 @@ export default function ShoppingScreen({
                 </div>
                 <div className='flex flex-col gap-4'>
                   <div className='flex gap-3'>
-                    <div
-                      className='shopping-icon-field flex flex-col gap-1'
-                      style={{ width: 108, flexShrink: 0 }}
-                    >
-                      <span className='section-label' style={{ padding: 0 }}>
-                        ICON
-                      </span>
-                      <IconPicker
-                        value={editListEmoji}
-                        onChange={setEditListEmoji}
-                        label='Shopping list icon'
-                      />
-                    </div>
                     <div className='flex flex-col gap-1 flex-1'>
                       <label className='section-label' style={{ padding: 0 }}>
                         LIST NAME
@@ -377,26 +309,6 @@ export default function ShoppingScreen({
                       />
                     </div>
                   </div>
-                  {!isSolo && (
-                    <label className='flex items-center gap-2 cursor-pointer mt-1'>
-                      <input
-                        type='checkbox'
-                        checked={editListShared}
-                        onChange={e => setEditListShared(e.target.checked)}
-                        style={{
-                          accentColor: 'var(--brand)',
-                          width: 16,
-                          height: 16,
-                        }}
-                      />
-                      <span
-                        className='text-primary font-medium'
-                        style={{ fontSize: 14 }}
-                      >
-                        Share with team
-                      </span>
-                    </label>
-                  )}
                   <div
                     className='flex items-center justify-between mt-2 pt-4 border-t border-line'
                     style={{ borderColor: 'var(--line)' }}
@@ -410,14 +322,17 @@ export default function ShoppingScreen({
                           confirmLabel: 'Delete',
                           danger: true,
                           onConfirm: () => {
-                            const newLists = lists.filter(
-                              l => l.id !== currentList.id,
+                            shoppingMutations.deleteList.mutate(
+                              Number(currentList.id),
+                              {
+                                onError: error => ctx.showToast(error.message),
+                                onSuccess: () => {
+                                  setIsEditingList(false)
+                                  setActiveListId(null)
+                                  ctx.showToast('List deleted')
+                                },
+                              },
                             )
-                            setLists(newLists)
-                            setIsEditingList(false)
-                            if (!newLists.find(l => l.id === activeId))
-                              setActiveListId(newLists[0]?.id ?? null)
-                            ctx.showToast('List deleted')
                           },
                         })
                       }}
@@ -435,20 +350,19 @@ export default function ShoppingScreen({
                         className='btn btn-primary'
                         onClick={() => {
                           if (!editListName.trim()) return
-                          setLists(prev =>
-                            prev.map(l =>
-                              l.id === currentList.id
-                                ? {
-                                    ...l,
-                                    name: editListName.trim(),
-                                    emoji: editListEmoji,
-                                    isShared: !isSolo && editListShared,
-                                  }
-                                : l,
-                            ),
+                          shoppingMutations.updateList.mutate(
+                            {
+                              id: Number(currentList.id),
+                              name: editListName.trim(),
+                            },
+                            {
+                              onError: error => ctx.showToast(error.message),
+                              onSuccess: () => {
+                                setIsEditingList(false)
+                                ctx.showToast('List updated')
+                              },
+                            },
                           )
-                          setIsEditingList(false)
-                          ctx.showToast('List updated')
                         }}
                         disabled={!editListName.trim()}
                       >
@@ -501,8 +415,6 @@ export default function ShoppingScreen({
                       className='btn btn-secondary btn-sm'
                       onClick={() => {
                         setEditListName(currentList.name)
-                        setEditListEmoji(currentList.emoji)
-                        setEditListShared(currentList.isShared || false)
                         setIsEditingList(true)
                       }}
                     >
@@ -518,15 +430,16 @@ export default function ShoppingScreen({
                           confirmLabel: 'Delete',
                           danger: true,
                           onConfirm: () => {
-                            const remaining = lists.filter(
-                              l => l.id !== currentList.id,
+                            shoppingMutations.deleteList.mutate(
+                              Number(currentList.id),
+                              {
+                                onError: error => ctx.showToast(error.message),
+                                onSuccess: () => {
+                                  setActiveListId(null)
+                                  ctx.showToast('List deleted')
+                                },
+                              },
                             )
-                            setLists(remaining)
-                            setActiveListId(
-                              remaining.find(l => !isSolo || !l.isShared)?.id ??
-                                null,
-                            )
-                            ctx.showToast('List deleted')
                           },
                         })
                       }

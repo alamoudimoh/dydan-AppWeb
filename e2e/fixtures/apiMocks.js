@@ -502,6 +502,12 @@ export const apiMockContract = [
     response: () => json(listEnvelope),
   }),
   endpoint({
+    method: 'PUT',
+    path: /^\/api\/v1\/things\/\d+\/state$/,
+    query: url => url.searchParams.has('value'),
+    response: () => json({ res: { id: 1 } }),
+  }),
+  endpoint({
     method: 'GET',
     path: /^\/api\/v1\/things\/\d+\/history$/,
     query: url => noUnexpectedQuery(['offset'])(url) && hasQuery('offset')(url),
@@ -511,6 +517,12 @@ export const apiMockContract = [
     method: 'GET',
     path: /^\/api\/v1\/meters$/,
     response: () => json(list),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/meters\/\d+\/readings$/,
+    validate: requiresFields('reading'),
+    response: () => json({ res: { id: 1 } }, 201),
   }),
   endpoint({
     method: 'GET',
@@ -541,15 +553,73 @@ export const apiMockContract = [
     response: () => json(listEnvelope),
   }),
   endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/routines$/,
+    validate: requiresFields('name'),
+    response: () => json({ res: { id: 81 } }, 201),
+  }),
+  endpoint({
+    method: 'PUT',
+    path: /^\/api\/v1\/routines\/\d+$/,
+    validate: requiresFields('name'),
+    response: () => json({ res: { id: 81 } }),
+  }),
+  endpoint({
+    method: 'PATCH',
+    path: /^\/api\/v1\/routines\/\d+\/status$/,
+    validate: requiresFields('isActive'),
+    response: () => json({ res: { id: 81 } }),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/routines\/\d+\/items$/,
+    validate: requiresFields('name', 'frequencyType', 'frequency'),
+    response: () => json({ res: { id: 82 } }, 201),
+  }),
+  endpoint({
+    method: 'PUT',
+    path: /^\/api\/v1\/routines\/\d+\/items\/\d+$/,
+    validate: requiresFields('name', 'frequencyType', 'frequency'),
+    response: () => json({ res: { id: 82 } }),
+  }),
+  endpoint({
+    method: 'DELETE',
+    path: /^\/api\/v1\/routines\/\d+\/items\/\d+$/,
+    response: () => ({ status: 204 }),
+  }),
+  endpoint({
     method: 'GET',
     path: /^\/api\/v1\/rewards$/,
     query: noUnexpectedQuery(['includeArchived']),
     response: () => json(listEnvelope),
   }),
   endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/rewards$/,
+    validate: requiresFields('name', 'costPoints'),
+    response: () => json({ res: { id: 91 } }, 201),
+  }),
+  endpoint({
+    method: 'PUT',
+    path: /^\/api\/v1\/rewards\/\d+$/,
+    validate: requiresFields('name', 'costPoints'),
+    response: () => json({ res: { id: 91 } }),
+  }),
+  endpoint({
     method: 'GET',
     path: /^\/api\/v1\/rewards\/requests(?:\/mine)?$/,
     response: () => json(listEnvelope),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/rewards\/requests$/,
+    validate: requiresFields('rewardId'),
+    response: () => json({ res: { id: 92 } }, 201),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/rewards\/requests\/\d+\/(?:approve|reject|cancel)$/,
+    response: () => json({ res: { id: 92 } }),
   }),
   endpoint({
     method: 'GET',

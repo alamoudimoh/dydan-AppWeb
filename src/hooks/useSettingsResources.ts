@@ -6,6 +6,32 @@ import { getAccessToken } from '../utils/TokenStorage'
 
 export type ApiToken = { id: number; name: string; createdAt: string }
 export type CreatedApiToken = ApiToken & { token: string }
+
+export type EmailDeliveryStatus = {
+  configured: boolean
+  source: 'runtime' | 'environment' | 'none'
+  provider: 'smtp' | 'smtp2go'
+  fromEmail?: string
+  host?: string
+  port?: number
+  username?: string
+  appHost?: string
+  verificationTemplateId?: string
+  resetPasswordTemplateId?: string
+  secretConfigured: boolean
+}
+
+export type EmailDeliveryInput = {
+  provider: 'smtp' | 'smtp2go'
+  fromEmail: string
+  host: string
+  port: number
+  username: string
+  secret: string
+  appHost: string
+  verificationTemplateId: string
+  resetPasswordTemplateId: string
+}
 export type StorageUsage = { used: number; total: number }
 
 const tokenKey = ['user', 'api-tokens'] as const
@@ -19,6 +45,32 @@ export function useStorageUsage() {
     queryFn: () => parse<StorageUsage>(Fetcher.GetStorageUsage()),
     enabled: Boolean(getAccessToken()),
   })
+}
+
+export function useEmailDelivery() {
+  return useQuery({
+    queryKey: ['admin', 'email-delivery'],
+    queryFn: () => parse<EmailDeliveryStatus>(Fetcher.GetEmailDelivery()),
+  })
+}
+
+export function useEmailDeliveryMutations() {
+  const client = useQueryClient()
+  const invalidate = () =>
+    client.invalidateQueries({ queryKey: ['admin', 'email-delivery'] })
+  return {
+    save: useMutation({
+      mutationFn: (input: EmailDeliveryInput) =>
+        parse<EmailDeliveryStatus>(Fetcher.UpdateEmailDelivery(input)),
+      onSuccess: invalidate,
+    }),
+    test: useMutation({
+      mutationFn: (to: string) =>
+        parse<{ delivered: boolean; message: string }>(
+          Fetcher.TestEmailDelivery(to),
+        ),
+    }),
+  }
 }
 
 export function useApiTokens() {

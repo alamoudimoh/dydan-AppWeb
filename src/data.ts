@@ -109,6 +109,10 @@ export type Goal = {
   contributorIds?: string[]
   emoji: string
   color: string
+  metricType?: 'TASK_COMPLETIONS' | 'CATEGORY_COMPLETIONS' | 'POINTS_EARNED'
+  startDate?: string
+  endDate?: string
+  status?: string
 }
 
 export type Reward = {
@@ -117,6 +121,7 @@ export type Reward = {
   description?: string
   pointsCost: number
   icon: string
+  isActive?: boolean
   forMemberId?: string // Backward compatibility with existing prototype rewards
   forMemberIds?: string[] // Empty or absent (without forMemberId) means everyone
 }

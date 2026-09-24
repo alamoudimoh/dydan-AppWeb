@@ -134,6 +134,65 @@ test('strict mock validates mutation payloads and supported public auth flows', 
   assert.equal(cookieRefresh.status, 200)
 })
 
+test('routine and reward actions use persisted API contracts, not local success paths', async () => {
+  const routine = await callMock({
+    method: 'POST',
+    path: '/api/v1/routines',
+    body: JSON.stringify({ name: 'Morning', description: '' }),
+  })
+  const item = await callMock({
+    method: 'POST',
+    path: '/api/v1/routines/81/items',
+    body: JSON.stringify({
+      name: 'Brush teeth',
+      frequencyType: 'daily',
+      frequency: 1,
+    }),
+  })
+  const active = await callMock({
+    method: 'PATCH',
+    path: '/api/v1/routines/81/status',
+    body: JSON.stringify({ isActive: false }),
+  })
+  const reward = await callMock({
+    method: 'POST',
+    path: '/api/v1/rewards',
+    body: JSON.stringify({ name: 'Movie', costPoints: 100 }),
+  })
+  const request = await callMock({
+    method: 'POST',
+    path: '/api/v1/rewards/requests',
+    body: JSON.stringify({ rewardId: 91 }),
+  })
+
+  assert.equal(routine.status, 201)
+  assert.equal(item.status, 201)
+  assert.equal(active.status, 200)
+  assert.equal(reward.status, 201)
+  assert.equal(request.status, 201)
+})
+
+test('maintenance actions are limited to server-backed completion, readings, and thing state', async () => {
+  const completed = await callMock({
+    method: 'POST',
+    path: '/api/v1/chores/42/do',
+    body: JSON.stringify({}),
+  })
+  const reading = await callMock({
+    method: 'POST',
+    path: '/api/v1/meters/7/readings',
+    body: JSON.stringify({ reading: 42 }),
+  })
+  const thing = await callMock({
+    method: 'PUT',
+    path: '/api/v1/things/8/state?value=on',
+  })
+
+  assert.equal(completed.status, 200)
+  assert.equal(reading.status, 201)
+  assert.equal(thing.status, 200)
+})
+
 test('notifications list accepts the query-less contract the runtime uses', async () => {
   const withoutQuery = await callMock({ path: '/api/v1/notifications' })
   const withLimit = await callMock({ path: '/api/v1/notifications?limit=10' })

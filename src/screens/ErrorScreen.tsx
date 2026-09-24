@@ -5,8 +5,8 @@ import { useLiveData } from '../model/liveData'
 
 export default function ErrorScreen({ ctx }: { ctx: AppCtx }) {
   const { currentUser } = useLiveData()
-  // Sample report body rendered for the "preview" panel; the identity fields
-  // reflect the signed-in user instead of a fixed demo account.
+  // This is a local diagnostic preview only. The deployment does not expose an
+  // error-reporting endpoint, so the screen must never claim to have sent it.
   const ERROR_REPORT = `dydan Error Report
 -------------------
 Timestamp: 2026-08-15T09:42:11.312Z
@@ -22,14 +22,11 @@ Message: Optimistic update conflict — remote state was modified
           between local update and push.
 
 Stack trace:
-  at SyncEngine.push (sync.ts:214)
-  at TaskStore.complete (tasks.ts:88)
-  at TaskRow.handleCheck (TaskRow.tsx:52)
-  at onClick (TaskRow.tsx:61)
+  Error details are unavailable in this view.
 
 Network: online
 Last sync: 2026-08-15T09:41:58.021Z
-Pending writes: 1
+Pending writes: unavailable
 
 Did we capture anything sensitive?
 No passwords, payment data, or message content is included.
@@ -38,39 +35,11 @@ The report contains task IDs and a partial username.`
   const [showDetails, setShowDetails] = useState(false)
   const [showPayload, setShowPayload] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [reported, setReported] = useState(false)
 
   const copyReport = () => {
     navigator.clipboard.writeText(ERROR_REPORT).catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const submitReport = () => {
-    setReported(true)
-    ctx.showToast('Problem report sent — thank you!')
-    setTimeout(() => ctx.navigate('home'), 2000)
-  }
-
-  if (reported) {
-    return (
-      <div
-        className='flex flex-col items-center justify-center'
-        style={{ minHeight: 400, padding: 40 }}
-      >
-        <div style={{ fontSize: 56 }}>✅</div>
-        <div className='font-bold text-primary mt-4' style={{ fontSize: 20 }}>
-          Report sent — thank you!
-        </div>
-        <div
-          className='text-muted mt-2'
-          style={{ fontSize: 14, textAlign: 'center', maxWidth: 360 }}
-        >
-          We review every report and use them to improve dydan. Returning you
-          home now.
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -136,7 +105,7 @@ The report contains task IDs and a partial username.`
           <button
             className='btn btn-primary'
             style={{ justifyContent: 'center' }}
-            onClick={() => ctx.navigate('home')}
+            onClick={() => window.location.reload()}
           >
             <Icon name='refresh' size={16} />
             Retry
@@ -191,8 +160,9 @@ The report contains task IDs and a partial username.`
                 className='text-muted'
                 style={{ fontSize: 13, lineHeight: 1.6 }}
               >
-                Sending a report helps us fix this faster. The report contains
-                diagnostic details — no passwords or personal messages.
+                Automatic error reporting is not configured on this server. You
+                can copy these diagnostic details to share with your
+                administrator. No passwords or personal messages are included.
               </div>
 
               <button
@@ -239,12 +209,6 @@ The report contains task IDs and a partial username.`
                 <button
                   className='btn btn-primary flex-1'
                   style={{ justifyContent: 'center' }}
-                  onClick={submitReport}
-                >
-                  Send report
-                </button>
-                <button
-                  className='btn btn-secondary'
                   onClick={copyReport}
                   title='Copy to clipboard'
                 >
