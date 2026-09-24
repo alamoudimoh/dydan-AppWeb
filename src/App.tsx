@@ -9,6 +9,10 @@ import {
   useNavigate,
 } from 'react-router-dom'
 
+import {
+  registerCapacitorListeners,
+  registerPushNotifications,
+} from './CapacitorListener'
 import ConfirmDialog from './components/ConfirmDialog'
 import CreateTaskModal from './components/CreateTaskModal'
 import TaskDetailModal from './components/TaskDetailModal'
@@ -24,6 +28,9 @@ import {
 import type { Task } from './data'
 import { useAuth } from './hooks/useAuth'
 import { useTaskMutations } from './hooks/useHousehold'
+import { useRealtimeSync } from './hooks/useRealtimeSync'
+import { useStatusBar } from './hooks/useStatusBar'
+import { useSyncOnReconnect } from './hooks/useSyncOnReconnect'
 import { useLiveData } from './model/liveData'
 import ActivityScreen from './screens/ActivityScreen'
 import AllTasksScreen from './screens/AllTasksScreen'
@@ -108,9 +115,6 @@ export type AppCtx = {
   goToOnboarding: () => void
   triggerSessionExpiry: () => void
   showConfirm: (config: ConfirmDialogConfig) => void
-  pendingInvite: string | null
-  inviteMember: (email: string) => void
-  acceptInvite: () => void
   sidebarCollapsed: boolean
   toggleSidebar: () => void
   setSidebarCollapsed: (v: boolean) => void
@@ -637,6 +641,8 @@ function SplashScreen({ theme }: { theme: Theme }) {
 export default function App() {
   const routerNav = useNavigate()
   const location = useLocation()
+  useStatusBar()
+  useSyncOnReconnect()
 
   const { brand, setBrand } = useProductBrand()
   const { setView, view } = useProductView()
@@ -656,6 +662,7 @@ export default function App() {
     signOut: realSignOut,
     triggerSessionExpiry: realSessionExpiry,
   } = useAuth()
+  useRealtimeSync(isAuthenticated)
 
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [taskDetail, setTaskDetail] = useState<Task | null>(null)
@@ -664,7 +671,6 @@ export default function App() {
   const [toasts, setToasts] = useState<{ id: string; msg: string }[]>([])
   const [confirmDialog, setConfirmDialog] =
     useState<ConfirmDialogConfig | null>(null)
-  const [pendingInvite, setPendingInvite] = useState<string | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
@@ -700,6 +706,20 @@ export default function App() {
     window.addEventListener('keydown', onShortcut)
     return () => window.removeEventListener('keydown', onShortcut)
   }, [routerNav])
+
+  useEffect(() => {
+    registerCapacitorListeners(routerNav)
+    void registerPushNotifications()
+  }, [routerNav])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (screen !== 'all-tasks') return
+    if (params.get('create') === '1') setShowCreateTask(true)
+    const taskID = params.get('task')
+    const task = taskID ? tasks.find(item => item.id === taskID) : undefined
+    if (task) setTaskDetail(task)
+  }, [location.search, screen, tasks])
 
   const showToast = useCallback((msg: string) => {
     const id = Date.now().toString() + Math.random()
@@ -776,14 +796,6 @@ export default function App() {
         realSessionExpiry()
       },
       showConfirm: (c: ConfirmDialogConfig) => setConfirmDialog(c),
-      pendingInvite,
-      inviteMember: (_email: string) => {
-        showToast('Invite link copied')
-      },
-      acceptInvite: () => {
-        setPendingInvite(null)
-        showToast('Invite accepted')
-      },
       sidebarCollapsed,
       toggleSidebar: () => setSidebarCollapsed(v => !v),
       setSidebarCollapsed,
@@ -796,7 +808,6 @@ export default function App() {
       isRTL,
       taskDetail,
       showCreateTask,
-      pendingInvite,
       sidebarCollapsed,
       routerNav,
       setViewCb,

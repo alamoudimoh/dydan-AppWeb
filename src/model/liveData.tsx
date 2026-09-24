@@ -122,7 +122,15 @@ function toMembers(
 ): Member[] {
   const sorted = [...circleMembers].sort((a, b) => a.userId - b.userId)
   return sorted.map((m, i) => {
-    const name = m.displayName || m.username || `Member ${m.userId}`
+    const isCurrentUser = profile ? m.userId === profile.id : false
+    // Profile updates are authoritative for the signed-in user. Circle-member
+    // records can lag behind /users/profile, which previously made a successful
+    // profile save appear not to update in the approved settings UI.
+    const name =
+      (isCurrentUser ? profile?.displayName : undefined) ||
+      m.displayName ||
+      m.username ||
+      `Member ${m.userId}`
     return {
       id: String(m.userId),
       name,
@@ -137,7 +145,7 @@ function toMembers(
       streak: m.streak ?? 0,
       tasksCompleted: m.tasksCompleted ?? 0,
       tasksAssigned: 0,
-      isCurrentUser: profile ? m.userId === profile.id : false,
+      isCurrentUser,
     }
   })
 }

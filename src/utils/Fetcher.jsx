@@ -413,6 +413,30 @@ const UpdateUserDetails = userDetails => {
   })
 }
 
+const UploadProfilePhoto = file => {
+  const formData = new FormData()
+  formData.append('file', file, file.name || 'profile.jpg')
+  return apiClient.upload('/users/profile_photo', formData)
+}
+
+const GetAuthSessions = () => {
+  return Fetch(`/auth/sessions`, { method: 'GET', headers: HEADERS() })
+}
+
+const RevokeAuthSession = sessionID => {
+  return Fetch(`/auth/sessions/${encodeURIComponent(sessionID)}`, {
+    method: 'DELETE',
+    headers: HEADERS(),
+  })
+}
+
+const RevokeOtherAuthSessions = () => {
+  return Fetch(`/auth/sessions/revoke-others`, {
+    method: 'POST',
+    headers: HEADERS(),
+  })
+}
+
 const UpdateNotificationTarget = notificationTarget => {
   return Fetch(`/users/targets`, {
     method: 'PUT',
@@ -1348,6 +1372,7 @@ export {
   GetArchivedChores,
   GetAsset,
   GetAssets,
+  GetAuthSessions,
   GetCalendar,
   GetCategories,
   GetChildUsers,
@@ -1412,6 +1437,8 @@ export {
   ResetPassword,
   ResetUserPoints,
   RestoreBackup,
+  RevokeAuthSession,
+  RevokeOtherAuthSessions,
   SaveAsset,
   SaveChore,
   SaveMeter,
@@ -1446,5 +1473,6 @@ export {
   UpdateTimeSession,
   UpdateUserDetails,
   UploadChoreAttachment,
+  UploadProfilePhoto,
   VerifyMFA,
 }

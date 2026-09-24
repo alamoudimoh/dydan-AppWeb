@@ -6,12 +6,24 @@ import Tab from '@mui/joy/Tab'
 import TabList from '@mui/joy/TabList'
 import TabPanel from '@mui/joy/TabPanel'
 import Tabs from '@mui/joy/Tabs'
-import { useRef, useState } from 'react'
+import QRCode from 'qrcode'
+import { useEffect, useRef, useState } from 'react'
 
 import { version as appVersion } from '../../package.json'
 import { AppCtx, Icon, Theme, View } from '../App'
+import { useLocalization } from '../contexts/LocalizationContext'
 import { useProductTheme } from '../contexts/ThemeContext'
+import {
+  type MFASetup,
+  useAccountSettingsMutations,
+  useAuthSessions,
+  useMFAStatus,
+  useUserCircles,
+} from '../hooks/useAccountSettings'
+import { KEYS } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
+import { offlineDB } from '../utils/OfflineDB'
+import { clearAllTokens } from '../utils/TokenStorage'
 
 type Props = {
   ctx: AppCtx
@@ -166,29 +178,17 @@ function TabHeader({
 
 /* ─── Invite modal ────────────────────── */
 function InviteModal({
+  inviteCode,
   onClose,
-  onSuccess,
 }: {
+  inviteCode: string
   onClose: () => void
-  onSuccess: (email: string) => void
 }) {
-  const [inviteEmail, setInviteEmail] = useState('')
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleSend = () => {
-    if (!inviteEmail.includes('@')) {
-      setError('Please enter a valid email.')
-      return
-    }
-    setError('')
-    setSending(true)
-    setTimeout(() => {
-      setSending(false)
-      setSent(true)
-      onSuccess(inviteEmail)
-    }, 900)
+  const [copied, setCopied] = useState(false)
+  const joinURL = `${window.location.origin}/settings?invite_code=${encodeURIComponent(inviteCode)}`
+  const copy = async () => {
+    await navigator.clipboard.writeText(joinURL)
+    setCopied(true)
   }
 
   return (
@@ -210,119 +210,49 @@ function InviteModal({
           </button>
         </div>
         <div className='p-6'>
-          {!sent ? (
-            <>
-              <div
-                className='text-muted mb-5'
-                style={{ fontSize: 14, lineHeight: 1.6 }}
-              >
-                Invite a family member or partner. They'll get an email to join
-                your team. Family features become active once they accept.
+          <div className='flex flex-col gap-4'>
+            <div
+              className='text-muted'
+              style={{ fontSize: 14, lineHeight: 1.6 }}
+            >
+              Share this real team join link. dydan does not send an email
+              invitation from this screen.
+            </div>
+            <code
+              className='p-3 rounded-lg text-primary'
+              style={{ background: 'var(--surface-2)', wordBreak: 'break-all' }}
+            >
+              {joinURL}
+            </code>
+            <div
+              className='p-3 rounded-lg flex items-start gap-2'
+              style={{
+                background: 'var(--brand-faint)',
+                borderRadius: 'var(--r-md)',
+              }}
+            >
+              <Icon
+                name='info'
+                size={15}
+                style={{ color: 'var(--brand)', flexShrink: 0, marginTop: 1 }}
+              />
+              <div style={{ fontSize: 12, color: 'var(--t-muted)' }}>
+                Anyone who uses the link must authenticate before the server
+                processes the join request.
               </div>
-              <div className='flex flex-col gap-4'>
-                <div>
-                  <label
-                    className='block font-semibold text-primary mb-1.5'
-                    style={{ fontSize: 13 }}
-                  >
-                    Their email address
-                  </label>
-                  <input
-                    className='input'
-                    type='email'
-                    value={inviteEmail}
-                    onChange={e => setInviteEmail(e.target.value)}
-                    placeholder='name@example.com'
-                    onKeyDown={e => e.key === 'Enter' && handleSend()}
-                    autoFocus
-                  />
-                </div>
-                {error && (
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: 'var(--sig-over)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {error}
-                  </div>
-                )}
-                <div
-                  className='p-3 rounded-lg flex items-start gap-2'
-                  style={{
-                    background: 'var(--brand-faint)',
-                    borderRadius: 'var(--r-md)',
-                  }}
-                >
-                  <Icon
-                    name='info'
-                    size={15}
-                    style={{
-                      color: 'var(--brand)',
-                      flexShrink: 0,
-                      marginTop: 1,
-                    }}
-                  />
-                  <div style={{ fontSize: 12, color: 'var(--t-muted)' }}>
-                    A pending invitation does not enable Family mode — that only
-                    activates when they accept and become an active member.
-                  </div>
-                </div>
-                <div className='flex gap-3'>
-                  <button
-                    className='btn btn-secondary flex-1'
-                    style={{ justifyContent: 'center' }}
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className='btn btn-primary flex-1'
-                    style={{ justifyContent: 'center' }}
-                    onClick={handleSend}
-                    disabled={sending}
-                  >
-                    {sending ? 'Sending…' : 'Send invitation'}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className='text-center py-4'>
-              <div style={{ fontSize: 52, marginBottom: 12 }}>📧</div>
-              <div
-                className='font-bold text-primary mb-2'
-                style={{ fontSize: 17 }}
-              >
-                Invitation sent!
-              </div>
-              <div
-                className='text-muted mb-2'
-                style={{ fontSize: 14, lineHeight: 1.6 }}
-              >
-                An invitation was sent to <strong>{inviteEmail}</strong>. Family
-                features will activate once they join.
-              </div>
-              <div
-                className='badge mb-6'
-                style={{
-                  background: 'var(--sig-due-bg)',
-                  color: 'var(--sig-due)',
-                  fontSize: 11,
-                }}
-              >
-                Pending invitation
-              </div>
+            </div>
+            <div className='flex gap-3'>
+              <button className='btn btn-secondary flex-1' onClick={onClose}>
+                Close
+              </button>
               <button
-                className='btn btn-primary'
-                style={{ justifyContent: 'center', width: '100%' }}
-                onClick={onClose}
+                className='btn btn-primary flex-1'
+                onClick={() => void copy()}
               >
-                Done
+                {copied ? 'Copied' : 'Copy join link'}
               </button>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
@@ -337,14 +267,13 @@ function EditProfileModal({
   photoUrl,
 }: {
   onClose: () => void
-  onSave: (name: string, email: string) => void
+  onSave: (name: string) => Promise<void>
   photoUrl: string
   onPhotoChange: (file: File) => void
 }) {
   const { currentUser, members } = useLiveData()
   const live = currentUser ?? members[0]
   const [name, setName] = useState(live?.name ?? '')
-  const [email, setEmail] = useState(live?.email ?? '')
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   if (!live) return null
@@ -435,10 +364,14 @@ function EditProfileModal({
               </label>
               <input
                 className='input'
+                disabled
                 type='email'
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={live.email}
               />
+              <div className='text-faint mt-1' style={{ fontSize: 11 }}>
+                Email is managed by your sign-in provider and cannot be changed
+                here.
+              </div>
             </div>
             <div className='flex gap-3'>
               <button
@@ -451,10 +384,7 @@ function EditProfileModal({
               <button
                 className='btn btn-primary flex-1'
                 style={{ justifyContent: 'center' }}
-                onClick={() => {
-                  onSave(name, email)
-                  onClose()
-                }}
+                onClick={() => void onSave(name)}
               >
                 Save changes
               </button>
@@ -466,32 +396,589 @@ function EditProfileModal({
   )
 }
 
-const SESSIONS = [
-  {
-    id: 's1',
-    device: 'Chrome on macOS',
-    location: 'London, UK',
-    lastActive: 'Now',
-    current: true,
-    icon: 'monitor',
-  },
-  {
-    id: 's2',
-    device: 'Safari on iPhone 15',
-    location: 'London, UK',
-    lastActive: '2h ago',
-    current: false,
-    icon: 'phone',
-  },
-  {
-    id: 's3',
-    device: 'Chrome on Windows',
-    location: 'Manchester, UK',
-    lastActive: '3 days ago',
-    current: false,
-    icon: 'monitor',
-  },
-]
+function CredentialModal({
+  actionLabel,
+  body,
+  onClose,
+  onSubmit,
+  title,
+}: {
+  actionLabel: string
+  body: string
+  onClose: () => void
+  onSubmit: (value: string) => Promise<void>
+  title: string
+}) {
+  const [value, setValue] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const submit = async () => {
+    if (!value.trim()) {
+      setError('Enter your verification code to continue.')
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onSubmit(value.trim())
+      onClose()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'This action could not be completed.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 420 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            {title}
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p
+            className='text-muted'
+            style={{ fontSize: 13, lineHeight: 1.5, margin: 0 }}
+          >
+            {body}
+          </p>
+          <input
+            autoComplete='one-time-code'
+            className='input'
+            inputMode='numeric'
+            onChange={e => setValue(e.target.value)}
+            placeholder='Authenticator or recovery code'
+            value={value}
+          />
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              disabled={submitting}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              disabled={submitting}
+              onClick={() => void submit()}
+            >
+              {submitting ? 'Working…' : actionLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PasswordModal({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void
+  onSubmit: (currentPassword: string, newPassword: string) => Promise<void>
+}) {
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const submit = async () => {
+    if (!currentPassword || newPassword.length < 8) {
+      setError(
+        'Enter your current password and a new password with at least 8 characters.',
+      )
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onSubmit(currentPassword, newPassword)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Password update failed.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 420 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Update password
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <input
+            autoComplete='current-password'
+            className='input'
+            onChange={e => setCurrentPassword(e.target.value)}
+            placeholder='Current password'
+            type='password'
+            value={currentPassword}
+          />
+          <input
+            autoComplete='new-password'
+            className='input'
+            onChange={e => setNewPassword(e.target.value)}
+            placeholder='New password'
+            type='password'
+            value={newPassword}
+          />
+          <p className='text-faint' style={{ fontSize: 12, margin: 0 }}>
+            Changing your password signs out your other sessions.
+          </p>
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              disabled={submitting}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              disabled={submitting}
+              onClick={() => void submit()}
+            >
+              {submitting ? 'Updating…' : 'Update password'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TextInputModal({
+  initialValue,
+  label,
+  onClose,
+  onSubmit,
+  title,
+}: {
+  initialValue: string
+  label: string
+  onClose: () => void
+  onSubmit: (value: string) => Promise<void>
+  title: string
+}) {
+  const [value, setValue] = useState(initialValue)
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const submit = async () => {
+    if (!value.trim()) {
+      setError(`${label} is required.`)
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onSubmit(value.trim())
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 420 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            {title}
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <label
+            className='font-semibold text-primary'
+            style={{ fontSize: 13 }}
+          >
+            {label}
+          </label>
+          <input
+            autoFocus
+            className='input'
+            onChange={e => setValue(e.target.value)}
+            value={value}
+          />
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              disabled={submitting}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              disabled={submitting}
+              onClick={() => void submit()}
+            >
+              {submitting ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeleteAccountModal({
+  onClose,
+  onDelete,
+}: {
+  onClose: () => void
+  onDelete: (password: string) => Promise<void>
+}) {
+  const [password, setPassword] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const submit = async () => {
+    if (confirmation !== 'DELETE') {
+      setError('Type DELETE to confirm this irreversible action.')
+      return
+    }
+    if (!password) {
+      setError('Enter your password to continue.')
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onDelete(password)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Account deletion failed.')
+      setSubmitting(false)
+    }
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 440 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Delete your account
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p
+            className='text-sig-over'
+            style={{ fontSize: 13, lineHeight: 1.5, margin: 0 }}
+          >
+            This calls the server immediately. Your account and eligible
+            personal data cannot be restored.
+          </p>
+          <input
+            autoComplete='current-password'
+            className='input'
+            onChange={e => setPassword(e.target.value)}
+            placeholder='Current password'
+            type='password'
+            value={password}
+          />
+          <input
+            className='input'
+            onChange={e => setConfirmation(e.target.value)}
+            placeholder='Type DELETE to confirm'
+            value={confirmation}
+          />
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              disabled={submitting}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              className='btn btn-ghost flex-1 text-sig-over'
+              disabled={submitting}
+              onClick={() => void submit()}
+            >
+              {submitting ? 'Deleting…' : 'Delete account'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MFASetupModal({
+  onClose,
+  onConfirm,
+  setup,
+}: {
+  setup: MFASetup
+  onClose: () => void
+  onConfirm: (code: string) => Promise<void>
+}) {
+  const [code, setCode] = useState('')
+  const [qr, setQR] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    void QRCode.toDataURL(setup.qrCodeUrl, { margin: 1, width: 180 })
+      .then(setQR)
+      .catch(() => setQR(''))
+  }, [setup.qrCodeUrl])
+
+  const submit = async () => {
+    if (!code.trim()) {
+      setError('Enter the six-digit code from your authenticator app.')
+      return
+    }
+    setSubmitting(true)
+    setError('')
+    try {
+      await onConfirm(code.trim())
+      onClose()
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not verify this code.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 460 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Set up authenticator app
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p className='text-muted' style={{ fontSize: 13, margin: 0 }}>
+            Scan this code with your authenticator app, then enter its first
+            verification code.
+          </p>
+          {qr ? (
+            <img
+              src={qr}
+              alt='Authenticator setup QR code'
+              style={{ width: 180, height: 180, alignSelf: 'center' }}
+            />
+          ) : (
+            <code
+              className='p-3 rounded-lg text-primary'
+              style={{ background: 'var(--surface-2)', wordBreak: 'break-all' }}
+            >
+              {setup.secret}
+            </code>
+          )}
+          <details className='text-muted' style={{ fontSize: 12 }}>
+            <summary>Can’t scan the code?</summary>
+            <code
+              style={{ display: 'block', marginTop: 8, wordBreak: 'break-all' }}
+            >
+              {setup.secret}
+            </code>
+          </details>
+          <div
+            className='p-3 rounded-lg'
+            style={{ background: 'var(--sig-due-bg)', fontSize: 12 }}
+          >
+            <strong>Save these recovery codes now.</strong>
+            <div className='font-mono mt-2' style={{ lineHeight: 1.8 }}>
+              {setup.backupCodes.join(' · ')}
+            </div>
+          </div>
+          <input
+            autoComplete='one-time-code'
+            className='input'
+            inputMode='numeric'
+            onChange={e => setCode(e.target.value)}
+            placeholder='Authenticator code'
+            value={code}
+          />
+          {error && (
+            <p className='text-sig-over' style={{ fontSize: 12, margin: 0 }}>
+              {error}
+            </p>
+          )}
+          <button
+            className='btn btn-primary'
+            disabled={submitting}
+            onClick={() => void submit()}
+          >
+            {submitting ? 'Verifying…' : 'Enable two-factor authentication'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RecoveryCodesModal({
+  codes,
+  onClose,
+}: {
+  codes: string[]
+  onClose: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    await navigator.clipboard.writeText(codes.join('\n'))
+    setCopied(true)
+  }
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 440 }}
+        onClick={event => event.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            New recovery codes
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          <p
+            className='text-muted'
+            style={{ fontSize: 13, lineHeight: 1.5, margin: 0 }}
+          >
+            Save these one-time codes somewhere secure. They will not be shown
+            again, and your old recovery codes no longer work.
+          </p>
+          <div
+            className='p-3 rounded-lg font-mono text-primary'
+            style={{ background: 'var(--surface-2)', lineHeight: 1.8 }}
+          >
+            {codes.map(code => (
+              <div key={code}>{code}</div>
+            ))}
+          </div>
+          <div className='flex gap-3'>
+            <button className='btn btn-secondary flex-1' onClick={onClose}>
+              I saved them
+            </button>
+            <button
+              className='btn btn-primary flex-1'
+              onClick={() => void copy()}
+            >
+              {copied ? 'Copied' : 'Copy codes'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const TABS: { id: string; label: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', icon: 'home' },
@@ -510,10 +997,24 @@ const TABS: { id: string; label: string; icon: string }[] = [
 ]
 
 export default function SettingsScreen({ ctx, isSolo }: Props) {
-  const { currentUser: liveUser, members } = useLiveData()
+  const { currentUser: liveUser, members, profile } = useLiveData()
+  const { data: mfaStatus, isLoading: mfaLoading } = useMFAStatus()
+  const { data: sessions = [], isLoading: sessionsLoading } = useAuthSessions()
+  const { data: circles = [] } = useUserCircles()
+  const account = useAccountSettingsMutations()
   const currentUser = liveUser ?? members[0]
   const { mode, setMode } = useProductTheme()
-  const isRTL = document.documentElement.dir === 'rtl'
+  const {
+    dateFormat,
+    firstDayOfWeek,
+    isRTL,
+    language,
+    setDateFormat,
+    setFirstDayOfWeek,
+    setLanguage,
+    setTimeFormat,
+    timeFormat,
+  } = useLocalization()
 
   const [tab, setTab] = useState(() => {
     try {
@@ -532,12 +1033,33 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const [showInvite, setShowInvite] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [profilePhoto, setProfilePhoto] = useState('')
-  const [gender, setGender] = useState('male')
+  const [mfaSetup, setMfaSetup] = useState<MFASetup | null>(null)
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null)
+  const [credentialAction, setCredentialAction] = useState<
+    'disable-mfa' | 'recovery-codes' | null
+  >(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false)
+  const [showRenameTeam, setShowRenameTeam] = useState(false)
   const profilePhotoInputRef = useRef<HTMLInputElement>(null)
-  const handlePhotoChange = (file: File) => {
-    if (!file.type.startsWith('image/')) return
-    setProfilePhoto(URL.createObjectURL(file))
-    ctx.showToast('Profile photo updated')
+  const handlePhotoChange = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      ctx.showToast('Choose a PNG, JPG, or GIF image.')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      ctx.showToast('Profile photos must be smaller than 2 MB.')
+      return
+    }
+    try {
+      await account.uploadProfilePhoto.mutateAsync(file)
+      setProfilePhoto(URL.createObjectURL(file))
+      ctx.showToast('Profile photo updated')
+    } catch (err) {
+      ctx.showToast(
+        err instanceof Error ? err.message : 'Profile photo upload failed',
+      )
+    }
   }
 
   const [notifToggles, setNotifToggles] = useState({
@@ -553,8 +1075,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const toggleNotif = (key: keyof typeof notifToggles) =>
     setNotifToggles(prev => ({ ...prev, [key]: !prev[key] }))
 
-  const [mfaEnabled, setMfaEnabled] = useState(true)
-  const [mfaMethod, setMfaMethod] = useState('sms')
+  const mfaEnabled = Boolean(mfaStatus?.mfaEnabled)
   const [activityVisible, setActivityVisible] = useState(true)
   const [analytics, setAnalytics] = useState(true)
   const [personalization, setPersonalization] = useState(true)
@@ -574,21 +1095,26 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
     betaFeatures: false,
   })
 
-  const [locale, setLocale] = useState({
-    language: 'en',
-    dateFormat: 'DD/MM/YYYY',
-    timeFormat: '24h',
-    firstDay: 'monday',
-    currency: 'GBP',
-    timezone: 'Europe/London',
-  })
-  const setLocaleField = (field: keyof typeof locale, value: string) =>
-    setLocale(prev => ({ ...prev, [field]: value }))
+  const locale = {
+    language,
+    dateFormat,
+    timeFormat,
+    firstDay: String(firstDayOfWeek),
+    timezone:
+      profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+  }
 
   const go = (id: string) => setTabPersisted(id)
 
   // Member data may not have loaded yet on a cold start / fresh sign-in.
   if (!currentUser) return null
+  const profileImage = profilePhoto || profile?.image || ''
+  const circle =
+    circles.find(item => item.id === profile?.circleID) ?? circles[0]
+  const inviteCode = circle?.inviteCode ?? circle?.invite_code ?? 'Unavailable'
+  const pendingJoinCode = new URLSearchParams(window.location.search).get(
+    'invite_code',
+  )
 
   return (
     <>
@@ -665,9 +1191,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               />
               <Section>
                 <div className='flex items-center gap-5 px-5 py-5'>
-                  {profilePhoto ? (
+                  {profileImage ? (
                     <img
-                      src={profilePhoto}
+                      src={profileImage}
                       alt='Profile'
                       className='avatar'
                       style={{ width: 56, height: 56, objectFit: 'cover' }}
@@ -706,7 +1232,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                         className='badge bg-sig-done-bg text-sig-done'
                         style={{ fontSize: 11 }}
                       >
-                        Family · Premium
+                        {profile?.subscription ?? 'No active subscription'}
                       </span>
                     </div>
                   </div>
@@ -782,9 +1308,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   className='flex items-center gap-5 px-5 py-5 border-b border-line'
                   style={{ borderColor: 'var(--line)' }}
                 >
-                  {profilePhoto ? (
+                  {profileImage ? (
                     <img
-                      src={profilePhoto}
+                      src={profileImage}
                       alt='Profile'
                       className='avatar'
                       style={{ width: 64, height: 64, objectFit: 'cover' }}
@@ -853,19 +1379,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     {currentUser.role}
                   </span>
                 </Row>
-                <Row icon='user' label='Gender' sub='Shown on your profile'>
-                  <SelectField
-                    value={gender}
-                    onChange={v => {
-                      setGender(v)
-                      ctx.showToast('Gender updated')
-                    }}
-                    options={[
-                      { value: 'male', label: 'Male' },
-                      { value: 'female', label: 'Female' },
-                    ]}
-                  />
-                </Row>
+                <Row
+                  icon='user'
+                  label='Profile fields'
+                  sub='The server currently supports your display name and profile photo.'
+                />
               </Section>
             </TabPanel>
 
@@ -879,9 +1397,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='lock'
                   label='Password'
-                  sub='Last changed 90 days ago'
+                  sub='Changing it signs out your other active sessions'
                 >
-                  <button className='btn btn-secondary btn-sm'>
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={() => setShowPassword(true)}
+                  >
                     Update password
                   </button>
                 </Row>
@@ -899,6 +1420,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <JoyToggle
                     on={mfaEnabled}
                     onChange={() => {
+                      if (mfaLoading) return
                       if (mfaEnabled) {
                         ctx.showConfirm({
                           title: 'Disable two-factor authentication?',
@@ -906,14 +1428,19 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             'This makes your account less secure. Are you sure?',
                           confirmLabel: 'Disable',
                           danger: true,
-                          onConfirm: () => {
-                            setMfaEnabled(false)
-                            ctx.showToast('2FA disabled')
-                          },
+                          onConfirm: () => setCredentialAction('disable-mfa'),
                         })
                       } else {
-                        setMfaEnabled(true)
-                        ctx.showToast('2FA enabled')
+                        void account.setupMFA
+                          .mutateAsync()
+                          .then(setMfaSetup)
+                          .catch(err =>
+                            ctx.showToast(
+                              err instanceof Error
+                                ? err.message
+                                : 'Unable to start two-factor setup',
+                            ),
+                          )
                       }
                     }}
                   />
@@ -923,43 +1450,19 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     <Row
                       icon='phone'
                       label='Verification method'
-                      sub='How we send your second-step code'
-                    >
-                      <SelectField
-                        value={mfaMethod}
-                        onChange={v => {
-                          setMfaMethod(v)
-                          ctx.showToast('Method updated')
-                        }}
-                        options={[
-                          { value: 'sms', label: 'SMS text message' },
-                          { value: 'app', label: 'Authenticator app' },
-                          { value: 'email', label: 'Email' },
-                        ]}
-                      />
-                    </Row>
+                      sub='Authenticator app (TOTP)'
+                    />
                     <Row
                       icon='clipboard'
                       label='Recovery codes'
-                      sub='10 single-use codes for account recovery'
+                      sub='Generate a replacement set after verifying your authenticator code'
                     >
                       <button
                         className='btn btn-secondary btn-sm'
-                        onClick={() =>
-                          ctx.showToast('Recovery codes regenerated')
-                        }
+                        onClick={() => setCredentialAction('recovery-codes')}
                       >
-                        View codes
+                        Regenerate
                       </button>
-                    </Row>
-                    <Row
-                      icon='monitor'
-                      label='Trusted devices'
-                      sub='Skip 2FA on devices you use often'
-                    >
-                      <span className='text-faint' style={{ fontSize: 12 }}>
-                        2 devices
-                      </span>
                     </Row>
                   </>
                 )}
@@ -967,7 +1470,17 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               <Section title='Active sessions'>
                 <div className='px-5 py-4'>
                   <div className='flex flex-col gap-3'>
-                    {SESSIONS.map(s => (
+                    {sessionsLoading && (
+                      <div className='text-muted' style={{ fontSize: 13 }}>
+                        Loading active sessions…
+                      </div>
+                    )}
+                    {!sessionsLoading && sessions.length === 0 && (
+                      <div className='text-muted' style={{ fontSize: 13 }}>
+                        No active sessions were returned by the server.
+                      </div>
+                    )}
+                    {sessions.map(s => (
                       <div key={s.id} className='flex items-center gap-3'>
                         <div
                           style={{
@@ -982,7 +1495,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                           }}
                         >
                           <Icon
-                            name={s.icon}
+                            name={
+                              /phone|ios|android/i.test(s.device ?? '')
+                                ? 'phone'
+                                : 'monitor'
+                            }
                             size={16}
                             style={{ color: 'var(--t-muted)' }}
                           />
@@ -992,10 +1509,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             className='font-medium text-primary truncate'
                             style={{ fontSize: 13 }}
                           >
-                            {s.device}
+                            {s.device || 'Signed-in device'}
                           </div>
                           <div className='text-faint' style={{ fontSize: 11 }}>
-                            {s.location} · {s.lastActive}
+                            {s.location ? `${s.location} · ` : ''}Last active{' '}
+                            {new Date(s.lastActiveAt).toLocaleString()}
                           </div>
                         </div>
                         {s.current ? (
@@ -1012,11 +1530,22 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             onClick={() =>
                               ctx.showConfirm({
                                 title: 'Sign out this device?',
-                                message: `This will end the session on ${s.device}.`,
+                                message: `This will end the session on ${s.device || 'this device'}.`,
                                 confirmLabel: 'Sign out',
                                 danger: true,
                                 onConfirm: () =>
-                                  ctx.showToast('Device signed out'),
+                                  void account.revokeSession
+                                    .mutateAsync(s.id)
+                                    .then(() =>
+                                      ctx.showToast('Device signed out'),
+                                    )
+                                    .catch(err =>
+                                      ctx.showToast(
+                                        err instanceof Error
+                                          ? err.message
+                                          : 'Could not sign out this device',
+                                      ),
+                                    ),
                               })
                             }
                           >
@@ -1037,7 +1566,18 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                         confirmLabel: 'Sign out all',
                         danger: true,
                         onConfirm: () =>
-                          ctx.showToast('All other devices signed out'),
+                          void account.revokeOtherSessions
+                            .mutateAsync()
+                            .then(() =>
+                              ctx.showToast('All other devices signed out'),
+                            )
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not sign out other devices',
+                              ),
+                            ),
                       })
                     }
                   >
@@ -1065,8 +1605,41 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 }
               />
               <Section title='Team settings'>
-                <Row icon='home' label='Team name' sub='The Mitchell Team'>
-                  <button className='btn btn-ghost btn-sm text-brand'>
+                {pendingJoinCode && (
+                  <Row
+                    icon='users'
+                    label='Join shared team'
+                    sub={`Invite code: ${pendingJoinCode}`}
+                  >
+                    <button
+                      className='btn btn-primary btn-sm'
+                      onClick={() =>
+                        void account.joinCircle
+                          .mutateAsync(pendingJoinCode)
+                          .then(() => ctx.showToast('Join request sent'))
+                          .catch(err =>
+                            ctx.showToast(
+                              err instanceof Error
+                                ? err.message
+                                : 'Could not join this team',
+                            ),
+                          )
+                      }
+                    >
+                      Request to join
+                    </button>
+                  </Row>
+                )}
+                <Row
+                  icon='home'
+                  label='Team name'
+                  sub={circle?.name ?? 'Loading team details…'}
+                >
+                  <button
+                    className='btn btn-ghost btn-sm text-brand'
+                    onClick={() => setShowRenameTeam(true)}
+                    disabled={!circle}
+                  >
                     Rename
                   </button>
                 </Row>
@@ -1085,7 +1658,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       borderRadius: 'var(--r-sm)',
                     }}
                   >
-                    MITCH-42
+                    {inviteCode}
                   </span>
                 </Row>
                 <Row
@@ -1095,34 +1668,29 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <button
                     className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.showToast('New join code generated')}
+                    onClick={() =>
+                      void account.regenerateInviteCode
+                        .mutateAsync()
+                        .then(result => {
+                          const nextCode =
+                            result.inviteCode ?? result.invite_code
+                          ctx.showToast(
+                            nextCode
+                              ? `New join code: ${nextCode}`
+                              : 'New join code generated',
+                          )
+                        })
+                        .catch(err =>
+                          ctx.showToast(
+                            err instanceof Error
+                              ? err.message
+                              : 'Could not regenerate join code',
+                          ),
+                        )
+                    }
                   >
                     Regenerate
                   </button>
-                </Row>
-                <Row
-                  icon='user'
-                  label='Default role for new members'
-                  sub='Applied when someone joins'
-                >
-                  <SelectField
-                    value='adult'
-                    onChange={() => ctx.showToast('Default role updated')}
-                    options={[
-                      { value: 'adult', label: 'Adult' },
-                      { value: 'child', label: 'Child' },
-                    ]}
-                  />
-                </Row>
-                <Row
-                  icon='shopping'
-                  label='New lists shared by default'
-                  sub='Members can still make personal lists'
-                >
-                  <JoyToggle
-                    on={true}
-                    onChange={() => ctx.showToast('Updated')}
-                  />
                 </Row>
                 {!isSolo && (
                   <Row
@@ -1139,7 +1707,18 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             "You'll lose access to shared lists, goals, and team activity.",
                           confirmLabel: 'Leave',
                           danger: true,
-                          onConfirm: () => ctx.showToast('You left the team'),
+                          onConfirm: () =>
+                            circle &&
+                            void account.leaveCircle
+                              .mutateAsync(circle.id)
+                              .then(() => ctx.showToast('You left the team'))
+                              .catch(err =>
+                                ctx.showToast(
+                                  err instanceof Error
+                                    ? err.message
+                                    : 'Could not leave this team',
+                                ),
+                              ),
                         })
                       }
                     >
@@ -1200,7 +1779,22 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                                   confirmLabel: 'Remove',
                                   danger: true,
                                   onConfirm: () =>
-                                    ctx.showToast(`${m.name} removed`),
+                                    circle &&
+                                    void account.removeMember
+                                      .mutateAsync({
+                                        circleID: circle.id,
+                                        memberID: Number(m.id),
+                                      })
+                                      .then(() =>
+                                        ctx.showToast(`${m.name} removed`),
+                                      )
+                                      .catch(err =>
+                                        ctx.showToast(
+                                          err instanceof Error
+                                            ? err.message
+                                            : 'Could not remove this member',
+                                        ),
+                                      ),
                                 })
                               }
                             >
@@ -1209,41 +1803,6 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                           )}
                         </div>
                       ))}
-                      {ctx.pendingInvite && (
-                        <div className='flex items-center gap-3'>
-                          <div
-                            className='avatar'
-                            style={{
-                              width: 34,
-                              height: 34,
-                              background: 'var(--line-strong)',
-                              fontSize: 12,
-                            }}
-                          >
-                            ?
-                          </div>
-                          <div className='flex-1 min-w-0'>
-                            <div
-                              className='font-medium text-primary'
-                              style={{ fontSize: 13 }}
-                            >
-                              {ctx.pendingInvite}
-                            </div>
-                            <div
-                              className='text-faint'
-                              style={{ fontSize: 11 }}
-                            >
-                              Invitation pending · not yet active
-                            </div>
-                          </div>
-                          <button
-                            className='btn btn-secondary btn-sm'
-                            onClick={ctx.acceptInvite}
-                          >
-                            Demo: Accept
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </Section>
@@ -1279,45 +1838,6 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       <Icon name='plus' size={14} />
                       Invite someone
                     </button>
-                    {ctx.pendingInvite && (
-                      <div
-                        className='mt-4 p-3 flex items-center gap-3 rounded-lg'
-                        style={{
-                          background: 'var(--sig-due-bg)',
-                          borderRadius: 'var(--r-md)',
-                        }}
-                      >
-                        <Icon
-                          name='clock'
-                          size={15}
-                          style={{ color: 'var(--sig-due)', flexShrink: 0 }}
-                        />
-                        <div className='flex-1 min-w-0'>
-                          <div
-                            className='font-semibold'
-                            style={{ fontSize: 13, color: 'var(--sig-due)' }}
-                          >
-                            Invitation pending
-                          </div>
-                          <div
-                            style={{ fontSize: 12, color: 'var(--t-muted)' }}
-                          >
-                            {ctx.pendingInvite} has been invited but has not yet
-                            joined.
-                          </div>
-                        </div>
-                        <button
-                          className='btn btn-secondary btn-sm'
-                          style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--line)',
-                          }}
-                          onClick={ctx.acceptInvite}
-                        >
-                          Demo: Accept
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </Section>
               )}
@@ -1430,10 +1950,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   label='Compact mode'
                   sub='Reduce spacing for more content density'
                 >
-                  <JoyToggle
-                    on={false}
-                    onChange={() => ctx.showToast('Coming in v2.5')}
-                  />
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
               </Section>
             </TabPanel>
@@ -1453,14 +1972,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <SelectField
                     value={locale.language}
                     onChange={v => {
-                      setLocaleField('language', v)
-                      if (v === 'ar' && !isRTL) ctx.toggleRTL()
-                      if (v !== 'ar' && isRTL) ctx.toggleRTL()
+                      setLanguage(v as typeof language)
                       ctx.showToast('Language updated')
                     }}
                     options={[
                       { value: 'en', label: 'English' },
-                      { value: 'ar', label: 'العربية' },
+                      { value: 'ar-SA', label: 'العربية' },
                       { value: 'fr', label: 'Français' },
                       { value: 'de', label: 'Deutsch' },
                       { value: 'es', label: 'Español' },
@@ -1478,7 +1995,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <SelectField
                     value={locale.dateFormat}
                     onChange={v => {
-                      setLocaleField('dateFormat', v)
+                      setDateFormat(v as typeof dateFormat)
                       ctx.showToast('Date format updated')
                     }}
                     options={[
@@ -1492,12 +2009,12 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <SelectField
                     value={locale.timeFormat}
                     onChange={v => {
-                      setLocaleField('timeFormat', v)
+                      setTimeFormat(v === '12h' ? 'h:mm A' : 'HH:mm')
                       ctx.showToast('Time format updated')
                     }}
                     options={[
-                      { value: '24h', label: '24-hour' },
-                      { value: '12h', label: '12-hour (AM/PM)' },
+                      { value: 'HH:mm', label: '24-hour' },
+                      { value: 'h:mm A', label: '12-hour (AM/PM)' },
                     ]}
                   />
                 </Row>
@@ -1505,42 +2022,39 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   <SelectField
                     value={locale.firstDay}
                     onChange={v => {
-                      setLocaleField('firstDay', v)
+                      setFirstDayOfWeek(Number(v))
                       ctx.showToast('Week start updated')
                     }}
                     options={[
-                      { value: 'monday', label: 'Monday' },
-                      { value: 'sunday', label: 'Sunday' },
-                      { value: 'saturday', label: 'Saturday' },
+                      { value: '1', label: 'Monday' },
+                      { value: '0', label: 'Sunday' },
+                      { value: '6', label: 'Saturday' },
                     ]}
                   />
                 </Row>
                 <Row
                   icon='tag'
                   label='Currency'
-                  sub='For shopping and budget estimates'
+                  sub='Currency preference is not stored by this server.'
                 >
-                  <SelectField
-                    value={locale.currency}
-                    onChange={v => {
-                      setLocaleField('currency', v)
-                      ctx.showToast('Currency updated')
-                    }}
-                    options={[
-                      { value: 'GBP', label: '£ GBP' },
-                      { value: 'USD', label: '$ USD' },
-                      { value: 'EUR', label: '€ EUR' },
-                      { value: 'AED', label: 'AED' },
-                      { value: 'SAR', label: 'SAR' },
-                    ]}
-                  />
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
                 <Row icon='map' label='Timezone' sub={locale.timezone}>
                   <SelectField
                     value={locale.timezone}
                     onChange={v => {
-                      setLocaleField('timezone', v)
-                      ctx.showToast('Timezone updated')
+                      void account.updateProfile
+                        .mutateAsync({ timezone: v })
+                        .then(() => ctx.showToast('Timezone updated'))
+                        .catch(err =>
+                          ctx.showToast(
+                            err instanceof Error
+                              ? err.message
+                              : 'Timezone update failed',
+                          ),
+                        )
                     }}
                     options={[
                       { value: 'Asia/Riyadh', label: 'Riyadh (UTC+3)' },
@@ -1752,15 +2266,36 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       className='font-bold text-primary'
                       style={{ fontSize: 16 }}
                     >
-                      dydan Family · Premium
+                      {profile?.subscription
+                        ? `dydan · ${profile.subscription}`
+                        : 'dydan Free'}
                     </div>
                     <div className='text-muted' style={{ fontSize: 13 }}>
-                      £4.99 / month · renews 1 September 2026
+                      {profile?.expiration
+                        ? `Access through ${new Date(profile.expiration).toLocaleDateString()}`
+                        : 'No paid subscription is reported by the server'}
                     </div>
                   </div>
                   <button
                     className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.showToast('Opening plan options')}
+                    onClick={() =>
+                      void account.startSubscriptionCheckout
+                        .mutateAsync()
+                        .then(({ sessionURL }) => {
+                          if (!sessionURL)
+                            throw new Error(
+                              'The server did not provide a checkout link',
+                            )
+                          window.location.assign(sessionURL)
+                        })
+                        .catch(err =>
+                          ctx.showToast(
+                            err instanceof Error
+                              ? err.message
+                              : 'Could not open subscription checkout',
+                          ),
+                        )
+                    }
                   >
                     Change plan
                   </button>
@@ -1770,24 +2305,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='tag'
                   label='Payment method'
-                  sub='Visa ending 4242 · expires 08/28'
-                >
-                  <button className='btn btn-ghost btn-sm text-brand'>
-                    Update
-                  </button>
-                </Row>
+                  sub='Payment methods are managed in the secure checkout portal.'
+                />
                 <Row
                   icon='clipboard'
                   label='Billing history'
-                  sub='Download past invoices'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.showToast('Fetching invoices')}
-                  >
-                    View invoices
-                  </button>
-                </Row>
+                  sub='Invoice history is not exposed by this server yet.'
+                />
                 <Row
                   icon='x'
                   label='Cancel subscription'
@@ -1799,11 +2323,24 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       ctx.showConfirm({
                         title: 'Cancel Premium?',
                         message:
-                          "You'll keep Premium features until 1 September 2026, then move to the free plan.",
+                          'The server will cancel the active subscription at the end of its current billing period.',
                         confirmLabel: 'Cancel plan',
                         danger: true,
                         onConfirm: () =>
-                          ctx.showToast('Subscription will not renew'),
+                          void account.cancelSubscription
+                            .mutateAsync()
+                            .then(() =>
+                              ctx.showToast(
+                                'Subscription cancellation recorded',
+                              ),
+                            )
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not cancel subscription',
+                              ),
+                            ),
                       })
                     }
                   >
@@ -1873,16 +2410,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='lock'
                   label='Personal access token'
-                  sub='Use for API requests on your behalf'
+                  sub='Token creation requires a named token flow, which is not exposed in this approved UI yet.'
                 >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() =>
-                      ctx.showToast('Demo: token generation is not connected')
-                    }
-                  >
-                    Generate
-                  </button>
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
                 <Row
                   icon='external'
@@ -1908,23 +2440,20 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='download'
                   label='Export my data'
-                  sub='Download a full copy of your dydan data (JSON)'
+                  sub='The encrypted backup flow requires a passphrase UI and is not available from this screen yet.'
                 >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() =>
-                      ctx.showToast('Export started — check your email')
-                    }
-                  >
-                    Export
-                  </button>
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
                 <Row
                   icon='upload'
                   label='Import data'
                   sub='Restore from a previous export'
                 >
-                  <button className='btn btn-secondary btn-sm'>Import</button>
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
                 <Row
                   icon='database'
@@ -1945,7 +2474,14 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <button
                     className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.showToast('Cache cleared')}
+                    onClick={() =>
+                      void offlineDB
+                        .clearAll()
+                        .then(() => ctx.showToast('Local cache cleared'))
+                        .catch(() =>
+                          ctx.showToast('Could not clear the local cache'),
+                        )
+                    }
                   >
                     Clear
                   </button>
@@ -1957,17 +2493,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <button
                     className='btn btn-ghost btn-sm text-sig-over'
-                    onClick={() =>
-                      ctx.showConfirm({
-                        title: 'Delete your account?',
-                        message:
-                          'This is permanent. All your tasks, goals, and team data will be deleted. This cannot be undone.',
-                        confirmLabel: 'Delete account',
-                        danger: true,
-                        onConfirm: () =>
-                          ctx.showToast('Account deletion requested'),
-                      })
-                    }
+                    onClick={() => setShowDeleteAccount(true)}
                   >
                     Delete
                   </button>
@@ -2005,85 +2531,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='refresh'
                   label='Reset all settings'
-                  sub='Restore every preference to its default'
+                  sub='A complete server-backed preference reset is not available.'
                 >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() =>
-                      ctx.showConfirm({
-                        title: 'Reset all settings?',
-                        message:
-                          'Your preferences will return to defaults. Your data is not affected.',
-                        confirmLabel: 'Reset',
-                        danger: true,
-                        onConfirm: () => ctx.showToast('Settings reset'),
-                      })
-                    }
-                  >
-                    Reset
-                  </button>
-                </Row>
-              </Section>
-              <Section title='Prototype demo flows'>
-                <Row
-                  icon='zap'
-                  label='New user onboarding'
-                  sub='Walk through the first-use setup flow'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={ctx.goToOnboarding}
-                  >
-                    Demo
-                  </button>
-                </Row>
-                <Row
-                  icon='error'
-                  label='Error reporting flow'
-                  sub='See the full error and support flow'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.navigate('error')}
-                  >
-                    Open
-                  </button>
-                </Row>
-                <Row
-                  icon='wifi_off'
-                  label='Offline state'
-                  sub='Demo the disconnected experience'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.navigate('offline')}
-                  >
-                    Open
-                  </button>
-                </Row>
-                <Row
-                  icon='database'
-                  label='Unavailable data state'
-                  sub='Demo failed data loading'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.navigate('unavailable')}
-                  >
-                    Open
-                  </button>
-                </Row>
-                <Row
-                  icon='lock'
-                  label='Permission denied state'
-                  sub='Demo restricted access'
-                >
-                  <button
-                    className='btn btn-secondary btn-sm'
-                    onClick={() => ctx.navigate('permission-denied')}
-                  >
-                    Open
-                  </button>
+                  <span className='text-faint' style={{ fontSize: 12 }}>
+                    Not available
+                  </span>
                 </Row>
               </Section>
             </TabPanel>
@@ -2146,19 +2598,125 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
       {showInvite && (
         <InviteModal
+          inviteCode={inviteCode}
           onClose={() => setShowInvite(false)}
-          onSuccess={email => {
-            setShowInvite(false)
-            ctx.inviteMember(email)
-          }}
         />
       )}
       {showEditProfile && (
         <EditProfileModal
           onClose={() => setShowEditProfile(false)}
-          onSave={() => ctx.showToast('Profile updated')}
-          photoUrl={profilePhoto}
+          onSave={async name => {
+            try {
+              await account.updateProfile.mutateAsync({ displayName: name })
+              ctx.showToast('Profile updated')
+              setShowEditProfile(false)
+            } catch (err) {
+              ctx.showToast(
+                err instanceof Error ? err.message : 'Profile update failed',
+              )
+            }
+          }}
+          photoUrl={profileImage}
           onPhotoChange={handlePhotoChange}
+        />
+      )}
+      {showPassword && (
+        <PasswordModal
+          onClose={() => setShowPassword(false)}
+          onSubmit={async (currentPassword, newPassword) => {
+            await account.changePassword.mutateAsync({
+              currentPassword,
+              newPassword,
+            })
+            ctx.showToast('Password updated; other sessions were signed out')
+          }}
+        />
+      )}
+      {mfaSetup && (
+        <MFASetupModal
+          onClose={() => setMfaSetup(null)}
+          onConfirm={async code => {
+            await account.confirmMFA.mutateAsync({ ...mfaSetup, code })
+            ctx.showToast(
+              'Two-factor authentication enabled. Please sign in again.',
+            )
+            await ctx.signOut()
+          }}
+          setup={mfaSetup}
+        />
+      )}
+      {credentialAction && (
+        <CredentialModal
+          actionLabel={
+            credentialAction === 'disable-mfa'
+              ? 'Disable two-factor authentication'
+              : 'Regenerate recovery codes'
+          }
+          body={
+            credentialAction === 'disable-mfa'
+              ? 'Enter a current authenticator or recovery code to disable two-factor authentication.'
+              : 'Enter a current authenticator code to replace all recovery codes.'
+          }
+          onClose={() => setCredentialAction(null)}
+          onSubmit={async code => {
+            if (credentialAction === 'disable-mfa') {
+              await account.disableMFA.mutateAsync(code)
+              ctx.showToast(
+                'Two-factor authentication disabled. Please sign in again.',
+              )
+              await ctx.signOut()
+              return
+            }
+            const result = await account.regenerateBackupCodes.mutateAsync(code)
+            setRecoveryCodes(result.backupCodes)
+            ctx.showToast('New recovery codes generated')
+          }}
+          title={
+            credentialAction === 'disable-mfa'
+              ? 'Disable two-factor authentication'
+              : 'Regenerate recovery codes'
+          }
+        />
+      )}
+      {showRenameTeam && circle && (
+        <TextInputModal
+          initialValue={circle.name}
+          label='Team name'
+          onClose={() => setShowRenameTeam(false)}
+          onSubmit={async name => {
+            await account.updateCircle.mutateAsync(name)
+            ctx.showToast('Team name updated')
+          }}
+          title='Rename team'
+        />
+      )}
+      {recoveryCodes && (
+        <RecoveryCodesModal
+          codes={recoveryCodes}
+          onClose={() => setRecoveryCodes(null)}
+        />
+      )}
+      {showDeleteAccount && (
+        <DeleteAccountModal
+          onClose={() => setShowDeleteAccount(false)}
+          onDelete={async password => {
+            const result =
+              await account.checkAccountDeletion.mutateAsync(password)
+            if (
+              result &&
+              typeof result === 'object' &&
+              'requiresTransfer' in result &&
+              result.requiresTransfer
+            ) {
+              throw new Error(
+                'Transfer ownership of your team before deleting this account.',
+              )
+            }
+            await account.deleteAccount.mutateAsync({ password })
+            await clearAllTokens()
+            ctx.showToast('Account deleted')
+            await ctx.signOut()
+          }}
         />
       )}
     </>
