@@ -53,7 +53,7 @@ where the operation changes shared data.
 | `notifications.rewards` | `PUT /users/preferences` | Reward handler → inbox | Suppresses reward notification and email | available | Server reward/notifier tests |
 | `notifications.weeklySummary` | `PUT /users/preferences` | Friday timezone-aware inbox scheduler | Suppresses weekly digest and email | available | Server weekly-summary tests |
 | `notifications.quietHours` | `PUT /users/preferences` | Server inbox channel gate | Suppresses inbox/external delivery 22:00–08:00 local | available | Server notifier tests |
-| `notifications.pushChannel` | `PUT /users/preferences` | Server external delivery gate | Suppresses FCM without affecting email/inbox | device-dependent | Server notifier tests |
+| `notifications.pushChannel` | `PUT /users/preferences` | Inbox notification → registered-device FCM sender; legacy external delivery gate | Suppresses FCM for task, routine, family, reward, and weekly inbox events without affecting email/inbox | device-dependent | Server notifier tests |
 | `notifications.emailChannel` | `PUT /users/preferences` | Server inbox notification sender | Delivers only to server-owned account email | server Email Delivery + account email | Server email-notification tests |
 | `privacy.activityVisible` | `PUT /users/preferences` | Progress report visibility query and family notifier | Hides opted-out member completion breakdowns and suppresses family activity generated from their completion | available | Server progress/notifier tests |
 | `privacy.analytics` | `PUT /users/preferences` | No telemetry pipeline | Disabled in Settings; no no-op consent promise | unavailable | capability response |
