@@ -3030,10 +3030,22 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='mail'
                   label='Email notifications'
-                  sub='Allow delivery to your verified email address'
+                  sub={
+                    integrationStatus === undefined
+                      ? 'Loading server email-delivery status…'
+                      : integrationStatus.settings.notificationEmail.available
+                        ? 'Allow delivery to your account email address'
+                        : integrationStatus.settings.notificationEmail
+                              .emailDeliveryConfigured
+                          ? 'Add an email address to enable this channel'
+                          : 'Email Delivery is unavailable on this server'
+                  }
                 >
                   <JoyToggle
                     on={preferences.notifications.emailChannel}
+                    disabled={
+                      !integrationStatus?.settings.notificationEmail.available
+                    }
                     onChange={() =>
                       savePreferences({
                         ...preferences,
@@ -3080,6 +3092,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <JoyToggle
                     on={preferences.privacy.analytics}
+                    disabled={!integrationStatus?.settings.analytics.available}
                     onChange={() =>
                       savePreferences({
                         ...preferences,
@@ -3098,6 +3111,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <JoyToggle
                     on={preferences.privacy.personalization}
+                    disabled={
+                      !integrationStatus?.settings.personalization.available
+                    }
                     onChange={() =>
                       savePreferences({
                         ...preferences,
@@ -3519,6 +3535,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 >
                   <JoyToggle
                     on={preferences.betaFeatures}
+                    disabled={
+                      !integrationStatus?.settings.betaFeatures.available
+                    }
                     onChange={() => {
                       const next = !preferences.betaFeatures
                       savePreferences(

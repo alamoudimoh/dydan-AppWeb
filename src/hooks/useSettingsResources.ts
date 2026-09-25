@@ -47,6 +47,16 @@ export type IntegrationStatus = {
     editable: boolean
     plusOnly: boolean
   }
+  settings: {
+    notificationEmail: {
+      available: boolean
+      emailDeliveryConfigured: boolean
+      accountEmailAvailable: boolean
+    }
+    analytics: { available: boolean }
+    personalization: { available: boolean }
+    betaFeatures: { available: boolean }
+  }
 }
 
 /** One invoice as recorded by the server's Stripe webhook handler. */
