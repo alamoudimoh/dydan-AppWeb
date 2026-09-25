@@ -133,14 +133,21 @@ export default function TodayScreen({
     t => tasks.find(x => x.id === t.id) || t,
   )
 
-  const filteredToday = todayBase.filter(t => {
+  const matchesFilter = (t: Task) => {
     if (filter === 'mine') return t.assigneeId === me?.id
     if (filter === 'family') return t.assigneeId !== me?.id
     return true
-  })
+  }
+
+  const filteredToday = todayBase.filter(matchesFilter)
+  const filteredOverdue = overdueList.filter(matchesFilter)
 
   const done = filteredToday.filter(t => t.status === 'done')
-  const todo = filteredToday.filter(t => t.status !== 'done')
+  // Overdue work has its own banner below. Keeping it out of the ordinary
+  // todo list prevents the same persisted task from appearing twice.
+  const todo = filteredToday.filter(
+    t => t.status !== 'done' && t.status !== 'overdue',
+  )
   const totalPoints = done.reduce((a, t) => a + (t.points || 0), 0)
 
   return (
@@ -231,7 +238,7 @@ export default function TodayScreen({
         )}
 
         {/* Overdue banner */}
-        {overdueList.length > 0 && (
+        {filteredOverdue.length > 0 && (
           <div
             className='rounded-lg p-4 mb-4'
             style={{
@@ -253,7 +260,7 @@ export default function TodayScreen({
                 Overdue
               </span>
             </div>
-            {overdueList.map(t => (
+            {filteredOverdue.map(t => (
               <TaskRow
                 key={t.id}
                 task={t}

@@ -129,12 +129,113 @@ export function useProjects() {
   })
 }
 
+export function useProjectMutations() {
+  const client = useQueryClient()
+  const invalidate = () => client.invalidateQueries({ queryKey: KEYS.projects })
+  const createProject = useMutation({
+    mutationFn: (project: {
+      name: string
+      description: string
+      color: string
+      icon: string
+    }) => parseRes<ApiProject>(Fetcher.CreateProject(project)),
+    onSuccess: invalidate,
+  })
+  const updateProject = useMutation({
+    mutationFn: ({
+      id,
+      ...project
+    }: {
+      id: number
+      name: string
+      description: string
+      color: string
+      icon: string
+    }) => parseRes<ApiProject>(Fetcher.UpdateProject(id, project)),
+    onSuccess: invalidate,
+  })
+  const deleteProject = useMutation({
+    mutationFn: (id: number) => parseRes(Fetcher.DeleteProject(id)),
+    onSuccess: invalidate,
+  })
+  return { createProject, updateProject, deleteProject }
+}
+
 export function useRoutines() {
   return useQuery({
     queryKey: KEYS.routines,
-    queryFn: () => parseRes<ApiRoutinePack[]>(Fetcher.GetRoutines()),
+    queryFn: () => parseRes<ApiRoutinePack[]>(Fetcher.GetRoutines(true)),
     enabled: authEnabled(),
   })
+}
+
+type RoutineItemInput = {
+  name: string
+  frequencyType: 'daily' | 'weekly' | 'monthly'
+  frequency: number
+  assignedTo: number | null
+  assignStrategy: 'no_assignee'
+  points: number | null
+  requireApproval: boolean
+}
+
+type RoutineMutationInput = {
+  name: string
+  description: string
+  items: RoutineItemInput[]
+}
+
+/** Persist routine packs and their steps through the routine API. */
+export function useRoutineMutations() {
+  const client = useQueryClient()
+  const invalidate = () => client.invalidateQueries({ queryKey: KEYS.routines })
+  const createRoutine = useMutation({
+    mutationFn: async (input: RoutineMutationInput) => {
+      const pack = await parseRes<ApiRoutinePack>(
+        Fetcher.CreateRoutine({
+          name: input.name,
+          description: input.description,
+        }),
+      )
+      for (const item of input.items) {
+        await parseRes(Fetcher.CreateRoutineItem(pack.id, item))
+      }
+      return pack
+    },
+    onSuccess: invalidate,
+  })
+  const updateRoutine = useMutation({
+    mutationFn: async ({
+      id,
+      ...input
+    }: RoutineMutationInput & { id: number }) => {
+      await parseRes(
+        Fetcher.UpdateRoutine(id, {
+          name: input.name,
+          description: input.description,
+        }),
+      )
+      const existing = client
+        .getQueryData<ApiRoutinePack[]>(KEYS.routines)
+        ?.find(pack => pack.id === id)
+      const existingItems = existing?.items ?? []
+      for (const [index, item] of input.items.entries()) {
+        const prior = existingItems[index]
+        if (prior) await parseRes(Fetcher.UpdateRoutineItem(id, prior.id, item))
+        else await parseRes(Fetcher.CreateRoutineItem(id, item))
+      }
+      for (const stale of existingItems.slice(input.items.length)) {
+        await parseRes(Fetcher.DeleteRoutineItem(id, stale.id))
+      }
+    },
+    onSuccess: invalidate,
+  })
+  const setRoutineActive = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      parseRes(Fetcher.UpdateRoutineStatus(id, isActive)),
+    onSuccess: invalidate,
+  })
+  return { createRoutine, updateRoutine, setRoutineActive }
 }
 
 export function useShoppingLists() {
@@ -189,6 +290,29 @@ export function useThings() {
   })
 }
 
+/** Mutations supported by the meter and thing APIs used by Maintenance. */
+export function useMaintenanceMutations() {
+  const client = useQueryClient()
+  const invalidate = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: KEYS.meters }),
+      client.invalidateQueries({ queryKey: KEYS.things }),
+      client.invalidateQueries({ queryKey: KEYS.maintenance }),
+    ])
+  return {
+    addMeterReading: useMutation({
+      mutationFn: ({ id, reading }: { id: number; reading: number }) =>
+        parseRes(Fetcher.AddMeterReading(id, { reading })),
+      onSuccess: invalidate,
+    }),
+    updateThingState: useMutation({
+      mutationFn: ({ id, state }: { id: number; state: string }) =>
+        parseRes(Fetcher.UpdateThingState({ id, state })),
+      onSuccess: invalidate,
+    }),
+  }
+}
+
 export function useMaintenance() {
   return useQuery({
     queryKey: KEYS.maintenance,
@@ -208,10 +332,11 @@ export function useChoreHistory(limit = 14, includeMembers = true) {
   })
 }
 
-export function useRewardRequests() {
+export function useRewardRequests(mine = false) {
   return useQuery({
-    queryKey: KEYS.rewardRequests,
-    queryFn: () => parseRes<ApiRewardRequest[]>(Fetcher.GetRewardRequests()),
+    queryKey: [...KEYS.rewardRequests, mine ? 'mine' : 'admin'],
+    queryFn: () =>
+      parseRes<ApiRewardRequest[]>(Fetcher.GetRewardRequests(mine)),
     enabled: authEnabled(),
     retry: false,
   })
@@ -437,8 +562,13 @@ export function useShoppingMutations() {
   const client = useQueryClient()
   const invalidate = () => client.invalidateQueries({ queryKey: KEYS.shopping })
   const createList = useMutation({
-    mutationFn: async (name: string) =>
-      parseRes(Fetcher.CreateShoppingList({ name, scope: 'circle' })),
+    mutationFn: async ({
+      name,
+      scope,
+    }: {
+      name: string
+      scope: 'personal' | 'circle'
+    }) => parseRes(Fetcher.CreateShoppingList({ name, scope })),
     onSuccess: () => invalidate(),
   })
   const toggleItem = useMutation({
@@ -484,7 +614,72 @@ export function useShoppingMutations() {
     }) => parseRes(Fetcher.DeleteShoppingListItem(listId, itemId)),
     onSuccess: () => invalidate(),
   })
-  return { createList, toggleItem, addItem, removeItem }
+  const updateList = useMutation({
+    mutationFn: async ({ id, name }: { id: number; name: string }) =>
+      parseRes(Fetcher.UpdateShoppingList(id, { name })),
+    onSuccess: () => invalidate(),
+  })
+  const deleteList = useMutation({
+    mutationFn: async (id: number) => parseRes(Fetcher.DeleteShoppingList(id)),
+    onSuccess: () => invalidate(),
+  })
+  const clearCompleted = useMutation({
+    mutationFn: async (id: number) =>
+      parseRes(Fetcher.ClearCompletedShoppingItems(id)),
+    onSuccess: () => invalidate(),
+  })
+  const updateItem = useMutation({
+    mutationFn: async ({
+      itemId,
+      listId,
+      name,
+    }: {
+      listId: number
+      itemId: number
+      name: string
+    }) => parseRes(Fetcher.UpdateShoppingListItem(listId, itemId, { name })),
+    onSuccess: () => invalidate(),
+  })
+  return {
+    createList,
+    toggleItem,
+    addItem,
+    removeItem,
+    updateList,
+    deleteList,
+    clearCompleted,
+    updateItem,
+  }
+}
+
+export type GoalMutationInput = {
+  name: string
+  metricType: 'TASK_COMPLETIONS' | 'CATEGORY_COMPLETIONS' | 'POINTS_EARNED'
+  target: number
+  categoryId?: number | null
+  startDate: string
+  endDate: string
+  status?: 'active' | 'archived'
+}
+
+export function useGoalMutations() {
+  const client = useQueryClient()
+  const invalidate = () => client.invalidateQueries({ queryKey: KEYS.goals })
+  return {
+    createGoal: useMutation({
+      mutationFn: (input: GoalMutationInput) =>
+        parseRes(Fetcher.CreateGoal(input)),
+      onSuccess: invalidate,
+    }),
+    updateGoal: useMutation({
+      mutationFn: ({
+        id,
+        ...input
+      }: GoalMutationInput & { id: number | string }) =>
+        parseRes(Fetcher.UpdateGoal(id, input)),
+      onSuccess: invalidate,
+    }),
+  }
 }
 
 /* ── Reward + reward-request mutations (used by RewardsScreen) ── */
@@ -516,6 +711,7 @@ export function useRewardMutations() {
       name: string
       description?: string
       costPoints: number
+      isActive?: boolean
     }) => parseRes(Fetcher.UpdateReward(Number(id), reward)),
     onSuccess: () => invalidate(),
   })

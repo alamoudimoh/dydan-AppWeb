@@ -97,12 +97,22 @@ test('specific routes retain their server envelopes without collection shadowing
   const workload = await callMock({
     path: '/api/v1/progress/workload?range=week',
   })
+  const ticketSSE = await callMock({
+    path: '/api/v1/realtime/sse?ticket=smoke-sse-ticket',
+  })
+  const refreshCookieSSE = await callMock({
+    path: '/api/v1/realtime/sse',
+    headers: { cookie: 'refresh_token=smoke-refresh-token' },
+  })
 
   assert.equal(JSON.parse(profile.body).res.id, 1)
   assert.equal(JSON.parse(ticket.body).expiresIn, 60)
   assert.equal(ticket.headers['Cache-Control'], 'no-store')
   assert.equal(JSON.parse(workload.body).res, undefined)
   assert.ok(Array.isArray(JSON.parse(workload.body).members))
+  assert.equal(ticketSSE.status, 200)
+  assert.match(ticketSSE.headers['Content-Type'], /text\/event-stream/)
+  assert.equal(refreshCookieSSE.status, 400)
 })
 
 test('strict mock validates mutation payloads and supported public auth flows', async () => {
@@ -132,6 +142,65 @@ test('strict mock validates mutation payloads and supported public auth flows', 
   assert.equal(validMutation.status, 200)
   assert.equal(publicRefresh.status, 400)
   assert.equal(cookieRefresh.status, 200)
+})
+
+test('routine and reward actions use persisted API contracts, not local success paths', async () => {
+  const routine = await callMock({
+    method: 'POST',
+    path: '/api/v1/routines',
+    body: JSON.stringify({ name: 'Morning', description: '' }),
+  })
+  const item = await callMock({
+    method: 'POST',
+    path: '/api/v1/routines/81/items',
+    body: JSON.stringify({
+      name: 'Brush teeth',
+      frequencyType: 'daily',
+      frequency: 1,
+    }),
+  })
+  const active = await callMock({
+    method: 'PATCH',
+    path: '/api/v1/routines/81/status',
+    body: JSON.stringify({ isActive: false }),
+  })
+  const reward = await callMock({
+    method: 'POST',
+    path: '/api/v1/rewards',
+    body: JSON.stringify({ name: 'Movie', costPoints: 100 }),
+  })
+  const request = await callMock({
+    method: 'POST',
+    path: '/api/v1/rewards/requests',
+    body: JSON.stringify({ rewardId: 91 }),
+  })
+
+  assert.equal(routine.status, 201)
+  assert.equal(item.status, 201)
+  assert.equal(active.status, 200)
+  assert.equal(reward.status, 201)
+  assert.equal(request.status, 201)
+})
+
+test('maintenance actions are limited to server-backed completion, readings, and thing state', async () => {
+  const completed = await callMock({
+    method: 'POST',
+    path: '/api/v1/chores/42/do',
+    body: JSON.stringify({}),
+  })
+  const reading = await callMock({
+    method: 'POST',
+    path: '/api/v1/meters/7/readings',
+    body: JSON.stringify({ reading: 42 }),
+  })
+  const thing = await callMock({
+    method: 'PUT',
+    path: '/api/v1/things/8/state?value=on',
+  })
+
+  assert.equal(completed.status, 200)
+  assert.equal(reading.status, 201)
+  assert.equal(thing.status, 200)
 })
 
 test('notifications list accepts the query-less contract the runtime uses', async () => {

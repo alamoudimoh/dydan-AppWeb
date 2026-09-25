@@ -49,17 +49,19 @@ export function useRealtimeSync(isAuthenticated: boolean) {
     }
     const connect = async () => {
       const baseURL = apiClient.getApiURL()
+      // WebKit's EventSource polyfill can drop custom request headers. Obtain
+      // the server's short-lived, single-use credential through the regular
+      // authenticated API client, then use it for the SSE handshake on every
+      // platform. This also keeps the bearer access token out of the URL.
+      const response = await apiClient.get('/realtime/sse/ticket')
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok || typeof body.ticket !== 'string') return
+      const sseURL = `${baseURL}/realtime/sse?ticket=${encodeURIComponent(body.ticket)}`
       let source: EventSource | EventSourcePolyfill
       if (Capacitor.isNativePlatform()) {
-        const response = await apiClient.get('/realtime/sse/ticket')
-        const body = await response.json().catch(() => ({}))
-        if (!response.ok || typeof body.ticket !== 'string') return
-        source = new EventSource(
-          `${baseURL}/realtime/sse?ticket=${encodeURIComponent(body.ticket)}`,
-        )
+        source = new EventSource(sseURL)
       } else {
-        source = new EventSourcePolyfill(`${baseURL}/realtime/sse`, {
-          headers: { Authorization: `Bearer ${token}` },
+        source = new EventSourcePolyfill(sseURL, {
           heartbeatTimeout: 45_000,
         })
       }

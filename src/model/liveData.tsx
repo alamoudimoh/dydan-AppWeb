@@ -215,7 +215,7 @@ function toRoutines(routines: ApiRoutinePack[]): Routine[] {
       icon: ROUTINE_ICONS[i % ROUTINE_ICONS.length],
       active: pack.isActive,
       assignmentStrategy: strategy,
-      requiresApproval: pack.items.some(item => item.requiresApproval),
+      requiresApproval: pack.items.some(item => item.requireApproval),
       pointsPerTask:
         pack.items.find(item => item.points != null)?.points ?? undefined,
     }
@@ -263,11 +263,15 @@ function toGoals(goals: ApiGoal[]): Goal[] {
     name: g.name,
     description: undefined,
     isFamily: g.circleId != null,
-    progress: 0,
+    progress: g.progress ?? 0,
     target: g.target,
     unit: units[g.metricType] ?? 'units',
     emoji: icons[g.metricType] ?? '🎯',
     color: GOAL_PALETTE[i % GOAL_PALETTE.length],
+    metricType: g.metricType as Goal['metricType'],
+    startDate: g.startDate?.slice(0, 10),
+    endDate: g.endDate?.slice(0, 10),
+    status: g.status,
   }))
 }
 
@@ -279,6 +283,7 @@ function toRewards(rewards: ApiReward[]): Reward[] {
     description: r.description,
     pointsCost: r.costPoints,
     icon: icons[i % icons.length],
+    isActive: r.isActive,
   }))
 }
 
@@ -410,11 +415,11 @@ function toMeters(meters: ApiMeter[], members: Member[]): Meter[] {
 function toThings(things: ApiThing[]): Thing[] {
   const icons = ['🚪', '🌿', '🌡️', '🐕', '🍽️', '💡', '🔧']
   return things.map((t, i) => {
-    const value = t.description ?? '—'
+    const value = t.state ?? '—'
     return {
       id: String(t.id),
       name: t.name,
-      type: 'toggle',
+      type: t.type ?? 'text',
       state: value,
       lastChanged: t.createdAt ?? '',
       history: [],
@@ -430,7 +435,7 @@ function toNotifications(list: ApiNotification[]): Notification[] {
     type: mapNotificationType(n.type),
     title: n.title ?? n.type ?? 'Notification',
     body: n.body ?? n.message ?? '',
-    isRead: n.isRead ?? n.read ?? false,
+    isRead: n.readAt != null || n.isRead === true || n.read === true,
     timestamp: n.createdAt,
     actorId: undefined,
   }))

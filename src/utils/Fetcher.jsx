@@ -770,12 +770,47 @@ const VerifyMFA = async (sessionToken, code) => {
   })
 }
 
-const GetRoutines = () => {
-  return Fetch('/routines', {
+const GetRoutines = (includeArchived = false) => {
+  return Fetch(`/routines${includeArchived ? '?includeArchived=true' : ''}`, {
     method: 'GET',
     headers: HEADERS(),
   })
 }
+const CreateRoutine = routine =>
+  Fetch('/routines', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(routine),
+  })
+const UpdateRoutine = (id, routine) =>
+  Fetch(`/routines/${id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(routine),
+  })
+const UpdateRoutineStatus = (id, isActive) =>
+  Fetch(`/routines/${id}/status`, {
+    method: 'PATCH',
+    headers: HEADERS(),
+    body: JSON.stringify({ isActive }),
+  })
+const CreateRoutineItem = (routineId, item) =>
+  Fetch(`/routines/${routineId}/items`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(item),
+  })
+const UpdateRoutineItem = (routineId, itemId, item) =>
+  Fetch(`/routines/${routineId}/items/${itemId}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(item),
+  })
+const DeleteRoutineItem = (routineId, itemId) =>
+  Fetch(`/routines/${routineId}/items/${itemId}`, {
+    method: 'DELETE',
+    headers: HEADERS(),
+  })
 
 const GetRewards = () => {
   return Fetch('/rewards', {
@@ -876,6 +911,13 @@ const CreateGoal = goal => {
     body: JSON.stringify(goal),
   })
 }
+const UpdateGoal = (id, goal) => {
+  return Fetch(`/progress/goals/${id}`, {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(goal),
+  })
+}
 
 const UpdateDueDate = (id, dueDate) => {
   return Fetch(`/chores/${id}/dueDate`, {
@@ -962,6 +1004,24 @@ const GetStorageUsage = () => {
     headers: HEADERS(),
   })
 }
+
+// Instance-level email delivery administration. The server only returns
+// masked configuration metadata; credentials are submitted directly for an
+// update and are never retained by this client.
+const GetEmailDelivery = () =>
+  Fetch('/admin/email-delivery', { method: 'GET', headers: HEADERS() })
+const UpdateEmailDelivery = delivery =>
+  Fetch('/admin/email-delivery', {
+    method: 'PUT',
+    headers: HEADERS(),
+    body: JSON.stringify(delivery),
+  })
+const TestEmailDelivery = to =>
+  Fetch('/admin/email-delivery/test', {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({ to }),
+  })
 
 // Timer/TimeSession API functions
 const GetChoreTimer = choreId => {
@@ -1361,6 +1421,8 @@ export {
   CreateProject,
   CreateReward,
   CreateRewardRequest,
+  CreateRoutine,
+  CreateRoutineItem,
   CreateShoppingList,
   CreateShoppingListItem,
   CreateThing,
@@ -1374,6 +1436,7 @@ export {
   DeleteLabel,
   DeleteLongLiveToken,
   DeleteProject,
+  DeleteRoutineItem,
   DeleteShoppingList,
   DeleteShoppingListItem,
   DeleteThing,
@@ -1399,6 +1462,7 @@ export {
   GetChoreTimer,
   GetCircleMemberRequests,
   GetDeviceTokens,
+  GetEmailDelivery,
   GetFilterById,
   GetFilters,
   GetFiltersByUsage,
@@ -1464,6 +1528,7 @@ export {
   signUp,
   SkipChore,
   StartChore,
+  TestEmailDelivery,
   ToggleFilterPin,
   UnArchiveChore,
   UndoChoreAction,
@@ -1475,13 +1540,18 @@ export {
   UpdateChorePriority,
   UpdateCircleSettings,
   UpdateDueDate,
+  UpdateEmailDelivery,
   UpdateFilter,
+  UpdateGoal,
   UpdateLabel,
   UpdateMemberRole,
   UpdateNotificationTarget,
   UpdatePassword,
   UpdateProject,
   UpdateReward,
+  UpdateRoutine,
+  UpdateRoutineItem,
+  UpdateRoutineStatus,
   UpdateShoppingList,
   UpdateShoppingListItem,
   UpdateThingState,

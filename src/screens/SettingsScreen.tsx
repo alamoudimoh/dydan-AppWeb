@@ -28,8 +28,11 @@ import {
 } from '../hooks/useSettingsPreferences'
 import {
   type CreatedApiToken,
+  type EmailDeliveryInput,
   useApiTokenMutations,
   useApiTokens,
+  useEmailDelivery,
+  useEmailDeliveryMutations,
   useStorageUsage,
 } from '../hooks/useSettingsResources'
 import { useLiveData } from '../model/liveData'
@@ -195,6 +198,289 @@ function TabHeader({
         </div>
       </div>
       {action}
+    </div>
+  )
+}
+
+function EmailDeliverySettings({ ctx }: { ctx: AppCtx }) {
+  const delivery = useEmailDelivery()
+  const mutations = useEmailDeliveryMutations()
+  const [form, setForm] = useState<EmailDeliveryInput>({
+    provider: 'smtp',
+    fromEmail: '',
+    host: '',
+    port: 587,
+    username: '',
+    secret: '',
+    appHost: window.location.origin,
+    verificationTemplateId: '',
+    resetPasswordTemplateId: '',
+  })
+  const [testRecipient, setTestRecipient] = useState('')
+  const [result, setResult] = useState<string | null>(null)
+
+  useEffect(() => {
+    const status = delivery.data
+    if (!status) return
+    setForm(previous => ({
+      ...previous,
+      provider: status.provider || 'smtp',
+      fromEmail: status.fromEmail ?? '',
+      host: status.host ?? '',
+      port: status.port ?? (status.provider === 'smtp' ? 587 : 0),
+      username: status.username ?? '',
+      // GET deliberately contains no secret. Keeping it blank preserves the
+      // saved secret unless an administrator explicitly supplies a replacement.
+      secret: '',
+      appHost: status.appHost ?? window.location.origin,
+      verificationTemplateId: status.verificationTemplateId ?? '',
+      resetPasswordTemplateId: status.resetPasswordTemplateId ?? '',
+    }))
+    setTestRecipient(current => current || status.fromEmail || '')
+  }, [delivery.data])
+
+  if (delivery.isLoading) {
+    return <div className='px-5 py-4 text-muted'>Loading delivery status…</div>
+  }
+  if (delivery.isError) {
+    return (
+      <div className='px-5 py-4 text-muted' style={{ fontSize: 13 }}>
+        Email delivery can only be configured by a DyDan administrator.
+      </div>
+    )
+  }
+
+  const status = delivery.data
+  const update = <K extends keyof EmailDeliveryInput>(
+    key: K,
+    value: EmailDeliveryInput[K],
+  ) => setForm(previous => ({ ...previous, [key]: value }))
+  const save = async () => {
+    setResult(null)
+    try {
+      const saved = await mutations.save.mutateAsync(form)
+      setForm(previous => ({ ...previous, secret: '' }))
+      setResult(
+        saved.source === 'runtime'
+          ? 'Email delivery configuration saved.'
+          : 'Email delivery configuration updated.',
+      )
+      ctx.showToast('Email delivery configuration saved')
+    } catch (error) {
+      setResult(
+        error instanceof Error
+          ? error.message
+          : 'Could not save email delivery configuration',
+      )
+    }
+  }
+  const sendTest = async () => {
+    setResult(null)
+    try {
+      const response = await mutations.test.mutateAsync(testRecipient)
+      setResult(response.message)
+    } catch (error) {
+      setResult(
+        error instanceof Error
+          ? error.message
+          : 'The test email could not be delivered',
+      )
+    }
+  }
+
+  return (
+    <div className='p-5 flex flex-col gap-4'>
+      <div className='flex items-center justify-between gap-3 flex-wrap'>
+        <div>
+          <div className='font-medium text-primary'>Email Delivery</div>
+          <div className='text-muted' style={{ fontSize: 12, marginTop: 2 }}>
+            {status?.configured
+              ? `Configured via ${status.source === 'runtime' ? 'saved runtime settings' : 'environment fallback'}.`
+              : 'Not configured. Save a provider configuration to enable verified delivery.'}
+          </div>
+        </div>
+        <span
+          className='badge'
+          style={{
+            background: status?.configured
+              ? 'var(--sig-done-bg)'
+              : 'var(--surface-2)',
+            color: status?.configured ? 'var(--sig-done)' : 'var(--t-muted)',
+          }}
+        >
+          {status?.configured ? 'Configured' : 'Not configured'}
+        </span>
+      </div>
+      <label className='flex flex-col gap-1.5'>
+        <span className='section-label' style={{ padding: 0 }}>
+          PROVIDER
+        </span>
+        <select
+          className='input'
+          value={form.provider}
+          onChange={event =>
+            update(
+              'provider',
+              event.target.value as EmailDeliveryInput['provider'],
+            )
+          }
+        >
+          <option value='smtp'>SMTP</option>
+          <option value='smtp2go'>SMTP2GO</option>
+        </select>
+      </label>
+      <div
+        className='grid gap-3'
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}
+      >
+        <label className='flex flex-col gap-1.5'>
+          <span className='section-label' style={{ padding: 0 }}>
+            FROM EMAIL
+          </span>
+          <input
+            className='input'
+            type='email'
+            value={form.fromEmail}
+            onChange={event => update('fromEmail', event.target.value)}
+            autoComplete='email'
+          />
+        </label>
+        <label className='flex flex-col gap-1.5'>
+          <span className='section-label' style={{ padding: 0 }}>
+            APP HOST
+          </span>
+          <input
+            className='input'
+            type='url'
+            value={form.appHost}
+            onChange={event => update('appHost', event.target.value)}
+            placeholder='https://dydan.example'
+          />
+        </label>
+        {form.provider === 'smtp' ? (
+          <>
+            <label className='flex flex-col gap-1.5'>
+              <span className='section-label' style={{ padding: 0 }}>
+                SMTP HOST
+              </span>
+              <input
+                className='input'
+                value={form.host}
+                onChange={event => update('host', event.target.value)}
+                autoComplete='off'
+              />
+            </label>
+            <label className='flex flex-col gap-1.5'>
+              <span className='section-label' style={{ padding: 0 }}>
+                SMTP PORT
+              </span>
+              <input
+                className='input'
+                type='number'
+                min='1'
+                max='65535'
+                value={form.port || ''}
+                onChange={event => update('port', Number(event.target.value))}
+              />
+            </label>
+            <label className='flex flex-col gap-1.5'>
+              <span className='section-label' style={{ padding: 0 }}>
+                USERNAME
+              </span>
+              <input
+                className='input'
+                value={form.username}
+                onChange={event => update('username', event.target.value)}
+                autoComplete='username'
+              />
+            </label>
+          </>
+        ) : (
+          <>
+            <label className='flex flex-col gap-1.5'>
+              <span className='section-label' style={{ padding: 0 }}>
+                VERIFICATION TEMPLATE ID
+              </span>
+              <input
+                className='input'
+                value={form.verificationTemplateId}
+                onChange={event =>
+                  update('verificationTemplateId', event.target.value)
+                }
+                autoComplete='off'
+              />
+            </label>
+            <label className='flex flex-col gap-1.5'>
+              <span className='section-label' style={{ padding: 0 }}>
+                RESET-PASSWORD TEMPLATE ID
+              </span>
+              <input
+                className='input'
+                value={form.resetPasswordTemplateId}
+                onChange={event =>
+                  update('resetPasswordTemplateId', event.target.value)
+                }
+                autoComplete='off'
+              />
+            </label>
+          </>
+        )}
+        <label className='flex flex-col gap-1.5'>
+          <span className='section-label' style={{ padding: 0 }}>
+            {form.provider === 'smtp' ? 'PASSWORD / KEY' : 'API KEY'}
+          </span>
+          <input
+            className='input'
+            type='password'
+            value={form.secret}
+            onChange={event => update('secret', event.target.value)}
+            placeholder={
+              status?.secretConfigured
+                ? 'Stored securely — leave blank to keep'
+                : 'Required'
+            }
+            autoComplete='new-password'
+          />
+          {status?.secretConfigured && (
+            <span className='text-faint' style={{ fontSize: 11 }}>
+              A secret is stored securely. Leave this blank to preserve it.
+            </span>
+          )}
+        </label>
+      </div>
+      <div className='flex gap-2 flex-wrap'>
+        <button
+          className='btn btn-primary'
+          onClick={() => void save()}
+          disabled={mutations.save.isPending}
+        >
+          {mutations.save.isPending ? 'Saving…' : 'Save configuration'}
+        </button>
+        <input
+          className='input'
+          style={{ maxWidth: 280 }}
+          type='email'
+          value={testRecipient}
+          onChange={event => setTestRecipient(event.target.value)}
+          placeholder='Test recipient email'
+        />
+        <button
+          className='btn btn-secondary'
+          onClick={() => void sendTest()}
+          disabled={
+            !status?.configured ||
+            !testRecipient.trim() ||
+            mutations.test.isPending
+          }
+        >
+          {mutations.test.isPending ? 'Sending…' : 'Test email'}
+        </button>
+      </div>
+      {result && (
+        <div className='text-muted' role='status' style={{ fontSize: 13 }}>
+          {result}
+        </div>
+      )}
     </div>
   )
 }
@@ -2422,7 +2708,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='mail'
                   label='Email notifications'
-                  sub='Unavailable — no email delivery service is configured'
+                  sub='Email delivery is configured by a DyDan administrator in Advanced settings.'
                 >
                   <JoyToggle on={false} disabled />
                 </Row>
@@ -2729,6 +3015,10 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Delete
                   </button>
                 </Row>
+              </Section>
+
+              <Section title='Email delivery'>
+                <EmailDeliverySettings ctx={ctx} />
               </Section>
 
               <Section title='Experimental'>
