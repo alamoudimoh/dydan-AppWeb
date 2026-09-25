@@ -50,9 +50,14 @@ test('installApiMocks registers one strict API dispatcher', async () => {
   assert.equal(typeof routes[0].handler, 'function')
 })
 
-const callMock = async ({ body, headers = {}, method = 'GET', path }) => {
+const callMock = async ({
+  body,
+  handler = createApiMockHandler(),
+  headers = {},
+  method = 'GET',
+  path,
+}) => {
   const fulfillCalls = []
-  const handler = createApiMockHandler()
   const route = {
     request: () => ({
       headers: () => headers,
@@ -182,24 +187,47 @@ test('routine and reward actions use persisted API contracts, not local success 
   assert.equal(request.status, 201)
 })
 
-test('maintenance actions are limited to server-backed completion, readings, and thing state', async () => {
+test('maintenance actions create and mutate server-backed records', async () => {
+  const handler = createApiMockHandler()
+  const headers = { authorization: 'Bearer smoke-test-token' }
   const completed = await callMock({
+    handler,
     method: 'POST',
     path: '/api/v1/chores/42/do',
     body: JSON.stringify({}),
   })
-  const reading = await callMock({
+  const meter = await callMock({
+    handler,
+    headers,
     method: 'POST',
-    path: '/api/v1/meters/7/readings',
+    path: '/api/v1/meters',
+    body: JSON.stringify({ name: 'Odometer', unit: 'km', initialReading: 1 }),
+  })
+  const reading = await callMock({
+    handler,
+    headers,
+    method: 'POST',
+    path: '/api/v1/meters/700/readings',
     body: JSON.stringify({ reading: 42 }),
   })
+  const createdThing = await callMock({
+    handler,
+    headers,
+    method: 'POST',
+    path: '/api/v1/things',
+    body: JSON.stringify({ name: 'Switch', type: 'boolean', state: 'off' }),
+  })
   const thing = await callMock({
+    handler,
+    headers,
     method: 'PUT',
-    path: '/api/v1/things/8/state?value=on',
+    path: '/api/v1/things/800/state?value=on',
   })
 
   assert.equal(completed.status, 200)
-  assert.equal(reading.status, 201)
+  assert.equal(meter.status, 201)
+  assert.equal(reading.status, 200)
+  assert.equal(createdThing.status, 201)
   assert.equal(thing.status, 200)
 })
 
@@ -287,4 +315,165 @@ test('preferences state never leaks between independent handlers', async () => {
 
   assert.equal(JSON.parse(firstRead.body).res.theme, 'sovereign')
   assert.equal(JSON.parse(secondRead.body).res.theme, 'dydan')
+})
+
+// A single handler reused across calls models one test: state written by a
+// mutation must be visible to the refetch that follows it, the way the real
+// server persists to the account.
+const createSession = () => {
+  const handler = createApiMockHandler()
+  const auth = { authorization: 'Bearer smoke-test-token' }
+  return async ({ body, headers = auth, method = 'GET', path }) => {
+    const fulfillCalls = []
+    const route = {
+      request: () => ({
+        headers: () => headers,
+        method: () => method,
+        postData: () => body,
+        url: () => `http://dydan.test${path}`,
+      }),
+      fulfill: response => fulfillCalls.push(response),
+    }
+    await handler(route)
+    return fulfillCalls[0]
+  }
+}
+
+test('webhook endpoint round-trips through the capability refetch and clears', async () => {
+  const call = createSession()
+
+  const initial = await call({ path: '/api/v1/users/integrations' })
+  assert.equal(initial.status, 200)
+  assert.equal(JSON.parse(initial.body).res.webhooks.url, '')
+
+  // Mirrors the server: the key must be present and may be empty to clear.
+  const rejected = await call({
+    method: 'PUT',
+    path: '/api/v1/users/webhook',
+    body: JSON.stringify({}),
+  })
+  assert.equal(rejected.status, 400)
+
+  const saved = await call({
+    method: 'PUT',
+    path: '/api/v1/users/webhook',
+    body: JSON.stringify({ url: 'https://hooks.smoke.test/dydan' }),
+  })
+  assert.equal(saved.status, 200)
+  assert.deepEqual(JSON.parse(saved.body), {})
+
+  // The UI invalidates and refetches after Save; the saved URL must come back
+  // from the server rather than local component state.
+  const afterSave = await call({ path: '/api/v1/users/integrations' })
+  assert.equal(
+    JSON.parse(afterSave.body).res.webhooks.url,
+    'https://hooks.smoke.test/dydan',
+  )
+
+  const cleared = await call({
+    method: 'PUT',
+    path: '/api/v1/users/webhook',
+    body: JSON.stringify({ url: '' }),
+  })
+  assert.equal(cleared.status, 200)
+  const afterClear = await call({ path: '/api/v1/users/integrations' })
+  assert.equal(JSON.parse(afterClear.body).res.webhooks.url, '')
+})
+
+test('webhook endpoint is admin-only in the fixture contract', async () => {
+  const call = createSession()
+  const unauthenticated = await call({
+    method: 'PUT',
+    path: '/api/v1/users/webhook',
+    body: JSON.stringify({ url: 'https://hooks.smoke.test/dydan' }),
+    headers: {},
+  })
+
+  assert.equal(unauthenticated.status, 400)
+})
+
+test('webhook state never leaks between independent handlers', async () => {
+  const first = createSession()
+  const second = createSession()
+
+  await first({
+    method: 'PUT',
+    path: '/api/v1/users/webhook',
+    body: JSON.stringify({ url: 'https://hooks.smoke.test/first' }),
+  })
+  const firstRead = await first({ path: '/api/v1/users/integrations' })
+  const secondRead = await second({ path: '/api/v1/users/integrations' })
+
+  assert.equal(
+    JSON.parse(firstRead.body).res.webhooks.url,
+    'https://hooks.smoke.test/first',
+  )
+  assert.equal(JSON.parse(secondRead.body).res.webhooks.url, '')
+})
+
+test('export renders live preferences and import restores them', async () => {
+  const call = createSession()
+
+  await call({
+    method: 'PUT',
+    path: '/api/v1/users/preferences',
+    body: JSON.stringify({ theme: 'sovereign', currency: 'EUR' }),
+  })
+
+  const exported = await call({ path: '/api/v1/users/export' })
+  assert.equal(exported.status, 200)
+  const document = JSON.parse(exported.body)
+  assert.equal(document.format, 'dydan-user-export/v1')
+  assert.equal(document.preferences.theme, 'sovereign')
+  assert.equal(
+    exported.headers['Content-Disposition'],
+    'attachment; filename="dydan-my-data.json"',
+  )
+
+  // A document belonging to another account must be refused, matching
+  // importMyData's ownership check and its 403 rejection.
+  const foreign = await call({
+    method: 'POST',
+    path: '/api/v1/users/import',
+    body: JSON.stringify({
+      ...document,
+      account: { id: 99, email: 'x@y.test' },
+    }),
+  })
+  assert.equal(foreign.status, 403)
+  assert.equal(
+    JSON.parse(foreign.body).error,
+    'This export file belongs to a different account',
+  )
+  assert.equal(
+    foreign.headers['X-Dydan-Mock-Contract-Error'],
+    undefined,
+    'a server business rejection is not a client/server contract regression',
+  )
+
+  const wrongFormat = await call({
+    method: 'POST',
+    path: '/api/v1/users/import',
+    body: JSON.stringify({ ...document, format: 'dydan-user-export/v0' }),
+  })
+  assert.equal(wrongFormat.status, 400)
+  assert.equal(JSON.parse(wrongFormat.body).error, 'Invalid data export file')
+
+  // Reset, then restore from the exported document and observe persistence.
+  await call({ method: 'POST', path: '/api/v1/users/preferences/reset' })
+  const imported = await call({
+    method: 'POST',
+    path: '/api/v1/users/import',
+    body: JSON.stringify(document),
+  })
+  assert.equal(imported.status, 200)
+  assert.equal(JSON.parse(imported.body).restored, 'preferences')
+
+  const afterImport = await call({ path: '/api/v1/users/preferences' })
+  assert.equal(JSON.parse(afterImport.body).res.theme, 'sovereign')
+  assert.equal(JSON.parse(afterImport.body).res.currency, 'EUR')
+
+  // And the restored state is what a later export carries.
+  const reExported = await call({ path: '/api/v1/users/export' })
+  assert.equal(JSON.parse(reExported.body).preferences.theme, 'sovereign')
 })

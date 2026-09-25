@@ -438,6 +438,8 @@ function toNotifications(list: ApiNotification[]): Notification[] {
     isRead: n.readAt != null || n.isRead === true || n.read === true,
     timestamp: n.createdAt,
     actorId: undefined,
+    entityType: n.entityType ?? undefined,
+    entityId: n.entityId ?? undefined,
   }))
 }
 

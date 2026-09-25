@@ -50,7 +50,8 @@ export default function NotificationsScreen({
   onMarkRead,
   readIds,
 }: Props) {
-  const { memberById, notifications, rewardRequests, rewards } = useLiveData()
+  const { memberById, notifications, rewardRequests, rewards, tasks } =
+    useLiveData()
   const rewardMutations = useRewardMutations()
   const [filter, setFilter] = useState<FilterMode>('all')
 
@@ -63,9 +64,31 @@ export default function NotificationsScreen({
     (request: RewardRequest) => request.status === 'pending',
   )
 
+  /**
+   * Opening a notification marks it read and then navigates to the record the
+   * server referenced. A notification with no resolvable target is simply
+   * marked read — the UI never claims to have opened something it did not.
+   */
   const handleNotifClick = (n: Notification) => {
-    if (!isRead(n)) onMarkRead(n.id)
-    ctx.showToast(`Opened: ${n.title}`)
+    const wasUnread = !isRead(n)
+    if (wasUnread) onMarkRead(n.id)
+
+    if (n.entityType === 'chore' && n.entityId != null) {
+      const task = tasks.find(t => t.id === String(n.entityId))
+      if (task) {
+        ctx.openTask(task)
+        return
+      }
+      ctx.navigate('all-tasks')
+      return
+    }
+
+    if (n.entityType === 'reward_request' && n.entityId != null) {
+      ctx.navigate('rewards')
+      return
+    }
+
+    ctx.showToast(wasUnread ? `Marked as read: ${n.title}` : n.title)
   }
 
   return (

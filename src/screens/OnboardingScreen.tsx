@@ -44,6 +44,10 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
     }
     setError('')
     setLoading(true)
+    // `signUp` rejects on a non-2xx response, so a refused registration never
+    // advances to the completion step. Account creation and the follow-up
+    // sign-in are reported separately, because they can fail independently.
+    let accountCreated = false
     try {
       await signUp(
         username.trim().toLowerCase(),
@@ -51,6 +55,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
         displayName.trim(),
         email.trim(),
       )
+      accountCreated = true
       // Sign-up doesn't issue tokens — sign in right away with the new credentials.
       await signIn(username.trim().toLowerCase(), password)
       setStep('done')
@@ -59,7 +64,9 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
       setError(
         err instanceof Error && err.message
           ? err.message
-          : "We couldn't create your account. Check the details and try again.",
+          : accountCreated
+            ? 'Your account was created, but signing in failed. Sign in with your new credentials.'
+            : "We couldn't create your account. Check the details and try again.",
       )
     } finally {
       setLoading(false)

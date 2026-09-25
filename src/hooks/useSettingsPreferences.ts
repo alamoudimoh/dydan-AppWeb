@@ -12,6 +12,13 @@ export {
 
 const key = ['user', 'preferences'] as const
 
+/**
+ * Exported so the shell can read the last server-confirmed preferences when it
+ * writes a partial change, instead of relying on a render-time prop that can
+ * be one interaction behind.
+ */
+export const preferencesQueryKey = key
+
 const parse = <T>(response: Promise<Response>) =>
   parseAccountResponse(response) as Promise<T>
 
@@ -35,5 +42,5 @@ export function useSettingsPreferencesMutation() {
       parse<SettingsPreferences>(Fetcher.ResetUserPreferences()),
     onSuccess: preferences => client.setQueryData(key, preferences),
   })
-  return { reset, update }
+  return { client, reset, update }
 }

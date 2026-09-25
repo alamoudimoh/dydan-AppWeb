@@ -246,6 +246,8 @@ export type ApiMeter = {
   unit?: string
   icon?: string | null
   currentValue?: number | null
+  /** Current server contract; currentValue remains for older deployments. */
+  currentReading?: number | null
   targetValue?: number | null
   lastReadingAt?: string | null
   createdAt?: string
@@ -262,10 +264,12 @@ export type ApiThing = {
   icon?: string | null
   location?: string | null
   categoryId?: number | null
+  /** Current handler JSON field. `category` remains for older deployments. */
+  categoryRef?: { id: number; name: string } | null
   category?: { id: number; name: string } | null
   createdAt?: string
   isActive?: boolean
-  type?: 'toggle' | 'numeric' | 'text'
+  type?: 'boolean' | 'number' | 'text' | 'action' | 'toggle' | 'numeric'
   state?: string
 }
 
@@ -280,6 +284,9 @@ export type ApiNotification = {
   isRead?: boolean
   readAt?: string | null
   metadata?: Record<string, unknown> | null
+  /** Server-supplied target so a notification can open the real record. */
+  entityType?: string | null
+  entityId?: number | null
 }
 
 export type ApiChoreHistory = {

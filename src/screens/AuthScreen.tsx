@@ -90,9 +90,11 @@ export default function AuthScreen({
     try {
       await ResetPassword(forgotEmail.trim())
       setForgotSent(true)
-    } catch {
+    } catch (err) {
       setError(
-        "We couldn't send a reset link. Check the address and try again.",
+        err instanceof Error && err.message
+          ? err.message
+          : "We couldn't send a reset link. Check the address and try again.",
       )
     } finally {
       setLoading(false)

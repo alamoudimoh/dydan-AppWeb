@@ -30,7 +30,12 @@ import type { Task } from './data'
 import { useAuth } from './hooks/useAuth'
 import { useTaskMutations } from './hooks/useHousehold'
 import { useRealtimeSync } from './hooks/useRealtimeSync'
-import { useSettingsPreferences } from './hooks/useSettingsPreferences'
+import {
+  preferencesQueryKey,
+  type SettingsPreferences,
+  useSettingsPreferences,
+  useSettingsPreferencesMutation,
+} from './hooks/useSettingsPreferences'
 import { useStatusBar } from './hooks/useStatusBar'
 import { useSyncOnReconnect } from './hooks/useSyncOnReconnect'
 import { useLiveData } from './model/liveData'
@@ -38,6 +43,7 @@ import ActivityScreen from './screens/ActivityScreen'
 import AllTasksScreen from './screens/AllTasksScreen'
 import AuthScreen from './screens/AuthScreen'
 import CalendarScreen from './screens/CalendarScreen'
+import EmailChangeVerificationScreen from './screens/EmailChangeVerificationScreen'
 import ErrorScreen from './screens/ErrorScreen'
 import FocusHome from './screens/FocusHome'
 import GoalsScreen from './screens/GoalsScreen'
@@ -59,6 +65,7 @@ import {
 import ShoppingScreen from './screens/ShoppingScreen'
 import TodayScreen from './screens/TodayScreen'
 import * as Fetcher from './utils/Fetcher'
+import { getAccessToken } from './utils/TokenStorage'
 
 /* Types preserved for all existing screens */
 export type Theme = Brand
@@ -506,6 +513,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
           className='nav-item'
           onClick={ctx.toggleRTL}
           style={{ fontSize: 12 }}
+          aria-label={ctx.isRTL ? t('lang.toEnglish') : t('lang.toArabic')}
         >
           <Icon name='globe' size={14} />
           <span>{ctx.isRTL ? t('lang.toEnglish') : t('lang.toArabic')}</span>
@@ -675,6 +683,50 @@ export default function App() {
   } = useAuth()
   useRealtimeSync(isAuthenticated)
   const { data: settingsPreferences } = useSettingsPreferences()
+  const preferenceMutations = useSettingsPreferencesMutation()
+
+  /**
+   * Merges a partial preference change into the last server-confirmed
+   * preferences and writes the whole document, matching the PUT contract the
+   * Settings screen uses. Reads the current cached value directly rather than
+   * the render-time prop so rapid successive toggles cannot write a stale
+   * document.
+   */
+  const persistPreference = useCallback(
+    (patch: Partial<SettingsPreferences>) => {
+      if (!getAccessToken()) return
+      const current =
+        preferenceMutations.client.getQueryData<SettingsPreferences>(
+          preferencesQueryKey,
+        ) ?? settingsPreferences
+      if (!current) return
+      const next = { ...current, ...patch }
+      // Cache before dispatching. This makes a rapid sequence such as
+      // Focus → Quest → Sovereign → Arabic merge each action into the prior
+      // pending document instead of sending four stale full-document writes
+      // that overwrite one another out of order.
+      preferenceMutations.client.setQueryData(preferencesQueryKey, next)
+      preferenceMutations.update.mutate(next, {
+        onError: () => {
+          // Do not roll back a newer preference write that has already
+          // replaced this optimistic object in the cache.
+          if (
+            preferenceMutations.client.getQueryData(preferencesQueryKey) ===
+            next
+          ) {
+            preferenceMutations.client.setQueryData(
+              preferencesQueryKey,
+              current,
+            )
+          }
+        },
+      })
+    },
+    // `client` is a stable QueryClient reference; depending on it is enough to
+    // keep this callback from being rebuilt on every mutation state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [preferenceMutations.client, settingsPreferences],
+  )
 
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [taskDetail, setTaskDetail] = useState<Task | null>(null)
@@ -768,15 +820,49 @@ export default function App() {
   const setThemeCb = useCallback(
     (th: Theme) => {
       setBrand(th)
+      // The sidebar brand switch is a real account preference, so it is
+      // written to the server rather than reset on the next reload. Hydration
+      // above calls `setBrand` directly, so replaying stored preferences never
+      // issues a redundant write.
+      persistPreference({ theme: th })
     },
-    [setBrand],
+    [setBrand, persistPreference],
   )
   const setViewCb = useCallback(
     (v: View) => {
       setView(v)
+      persistPreference({ defaultView: v })
     },
-    [setView],
+    [setView, persistPreference],
   )
+
+  /**
+   * The sidebar language control flips between English and Arabic. Both the
+   * localization context and the stored preference are updated so the choice
+   * survives a reload instead of resetting on the next boot.
+   */
+  const toggleRTLcb = useCallback(() => {
+    const nextLanguage = isRTL ? 'en' : 'ar-SA'
+    toggleLang()
+    setLanguage(nextLanguage)
+    persistPreference({ language: nextLanguage })
+  }, [isRTL, setLanguage, toggleLang, persistPreference])
+
+  const setSidebarCollapsedCb = useCallback(
+    (collapsed: boolean) => {
+      setSidebarCollapsed(collapsed)
+      // Only persisted when the account opted into remembering the sidebar;
+      // otherwise the choice is deliberately per-session.
+      if (settingsPreferences?.rememberSidebar) {
+        persistPreference({ sidebarCollapsed: collapsed })
+      }
+    },
+    [settingsPreferences?.rememberSidebar, persistPreference],
+  )
+
+  const toggleSidebarCb = useCallback(() => {
+    setSidebarCollapsedCb(!sidebarCollapsed)
+  }, [setSidebarCollapsedCb, sidebarCollapsed])
 
   const completeTask = useCallback(
     (id: string) => {
@@ -817,7 +903,7 @@ export default function App() {
       setView: setViewCb,
       setTheme: setThemeCb,
       setPersona: setPersona,
-      toggleRTL: toggleLang,
+      toggleRTL: toggleRTLcb,
       openTask: (tk: Task) => setTaskDetail(tk),
       closeTask: () => setTaskDetail(null),
       openCreate: () => setShowCreateTask(true),
@@ -835,8 +921,8 @@ export default function App() {
       },
       showConfirm: (c: ConfirmDialogConfig) => setConfirmDialog(c),
       sidebarCollapsed,
-      toggleSidebar: () => setSidebarCollapsed(v => !v),
-      setSidebarCollapsed,
+      toggleSidebar: toggleSidebarCb,
+      setSidebarCollapsed: setSidebarCollapsedCb,
     }),
     [
       brand,
@@ -851,7 +937,9 @@ export default function App() {
       setViewCb,
       setThemeCb,
       setPersona,
-      toggleLang,
+      toggleRTLcb,
+      toggleSidebarCb,
+      setSidebarCollapsedCb,
       showToast,
       realSignOut,
       realSessionExpiry,
@@ -864,6 +952,10 @@ export default function App() {
   }
 
   /* ─── Auth gate ─── */
+  if (location.pathname === '/email-change/verify') {
+    return <EmailChangeVerificationScreen onComplete={realSignOut} />
+  }
+
   if (authLoading || profileLoading) {
     return <SplashScreen theme={brand} />
   }
@@ -1121,14 +1213,15 @@ export default function App() {
       {showCreateTask && (
         <CreateTaskModal
           ctx={ctx}
-          onCreated={(title, details) => {
-            mutations.createTask.mutate({
+          onCreated={async (title, details) => {
+            await mutations.createTask.mutateAsync({
               title,
               description: details?.description,
               priority: priorityNum(details?.priority),
               assigneeId: details?.assigneeId || (currentUser?.id ?? undefined),
               dueDate: details?.dueDate,
               points: details?.points,
+              categoryId: details?.categoryId,
             })
           }}
         />
@@ -1137,16 +1230,21 @@ export default function App() {
         <CreateTaskModal
           ctx={ctx}
           taskToEdit={taskToEdit}
-          onCreated={(title, details) =>
-            mutations.updateTask.mutate({
+          onCreated={async (title, details) => {
+            await mutations.updateTask.mutateAsync({
               id: taskToEdit.id,
               title,
               assigneeId: details?.assigneeId ?? undefined,
-              dueDate: details?.dueDate ?? undefined,
+              // The task editor represents a cleared date as an empty string;
+              // do not pass that through to the API mutation, where
+              // `new Date('')` is invalid and would block an otherwise valid
+              // point/category edit.
+              dueDate: details?.dueDate || undefined,
               priority: priorityNum(details?.priority),
               points: details?.points,
+              categoryId: details?.categoryId,
             })
-          }
+          }}
         />
       )}
 
