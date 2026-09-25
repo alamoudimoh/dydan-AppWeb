@@ -28,6 +28,18 @@ export const attachRuntimeErrorGuard = page => {
   let completedMockSSEHandshake = false
   let expectedMockSSEReconnectErrors = 0
 
+  /**
+   * Declare a browser resource-load error that the test provokes on purpose.
+   * A negative-path spec (for example importing another account's export file)
+   * necessarily produces one console error for the 4xx response; declaring it
+   * keeps every other unexpected error failing the test.
+   */
+  const expectStatusError = (status, times = 1) => {
+    for (let index = 0; index < times; index += 1) {
+      expectedPublicStatusErrors.push(status)
+    }
+  }
+
   page.on('pageerror', error => {
     if (
       IGNORED_PAGE_ERROR_PATTERNS.some(pattern => pattern.test(error.message))
@@ -100,6 +112,7 @@ export const attachRuntimeErrorGuard = page => {
   })
 
   return {
+    expectStatusError,
     assertClean() {
       if (errors.length === 0) return
       throw new Error(`Runtime errors detected:\n${errors.join('\n')}`)

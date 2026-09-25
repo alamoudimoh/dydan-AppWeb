@@ -1,3 +1,4 @@
+import { parseAccountResponse } from './AccountResponse'
 import { apiClient } from './ApiClient'
 import {
   chorePriorityEndpoint,
@@ -46,13 +47,15 @@ const createChore = userID => {
 const signUp = async (username, password, displayName, email) => {
   await apiClient.init(true)
   const baseURL = apiManager.getApiURL()
-  return fetch(`${baseURL}/auth/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password, displayName, email }),
-  })
+  return parseAccountResponse(
+    fetch(`${baseURL}/auth/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password, displayName, email }),
+    }),
+  )
 }
 
 const UpdatePassword = async (currentPassword, newPassword) => {
@@ -413,8 +416,51 @@ const UpdateUserDetails = userDetails => {
   })
 }
 
+const StartEmailChange = ({ currentPassword, email }) =>
+  Fetch(`/users/email-change`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({ email, currentPassword }),
+  })
+
+const VerifyEmailChange = token =>
+  Fetch(`/users/email-change/verify`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify({ token }),
+  })
+
 const GetUserPreferences = () =>
   Fetch(`/users/preferences`, { method: 'GET', headers: HEADERS() })
+
+const ExportMyData = () =>
+  Fetch(`/users/export`, { method: 'GET', headers: HEADERS() })
+
+const ImportMyData = payload =>
+  Fetch(`/users/import`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(payload),
+  })
+
+const GetIntegrationStatus = () =>
+  Fetch(`/users/integrations`, { method: 'GET', headers: HEADERS() })
+
+/** Billing history for the authenticated account. */
+const GetInvoices = () =>
+  Fetch(`/payments/invoices`, { method: 'GET', headers: HEADERS() })
+
+/**
+ * Submits the diagnostic assembled by the error screen. Ownership is taken
+ * from the access token, so the payload carries only the descriptive text the
+ * user is shown.
+ */
+const ReportError = report =>
+  Fetch(`/users/error-reports`, {
+    method: 'POST',
+    headers: HEADERS(),
+    body: JSON.stringify(report),
+  })
 
 const UpdateUserPreferences = preferences =>
   Fetch(`/users/preferences`, {
@@ -569,12 +615,25 @@ const SaveAsset = asset =>
   })
 const ArchiveAsset = id =>
   Fetch(`/maintenance/assets/${id}`, { method: 'DELETE', headers: HEADERS() })
+const SetAssetArchived = (id, archived) =>
+  Fetch(`/maintenance/assets/${id}/archive`, {
+    method: 'PATCH',
+    headers: HEADERS(),
+    body: JSON.stringify({ archived }),
+  })
 const LinkAsset = (id, link) =>
   Fetch(`/maintenance/assets/${id}/links`, {
     method: 'POST',
     headers: HEADERS(),
     body: JSON.stringify(link),
   })
+const UnlinkAsset = (id, link) => {
+  const params = new URLSearchParams(link)
+  return Fetch(`/maintenance/assets/${id}/links?${params}`, {
+    method: 'DELETE',
+    headers: HEADERS(),
+  })
+}
 const GetMaintenance = () =>
   Fetch('/maintenance', { method: 'GET', headers: HEADERS() })
 
@@ -702,13 +761,17 @@ const ChangePassword = async (verificationCode, password) => {
 const ResetPassword = async email => {
   await apiClient.init()
   const basedURL = apiManager.getApiURL()
-  return fetch(`${basedURL}/auth/reset`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email: email }),
-  })
+  // Rejects on a non-2xx response so the screen can never report that a reset
+  // link was sent when the server refused the request.
+  return parseAccountResponse(
+    fetch(`${basedURL}/auth/reset`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email }),
+    }),
+  )
 }
 
 // MFA Related Functions
@@ -1126,29 +1189,6 @@ const DeleteChoreAttachment = (choreId, filePath) => {
   })
 }
 
-const CreateBackup = (encryptionKey, includeAssets = true, backupName = '') => {
-  return Fetch(`/backup/create`, {
-    method: 'POST',
-    headers: HEADERS(),
-    body: JSON.stringify({
-      encryption_key: encryptionKey,
-      include_assets: includeAssets,
-      backup_name: backupName,
-    }),
-  })
-}
-
-const RestoreBackup = (encryptionKey, backupData) => {
-  return Fetch(`/backup/restore`, {
-    method: 'POST',
-    headers: HEADERS(),
-    body: JSON.stringify({
-      encryption_key: encryptionKey,
-      backup_data: backupData,
-    }),
-  })
-}
-
 const RegisterDeviceToken = (
   token,
   deviceId,
@@ -1408,7 +1448,6 @@ export {
   CompleteSubTask,
   ConfirmMFA,
   CreateAsset,
-  CreateBackup,
   CreateCategory,
   CreateChildUser,
   CreateChore,
@@ -1443,6 +1482,7 @@ export {
   DeleteTimeSession,
   DeleteUser,
   DisableMFA,
+  ExportMyData,
   GetAllCircleMembers,
   GetAllUsers,
   GetArchivedChores,
@@ -1467,6 +1507,8 @@ export {
   GetFilters,
   GetFiltersByUsage,
   GetGoals,
+  GetIntegrationStatus,
+  GetInvoices,
   GetLabels,
   GetLongLiveTokens,
   GetMaintenance,
@@ -1491,6 +1533,7 @@ export {
   GetUserCircle,
   GetUserPreferences,
   GetUserProfile,
+  ImportMyData,
   JoinCircle,
   LeaveCircle,
   LinkAsset,
@@ -1510,28 +1553,31 @@ export {
   RegisterDeviceToken,
   RejectChore,
   RejectRewardRequest,
+  ReportError,
   ResetAllPoints,
   ResetChoreTimer,
   ResetPassword,
   ResetUserPoints,
   ResetUserPreferences,
-  RestoreBackup,
   RevokeAuthSession,
   RevokeOtherAuthSessions,
   SaveAsset,
   SaveChore,
   SaveMeter,
   SaveThing,
+  SetAssetArchived,
   SetCategoryArchived,
   SetupMFA,
   SignAssetURL,
   signUp,
   SkipChore,
   StartChore,
+  StartEmailChange,
   TestEmailDelivery,
   ToggleFilterPin,
   UnArchiveChore,
   UndoChoreAction,
+  UnlinkAsset,
   UnregisterDeviceToken,
   UpdateCategory,
   UpdateChildPassword,
@@ -1560,5 +1606,6 @@ export {
   UpdateUserPreferences,
   UploadChoreAttachment,
   UploadProfilePhoto,
+  VerifyEmailChange,
   VerifyMFA,
 }

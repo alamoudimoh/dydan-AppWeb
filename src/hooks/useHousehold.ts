@@ -310,13 +310,176 @@ export function useMaintenanceMutations() {
         parseRes(Fetcher.UpdateThingState({ id, state })),
       onSuccess: invalidate,
     }),
+    archiveAsset: useMutation({
+      mutationFn: ({ archived, id }: { id: number; archived: boolean }) =>
+        parseRes(Fetcher.SetAssetArchived(id, archived)),
+      onSuccess: invalidate,
+    }),
+    unlinkAsset: useMutation({
+      mutationFn: ({
+        id,
+        link,
+      }: {
+        id: number
+        link: Record<string, string>
+      }) => parseRes(Fetcher.UnlinkAsset(id, link)),
+      onSuccess: invalidate,
+    }),
+    createAsset: useMutation({
+      mutationFn: (asset: {
+        name: string
+        description?: string
+        category?: string
+      }) => parseRes(Fetcher.CreateAsset(asset)),
+      onSuccess: invalidate,
+    }),
+    updateAsset: useMutation({
+      mutationFn: (asset: {
+        id: number
+        name: string
+        description?: string
+        category?: string
+      }) => parseRes(Fetcher.SaveAsset(asset)),
+      onSuccess: invalidate,
+    }),
+    linkAsset: useMutation({
+      mutationFn: ({
+        id,
+        link,
+      }: {
+        id: number
+        link: { meterId?: number; choreId?: number }
+      }) => parseRes(Fetcher.LinkAsset(id, link)),
+      onSuccess: invalidate,
+    }),
+    createMeter: useMutation({
+      mutationFn: (meter: {
+        name: string
+        unit: string
+        initialReading: number
+      }) => parseRes<ApiMeter>(Fetcher.CreateMeter(meter)),
+      onSuccess: invalidate,
+    }),
+    updateMeter: useMutation({
+      mutationFn: (meter: { id: number; name: string; unit: string }) =>
+        parseRes<ApiMeter>(Fetcher.SaveMeter(meter)),
+      onSuccess: invalidate,
+    }),
+    createThing: useMutation({
+      mutationFn: (thing: { name: string; type: string; state: string }) =>
+        parseRes<ApiThing>(
+          Fetcher.CreateThing({
+            name: thing.name,
+            type: thing.type,
+            state: thing.state,
+          }),
+        ),
+      onSuccess: invalidate,
+    }),
+    updateThing: useMutation({
+      mutationFn: (thing: {
+        id: number
+        name: string
+        type: string
+        state: string
+      }) => parseRes<ApiThing>(Fetcher.SaveThing(thing)),
+      onSuccess: invalidate,
+    }),
+    deleteThing: useMutation({
+      mutationFn: (id: number) => parseRes(Fetcher.DeleteThing(id)),
+      onSuccess: invalidate,
+    }),
   }
+}
+
+export type AssetDetail = MaintenanceAsset & {
+  meters: ApiMeter[]
+  /** Server-authorized maintenance chores currently linked to this asset. */
+  maintenance: Array<{
+    choreId: number
+    name: string
+    nextDueDate?: string | null
+  }>
+  history: Array<{
+    id: number
+    choreId: number
+    choreName?: string
+    performedAt?: string | null
+    completedBy: number
+    completedByName?: string
+    meterReading?: number | null
+    meterUnit?: string
+    points?: number | null
+  }>
+}
+
+export function useAssetDetail(assetId: number | null) {
+  return useQuery({
+    queryKey: [...KEYS.maintenance, 'asset', assetId],
+    queryFn: () => parseRes<AssetDetail>(Fetcher.GetAsset(assetId!)),
+    enabled: authEnabled() && assetId != null,
+  })
+}
+
+export type MeterReading = {
+  id: number
+  meterId: number
+  reading: number
+  previousReading?: number | null
+  kind?: string
+  note?: string | null
+  recordedBy: number
+  recordedAt: string
+}
+
+export function useMeterHistory(meterId: number | null, offset = 0) {
+  return useQuery({
+    queryKey: [...KEYS.meters, 'readings', meterId, offset],
+    queryFn: () =>
+      parseRes<MeterReading[]>(Fetcher.GetMeterHistory(meterId!, offset)),
+    enabled: authEnabled() && meterId != null,
+  })
+}
+
+export type ThingHistoryEntry = {
+  id: number
+  thingId: number
+  state: string
+  createdAt?: string
+  updatedAt?: string
+  performedAt?: string
+}
+
+export function useThingHistory(thingId: number | null, offset = 0) {
+  return useQuery({
+    queryKey: [...KEYS.things, 'history', thingId, offset],
+    queryFn: () =>
+      parseRes<ThingHistoryEntry[]>(Fetcher.GetThingHistory(thingId!, offset)),
+    enabled: authEnabled() && thingId != null,
+  })
 }
 
 export function useMaintenance() {
   return useQuery({
     queryKey: KEYS.maintenance,
     queryFn: () => parseRes<ApiMaintenanceCenter>(Fetcher.GetMaintenance()),
+    enabled: authEnabled(),
+  })
+}
+
+export type MaintenanceAsset = {
+  id: number
+  name: string
+  description?: string | null
+  category?: string | null
+  archivedAt?: string | null
+}
+
+export function useMaintenanceAssets(includeArchived = false) {
+  return useQuery({
+    queryKey: [...KEYS.maintenance, 'assets', includeArchived],
+    queryFn: () =>
+      parseRes<MaintenanceAsset[]>(Fetcher.GetAssets(includeArchived)),
     enabled: authEnabled(),
   })
 }
@@ -352,6 +515,11 @@ export type TaskMutationInput = {
   dueDate?: string | null | undefined
   priority?: number | null | undefined
   points?: number | null | undefined
+  /**
+   * Circle category id. `null` clears the category, `undefined` leaves the
+   * stored value untouched on update.
+   */
+  categoryId?: number | null | undefined
   projectId?: number | string | null | undefined
   frequencyType?: string
   isPrivate?: boolean
@@ -422,6 +590,8 @@ export function useTaskMutations() {
           : null,
         priority: typeof input.priority === 'number' ? input.priority : 2,
         points: typeof input.points === 'number' ? input.points : null,
+        categoryId:
+          typeof input.categoryId === 'number' ? input.categoryId : null,
         isPrivate: Boolean(input.isPrivate),
         requireApproval: Boolean(input.requireApproval),
         projectId: input.projectId ? Number(input.projectId) : null,
@@ -465,6 +635,16 @@ export function useTaskMutations() {
           typeof patch.priority === 'number'
             ? patch.priority
             : (original?.priority ?? 2),
+        // Preserve the stored values when the caller did not supply them, so a
+        // partial edit never silently resets points or the chosen category.
+        points:
+          typeof patch.points === 'number'
+            ? patch.points
+            : (original?.points ?? null),
+        categoryId:
+          patch.categoryId !== undefined
+            ? patch.categoryId
+            : (original?.categoryId ?? null),
       })
       const body = await resp.json().catch(() => ({}))
       if (!resp.ok)

@@ -12,6 +12,26 @@ const RANGE_LABELS: Record<Range, string> = {
   '90d': '90 days',
 }
 
+const RANGE_DAYS: Record<Range, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+}
+
+/**
+ * The reporting window a task belongs to: when it was completed, falling back
+ * to its due date for work that is still open. A task with neither date cannot
+ * be placed in a window and is excluded, so the selected range always changes
+ * the reported figures.
+ */
+function inRange(task: Task, start: number, now: number): boolean {
+  const stamp = task.completedAt ?? task.dueDate
+  if (!stamp) return false
+  const at = new Date(stamp).getTime()
+  if (Number.isNaN(at)) return false
+  return at >= start && at <= now
+}
+
 const CATEGORIES = [
   'Family',
   'Cleaning',
@@ -35,26 +55,39 @@ export default function ProgressScreen({
   const { activity, goals, memberById, members } = useLiveData()
   const [range, setRange] = useState<Range>('30d')
 
-  const doneTasks = tasks.filter(t => t.status === 'done')
-  const overdueTasks = tasks.filter(t => t.status === 'overdue')
-  const upcomingTasks = tasks.filter(t => t.status === 'upcoming')
-  const activeTasks = tasks.filter(t => t.status === 'todo')
-  const totalTasks = tasks.length
+  // Scope every reported figure to the selected window, so changing the range
+  // changes the numbers instead of only the button styling.
+  const now = new Date()
+  now.setHours(23, 59, 59, 999)
+  const windowStart = new Date(now)
+  windowStart.setDate(windowStart.getDate() - RANGE_DAYS[range])
+  windowStart.setHours(0, 0, 0, 0)
+
+  const rangedTasks = tasks.filter(task =>
+    inRange(task, windowStart.getTime(), now.getTime()),
+  )
+
+  const doneTasks = rangedTasks.filter(t => t.status === 'done')
+  const overdueTasks = rangedTasks.filter(t => t.status === 'overdue')
+  const upcomingTasks = rangedTasks.filter(t => t.status === 'upcoming')
+  const activeTasks = rangedTasks.filter(t => t.status === 'todo')
+  const totalTasks = rangedTasks.length
   const completionRate = totalTasks
     ? Math.round((doneTasks.length / totalTasks) * 100)
     : 0
 
   const memberStats = members.map(m => ({
     member: m,
-    completed: tasks.filter(t => t.assigneeId === m.id && t.status === 'done')
-      .length,
-    assigned: tasks.filter(t => t.assigneeId === m.id).length,
+    completed: rangedTasks.filter(
+      t => t.assigneeId === m.id && t.status === 'done',
+    ).length,
+    assigned: rangedTasks.filter(t => t.assigneeId === m.id).length,
     points: m.points,
     streak: m.streak,
   }))
 
   const catStats = CATEGORIES.map(cat => {
-    const catTasks = tasks.filter(t => t.category === cat)
+    const catTasks = rangedTasks.filter(t => t.category === cat)
     const catDone = catTasks.filter(t => t.status === 'done')
     return { cat, total: catTasks.length, done: catDone.length }
   }).filter(c => c.total > 0)
@@ -72,7 +105,8 @@ export default function ProgressScreen({
             Progress
           </h1>
           <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            team workload and completion reporting
+            team workload and completion reporting for the last{' '}
+            {RANGE_LABELS[range].toLowerCase()}
           </div>
         </div>
         {/* Range selector */}

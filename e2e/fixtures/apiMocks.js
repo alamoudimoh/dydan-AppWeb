@@ -8,6 +8,14 @@ const json = (body, status = 200, headers = {}) => ({
 const error = (status, message) =>
   json({ error: message }, status, { 'X-Dydan-Mock-Contract-Error': message })
 
+/**
+ * A rejection the real server itself returns for a well-formed request (an
+ * ownership or validation rule), as opposed to a client/server contract drift.
+ * It deliberately omits the mock contract-error header so a spec that provokes
+ * it on purpose is not reported as a route/query/method regression.
+ */
+const rejection = (status, message) => json({ error: message }, status)
+
 export const hasAuthorization = request => {
   const headers = request.headers()
   return Boolean(headers.authorization || headers.Authorization)
@@ -40,6 +48,18 @@ const hasRefreshCookieInJar = async (page, request) => {
     return false
   }
 }
+
+/**
+ * Per-test in-memory model of the account-scoped server state that the settings
+ * data endpoints read and write. Created once per handler in
+ * createApiMockHandler(), so saved preferences and the webhook endpoint
+ * round-trip through a page reload inside a test but never leak into the next
+ * one.
+ */
+const createAccountState = () => ({
+  preferences: defaultPreferences(),
+  webhookURL: '',
+})
 
 const smokeProfile = {
   id: 1,
@@ -120,6 +140,17 @@ const smokeAsset = {
 
 const list = []
 const listEnvelope = { res: list }
+// Mirrors the server's lazily initialized circle categories. The task editor
+// consumes real numeric ids (not display strings) and sends `categoryId` back
+// on create/edit.
+const defaultCategories = [
+  { id: 101, name: 'household', color: '#64748b' },
+  { id: 102, name: 'personal', color: '#8b5cf6' },
+  { id: 103, name: 'work', color: '#2563eb' },
+  { id: 104, name: 'school', color: '#16a34a' },
+  { id: 105, name: 'health', color: '#dc2626' },
+  { id: 106, name: 'finance', color: '#ca8a04' },
+]
 const maintenanceEnvelope = {
   res: { due: [], approaching: [], upcoming: [], assets: [] },
 }
@@ -167,10 +198,9 @@ const defaultPreferences = () => ({
  * single test run. State is created per handler so tests never leak theme or
  * layout choices into one another.
  */
-const createPreferenceEndpoints = () => {
-  let state = defaultPreferences()
+const createPreferenceEndpoints = account => {
   const merge = incoming => {
-    if (!incoming || typeof incoming !== 'object') return state
+    if (!incoming || typeof incoming !== 'object') return account.preferences
     return {
       ...defaultPreferences(),
       ...incoming,
@@ -185,23 +215,476 @@ const createPreferenceEndpoints = () => {
     endpoint({
       method: 'GET',
       path: /^\/api\/v1\/users\/preferences$/,
-      response: () => json({ res: state }),
+      response: () => json({ res: account.preferences }),
     }),
     endpoint({
       method: 'PUT',
       path: /^\/api\/v1\/users\/preferences$/,
       validate: parseBody,
       response: request => {
-        state = merge(parseBody(request))
-        return json({ res: state })
+        account.preferences = merge(parseBody(request))
+        return json({ res: account.preferences })
       },
     }),
     endpoint({
       method: 'POST',
       path: /^\/api\/v1\/users\/preferences\/reset$/,
       response: () => {
-        state = defaultPreferences()
-        return json({ res: state })
+        account.preferences = defaultPreferences()
+        return json({ res: account.preferences })
+      },
+    }),
+  ]
+}
+
+/**
+ * The account data endpoints that share the per-test account state: the
+ * portable export, the portable import, integration capability status, and the
+ * webhook endpoint. Export renders the live preferences and import writes them
+ * back, so an export -> import round-trip is observable instead of a canned
+ * body, and a saved webhook URL is served by the capability endpoint the UI
+ * refetches after Save.
+ */
+const createAccountDataEndpoints = account => [
+  endpoint({
+    method: 'GET',
+    path: /^\/api\/v1\/users\/export$/,
+    validate: hasAuthorization,
+    response: () =>
+      json(
+        {
+          format: 'dydan-user-export/v1',
+          exportedAt: '2026-08-24T06:00:00Z',
+          account: {
+            id: smokeProfile.id,
+            username: smokeProfile.username,
+            displayName: smokeProfile.displayName,
+            email: smokeProfile.email,
+            timezone: smokeProfile.timezone,
+            circleId: smokeProfile.circleID,
+            userType: smokeProfile.userType,
+          },
+          preferences: account.preferences,
+          data: {
+            tasks: [],
+            taskHistory: [],
+            things: [],
+            thingHistory: [],
+            meters: [],
+            meterReadings: [],
+            notifications: [],
+          },
+        },
+        200,
+        {
+          'Content-Disposition': 'attachment; filename="dydan-my-data.json"',
+          'Cache-Control': 'no-store, private',
+        },
+      ),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/users\/import$/,
+    // Mirrors importMyData: the document must be structurally well formed, then
+    // the server applies its own format/ownership/preference rules and returns
+    // the same rejections the real handler does.
+    validate: request => {
+      const body = parseBody(request)
+      return (
+        hasAuthorization(request) &&
+        body !== null &&
+        body !== undefined &&
+        typeof body === 'object'
+      )
+    },
+    response: request => {
+      const body = parseBody(request)
+      if (body.format !== 'dydan-user-export/v1' || !body.account) {
+        return rejection(400, 'Invalid data export file')
+      }
+      if (
+        body.account.id !== smokeProfile.id ||
+        String(body.account.email ?? '').toLowerCase() !==
+          smokeProfile.email.toLowerCase()
+      ) {
+        return rejection(403, 'This export file belongs to a different account')
+      }
+      if (!body.preferences || typeof body.preferences !== 'object') {
+        return rejection(
+          400,
+          'The export file contains no preferences to restore',
+        )
+      }
+      account.preferences = {
+        ...defaultPreferences(),
+        ...body.preferences,
+        notifications: {
+          ...defaultPreferences().notifications,
+          ...(body.preferences.notifications ?? {}),
+        },
+        privacy: {
+          ...defaultPreferences().privacy,
+          ...(body.preferences.privacy ?? {}),
+        },
+      }
+      return json({ res: account.preferences, restored: 'preferences' })
+    },
+  }),
+  endpoint({
+    method: 'GET',
+    path: /^\/api\/v1\/users\/integrations$/,
+    query: noUnexpectedQuery([]),
+    validate: hasAuthorization,
+    response: () =>
+      json({
+        res: {
+          apiDocs: { enabled: false, url: '' },
+          googleCalendar: { available: false },
+          caldav: { available: false },
+          alexa: { available: false },
+          legal: { privacyPolicyUrl: '', termsUrl: '' },
+          billing: { invoiceHistory: false },
+          webhooks: {
+            available: true,
+            url: account.webhookURL,
+            editable: true,
+            plusOnly: false,
+          },
+        },
+      }),
+  }),
+  endpoint({
+    method: 'PUT',
+    path: /^\/api\/v1\/users\/webhook$/,
+    // Mirrors setWebhook: a `url` key must be present, but an empty string is
+    // valid and clears the endpoint (the server only syntax-validates
+    // non-empty URLs). Responds with the server's empty `{}` body.
+    validate: request => {
+      const body = parseBody(request)
+      return (
+        hasAuthorization(request) &&
+        body !== null &&
+        body !== undefined &&
+        typeof body === 'object' &&
+        typeof body.url === 'string'
+      )
+    },
+    response: request => {
+      account.webhookURL = String(parseBody(request)?.url ?? '').trim()
+      return json({})
+    },
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/users\/error-reports$/,
+    validate: request => {
+      const body = parseBody(request)
+      return (
+        body &&
+        typeof body.summary === 'string' &&
+        body.summary.length > 0 &&
+        body.summary.length <= 200 &&
+        typeof body.details === 'string' &&
+        body.details.length <= 20_000 &&
+        typeof body.screen === 'string' &&
+        body.screen.length <= 64
+      )
+    },
+    response: () =>
+      json({ res: { id: 1, recordedAt: new Date().toISOString() } }, 201),
+  }),
+  endpoint({
+    method: 'GET',
+    path: /^\/api\/v1\/payments\/invoices$/,
+    query: noUnexpectedQuery(['limit']),
+    response: () => json({ res: [] }),
+  }),
+]
+
+/**
+ * State for Maintenance's real create/edit/link/read operations. Keeping it
+ * per API handler makes reload tests meaningful without leaking data between
+ * browser specs, and mirrors the authoritative server response field names.
+ */
+const createMaintenanceState = () => ({
+  assets: [],
+  meterReadings: new Map(),
+  meters: [],
+  nextAssetID: 900,
+  nextMeterID: 700,
+  nextThingID: 800,
+  things: [],
+  thingHistory: new Map(),
+})
+
+const createMaintenanceEndpoints = state => {
+  const now = () => new Date().toISOString()
+  const assetFor = id => state.assets.find(asset => asset.id === Number(id))
+  const meterFor = id => state.meters.find(meter => meter.id === Number(id))
+  const thingFor = id => state.things.find(thing => thing.id === Number(id))
+  const assetDetail = id => {
+    const asset = assetFor(id)
+    if (!asset) return null
+    return {
+      ...asset,
+      history: [],
+      maintenance: asset.maintenance ?? [],
+      meters: state.meters.filter(meter => meter.assetId === asset.id),
+    }
+  }
+  const requireName = request => {
+    const body = parseBody(request)
+    return body && typeof body.name === 'string' && body.name.trim().length > 0
+  }
+  return [
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/maintenance\/assets$/,
+      query: noUnexpectedQuery(['includeArchived']),
+      response: () => json({ res: state.assets }),
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/maintenance\/assets$/,
+      validate: request => hasAuthorization(request) && requireName(request),
+      response: request => {
+        const body = parseBody(request)
+        const asset = {
+          id: state.nextAssetID++,
+          name: body.name.trim(),
+          category: body.category ?? '',
+          description: body.description ?? null,
+          archivedAt: null,
+          maintenance: [],
+        }
+        state.assets.push(asset)
+        return json({ res: asset }, 201)
+      },
+    }),
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/maintenance\/assets\/\d+$/,
+      response: (_request, url) => {
+        const detail = assetDetail(url.pathname.split('/').at(-1))
+        return detail ? json({ res: detail }) : error(404, 'Asset not found')
+      },
+    }),
+    endpoint({
+      method: 'PUT',
+      path: /^\/api\/v1\/maintenance\/assets\/\d+$/,
+      validate: requireName,
+      response: (request, url) => {
+        const asset = assetFor(url.pathname.split('/').at(-1))
+        if (!asset) return error(404, 'Asset not found')
+        const body = parseBody(request)
+        Object.assign(asset, {
+          name: body.name.trim(),
+          category: body.category ?? '',
+          description: body.description ?? null,
+        })
+        return json({ res: asset })
+      },
+    }),
+    endpoint({
+      method: 'PATCH',
+      path: /^\/api\/v1\/maintenance\/assets\/\d+\/archive$/,
+      validate: request => typeof parseBody(request)?.archived === 'boolean',
+      response: (request, url) => {
+        const asset = assetFor(url.pathname.split('/')[5])
+        if (!asset) return error(404, 'Asset not found')
+        asset.archivedAt = parseBody(request).archived ? now() : null
+        return { status: 204, body: '' }
+      },
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/maintenance\/assets\/\d+\/links$/,
+      validate: request => {
+        const body = parseBody(request)
+        return Boolean(body) && Boolean(body.meterId) !== Boolean(body.choreId)
+      },
+      response: (request, url) => {
+        const asset = assetFor(url.pathname.split('/')[5])
+        if (!asset) return error(404, 'Asset not found')
+        const body = parseBody(request)
+        if (body.meterId) {
+          const meter = meterFor(body.meterId)
+          if (!meter) return error(404, 'Asset or link target not found')
+          meter.assetId = asset.id
+        } else {
+          asset.maintenance = [
+            ...(asset.maintenance ?? []).filter(
+              item => item.choreId !== body.choreId,
+            ),
+            { choreId: body.choreId, name: `Linked task ${body.choreId}` },
+          ]
+        }
+        return { status: 204, body: '' }
+      },
+    }),
+    endpoint({
+      method: 'DELETE',
+      path: /^\/api\/v1\/maintenance\/assets\/\d+\/links$/,
+      query: url => noUnexpectedQuery(['meterId', 'choreId'])(url),
+      response: (_request, url) => {
+        const asset = assetFor(url.pathname.split('/')[5])
+        if (!asset) return error(404, 'Asset not found')
+        const meterId = Number(url.searchParams.get('meterId'))
+        const choreId = Number(url.searchParams.get('choreId'))
+        if (meterId) {
+          const meter = meterFor(meterId)
+          if (!meter || meter.assetId !== asset.id)
+            return error(404, 'Meter link not found')
+          delete meter.assetId
+        } else if (choreId) {
+          const before = asset.maintenance?.length ?? 0
+          asset.maintenance = (asset.maintenance ?? []).filter(
+            item => item.choreId !== choreId,
+          )
+          if (asset.maintenance.length === before)
+            return error(404, 'Maintenance task link not found')
+        } else return error(400, 'Specify one meterId or choreId')
+        return { status: 204, body: '' }
+      },
+    }),
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/meters$/,
+      response: () => json({ res: state.meters }),
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/meters$/,
+      validate: requireName,
+      response: request => {
+        const body = parseBody(request)
+        const meter = {
+          id: state.nextMeterID++,
+          name: body.name.trim(),
+          unit: body.unit,
+          currentReading: body.initialReading ?? 0,
+        }
+        state.meters.push(meter)
+        state.meterReadings.set(meter.id, [])
+        return json({ res: meter }, 201)
+      },
+    }),
+    endpoint({
+      method: 'PUT',
+      path: /^\/api\/v1\/meters\/\d+$/,
+      validate: requireName,
+      response: (request, url) => {
+        const meter = meterFor(url.pathname.split('/').at(-1))
+        if (!meter) return error(404, 'Meter not found')
+        const body = parseBody(request)
+        Object.assign(meter, { name: body.name.trim(), unit: body.unit })
+        return json({ res: meter })
+      },
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/meters\/\d+\/readings$/,
+      validate: requiresFields('reading'),
+      response: (request, url) => {
+        const meter = meterFor(url.pathname.split('/')[4])
+        if (!meter) return error(404, 'Meter not found')
+        const reading = Number(parseBody(request).reading)
+        if (!Number.isInteger(reading) || reading < meter.currentReading)
+          return error(400, 'Invalid reading')
+        meter.currentReading = reading
+        const history = state.meterReadings.get(meter.id) ?? []
+        history.unshift({
+          id: history.length + 1,
+          meterId: meter.id,
+          reading,
+          recordedAt: now(),
+        })
+        state.meterReadings.set(meter.id, history)
+        return json({ res: meter })
+      },
+    }),
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/meters\/\d+\/readings$/,
+      query: url => noUnexpectedQuery(['offset'])(url),
+      response: (_request, url) =>
+        json({
+          res:
+            state.meterReadings.get(Number(url.pathname.split('/')[4])) ?? [],
+        }),
+    }),
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/things$/,
+      response: () => json({ res: state.things }),
+    }),
+    endpoint({
+      method: 'POST',
+      path: /^\/api\/v1\/things$/,
+      validate: requireName,
+      response: request => {
+        const body = parseBody(request)
+        const thing = {
+          id: state.nextThingID++,
+          name: body.name.trim(),
+          type: body.type,
+          state: body.state ?? '',
+        }
+        state.things.push(thing)
+        state.thingHistory.set(thing.id, [])
+        return json({ res: thing }, 201)
+      },
+    }),
+    endpoint({
+      method: 'PUT',
+      path: /^\/api\/v1\/things$/,
+      validate: requireName,
+      response: request => {
+        const body = parseBody(request)
+        const thing = thingFor(body.id)
+        if (!thing) return error(404, 'Thing not found')
+        Object.assign(thing, body)
+        return json({ res: thing })
+      },
+    }),
+    endpoint({
+      method: 'PUT',
+      path: /^\/api\/v1\/things\/\d+\/state$/,
+      query: url => url.searchParams.has('value'),
+      response: (_request, url) => {
+        const thing = thingFor(url.pathname.split('/')[4])
+        if (!thing) return error(404, 'Thing not found')
+        thing.state = url.searchParams.get('value')
+        const history = state.thingHistory.get(thing.id) ?? []
+        history.unshift({
+          id: history.length + 1,
+          thingId: thing.id,
+          state: thing.state,
+          createdAt: now(),
+        })
+        state.thingHistory.set(thing.id, history)
+        return json({ res: thing })
+      },
+    }),
+    endpoint({
+      method: 'GET',
+      path: /^\/api\/v1\/things\/\d+\/history$/,
+      query: url => noUnexpectedQuery(['offset'])(url),
+      response: (_request, url) =>
+        json({
+          res: state.thingHistory.get(Number(url.pathname.split('/')[4])) ?? [],
+        }),
+    }),
+    endpoint({
+      method: 'DELETE',
+      path: /^\/api\/v1\/things\/\d+$/,
+      response: (_request, url) => {
+        const id = Number(url.pathname.split('/').at(-1))
+        const index = state.things.findIndex(thing => thing.id === id)
+        if (index < 0) return error(404, 'Thing not found')
+        state.things.splice(index, 1)
+        state.thingHistory.delete(id)
+        return json({})
       },
     }),
   ]
@@ -479,7 +962,7 @@ export const apiMockContract = [
     method: 'GET',
     path: /^\/api\/v1\/categories$/,
     query: noUnexpectedQuery(['includeArchived']),
-    response: () => json(listEnvelope),
+    response: () => json({ res: defaultCategories }),
   }),
   endpoint({
     method: 'GET',
@@ -690,6 +1173,38 @@ export const apiMockContract = [
     response: () => json({ ok: true }),
   }),
   endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/users\/email-change$/,
+    validate: request =>
+      hasAuthorization(request) &&
+      requiresFields('email', 'currentPassword')(request),
+    response: () =>
+      json({ message: 'Verification email sent', expiresInSeconds: 1800 }, 202),
+  }),
+  endpoint({
+    method: 'GET',
+    path: /^\/api\/v1\/admin\/email-delivery$/,
+    response: () =>
+      json({
+        configured: false,
+        source: 'none',
+        provider: 'smtp',
+        secretConfigured: false,
+      }),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/users\/email-change\/verify$/,
+    validate: requiresFields('token'),
+    response: () =>
+      json({ message: 'Email address updated. Please sign in again.' }),
+  }),
+  endpoint({
+    method: 'POST',
+    path: /^\/api\/v1\/auth\/logout$/,
+    response: () => json({ ok: true }),
+  }),
+  endpoint({
     method: 'GET',
     path: /^\/api\/v1\/realtime\/sse\/ticket$/,
     response: request =>
@@ -719,7 +1234,17 @@ export const apiMockContract = [
 ]
 
 export const createApiMockHandler = page => {
-  const contract = [...createPreferenceEndpoints(), ...apiMockContract]
+  // Account state is created per handler so tests never leak saved webhook,
+  // theme, or layout choices into one another. This mirrors the preference
+  // endpoint's per-handler state.
+  const account = createAccountState()
+  const maintenance = createMaintenanceState()
+  const contract = [
+    ...createPreferenceEndpoints(account),
+    ...createAccountDataEndpoints(account),
+    ...createMaintenanceEndpoints(maintenance),
+    ...apiMockContract,
+  ]
   return async route => {
     const request = route.request()
     const url = new URL(request.url())

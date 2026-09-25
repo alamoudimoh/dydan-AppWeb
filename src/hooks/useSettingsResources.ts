@@ -34,6 +34,33 @@ export type EmailDeliveryInput = {
 }
 export type StorageUsage = { used: number; total: number }
 
+export type IntegrationStatus = {
+  apiDocs: { enabled: boolean; url: string }
+  googleCalendar: { available: boolean }
+  caldav: { available: boolean }
+  alexa: { available: boolean }
+  legal: { privacyPolicyUrl: string; termsUrl: string }
+  billing: { invoiceHistory: boolean }
+  webhooks: {
+    available: boolean
+    url: string
+    editable: boolean
+    plusOnly: boolean
+  }
+}
+
+/** One invoice as recorded by the server's Stripe webhook handler. */
+export type Invoice = {
+  invoice_id: string
+  amount: number
+  received_at: string
+  status: string
+  subscription_id: string
+  customer_id: string
+  period_start: string
+  period_end: string
+}
+
 const tokenKey = ['user', 'api-tokens'] as const
 const storageKey = ['user', 'storage'] as const
 const parse = <T>(response: Promise<Response>) =>
@@ -44,6 +71,46 @@ export function useStorageUsage() {
     queryKey: storageKey,
     queryFn: () => parse<StorageUsage>(Fetcher.GetStorageUsage()),
     enabled: Boolean(getAccessToken()),
+  })
+}
+
+const integrationsKey = ['user', 'integrations'] as const
+
+export function useIntegrationStatus() {
+  return useQuery({
+    queryKey: integrationsKey,
+    queryFn: () => parse<IntegrationStatus>(Fetcher.GetIntegrationStatus()),
+    enabled: Boolean(getAccessToken()),
+  })
+}
+
+export function useWebhookMutation() {
+  const client = useQueryClient()
+  return {
+    set: useMutation({
+      mutationFn: (url: string) => parse(Fetcher.PutWebhookURL(url)),
+      onSuccess: () => client.invalidateQueries({ queryKey: integrationsKey }),
+    }),
+  }
+}
+
+export function useImportData() {
+  return useMutation({
+    mutationFn: (document: unknown) => parse(Fetcher.ImportMyData(document)),
+  })
+}
+
+/**
+ * Billing history for the signed-in account. The server resolves the Stripe
+ * customer from the access token, so this can only ever return the caller's
+ * own invoices.
+ */
+export function useInvoices(enabled: boolean) {
+  return useQuery({
+    queryKey: ['payments', 'invoices'],
+    queryFn: () =>
+      parse<Invoice[]>(Fetcher.GetInvoices()).then(rows => rows ?? []),
+    enabled: enabled && Boolean(getAccessToken()),
   })
 }
 

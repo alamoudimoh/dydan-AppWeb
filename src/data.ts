@@ -19,6 +19,8 @@ export type Task = {
   dueTime?: string
   category?: string
   categoryColor?: string
+  /** Server-side category identity. The chore API persists only this id. */
+  categoryId?: number | null
   projectId?: string
   routineId?: string
   points?: number
@@ -180,6 +182,13 @@ export type Notification = {
   isRead: boolean
   timestamp: string
   actorId?: string
+  /**
+   * Server-supplied record reference. `chore` targets open the task detail,
+   * `reward_request` targets open the rewards screen. Notifications without a
+   * target are informational and only mark themselves read.
+   */
+  entityType?: string
+  entityId?: number
 }
 
 export type Meter = {

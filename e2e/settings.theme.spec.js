@@ -85,3 +85,40 @@ test('settings: theme (Dydan/Sovereign) and appearance (Light/Dark/Automatic) sw
 
   runtimeGuard.assertClean()
 })
+
+test('settings: notification delivery choices persist through reload', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installSmokeSession(page)
+
+  await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+  await page.waitForLoadState('networkidle')
+  await page.getByRole('tab', { name: /^notifications$/i }).click()
+
+  const notificationPanel = page.locator('.MuiTabPanel-root', {
+    hasText: "Choose what you're notified about and how.",
+  })
+  const taskReminders = notificationPanel
+    .getByText('Task reminders', { exact: true })
+    .locator('xpath=../..')
+    .getByRole('switch')
+  const emailChannel = notificationPanel
+    .getByText('Email notifications', { exact: true })
+    .locator('xpath=../..')
+    .getByRole('switch')
+
+  await expect(taskReminders).toBeChecked()
+  await expect(emailChannel).not.toBeChecked()
+  await taskReminders.click()
+  await emailChannel.click()
+  await expect(taskReminders).not.toBeChecked()
+  await expect(emailChannel).toBeChecked()
+
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByRole('tab', { name: /^notifications$/i }).click()
+  await expect(taskReminders).not.toBeChecked()
+  await expect(emailChannel).toBeChecked()
+  runtimeGuard.assertClean()
+})

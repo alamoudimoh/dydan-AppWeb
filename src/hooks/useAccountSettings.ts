@@ -113,6 +113,19 @@ export function useAccountSettingsMutations() {
     onSuccess: refreshSessions,
   })
 
+  const startEmailChange = useMutation({
+    mutationFn: ({
+      currentPassword,
+      email,
+    }: {
+      email: string
+      currentPassword: string
+    }) =>
+      parseBody<{ message: string; expiresInSeconds: number }>(
+        Fetcher.StartEmailChange({ email, currentPassword }),
+      ),
+  })
+
   const setupMFA = useMutation({
     mutationFn: () => parseBody<MFASetup>(Fetcher.SetupMFA()),
   })
@@ -238,6 +251,7 @@ export function useAccountSettingsMutations() {
     revokeOtherSessions,
     revokeSession,
     setupMFA,
+    startEmailChange,
     startSubscriptionCheckout,
     updateCircle,
     updateProfile,
