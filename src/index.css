@@ -285,6 +285,10 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --input-hover: #071a2c;
   --input-focus: #071a2c;
 
+  /* Light component distribution: approved palette values only. */
+  --card-border: var(--sv-sand);
+  --search-border: var(--sv-steel);
+
   --sig-done: #0d5a3d;
   --sig-done-bg: #f7edcf;
   --sig-due: #6a4300;
@@ -314,6 +318,32 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --shadow-sm: 0 1px 4px rgba(7, 26, 44, 0.18);
   --shadow-md: 0 4px 16px rgba(7, 26, 44, 0.18);
   --shadow-lg: 0 12px 40px rgba(7, 26, 44, 0.18);
+}
+
+/* Sovereign Light shell distribution.
+   Light mode keeps the content canvas warm ivory and cards white, while the
+   navigation rail uses the approved inverse Navy/Brass treatment so Sovereign
+   reads as Navy & Brass instead of a mostly-white skin. These are scoped
+   component mappings only; the authored light semantic tokens above remain
+   unchanged. */
+html[data-theme='sovereign']:not([data-joy-color-scheme='dark']) .sidebar {
+  --surface: var(--sv-navy);
+  --surface-2: var(--sv-navy-deep);
+  --surface-3: var(--sv-navy-ink);
+  --t-primary: var(--sv-ivory);
+  --t-muted: var(--sv-sand);
+  --t-faint: var(--sv-navy-tint);
+  --line: var(--sv-regency-blue);
+  --line-strong: var(--sv-navy-light);
+  --brand: var(--sv-brass);
+  --brand-hover: var(--sv-brass-light);
+  --brand-detail: var(--sv-navy);
+  --selected-bg: var(--sv-brass);
+  --selected-text: var(--sv-navy);
+  --selected-border: var(--sv-navy);
+  --focus-ring: var(--sv-brass);
+  --focus-offset: var(--sv-navy);
+  --sig-over: var(--sv-ivory);
 }
 
 /* Sovereign Dark — exact Navy & Brass semantic values */
@@ -1089,7 +1119,7 @@ html[dir='ltr'] .main-scroll > * {
 
 /* The search field shares its container's border: no second focus ring. */
 .top-search {
-  border: 1px solid var(--line);
+  border: 1px solid var(--search-border, var(--line));
   border-radius: var(--r-md);
   transition: border-color 0.14s ease;
 }
@@ -1109,7 +1139,7 @@ html[dir='ltr'] .main-scroll > * {
 /* ─── Card ─────────────────────────────── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-border, var(--line));
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
 }
