@@ -16,6 +16,11 @@ import ThemeSelect from './ThemeSelect'
  * Save/Cancel actions out of view; as a dropdown the same palette costs one
  * row, and each option can carry its name beside the swatch, which is more
  * precise than picking a rectangle by eye.
+ *
+ * Geometry is opted into via `color-picker-field` rather than changed on the
+ * shared component: a color has 23 possible values and does not need the full
+ * form width, so the field is capped and the popover is matched to the trigger
+ * instead of the shared fixed 228px. Projects and Routines keep theirs.
  */
 
 /** The legacy no-color sentinel is not a color a user can pick, so it stays
@@ -56,6 +61,7 @@ export default function ColorPicker({
 
   return (
     <ThemeSelect
+      className='color-picker-field'
       label={label}
       value={selected}
       options={optionsFor(selected)}

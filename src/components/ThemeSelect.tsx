@@ -15,6 +15,7 @@ export type ThemeOption = {
 }
 
 export default function ThemeSelect({
+  className,
   disabled = false,
   label = 'Select',
   onChange,
@@ -26,6 +27,13 @@ export default function ThemeSelect({
   options: ThemeOption[]
   label?: string
   disabled?: boolean
+  /**
+   * Optional extra class on the field wrapper, for a caller that needs to
+   * scope its own geometry to one instance. Everything downstream (trigger,
+   * popover, options) lives inside this element, so a single class can address
+   * the whole control. Call sites that pass nothing keep the shared geometry.
+   */
+  className?: string
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -58,7 +66,10 @@ export default function ThemeSelect({
   }
 
   return (
-    <div className='theme-field' ref={root}>
+    <div
+      className={`theme-field${className ? ` ${className}` : ''}`}
+      ref={root}
+    >
       <button
         type='button'
         className='input themed-trigger'
@@ -111,7 +122,7 @@ export default function ThemeSelect({
           }}
         >
           {searchable && (
-            <div className='p-2'>
+            <div className='theme-select-search p-2'>
               <input
                 className='input w-full'
                 ref={searchRef}
