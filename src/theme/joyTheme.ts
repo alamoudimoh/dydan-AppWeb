@@ -105,9 +105,10 @@ export const joyTheme = extendTheme({
       styleOverrides: {
         root: {
           borderRadius: 'var(--r-md)',
-          backgroundColor: 'var(--surface)',
-          borderColor: 'var(--line)',
-          '--Input-focusedHighlight': 'var(--brand)',
+          backgroundColor: 'var(--input-bg)',
+          color: 'var(--input-text)',
+          borderColor: 'var(--input-border)',
+          '--Input-focusedHighlight': 'var(--input-focus)',
         },
       },
     },

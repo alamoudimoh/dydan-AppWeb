@@ -76,11 +76,14 @@
   --focus-ring: #34236d;
   --focus-offset: #fff8e8;
 
-  /* Interactive control boundary. --line-strong is the control/strong boundary
-     in the hierarchy; --line stays for decorative separators only. */
-  --control-border: var(--line-strong);
-  --control-border-hover: var(--line-strong);
-  --control-border-focus: var(--focus-ring);
+  /* Input control colors. The dydan appearances resolve these through their own
+     existing tokens so the approved Rhythm Violet boundary is unchanged; each
+     sovereign appearance below states its approved values explicitly. */
+  --input-bg: var(--surface);
+  --input-text: var(--t-primary);
+  --input-border: var(--line-strong);
+  --input-hover: var(--line-strong);
+  --input-focus: var(--focus-ring);
 
   --sig-done: #0b5d45;
   --sig-done-bg: #fff3d1;
@@ -176,10 +179,6 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --selected-border: #34236d;
   --focus-ring: #ffcc5c;
   --focus-offset: #34236d;
-
-  --control-border: #8a79bf;
-  --control-border-hover: #8a79bf;
-  --control-border-focus: #ffcc5c;
 
   --sig-done: #fff8e8;
   --sig-done-bg: #0b5d45;
@@ -278,12 +277,13 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --focus-ring: #071a2c;
   --focus-offset: #f6f2e8;
 
-  /* Warm Ivory page means --line (#ebe7de) is too quiet to be the only
-     boundary of an interactive control, so controls resolve through
-     --line-strong and step up to navy on hover/focus. */
-  --control-border: #4d7794;
-  --control-border-hover: #071a2c;
-  --control-border-focus: #071a2c;
+  /* Warm Ivory page means --line (#ebe7de) is too quiet to be the only boundary
+     of an interactive control, so inputs take their exact approved colors. */
+  --input-bg: #ffffff;
+  --input-text: #071a2c;
+  --input-border: #4d7794;
+  --input-hover: #071a2c;
+  --input-focus: #071a2c;
 
   --sig-done: #0d5a3d;
   --sig-done-bg: #f7edcf;
@@ -359,9 +359,11 @@ html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --focus-ring: #e0b45a;
   --focus-offset: #071a2c;
 
-  --control-border: #829fb4;
-  --control-border-hover: #829fb4;
-  --control-border-focus: #e0b45a;
+  --input-bg: #142d40;
+  --input-text: #f6f2e8;
+  --input-border: #829fb4;
+  --input-hover: #f6f2e8;
+  --input-focus: #e0b45a;
 
   --sig-done: #f6f2e8;
   --sig-done-bg: #0d5a3d;
@@ -1115,10 +1117,10 @@ html[dir='ltr'] .main-scroll > * {
 /* ─── Input ────────────────────────────── */
 .input {
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--control-border);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: var(--r-md);
-  color: var(--t-primary);
+  color: var(--input-text);
   font-family: var(--font-ui);
   font-size: 14px;
   padding: 9px 12px;
@@ -1128,11 +1130,11 @@ html[dir='ltr'] .main-scroll > * {
     box-shadow 0.14s ease;
 }
 .input:hover {
-  border-color: var(--control-border-hover);
+  border-color: var(--input-hover);
 }
 .input:focus,
 .input:focus-visible {
-  border-color: var(--control-border-focus);
+  border-color: var(--input-focus);
   border-width: 1px;
   outline: none;
   box-shadow: none;
@@ -1144,9 +1146,9 @@ select.input,
 select {
   appearance: none;
   -webkit-appearance: none;
-  background-color: var(--surface);
-  color: var(--t-primary);
-  border: 1px solid var(--control-border);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
   border-radius: var(--r-md);
   padding-inline-end: 34px;
   font: inherit;
@@ -1170,8 +1172,8 @@ select {
     13px 50%;
 }
 select option {
-  background: var(--surface);
-  color: var(--t-primary);
+  background: var(--input-bg);
+  color: var(--input-text);
 }
 input[type='date'].input {
   min-height: 42px;

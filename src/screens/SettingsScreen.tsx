@@ -1937,8 +1937,8 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   color: 'var(--t-primary)',
                 },
                 "& .MuiTab-root[aria-selected='true']": {
-                  bgcolor: 'var(--brand-faint)',
-                  color: 'var(--brand)',
+                  bgcolor: 'var(--selected-bg)',
+                  color: 'var(--selected-text)',
                 },
               }}
             >

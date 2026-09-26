@@ -278,39 +278,14 @@ export function Icon({
   )
 }
 
-/* ─── Logo mark (preserved) ──────────── */
-export function LogoMark({
-  size = 28,
-  theme,
-}: {
-  size?: number
-  theme: Theme
-}) {
-  if (theme === 'sovereign') {
-    return (
-      <svg width={size} height={size} viewBox='0 0 100 100' aria-hidden='true'>
-        <circle
-          cx='50'
-          cy='50'
-          r='46'
-          fill='var(--brand)'
-          stroke='var(--brand-detail)'
-          strokeWidth='7'
-        />
-        <text
-          x='50'
-          y='66'
-          textAnchor='middle'
-          fill='var(--brand-detail)'
-          fontSize='40'
-          fontWeight='800'
-          fontFamily='var(--font-ui)'
-        >
-          M
-        </text>
-      </svg>
-    )
-  }
+/* ─── Application logo ──────────── */
+/**
+ * The single application logo. Both themes render this same mark: the product
+ * identity never changes with the palette, and no theme introduces a personal
+ * brand mark. Its two ink colors resolve through --brand and --brand-detail,
+ * so it follows the active palette.
+ */
+export function LogoMark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox='0 0 100 100' aria-hidden='true'>
       <circle cx='50' cy='50' r='46' fill='var(--brand)' />
@@ -407,7 +382,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
       aria-label='Main navigation'
     >
       <div className='sidebar-header'>
-        <LogoMark size={28} theme={ctx.theme} />
+        <LogoMark size={28} />
         <div className='flex-1 min-w-0 collapse-hide'>
           <div
             className='font-bold text-primary leading-tight'
@@ -628,7 +603,7 @@ function SplashScreen({ theme }: { theme: Theme }) {
         gap: 16,
       }}
     >
-      <LogoMark size={56} theme={theme} />
+      <LogoMark size={56} />
       <div
         className='text-faint'
         style={{
@@ -990,7 +965,7 @@ export default function App() {
       <main className='main-content' id='main-content'>
         <div className='app-topbar'>
           <div className='flex items-center gap-2 md:hidden'>
-            <LogoMark size={22} theme={brand} />
+            <LogoMark size={22} />
             <span className='font-bold text-primary' style={{ fontSize: 15 }}>
               {t('app.name')}
             </span>

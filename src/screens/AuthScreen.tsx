@@ -119,7 +119,7 @@ export default function AuthScreen({
         >
           {/* Branding */}
           <div className='flex items-center gap-3 mb-8'>
-            <LogoMark size={36} theme={theme} />
+            <LogoMark size={36} />
             <div>
               <div className='font-bold text-primary' style={{ fontSize: 20 }}>
                 dydan
