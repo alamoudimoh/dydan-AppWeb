@@ -503,6 +503,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
           onClick={() => ctx.navigate('settings')}
         >
           <Avatar
+            className='sidebar-user-avatar'
             size='sm'
             sx={{
               bgcolor: currentMember?.avatarColor ?? 'var(--brand)',
@@ -972,7 +973,7 @@ export default function App() {
           </div>
           <div
             className='top-search flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg min-w-0 flex-1 max-w-[340px] ms-2'
-            style={{ background: 'var(--surface-2)', fontSize: 13 }}
+            style={{ background: 'var(--search-bg)', fontSize: 13 }}
           >
             <Icon
               name='search'
