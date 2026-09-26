@@ -211,8 +211,8 @@ export default function CreateTaskModal({
             </label>
             {categories.length === 0 ? (
               <div className='text-faint' style={{ fontSize: 12 }}>
-                No categories yet. Create one in Settings → Team → Categories to
-                categorize tasks.
+                No categories yet. Create one in Settings → Space → Categories
+                to categorize tasks.
               </div>
             ) : (
               <div className='flex flex-wrap gap-2'>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Settings -> Team -> Categories, end to end against a fake /api/v1/categories.
+ * Settings -> Space -> Categories, end to end against a fake /api/v1/categories.
  *
  * A picker harness stands in for the task editor: it calls the very same
  * `useChoreCategories()` with the very same defaults that CreateTaskModal
@@ -183,7 +183,7 @@ afterEach(() => {
   client.clear()
 })
 
-describe('Settings -> Team -> Categories', () => {
+describe('Settings -> Space -> Categories', () => {
   it('renders the section with an active category row, swatch, edit and archive actions', async () => {
     seed('Garden', '#26a69a')
     render(<CategorySettings />, { wrapper: Wrapper })

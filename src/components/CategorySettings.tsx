@@ -39,7 +39,7 @@ function Swatch({ color }: { color?: string }) {
 }
 
 /**
- * Settings -> Team -> Categories.
+ * Settings -> Space -> Categories.
  *
  * Manages the circle's categories through the existing /api/v1/categories
  * endpoints. Removal is archive-only, matching the API: the row keeps its id,

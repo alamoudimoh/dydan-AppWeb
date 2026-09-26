@@ -4,7 +4,7 @@ import { Icon } from '../App'
 import { useLiveData } from '../model/liveData'
 
 export default function MemberMultiPicker({
-  label = 'Team members',
+  label = 'Members',
   onChange,
   value,
 }: {
