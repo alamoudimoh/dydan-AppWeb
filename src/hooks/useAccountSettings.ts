@@ -24,6 +24,7 @@ export type MFASetup = {
 
 type MFAStatus = { mfaEnabled: boolean }
 type SubscriptionCheckout = { sessionURL: string }
+type ProfilePhotoUpload = { sign: string }
 
 export type UserCircle = {
   id: number
@@ -98,8 +99,14 @@ export function useAccountSettingsMutations() {
   })
 
   const uploadProfilePhoto = useMutation({
-    mutationFn: (file: File) => parseBody(Fetcher.UploadProfilePhoto(file)),
-    onSuccess: refreshProfile,
+    mutationFn: (file: File) =>
+      parseBody<ProfilePhotoUpload>(Fetcher.UploadProfilePhoto(file)),
+    onSuccess: photo => {
+      client.setQueryData<ApiProfile | undefined>(KEYS.profile, profile =>
+        profile ? { ...profile, image: photo.sign } : profile,
+      )
+      refreshProfile()
+    },
   })
 
   const changePassword = useMutation({

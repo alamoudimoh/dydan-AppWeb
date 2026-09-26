@@ -35,6 +35,16 @@ export type EmailDeliveryInput = {
 export type StorageUsage = { used: number; total: number }
 
 export type IntegrationStatus = {
+  server: {
+    version: string
+    commit: string
+    buildDate: string
+    deployment: string
+    operatingSystem: string
+    architecture: string
+    database: string
+    storage: string
+  }
   apiDocs: { enabled: boolean; url: string }
   googleCalendar: { available: boolean }
   caldav: { available: boolean }
@@ -58,6 +68,39 @@ export type IntegrationStatus = {
     betaFeatures: { available: boolean }
   }
 }
+
+const normalizeIntegrationStatus = (
+  status: Omit<IntegrationStatus, 'settings'> & {
+    settings?: Partial<IntegrationStatus['settings']>
+  },
+): IntegrationStatus => ({
+  ...status,
+  server: {
+    version: '',
+    commit: '',
+    buildDate: '',
+    deployment: '',
+    operatingSystem: '',
+    architecture: '',
+    database: '',
+    storage: '',
+    ...status.server,
+  },
+  settings: {
+    notificationEmail: {
+      available: false,
+      emailDeliveryConfigured: false,
+      accountEmailAvailable: false,
+      ...status.settings?.notificationEmail,
+    },
+    analytics: { available: false, ...status.settings?.analytics },
+    personalization: {
+      available: false,
+      ...status.settings?.personalization,
+    },
+    betaFeatures: { available: false, ...status.settings?.betaFeatures },
+  },
+})
 
 /** One invoice as recorded by the server's Stripe webhook handler. */
 export type Invoice = {
@@ -89,7 +132,10 @@ const integrationsKey = ['user', 'integrations'] as const
 export function useIntegrationStatus() {
   return useQuery({
     queryKey: integrationsKey,
-    queryFn: () => parse<IntegrationStatus>(Fetcher.GetIntegrationStatus()),
+    queryFn: () =>
+      parse<Omit<IntegrationStatus, 'settings'>>(
+        Fetcher.GetIntegrationStatus(),
+      ).then(normalizeIntegrationStatus),
     enabled: Boolean(getAccessToken()),
   })
 }

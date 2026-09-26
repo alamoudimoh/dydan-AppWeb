@@ -165,7 +165,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
                 Your details
               </h1>
               <div className='text-muted mb-7' style={{ fontSize: 14 }}>
-                This creates your family circle — you can invite the rest of the
+                This creates your team — you can invite the rest of the
                 household after.
               </div>
 
