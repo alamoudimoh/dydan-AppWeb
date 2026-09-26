@@ -1894,3 +1894,58 @@ html[data-density='compact'] .page-container .card > .px-5.py-5 {
     scroll-behavior: auto;
   }
 }
+
+/* ColorPicker geometry: compact, popover matches trigger, no scrollbar arrows */
+.color-picker-field {
+  width: 100%;
+  max-width: 320px;
+}
+
+.color-picker-field .theme-popover {
+  width: 100%;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  min-width: 0;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  padding: 2px;
+}
+
+.color-picker-field .member-options {
+  max-height: 188px;
+  padding: 4px;
+  border-radius: inherit;
+}
+
+.color-picker-field .member-option {
+  padding: 5px 6px;
+  border-radius: calc(var(--r-md) - 1px);
+}
+
+.color-picker-field .theme-select-search {
+  padding: 4px 4px 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.color-picker-field .input[type='search'] {
+  padding: 8px 9px;
+  border-radius: calc(var(--r-md) - 1px);
+}
+
+.color-picker-field .member-options::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.color-picker-field .member-options::-webkit-scrollbar {
+  width: 2px;
+}
+
+.color-picker-field .member-options::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--line-strong) 55%, transparent);
+}
+
+.color-picker-field .member-options::-webkit-scrollbar-track {
+  background: transparent;
+}

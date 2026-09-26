@@ -708,7 +708,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                           >
                             <span className='flex-1'>
                               {entry.choreName} —{' '}
-                              {entry.completedByName ?? 'Team member'}
+                              {entry.completedByName ?? 'Space member'}
                             </span>
                             <span className='text-faint'>
                               {entry.performedAt

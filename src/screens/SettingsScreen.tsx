@@ -10,6 +10,8 @@ import QRCode from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 
 import { AppCtx, Icon, Theme, View } from '../App'
+import CategorySettings from '../components/CategorySettings'
+import { Row, Section } from '../components/SettingsSection'
 import { useLocalization } from '../contexts/LocalizationContext'
 import { useProductTheme } from '../contexts/ThemeContext'
 import {
@@ -131,71 +133,8 @@ const INTEGRATION_ROWS = [
 ]
 
 /* ─── Shared building blocks ──────────── */
-function Section({
-  children,
-  title,
-}: {
-  title?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className='mb-6'>
-      {title && (
-        <div style={{ padding: '0 0 8px' }}>
-          <div className='section-label' style={{ padding: 0 }}>
-            {title}
-          </div>
-        </div>
-      )}
-      <div className='card overflow-hidden'>{children}</div>
-    </div>
-  )
-}
-
-function Row({
-  children,
-  detail,
-  icon,
-  label,
-  onClick,
-}: {
-  icon?: string
-  label: string
-  /** Persisted setting or status; visually distinct from explanatory help. */
-  detail?: string
-  children?: React.ReactNode
-  onClick?: () => void
-}) {
-  return (
-    <div
-      className='flex items-center gap-4 px-5 py-4 border-b border-line last:border-0'
-      style={{
-        borderColor: 'var(--line)',
-        cursor: onClick ? 'pointer' : undefined,
-      }}
-      onClick={onClick}
-    >
-      {icon && (
-        <Icon
-          name={icon}
-          size={18}
-          style={{ color: 'var(--t-muted)', flexShrink: 0 }}
-        />
-      )}
-      <div className='flex-1 min-w-0'>
-        <div className='font-medium text-primary' style={{ fontSize: 14 }}>
-          {label}
-        </div>
-        {detail && (
-          <div className='text-primary' style={{ fontSize: 12, marginTop: 1 }}>
-            {detail}
-          </div>
-        )}
-      </div>
-      {children && <div className='flex-shrink-0'>{children}</div>}
-    </div>
-  )
-}
+// Section and Row now live in ../components/SettingsSection so the Category
+// settings section can reuse them without importing this screen.
 
 function JoyToggle({
   disabled = false,
@@ -574,7 +513,7 @@ function InviteModal({
           style={{ borderBottom: '1px solid var(--line)' }}
         >
           <div className='font-bold text-primary' style={{ fontSize: 17 }}>
-            Invite to your team
+            Invite to your space
           </div>
           <button className='btn btn-ghost btn-icon' onClick={onClose}>
             <Icon name='x' size={18} />
@@ -586,7 +525,7 @@ function InviteModal({
               className='text-muted'
               style={{ fontSize: 14, lineHeight: 1.6 }}
             >
-              Share this real team join link. dydan does not send an email
+              Share this real space join link. dydan does not send an email
               invitation from this screen.
             </div>
             <code
@@ -1701,7 +1640,7 @@ const TABS: { id: string; label: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', icon: 'home' },
   { id: 'profile', label: 'Profile', icon: 'user' },
   { id: 'security', label: 'Security', icon: 'lock' },
-  { id: 'team', label: 'Team', icon: 'users' },
+  { id: 'team', label: 'Space', icon: 'users' },
   { id: 'theme', label: 'Theme', icon: 'sparkle' },
   { id: 'language', label: 'Language & region', icon: 'globe' },
   { id: 'sidepanel', label: 'Side panel', icon: 'bars' },
@@ -1897,7 +1836,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               Settings
             </h1>
             <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-              Manage your account, team, and preferences
+              Manage your account, space, and preferences
             </div>
           </div>
         </div>
@@ -2120,7 +2059,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Change
                   </button>
                 </Row>
-                <Row icon='star' label='Role in team'>
+                <Row icon='star' label='Role in space'>
                   <span
                     className='badge bg-brand-faint text-brand'
                     style={{ fontSize: 11, textTransform: 'capitalize' }}
@@ -2311,9 +2250,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               </Section>
             </TabPanel>
 
-            {/* ── Team accounts ── */}
+            {/* ── Space accounts ── */}
             <TabPanel value='team' sx={{ p: 0 }}>
-              <Section title='Team settings'>
+              <Section title='Space settings'>
                 {!isSolo && (
                   <Row icon='plus' label='Invite people'>
                     <button
@@ -2327,7 +2266,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 {pendingJoinCode && (
                   <Row
                     icon='users'
-                    label='Join shared team'
+                    label='Join shared space'
                     detail={`Invite code: ${pendingJoinCode}`}
                   >
                     <button
@@ -2340,7 +2279,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             ctx.showToast(
                               err instanceof Error
                                 ? err.message
-                                : 'Could not join this team',
+                                : 'Could not join this space',
                             ),
                           )
                       }
@@ -2351,8 +2290,8 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 )}
                 <Row
                   icon='home'
-                  label='Team name'
-                  detail={circle?.name ?? 'Loading team details…'}
+                  label='Space name'
+                  detail={circle?.name ?? 'Loading space details…'}
                 >
                   <button
                     className='btn btn-ghost btn-sm text-brand'
@@ -2404,26 +2343,26 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </button>
                 </Row>
                 {!isSolo && (
-                  <Row icon='log_out' label='Leave team'>
+                  <Row icon='log_out' label='Leave space'>
                     <button
                       className='btn btn-ghost btn-sm text-sig-over'
                       onClick={() =>
                         ctx.showConfirm({
-                          title: 'Leave the team?',
+                          title: 'Leave the space?',
                           message:
-                            "You'll lose access to shared lists, goals, and team activity.",
+                            "You'll lose access to shared lists, goals, and space activity.",
                           confirmLabel: 'Leave',
                           danger: true,
                           onConfirm: () =>
                             circle &&
                             void account.leaveCircle
                               .mutateAsync(circle.id)
-                              .then(() => ctx.showToast('You left the team'))
+                              .then(() => ctx.showToast('You left the space'))
                               .catch(err =>
                                 ctx.showToast(
                                   err instanceof Error
                                     ? err.message
-                                    : 'Could not leave this team',
+                                    : 'Could not leave this space',
                                 ),
                               ),
                         })
@@ -2435,7 +2374,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 )}
               </Section>
               {!isSolo ? (
-                <Section title='Team members'>
+                <Section title='Members'>
                   <div className='px-5 py-4'>
                     <div className='flex flex-col gap-3'>
                       {members.map(m => (
@@ -2482,7 +2421,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                               onClick={() =>
                                 ctx.showConfirm({
                                   title: `Remove ${m.name}?`,
-                                  message: `${m.name} will lose access to the team. Their tasks will remain.`,
+                                  message: `${m.name} will lose access to the space. Their tasks will remain.`,
                                   confirmLabel: 'Remove',
                                   danger: true,
                                   onConfirm: () =>
@@ -2514,7 +2453,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </div>
                 </Section>
               ) : (
-                <Section title='Team status'>
+                <Section title='Space status'>
                   <div className='px-5 py-5'>
                     <div className='flex items-center gap-4 mb-4'>
                       <div style={{ fontSize: 40, lineHeight: 1 }}>🏠</div>
@@ -2534,7 +2473,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                           }}
                         >
                           Invite someone to unlock shared lists, family goals,
-                          team workload, and more.
+                          space workload, and more.
                         </div>
                       </div>
                     </div>
@@ -2548,6 +2487,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </div>
                 </Section>
               )}
+
+              {/* Categories are scoped to the Circle, which a solo account
+                  also has, so this section is deliberately outside the
+                  isSolo branches above. */}
+              <CategorySettings />
             </TabPanel>
 
             {/* ── Theme ── */}
@@ -2961,7 +2905,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
             {/* ── Privacy ── */}
             <TabPanel value='privacy' sx={{ p: 0 }}>
               <Section title='Sharing preferences'>
-                <Row icon='eye' label='Activity visible to team'>
+                <Row icon='eye' label='Activity visible to space'>
                   <JoyToggle
                     on={preferences.privacy.activityVisible}
                     onChange={() =>
@@ -3543,13 +3487,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
       {showRenameTeam && circle && (
         <TextInputModal
           initialValue={circle.name}
-          label='Team name'
+          label='Space name'
           onClose={() => setShowRenameTeam(false)}
           onSubmit={async name => {
             await account.updateCircle.mutateAsync(name)
-            ctx.showToast('Team name updated')
+            ctx.showToast('Space name updated')
           }}
-          title='Rename team'
+          title='Rename space'
         />
       )}
       {recoveryCodes && (
@@ -3590,7 +3534,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               result.requiresTransfer
             ) {
               throw new Error(
-                'Transfer ownership of your team before deleting this account.',
+                'Transfer ownership of your space before deleting this account.',
               )
             }
             await account.deleteAccount.mutateAsync({ password })

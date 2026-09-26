@@ -15,7 +15,7 @@ test('native task deep links use the approved all-tasks route', () => {
   )
 })
 
-test('native capture and team links never navigate to legacy routes', () => {
+test('native capture and space links never navigate to legacy routes', () => {
   assert.equal(nativeCapturePath('scan'), '/all-tasks?create=1&mode=scan')
   assert.equal(nativeCapturePath(), '/all-tasks?create=1')
   assert.equal(nativeInvitePath('A B'), '/settings?invite_code=A%20B')

@@ -142,7 +142,7 @@ export default function ShoppingScreen({
             Shopping
           </h1>
           <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            {isSolo ? 'Personal lists' : 'Personal and shared team lists'}
+            {isSolo ? 'Personal lists' : 'Personal and shared space lists'}
           </div>
         </div>
         <button
