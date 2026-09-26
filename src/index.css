@@ -55,6 +55,7 @@
   --accent-text: #684a00;
   --callout-bg: #34236d;
   --callout-text: #fff8e8;
+  --callout-muted: #d9d1eb;
   --home-hero-bg: #34236d;
   --home-hero-text: #fff8e8;
   --home-hero-accent: #ffcc5c;
@@ -84,6 +85,7 @@
   --input-border: var(--line-strong);
   --input-hover: var(--line-strong);
   --input-focus: var(--focus-ring);
+  --search-bg: var(--surface-2);
 
   --sig-done: #0b5d45;
   --sig-done-bg: #fff3d1;
@@ -160,6 +162,7 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --accent-text: #ffcc5c;
   --callout-bg: #fff8e8;
   --callout-text: #34236d;
+  --callout-muted: #25174f;
   --home-hero-bg: #34236d;
   --home-hero-text: #fff8e8;
   --home-hero-accent: #ffcc5c;
@@ -257,6 +260,7 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --accent-text: #5f421b;
   --callout-bg: #071a2c;
   --callout-text: #f6f2e8;
+  --callout-muted: #d8c9a8;
   --home-hero-bg: #071a2c;
   --home-hero-text: #f6f2e8;
   --home-hero-accent: #e0b45a;
@@ -287,6 +291,7 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
 
   /* Light component distribution: approved palette values only. */
   --card-border: var(--sv-sand);
+  --search-bg: var(--sv-brass-tint);
   --search-border: var(--sv-steel);
 
   --sig-done: #0d5a3d;
@@ -346,6 +351,12 @@ html[data-theme='sovereign']:not([data-joy-color-scheme='dark']) .sidebar {
   --sig-over: var(--sv-ivory);
 }
 
+html[data-theme='sovereign']:not([data-joy-color-scheme='dark'])
+  .sidebar-user-avatar {
+  border: 1px solid var(--sv-brass);
+  box-sizing: border-box;
+}
+
 /* Sovereign Dark — exact Navy & Brass semantic values */
 html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --page: #071a2c;
@@ -369,6 +380,7 @@ html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --accent-text: #e0b45a;
   --callout-bg: #f6f2e8;
   --callout-text: #071a2c;
+  --callout-muted: #142d40;
   --home-hero-bg: #071a2c;
   --home-hero-text: #f6f2e8;
   --home-hero-accent: #e0b45a;
