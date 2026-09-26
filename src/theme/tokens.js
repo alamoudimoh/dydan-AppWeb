@@ -164,7 +164,7 @@ export const productTokens = Object.freeze({
   },
   sovereign: {
     id: 'sovereign',
-    name: 'Sovereign',
+    name: 'sovereign',
     font: {
       ui: PRODUCT_UI_FONTS.sovereign,
       arabic: ARABIC_UI_FONT,

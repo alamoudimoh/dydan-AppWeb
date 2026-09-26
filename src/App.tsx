@@ -406,10 +406,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
       className={`sidebar ${collapsed ? 'collapsed' : ''}`}
       aria-label='Main navigation'
     >
-      <div
-        className='sidebar-header flex items-center gap-2 px-3 pt-4 pb-3 border-b'
-        style={{ borderColor: 'var(--line)' }}
-      >
+      <div className='sidebar-header'>
         <LogoMark size={28} theme={ctx.theme} />
         <div className='flex-1 min-w-0 collapse-hide'>
           <div
@@ -504,7 +501,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
               aria-pressed={ctx.theme === 'sovereign'}
               onClick={() => ctx.setTheme('sovereign')}
             >
-              Sovereign
+              sovereign
             </button>
           </div>
         </div>
@@ -991,13 +988,7 @@ export default function App() {
     >
       <Sidebar ctx={ctx} />
       <main className='main-content' id='main-content'>
-        <div
-          className='flex items-center justify-between px-4 py-3 sticky top-0 z-40'
-          style={{
-            background: 'var(--surface)',
-            borderBottom: '1px solid var(--line)',
-          }}
-        >
+        <div className='app-topbar'>
           <div className='flex items-center gap-2 md:hidden'>
             <LogoMark size={22} theme={brand} />
             <span className='font-bold text-primary' style={{ fontSize: 15 }}>

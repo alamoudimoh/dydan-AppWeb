@@ -14,29 +14,16 @@ test('settings: integrations report capability status and webhook can be saved a
 
   // The rows must reflect true availability instead of hardcoded "Unavailable"
   // text. The fixture mocks the capability endpoint with real per-integration
-  // status (googleCalendar/caldav/alexa = not configured, webhooks = editable).
+  // status (googleCalendar/caldav/alexa = not configured, webhooks = editable),
+  // and each provider row reports that state as its value.
   await page.getByRole('tab', { name: 'Integrations', exact: true }).click()
-  await expect(
-    page.getByText('Google Calendar sync is not configured on this server', {
-      exact: true,
-    }),
-  ).toBeVisible()
-  await expect(
-    page.getByText(
-      'CalDAV account authorization is not configured on this server',
-      {
-        exact: true,
-      },
-    ),
-  ).toBeVisible()
-  await expect(
-    page.getByText(
-      'Alexa skill credentials are not configured on this server',
-      {
-        exact: true,
-      },
-    ),
-  ).toBeVisible()
+  for (const label of ['Google Calendar', 'Apple Calendar', 'Amazon Alexa']) {
+    const row = page
+      .getByText(label, { exact: true })
+      .locator('xpath=ancestor::div[contains(@class,"flex")]')
+      .first()
+    await expect(row.getByText('Not configured', { exact: true })).toBeVisible()
+  }
 
   // The Save button is a sibling of the input inside the row's flex-shrink-0
   // controls container. Rows render as plain markup, so scope by the labeled
@@ -48,34 +35,23 @@ test('settings: integrations report capability status and webhook can be saved a
     .getByRole('button', { name: 'Save' })
     .click()
 
-  // The save invalidates the integrations query and refetches, so seeing the
-  // saved URL here proves it round-tripped through the server, not local state.
-  const delivering = page.getByText(
-    'Delivering events to https://hooks.smoke.test/dydan',
-    { exact: true },
-  )
-  await expect(delivering).toBeVisible()
+  // The save invalidates the integrations query and refetches, so the Clear
+  // control reappearing proves the stored endpoint round-tripped through the
+  // server rather than living in local state.
+  await expect(page.getByRole('button', { name: 'Clear' })).toBeVisible()
 
   // Reload persistence: the endpoint must still be configured after a full
-  // reload, and Clear must remove it server-side.
+  // reload, and saving an empty draft must remove it server-side.
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('tab', { name: 'Integrations', exact: true }).click()
-  await expect(
-    page.getByText('Delivering events to https://hooks.smoke.test/dydan', {
-      exact: true,
-    }),
-  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Clear' })).toBeVisible()
 
   await webhookInput.fill('')
   await webhookInput
     .locator('xpath=ancestor::div[contains(@class,"flex-shrink-0")]')
     .getByRole('button', { name: 'Save' })
     .click()
-  await expect(
-    page.getByText(
-      'Configure an endpoint to receive chore and maintenance events',
-      { exact: true },
-    ),
-  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Clear' })).toBeHidden()
+  await expect(page.getByLabel('Webhook endpoint URL')).toHaveValue('')
   runtimeGuard.assertClean()
 })

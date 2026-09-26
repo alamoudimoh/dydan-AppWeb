@@ -76,6 +76,12 @@
   --focus-ring: #34236d;
   --focus-offset: #fff8e8;
 
+  /* Interactive control boundary. --line-strong is the control/strong boundary
+     in the hierarchy; --line stays for decorative separators only. */
+  --control-border: var(--line-strong);
+  --control-border-hover: var(--line-strong);
+  --control-border-focus: var(--focus-ring);
+
   --sig-done: #0b5d45;
   --sig-done-bg: #fff3d1;
   --sig-due: #704600;
@@ -122,6 +128,11 @@
   --shadow-lg: 0 12px 40px rgba(52, 35, 109, 0.18);
 
   --sidebar-w: 244px;
+
+  /* Shared shell height for the desktop header band. The brand-rail header and
+     the main top bar both resolve their height from this one token, so their
+     1px bottom borders always land on the same horizontal pixel line. */
+  --app-topbar-height: 60px;
 }
 
 /* dydan Dark — exact Rhythm Violet semantic values */
@@ -165,6 +176,10 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --selected-border: #34236d;
   --focus-ring: #ffcc5c;
   --focus-offset: #34236d;
+
+  --control-border: #8a79bf;
+  --control-border-hover: #8a79bf;
+  --control-border-focus: #ffcc5c;
 
   --sig-done: #fff8e8;
   --sig-done-bg: #0b5d45;
@@ -263,6 +278,13 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --focus-ring: #071a2c;
   --focus-offset: #f6f2e8;
 
+  /* Warm Ivory page means --line (#ebe7de) is too quiet to be the only
+     boundary of an interactive control, so controls resolve through
+     --line-strong and step up to navy on hover/focus. */
+  --control-border: #4d7794;
+  --control-border-hover: #071a2c;
+  --control-border-focus: #071a2c;
+
   --sig-done: #0d5a3d;
   --sig-done-bg: #f7edcf;
   --sig-due: #6a4300;
@@ -336,6 +358,10 @@ html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --selected-border: #071a2c;
   --focus-ring: #e0b45a;
   --focus-offset: #071a2c;
+
+  --control-border: #829fb4;
+  --control-border-hover: #829fb4;
+  --control-border-focus: #e0b45a;
 
   --sig-done: #f6f2e8;
   --sig-done-bg: #0d5a3d;
@@ -586,6 +612,44 @@ body.theme-transitioning * {
   transition: width 0.2s ease;
 }
 
+/* ─── Shared desktop header band ──────────
+   The brand-rail header (.sidebar-header) and the main top bar (.app-topbar)
+   are one horizontal band. Both resolve their height from the single
+   --app-topbar-height token with box-sizing: border-box, so their 1px bottom
+   borders land on exactly the same pixel line and no vertical step appears at
+   the rail/content boundary. */
+.sidebar-header,
+.app-topbar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.sidebar-header {
+  gap: 8px;
+  padding: 0 12px;
+}
+
+@media (min-width: 769px) {
+  .sidebar-header,
+  .app-topbar {
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+  }
+}
+
 /* ─── Shared page container — consistent content width ─── */
 .page-container {
   max-width: 1080px;
@@ -611,9 +675,17 @@ body.theme-transitioning * {
 .sidebar.collapsed .nav-item > span:not(.badge) {
   display: none;
 }
+/* Collapsed rail stacks the logo above the collapse control, which needs more
+   room than the shared desktop band. It keeps the token as a minimum and grows
+   from there instead of clipping, so collapse is never broken by the fixed
+   height. */
 .sidebar.collapsed .sidebar-header {
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
+  height: auto;
+  min-height: var(--app-topbar-height);
+  padding-block: 10px;
 }
 .collapse-toggle {
   display: inline-flex;
@@ -871,6 +943,56 @@ html[dir='ltr'] .main-scroll > * {
   box-shadow: none;
 }
 
+/* ─── Segmented tab control ──────────────
+   Shared in-page segmented control (Maintenance / Meters / Things,
+   Rewards / Requests / Points). It follows the same selected-state contract
+   as .view-toggle: the active segment resolves through the semantic selected
+   tokens instead of a surface token, so it stays unmistakably selected in
+   every theme and appearance. */
+.seg-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  background: var(--segmented-track, var(--surface-2));
+  border-radius: var(--r-md);
+}
+
+.seg-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--t-primary);
+  background: transparent;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+}
+
+.seg-tab:not(.active):hover {
+  background: var(--surface-3);
+  color: var(--t-primary);
+}
+
+.seg-tab.active,
+.seg-tab.active:hover {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+
+.seg-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
 /* ─── Buttons ──────────────────────────── */
 .btn {
   display: inline-flex;
@@ -994,7 +1116,7 @@ html[dir='ltr'] .main-scroll > * {
 .input {
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--r-md);
   color: var(--t-primary);
   font-family: var(--font-ui);
@@ -1005,9 +1127,12 @@ html[dir='ltr'] .main-scroll > * {
     border-color 0.14s ease,
     box-shadow 0.14s ease;
 }
+.input:hover {
+  border-color: var(--control-border-hover);
+}
 .input:focus,
 .input:focus-visible {
-  border-color: var(--focus-ring);
+  border-color: var(--control-border-focus);
   border-width: 1px;
   outline: none;
   box-shadow: none;
@@ -1021,7 +1146,7 @@ select {
   -webkit-appearance: none;
   background-color: var(--surface);
   color: var(--t-primary);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--r-md);
   padding-inline-end: 34px;
   font: inherit;

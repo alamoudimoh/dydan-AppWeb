@@ -269,8 +269,9 @@ export default function RewardsScreen({
           </div>
         </div>
         <div
-          className='flex gap-1 mb-5 p-1 rounded-lg'
-          style={{ background: 'var(--surface-2)' }}
+          className='seg-tabs mb-5'
+          role='group'
+          aria-label='Rewards sections'
         >
           {(
             [
@@ -286,14 +287,10 @@ export default function RewardsScreen({
           ).map(item => (
             <button
               key={item.id}
+              type='button'
               onClick={() => setTab(item.id)}
-              className='flex-1 py-2 font-semibold'
-              style={{
-                background: tab === item.id ? 'var(--surface)' : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: 'var(--r-sm)',
-              }}
+              className={`seg-tab ${tab === item.id ? 'active' : ''}`}
+              aria-pressed={tab === item.id}
             >
               {item.label}
             </button>

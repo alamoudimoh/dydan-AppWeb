@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { resolveDevProxyTarget } from './vite.dev-proxy.mjs'
+import {
+  DEFAULT_DEV_PROXY_TARGET,
+  resolveDevProxyTarget,
+} from './vite.dev-proxy.mjs'
 
 test('points the dev proxy at the VITE_DEV_PROXY_TARGET backend', () => {
   assert.equal(
@@ -11,6 +14,11 @@ test('points the dev proxy at the VITE_DEV_PROXY_TARGET backend', () => {
 })
 
 test('falls back to the standard zero-config Dydan backend port', () => {
-  assert.equal(resolveDevProxyTarget({}), 'http://127.0.0.1:2021')
-  assert.equal(resolveDevProxyTarget(), 'http://127.0.0.1:2021')
+  assert.equal(resolveDevProxyTarget({}), DEFAULT_DEV_PROXY_TARGET)
+  assert.equal(
+    DEFAULT_DEV_PROXY_TARGET,
+    'http://127.0.0.1:7171',
+    'the standard Dydan API port is 7171',
+  )
+  assert.equal(resolveDevProxyTarget(), DEFAULT_DEV_PROXY_TARGET)
 })

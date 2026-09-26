@@ -360,11 +360,9 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
       </div>
       <div className='px-4 md:px-7'>
         <div
-          className='flex gap-1 mb-5 p-1'
-          style={{
-            background: 'var(--surface-2)',
-            borderRadius: 'var(--r-md)',
-          }}
+          className='seg-tabs mb-5'
+          role='group'
+          aria-label='Maintenance sections'
         >
           {(
             [
@@ -378,14 +376,10 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
           ).map(item => (
             <button
               key={item.id}
-              className='flex-1 py-2 font-semibold'
+              type='button'
+              className={`seg-tab ${tab === item.id ? 'active' : ''}`}
+              aria-pressed={tab === item.id}
               onClick={() => setTab(item.id)}
-              style={{
-                background: tab === item.id ? 'var(--surface)' : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: 'var(--r-sm)',
-              }}
             >
               {item.label}
             </button>

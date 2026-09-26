@@ -2595,7 +2595,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                                   : 'var(--t-primary)',
                             }}
                           >
-                            {t === 'dydan' ? 'dydan' : 'Sovereign'}
+                            {t}
                           </span>
                           {ctx.theme === t && (
                             <Icon
