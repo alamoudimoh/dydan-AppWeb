@@ -255,7 +255,7 @@ export default function RewardsScreen({
           className='card mb-5 p-5'
           style={{ background: 'var(--callout-bg)', border: 'none' }}
         >
-          <div className='text-muted'>
+          <div style={{ color: 'var(--callout-muted)' }}>
             {currentUser.name}'s points available
           </div>
           <div

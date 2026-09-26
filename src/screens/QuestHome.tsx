@@ -361,7 +361,7 @@ export default function QuestHome({
       </div>
 
       {/* Content */}
-      <div className='px-4 md:px-6' style={{ marginTop: -16 }}>
+      <div className='px-4 md:px-6' style={{ marginTop: 16 }}>
         {/* Streak card */}
         <div className='card p-4 mb-4 flex items-center gap-4'>
           <div style={{ fontSize: 32 }}>🔥</div>
