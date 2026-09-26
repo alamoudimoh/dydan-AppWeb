@@ -1,45 +1,96 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
 import { useLiveData } from '../model/liveData'
+import { parseAccountResponse } from '../utils/AccountResponse'
+import * as Fetcher from '../utils/Fetcher'
+import { getAccessToken } from '../utils/TokenStorage'
 
+type ReportState = 'idle' | 'sending' | 'sent' | 'failed'
+
+/**
+ * The approved error screen is a real reporting surface, not a static mock.
+ *
+ * Every field below is read from the live runtime at render time — there are no
+ * hardcoded timestamps, build ids, or error codes — and "Report this problem"
+ * POSTs that text to `POST /users/error-reports`, which stamps the
+ * authenticated user, circle, user agent, and request path server-side.
+ */
 export default function ErrorScreen({ ctx }: { ctx: AppCtx }) {
-  const { currentUser } = useLiveData()
-  // This is a local diagnostic preview only. The deployment does not expose an
-  // error-reporting endpoint, so the screen must never claim to have sent it.
-  const ERROR_REPORT = `dydan Error Report
--------------------
-Timestamp: 2026-08-15T09:42:11.312Z
-Session: sess_8af3c2e1
-User: ${currentUser?.email ?? 'you@your-team.dydan'}
-Version: 2.4.1 / Build 20260815
-Platform: Web (Chrome 127)
-
-Error: Failed to sync task completion
-Code: SYNC_CONFLICT_409
-Module: tasks/sync
-Message: Optimistic update conflict — remote state was modified
-          between local update and push.
-
-Stack trace:
-  Error details are unavailable in this view.
-
-Network: online
-Last sync: 2026-08-15T09:41:58.021Z
-Pending writes: unavailable
-
-Did we capture anything sensitive?
-No passwords, payment data, or message content is included.
-The report contains task IDs and a partial username.`
-
+  const { profile } = useLiveData()
   const [showDetails, setShowDetails] = useState(false)
-  const [showPayload, setShowPayload] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState<string | null>(null)
+  const [reportState, setReportState] = useState<ReportState>('idle')
+  const [reportError, setReportError] = useState<string | null>(null)
 
-  const copyReport = () => {
-    navigator.clipboard.writeText(ERROR_REPORT).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  // A fresh report describes the moment the screen is opened, so it is
+  // captured once per visit rather than recomputed on every render.
+  const capturedAt = useMemo(() => new Date(), [])
+
+  const report = useMemo(() => {
+    const lines = [
+      'dydan error report',
+      '-------------------',
+      `Captured: ${capturedAt.toISOString()}`,
+      `User: ${profile?.email ?? 'signed out'}`,
+      `Circle: ${profile?.circleID ?? 'unknown'}`,
+      `Page: ${typeof window === 'undefined' ? 'unknown' : window.location.pathname}`,
+      `Network: ${typeof navigator === 'undefined' || navigator.onLine ? 'browser reports online' : 'browser reports offline'}`,
+      `Session: ${getAccessToken() ? 'authenticated' : 'no access token'}`,
+    ]
+    if (typeof navigator !== 'undefined' && navigator.userAgent) {
+      lines.push(`User agent: ${navigator.userAgent}`)
+    }
+    lines.push(
+      '',
+      'The report contains the fields above only. No passwords, tokens,',
+      'payment data, or message content are included.',
+    )
+    return lines.join('\n')
+  }, [capturedAt, profile?.email, profile?.circleID])
+
+  /**
+   * Copies the diagnostic and only reports "Copied" once the clipboard has
+   * actually accepted the write; a rejected or unavailable clipboard surfaces
+   * an error instead of a false confirmation.
+   */
+  const copyReport = async () => {
+    setCopyError(null)
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('This browser blocked clipboard access.')
+      }
+      await navigator.clipboard.writeText(report)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      setCopied(false)
+      setCopyError(
+        err instanceof Error ? err.message : 'Could not copy to the clipboard.',
+      )
+    }
+  }
+
+  const submitReport = async () => {
+    if (reportState === 'sending' || reportState === 'sent') return
+    setReportState('sending')
+    setReportError(null)
+    try {
+      await parseAccountResponse(
+        Fetcher.ReportError({
+          summary: `Client error on ${typeof window === 'undefined' ? 'unknown' : window.location.pathname}`,
+          details: report,
+          screen: 'error',
+        }),
+      )
+      setReportState('sent')
+    } catch (err) {
+      setReportState('failed')
+      setReportError(
+        err instanceof Error ? err.message : 'Could not submit this report.',
+      )
+    }
   }
 
   return (
@@ -83,18 +134,9 @@ The report contains task IDs and a partial username.`
                 className='text-muted'
                 style={{ fontSize: 13, lineHeight: 1.5 }}
               >
-                We couldn't sync your last action. Your data is safe — this is a
-                temporary issue.
-              </div>
-              <div
-                className='badge mt-2'
-                style={{
-                  background: 'var(--sig-over-bg)',
-                  color: 'var(--sig-over)',
-                  fontSize: 11,
-                }}
-              >
-                SYNC_CONFLICT_409
+                dydan hit an unexpected error while loading this page. Reloading
+                usually recovers it; if it keeps happening, send the report
+                below so an administrator can investigate.
               </div>
             </div>
           </div>
@@ -129,6 +171,7 @@ The report contains task IDs and a partial username.`
               cursor: 'pointer',
               fontFamily: 'var(--font-ui)',
             }}
+            aria-expanded={showDetails}
             onClick={() => setShowDetails(!showDetails)}
           >
             <div className='flex items-center gap-3'>
@@ -157,65 +200,84 @@ The report contains task IDs and a partial username.`
               style={{ borderColor: 'var(--line)' }}
             >
               <div
-                className='text-muted'
-                style={{ fontSize: 13, lineHeight: 1.6 }}
-              >
-                Automatic error reporting is not configured on this server. You
-                can copy these diagnostic details to share with your
-                administrator. No passwords or personal messages are included.
-              </div>
-
-              <button
-                className='flex items-center gap-2 text-brand'
+                className='rounded-lg p-4 overflow-x-auto'
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  fontSize: 13,
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: 600,
+                  background: 'var(--surface-2)',
+                  borderRadius: 'var(--r-md)',
                 }}
-                onClick={() => setShowPayload(!showPayload)}
               >
-                <Icon name='eye' size={14} />
-                {showPayload ? 'Hide' : 'Show'} what gets sent
-              </button>
-
-              {showPayload && (
-                <div
-                  className='rounded-lg p-4 overflow-x-auto'
+                <pre
+                  className='text-primary'
                   style={{
-                    background: 'var(--surface-2)',
-                    borderRadius: 'var(--r-md)',
+                    fontSize: 11,
+                    fontFamily: 'var(--font-mono)',
+                    lineHeight: 1.6,
+                    margin: 0,
+                    whiteSpace: 'pre-wrap',
                   }}
                 >
-                  <pre
-                    className='text-primary'
-                    style={{
-                      fontSize: 11,
-                      fontFamily: 'var(--font-mono)',
-                      lineHeight: 1.6,
-                      margin: 0,
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
-                    {ERROR_REPORT}
-                  </pre>
-                </div>
-              )}
+                  {report}
+                </pre>
+              </div>
 
               <div className='flex gap-2'>
                 <button
-                  className='btn btn-primary flex-1'
+                  className='btn btn-secondary flex-1'
                   style={{ justifyContent: 'center' }}
-                  onClick={copyReport}
+                  onClick={() => void copyReport()}
                   title='Copy to clipboard'
                 >
                   <Icon name={copied ? 'check' : 'copy'} size={14} />
                   {copied ? 'Copied' : 'Copy'}
                 </button>
+                <button
+                  className='btn btn-primary flex-1'
+                  style={{ justifyContent: 'center' }}
+                  onClick={() => void submitReport()}
+                  disabled={reportState === 'sending' || reportState === 'sent'}
+                >
+                  <Icon
+                    name={reportState === 'sent' ? 'check' : 'info'}
+                    size={14}
+                  />
+                  {reportState === 'sending'
+                    ? 'Sending…'
+                    : reportState === 'sent'
+                      ? 'Report sent'
+                      : 'Send report'}
+                </button>
               </div>
+
+              {copyError && (
+                <div
+                  className='text-sm'
+                  role='alert'
+                  style={{ color: 'var(--sig-over)' }}
+                >
+                  {copyError}
+                </div>
+              )}
+
+              {reportState === 'failed' && (
+                <div
+                  className='text-sm'
+                  role='alert'
+                  style={{ color: 'var(--sig-over)' }}
+                >
+                  {reportError ??
+                    'The server could not record this report. Copy the details and share them with your administrator instead.'}
+                </div>
+              )}
+
+              {reportState === 'sent' && (
+                <div
+                  className='text-sm'
+                  role='status'
+                  style={{ color: 'var(--sig-done)' }}
+                >
+                  Your administrator can now see this report.
+                </div>
+              )}
             </div>
           )}
         </div>

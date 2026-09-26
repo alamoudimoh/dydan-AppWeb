@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
 import type { Task } from '../data'
+import { useChoreCategories } from '../hooks/useChoreCategories'
 import { useLiveData } from '../model/liveData'
 import DateField from './DateField'
 import MemberPicker from './MemberPicker'
@@ -12,10 +13,16 @@ export default function CreateTaskModal({
   taskToEdit,
 }: {
   ctx: AppCtx
-  onCreated?: (title: string, details?: Partial<Task>) => void
+  /**
+   * Persists the submitted task. The returned promise must settle only after
+   * the server has accepted the write, because this modal reports success and
+   * closes on resolution and reports failure without losing the draft.
+   */
+  onCreated?: (title: string, details?: Partial<Task>) => Promise<void>
   taskToEdit?: Task
 }) {
   const { currentUser, members } = useLiveData()
+  const { categories } = useChoreCategories()
   const [title, setTitle] = useState(taskToEdit?.title || '')
   const [assigneeId, setAssigneeId] = useState(
     taskToEdit?.assigneeId || currentUser?.id || members[0]?.id || '',
@@ -24,31 +31,40 @@ export default function CreateTaskModal({
   const [priority, setPriority] = useState<'medium' | 'high'>(
     taskToEdit?.priority === 'high' ? 'high' : 'medium',
   )
-  const [category, setCategory] = useState(taskToEdit?.category || '')
+  const [categoryId, setCategoryId] = useState<number | null>(
+    taskToEdit?.categoryId ?? null,
+  )
   const [points, setPoints] = useState(taskToEdit?.points || 20)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const categories = [
-    'household',
-    'personal',
-    'work',
-    'school',
-    'health',
-    'finance',
-  ]
-
-  const submit = () => {
-    if (!title.trim()) return
-    onCreated?.(title.trim(), {
-      assigneeId,
-      dueDate,
-      priority,
-      category,
-      points,
-    })
-    ctx.showToast(
-      taskToEdit ? `Task "${title.trim()}" updated` : `"${title.trim()}" added`,
-    )
-    ctx.closeCreate()
+  const submit = async () => {
+    if (!title.trim() || submitting) return
+    setSubmitting(true)
+    setSubmitError(null)
+    const submittedTitle = title.trim()
+    try {
+      await onCreated?.(submittedTitle, {
+        assigneeId,
+        dueDate,
+        priority,
+        categoryId,
+        points,
+      })
+      ctx.showToast(
+        taskToEdit
+          ? `Task "${submittedTitle}" updated`
+          : `"${submittedTitle}" added`,
+      )
+      ctx.closeCreate()
+    } catch (error) {
+      // The draft stays in the modal so the user can retry or correct it.
+      setSubmitError(
+        error instanceof Error ? error.message : 'Could not save this task',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -64,7 +80,11 @@ export default function CreateTaskModal({
           >
             {taskToEdit ? 'modify task' : 'new task'}
           </h2>
-          <button className='btn btn-ghost btn-icon' onClick={ctx.closeCreate}>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={ctx.closeCreate}
+            aria-label='Close task editor'
+          >
             <Icon name='x' size={18} />
           </button>
         </div>
@@ -73,17 +93,19 @@ export default function CreateTaskModal({
           {/* Title */}
           <div>
             <label
+              htmlFor='task-title'
               className='section-label'
               style={{ padding: '0 0 6px', display: 'block' }}
             >
               Title
             </label>
             <input
+              id='task-title'
               className='input w-full'
               placeholder='What needs to be done?'
               value={title}
               onChange={e => setTitle(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submit()}
+              onKeyDown={e => e.key === 'Enter' && void submit()}
               autoFocus
               style={{ fontSize: 15, padding: '12px 14px' }}
             />
@@ -151,12 +173,15 @@ export default function CreateTaskModal({
               {/* Points */}
               <div>
                 <label
+                  htmlFor='task-points'
                   className='section-label'
                   style={{ padding: '0 0 6px', display: 'block' }}
                 >
                   Points ⭐ {points}
                 </label>
                 <input
+                  id='task-points'
+                  aria-label='Task points'
                   type='range'
                   min={5}
                   max={100}
@@ -184,55 +209,77 @@ export default function CreateTaskModal({
             >
               Category
             </label>
-            <div className='flex flex-wrap gap-2'>
-              {categories.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className='badge'
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: 12,
-                    padding: '5px 12px',
-                    background:
-                      category === c ? 'var(--selected-bg)' : 'var(--surface)',
-                    color:
-                      category === c
-                        ? 'var(--selected-text)'
-                        : 'var(--t-primary)',
-                    border: `1px solid ${category === c ? 'var(--selected-border)' : 'var(--line-strong)'}`,
-                  }}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            {categories.length === 0 ? (
+              <div className='text-faint' style={{ fontSize: 12 }}>
+                No categories yet. Create one from Settings to categorize tasks.
+              </div>
+            ) : (
+              <div className='flex flex-wrap gap-2'>
+                {categories.map(c => (
+                  <button
+                    key={c.id}
+                    type='button'
+                    onClick={() =>
+                      setCategoryId(current => (current === c.id ? null : c.id))
+                    }
+                    className='badge'
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      padding: '5px 12px',
+                      background:
+                        categoryId === c.id
+                          ? 'var(--selected-bg)'
+                          : 'var(--surface)',
+                      color:
+                        categoryId === c.id
+                          ? 'var(--selected-text)'
+                          : 'var(--t-primary)',
+                      border: `1px solid ${categoryId === c.id ? 'var(--selected-border)' : 'var(--line-strong)'}`,
+                    }}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+
+        {submitError && (
+          <div
+            className='px-6 pb-3 text-sm'
+            style={{ color: 'var(--danger, #c0392b)' }}
+            role='alert'
+          >
+            {submitError}
+          </div>
+        )}
 
         <div className='flex gap-3 px-6 pb-6'>
           <button
             className='btn btn-secondary flex-1'
             style={{ justifyContent: 'center' }}
             onClick={ctx.closeCreate}
+            disabled={submitting}
           >
             Cancel
           </button>
           <button
             className='btn btn-primary flex-1'
             style={{ justifyContent: 'center' }}
-            onClick={submit}
-            disabled={!title.trim()}
+            onClick={() => void submit()}
+            disabled={!title.trim() || submitting}
           >
             {taskToEdit ? (
               <>
                 <Icon name='check' size={14} />
-                Save changes
+                {submitting ? 'Saving…' : 'Save changes'}
               </>
             ) : (
               <>
                 <Icon name='plus' size={14} />
-                Create task
+                {submitting ? 'Creating…' : 'Create task'}
               </>
             )}
           </button>

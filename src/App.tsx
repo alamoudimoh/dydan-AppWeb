@@ -30,7 +30,12 @@ import type { Task } from './data'
 import { useAuth } from './hooks/useAuth'
 import { useTaskMutations } from './hooks/useHousehold'
 import { useRealtimeSync } from './hooks/useRealtimeSync'
-import { useSettingsPreferences } from './hooks/useSettingsPreferences'
+import {
+  preferencesQueryKey,
+  type SettingsPreferences,
+  useSettingsPreferences,
+  useSettingsPreferencesMutation,
+} from './hooks/useSettingsPreferences'
 import { useStatusBar } from './hooks/useStatusBar'
 import { useSyncOnReconnect } from './hooks/useSyncOnReconnect'
 import { useLiveData } from './model/liveData'
@@ -38,6 +43,7 @@ import ActivityScreen from './screens/ActivityScreen'
 import AllTasksScreen from './screens/AllTasksScreen'
 import AuthScreen from './screens/AuthScreen'
 import CalendarScreen from './screens/CalendarScreen'
+import EmailChangeVerificationScreen from './screens/EmailChangeVerificationScreen'
 import ErrorScreen from './screens/ErrorScreen'
 import FocusHome from './screens/FocusHome'
 import GoalsScreen from './screens/GoalsScreen'
@@ -59,6 +65,7 @@ import {
 import ShoppingScreen from './screens/ShoppingScreen'
 import TodayScreen from './screens/TodayScreen'
 import * as Fetcher from './utils/Fetcher'
+import { getAccessToken } from './utils/TokenStorage'
 
 /* Types preserved for all existing screens */
 export type Theme = Brand
@@ -271,39 +278,14 @@ export function Icon({
   )
 }
 
-/* ─── Logo mark (preserved) ──────────── */
-export function LogoMark({
-  size = 28,
-  theme,
-}: {
-  size?: number
-  theme: Theme
-}) {
-  if (theme === 'sovereign') {
-    return (
-      <svg width={size} height={size} viewBox='0 0 100 100' aria-hidden='true'>
-        <circle
-          cx='50'
-          cy='50'
-          r='46'
-          fill='var(--brand)'
-          stroke='var(--brand-detail)'
-          strokeWidth='7'
-        />
-        <text
-          x='50'
-          y='66'
-          textAnchor='middle'
-          fill='var(--brand-detail)'
-          fontSize='40'
-          fontWeight='800'
-          fontFamily='var(--font-ui)'
-        >
-          M
-        </text>
-      </svg>
-    )
-  }
+/* ─── Application logo ──────────── */
+/**
+ * The single application logo. Both themes render this same mark: the product
+ * identity never changes with the palette, and no theme introduces a personal
+ * brand mark. Its two ink colors resolve through --brand and --brand-detail,
+ * so it follows the active palette.
+ */
+export function LogoMark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox='0 0 100 100' aria-hidden='true'>
       <circle cx='50' cy='50' r='46' fill='var(--brand)' />
@@ -399,11 +381,8 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
       className={`sidebar ${collapsed ? 'collapsed' : ''}`}
       aria-label='Main navigation'
     >
-      <div
-        className='sidebar-header flex items-center gap-2 px-3 pt-4 pb-3 border-b'
-        style={{ borderColor: 'var(--line)' }}
-      >
-        <LogoMark size={28} theme={ctx.theme} />
+      <div className='sidebar-header'>
+        <LogoMark size={28} />
         <div className='flex-1 min-w-0 collapse-hide'>
           <div
             className='font-bold text-primary leading-tight'
@@ -497,7 +476,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
               aria-pressed={ctx.theme === 'sovereign'}
               onClick={() => ctx.setTheme('sovereign')}
             >
-              Sovereign
+              sovereign
             </button>
           </div>
         </div>
@@ -506,6 +485,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
           className='nav-item'
           onClick={ctx.toggleRTL}
           style={{ fontSize: 12 }}
+          aria-label={ctx.isRTL ? t('lang.toEnglish') : t('lang.toArabic')}
         >
           <Icon name='globe' size={14} />
           <span>{ctx.isRTL ? t('lang.toEnglish') : t('lang.toArabic')}</span>
@@ -523,6 +503,7 @@ function Sidebar({ ctx }: { ctx: AppCtx }) {
           onClick={() => ctx.navigate('settings')}
         >
           <Avatar
+            className='sidebar-user-avatar'
             size='sm'
             sx={{
               bgcolor: currentMember?.avatarColor ?? 'var(--brand)',
@@ -623,7 +604,7 @@ function SplashScreen({ theme }: { theme: Theme }) {
         gap: 16,
       }}
     >
-      <LogoMark size={56} theme={theme} />
+      <LogoMark size={56} />
       <div
         className='text-faint'
         style={{
@@ -675,6 +656,50 @@ export default function App() {
   } = useAuth()
   useRealtimeSync(isAuthenticated)
   const { data: settingsPreferences } = useSettingsPreferences()
+  const preferenceMutations = useSettingsPreferencesMutation()
+
+  /**
+   * Merges a partial preference change into the last server-confirmed
+   * preferences and writes the whole document, matching the PUT contract the
+   * Settings screen uses. Reads the current cached value directly rather than
+   * the render-time prop so rapid successive toggles cannot write a stale
+   * document.
+   */
+  const persistPreference = useCallback(
+    (patch: Partial<SettingsPreferences>) => {
+      if (!getAccessToken()) return
+      const current =
+        preferenceMutations.client.getQueryData<SettingsPreferences>(
+          preferencesQueryKey,
+        ) ?? settingsPreferences
+      if (!current) return
+      const next = { ...current, ...patch }
+      // Cache before dispatching. This makes a rapid sequence such as
+      // Focus → Quest → Sovereign → Arabic merge each action into the prior
+      // pending document instead of sending four stale full-document writes
+      // that overwrite one another out of order.
+      preferenceMutations.client.setQueryData(preferencesQueryKey, next)
+      preferenceMutations.update.mutate(next, {
+        onError: () => {
+          // Do not roll back a newer preference write that has already
+          // replaced this optimistic object in the cache.
+          if (
+            preferenceMutations.client.getQueryData(preferencesQueryKey) ===
+            next
+          ) {
+            preferenceMutations.client.setQueryData(
+              preferencesQueryKey,
+              current,
+            )
+          }
+        },
+      })
+    },
+    // `client` is a stable QueryClient reference; depending on it is enough to
+    // keep this callback from being rebuilt on every mutation state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [preferenceMutations.client, settingsPreferences],
+  )
 
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [taskDetail, setTaskDetail] = useState<Task | null>(null)
@@ -768,15 +793,49 @@ export default function App() {
   const setThemeCb = useCallback(
     (th: Theme) => {
       setBrand(th)
+      // The sidebar brand switch is a real account preference, so it is
+      // written to the server rather than reset on the next reload. Hydration
+      // above calls `setBrand` directly, so replaying stored preferences never
+      // issues a redundant write.
+      persistPreference({ theme: th })
     },
-    [setBrand],
+    [setBrand, persistPreference],
   )
   const setViewCb = useCallback(
     (v: View) => {
       setView(v)
+      persistPreference({ defaultView: v })
     },
-    [setView],
+    [setView, persistPreference],
   )
+
+  /**
+   * The sidebar language control flips between English and Arabic. Both the
+   * localization context and the stored preference are updated so the choice
+   * survives a reload instead of resetting on the next boot.
+   */
+  const toggleRTLcb = useCallback(() => {
+    const nextLanguage = isRTL ? 'en' : 'ar-SA'
+    toggleLang()
+    setLanguage(nextLanguage)
+    persistPreference({ language: nextLanguage })
+  }, [isRTL, setLanguage, toggleLang, persistPreference])
+
+  const setSidebarCollapsedCb = useCallback(
+    (collapsed: boolean) => {
+      setSidebarCollapsed(collapsed)
+      // Only persisted when the account opted into remembering the sidebar;
+      // otherwise the choice is deliberately per-session.
+      if (settingsPreferences?.rememberSidebar) {
+        persistPreference({ sidebarCollapsed: collapsed })
+      }
+    },
+    [settingsPreferences?.rememberSidebar, persistPreference],
+  )
+
+  const toggleSidebarCb = useCallback(() => {
+    setSidebarCollapsedCb(!sidebarCollapsed)
+  }, [setSidebarCollapsedCb, sidebarCollapsed])
 
   const completeTask = useCallback(
     (id: string) => {
@@ -817,7 +876,7 @@ export default function App() {
       setView: setViewCb,
       setTheme: setThemeCb,
       setPersona: setPersona,
-      toggleRTL: toggleLang,
+      toggleRTL: toggleRTLcb,
       openTask: (tk: Task) => setTaskDetail(tk),
       closeTask: () => setTaskDetail(null),
       openCreate: () => setShowCreateTask(true),
@@ -835,8 +894,8 @@ export default function App() {
       },
       showConfirm: (c: ConfirmDialogConfig) => setConfirmDialog(c),
       sidebarCollapsed,
-      toggleSidebar: () => setSidebarCollapsed(v => !v),
-      setSidebarCollapsed,
+      toggleSidebar: toggleSidebarCb,
+      setSidebarCollapsed: setSidebarCollapsedCb,
     }),
     [
       brand,
@@ -851,7 +910,9 @@ export default function App() {
       setViewCb,
       setThemeCb,
       setPersona,
-      toggleLang,
+      toggleRTLcb,
+      toggleSidebarCb,
+      setSidebarCollapsedCb,
       showToast,
       realSignOut,
       realSessionExpiry,
@@ -864,6 +925,10 @@ export default function App() {
   }
 
   /* ─── Auth gate ─── */
+  if (location.pathname === '/email-change/verify') {
+    return <EmailChangeVerificationScreen onComplete={realSignOut} />
+  }
+
   if (authLoading || profileLoading) {
     return <SplashScreen theme={brand} />
   }
@@ -899,22 +964,16 @@ export default function App() {
     >
       <Sidebar ctx={ctx} />
       <main className='main-content' id='main-content'>
-        <div
-          className='flex items-center justify-between px-4 py-3 sticky top-0 z-40'
-          style={{
-            background: 'var(--surface)',
-            borderBottom: '1px solid var(--line)',
-          }}
-        >
+        <div className='app-topbar'>
           <div className='flex items-center gap-2 md:hidden'>
-            <LogoMark size={22} theme={brand} />
+            <LogoMark size={22} />
             <span className='font-bold text-primary' style={{ fontSize: 15 }}>
               {t('app.name')}
             </span>
           </div>
           <div
             className='top-search flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg min-w-0 flex-1 max-w-[340px] ms-2'
-            style={{ background: 'var(--surface-2)', fontSize: 13 }}
+            style={{ background: 'var(--search-bg)', fontSize: 13 }}
           >
             <Icon
               name='search'
@@ -1121,14 +1180,15 @@ export default function App() {
       {showCreateTask && (
         <CreateTaskModal
           ctx={ctx}
-          onCreated={(title, details) => {
-            mutations.createTask.mutate({
+          onCreated={async (title, details) => {
+            await mutations.createTask.mutateAsync({
               title,
               description: details?.description,
               priority: priorityNum(details?.priority),
               assigneeId: details?.assigneeId || (currentUser?.id ?? undefined),
               dueDate: details?.dueDate,
               points: details?.points,
+              categoryId: details?.categoryId,
             })
           }}
         />
@@ -1137,16 +1197,21 @@ export default function App() {
         <CreateTaskModal
           ctx={ctx}
           taskToEdit={taskToEdit}
-          onCreated={(title, details) =>
-            mutations.updateTask.mutate({
+          onCreated={async (title, details) => {
+            await mutations.updateTask.mutateAsync({
               id: taskToEdit.id,
               title,
               assigneeId: details?.assigneeId ?? undefined,
-              dueDate: details?.dueDate ?? undefined,
+              // The task editor represents a cleared date as an empty string;
+              // do not pass that through to the API mutation, where
+              // `new Date('')` is invalid and would block an otherwise valid
+              // point/category edit.
+              dueDate: details?.dueDate || undefined,
               priority: priorityNum(details?.priority),
               points: details?.points,
+              categoryId: details?.categoryId,
             })
-          }
+          }}
         />
       )}
 

@@ -86,6 +86,7 @@ function toTask(
     dueTime: chore.nextDueDate ? chore.nextDueDate.slice(11, 16) : undefined,
     category: chore.category?.name,
     categoryColor: chore.category?.color,
+    categoryId: chore.categoryId ?? chore.category?.id ?? null,
     projectId: chore.projectId != null ? String(chore.projectId) : undefined,
     points: chore.points ?? undefined,
     isRecurring: Boolean(chore.frequencyType && chore.frequencyType !== 'once'),

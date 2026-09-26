@@ -36,7 +36,7 @@ test('settings: theme (Dydan/Sovereign) and appearance (Light/Dark/Automatic) sw
 
   const html = page.locator('html')
   const themePanel = page.locator('.MuiTabPanel-root', {
-    hasText: 'Choose your visual identity',
+    hasText: 'Visual theme',
   })
   await expect(themePanel).toBeVisible()
 
@@ -71,7 +71,7 @@ test('settings: theme (Dydan/Sovereign) and appearance (Light/Dark/Automatic) sw
   // Back to Dydan + Automatic (headless CI resolves Automatic to light).
   await page.getByRole('tab', { name: /^theme$/i }).click()
   const resumedPanel = page.locator('.MuiTabPanel-root', {
-    hasText: 'Choose your visual identity',
+    hasText: 'Visual theme',
   })
   await resumedPanel
     .getByRole('button', { name: /^dydan Rhythm Violet \+ Gold$/i })
@@ -83,5 +83,46 @@ test('settings: theme (Dydan/Sovereign) and appearance (Light/Dark/Automatic) sw
   await expect(html).toHaveAttribute('data-joy-color-scheme', 'light')
   await expect.poll(() => cssVar(page, '--brand')).toBe('#34236d')
 
+  runtimeGuard.assertClean()
+})
+
+test('settings: notification delivery choices persist through reload', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installSmokeSession(page)
+
+  await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+  await page.waitForLoadState('networkidle')
+  await page.getByRole('tab', { name: /^notifications$/i }).click()
+
+  const notificationPanel = page.locator('.MuiTabPanel-root', {
+    hasText: 'Alerts',
+  })
+  const taskReminders = notificationPanel
+    .getByText('Task reminders', { exact: true })
+    .locator('xpath=../..')
+    .getByRole('switch')
+  // The email channel is gated on the server capability endpoint: with no
+  // notification-email integration advertised the row stays a real disabled
+  // control instead of a switch that would silently do nothing.
+  const emailChannel = notificationPanel
+    .getByText('Email notifications', { exact: true })
+    .locator('xpath=../..')
+    .getByRole('switch')
+
+  await expect(taskReminders).toBeChecked()
+  await expect(emailChannel).not.toBeChecked()
+  await expect(emailChannel).toBeDisabled()
+  await taskReminders.click()
+  await expect(taskReminders).not.toBeChecked()
+  await expect(emailChannel).not.toBeChecked()
+
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByRole('tab', { name: /^notifications$/i }).click()
+  await expect(taskReminders).not.toBeChecked()
+  await expect(emailChannel).not.toBeChecked()
+  await expect(emailChannel).toBeDisabled()
   runtimeGuard.assertClean()
 })

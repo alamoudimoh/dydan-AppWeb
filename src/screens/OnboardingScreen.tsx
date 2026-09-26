@@ -44,6 +44,10 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
     }
     setError('')
     setLoading(true)
+    // `signUp` rejects on a non-2xx response, so a refused registration never
+    // advances to the completion step. Account creation and the follow-up
+    // sign-in are reported separately, because they can fail independently.
+    let accountCreated = false
     try {
       await signUp(
         username.trim().toLowerCase(),
@@ -51,6 +55,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
         displayName.trim(),
         email.trim(),
       )
+      accountCreated = true
       // Sign-up doesn't issue tokens — sign in right away with the new credentials.
       await signIn(username.trim().toLowerCase(), password)
       setStep('done')
@@ -59,7 +64,9 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
       setError(
         err instanceof Error && err.message
           ? err.message
-          : "We couldn't create your account. Check the details and try again.",
+          : accountCreated
+            ? 'Your account was created, but signing in failed. Sign in with your new credentials.'
+            : "We couldn't create your account. Check the details and try again.",
       )
     } finally {
       setLoading(false)
@@ -77,7 +84,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
     >
       {/* Top bar */}
       <div className='flex items-center justify-between px-6 pt-6 pb-3'>
-        <LogoMark size={28} theme={theme} />
+        <LogoMark size={28} />
         {step !== 'done' && step !== 'welcome' && (
           <div className='flex items-center gap-2'>
             {[1, 2, 3].map(i => (
@@ -158,7 +165,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
                 Your details
               </h1>
               <div className='text-muted mb-7' style={{ fontSize: 14 }}>
-                This creates your family circle — you can invite the rest of the
+                This creates your team — you can invite the rest of the
                 household after.
               </div>
 

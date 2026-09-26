@@ -9,7 +9,6 @@ import Tabs from '@mui/joy/Tabs'
 import QRCode from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 
-import { version as appVersion } from '../../package.json'
 import { AppCtx, Icon, Theme, View } from '../App'
 import { useLocalization } from '../contexts/LocalizationContext'
 import { useProductTheme } from '../contexts/ThemeContext'
@@ -29,13 +28,20 @@ import {
 import {
   type CreatedApiToken,
   type EmailDeliveryInput,
+  type Invoice,
   useApiTokenMutations,
   useApiTokens,
   useEmailDelivery,
   useEmailDeliveryMutations,
+  useImportData,
+  useIntegrationStatus,
+  useInvoices,
   useStorageUsage,
+  useWebhookMutation,
 } from '../hooks/useSettingsResources'
 import { useLiveData } from '../model/liveData'
+import { copyToClipboard } from '../utils/Clipboard'
+import * as Fetcher from '../utils/Fetcher'
 import { offlineDB } from '../utils/OfflineDB'
 import { clearAllTokens } from '../utils/TokenStorage'
 
@@ -43,6 +49,86 @@ type Props = {
   ctx: AppCtx
   isSolo: boolean
 }
+
+function profileImageURL(image: string) {
+  if (!image || /^(https?:|blob:|data:|\/api\/v1\/assets\/)/.test(image)) {
+    return image
+  }
+  return `/api/v1/assets/${image.replace(/^\/+/, '')}`
+}
+
+function diagnosticsReport(
+  server:
+    | {
+        version: string
+        commit: string
+        buildDate: string
+        deployment: string
+        operatingSystem: string
+        architecture: string
+        database: string
+        storage: string
+      }
+    | undefined,
+) {
+  const value = (item: string | undefined) => item || 'unavailable'
+  return [
+    'dydan diagnostics',
+    `generated: ${new Date().toISOString()}`,
+    '',
+    'server',
+    `version: ${value(server?.version)}`,
+    `commit: ${value(server?.commit)}`,
+    `build date: ${value(server?.buildDate)}`,
+    `deployment: ${value(server?.deployment)}`,
+    `operating system: ${value(server?.operatingSystem)}`,
+    `architecture: ${value(server?.architecture)}`,
+    `database: ${value(server?.database)}`,
+    `storage: ${value(server?.storage)}`,
+    '',
+    'client',
+    `url: ${window.location.href}`,
+    `browser: ${navigator.userAgent}`,
+    `language: ${navigator.language}`,
+    `timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+    `viewport: ${window.innerWidth}x${window.innerHeight}`,
+    `screen: ${window.screen.width}x${window.screen.height}`,
+    `pixel ratio: ${window.devicePixelRatio}`,
+    `network: ${navigator.onLine ? 'online' : 'offline'}`,
+  ].join('\n')
+}
+
+/**
+ * External providers the server may be configured for. Capability comes from
+ * `GET /users/integrations`; the copy for each state is fixed here so a
+ * provider can never be presented as connectable when the server has no
+ * authorization endpoint for it.
+ */
+const INTEGRATION_ROWS = [
+  {
+    key: 'googleCalendar' as const,
+    icon: 'calendar',
+    label: 'Google Calendar',
+    availableCopy: 'Google Calendar sync is available on this server.',
+    unavailableCopy: 'Google Calendar sync is not configured on this server',
+  },
+  {
+    key: 'caldav' as const,
+    icon: 'calendar',
+    label: 'Apple Calendar',
+    availableCopy: 'CalDAV account authorization is available on this server.',
+    unavailableCopy:
+      'CalDAV account authorization is not configured on this server',
+  },
+  {
+    key: 'alexa' as const,
+    icon: 'bell',
+    label: 'Amazon Alexa',
+    availableCopy: 'The Alexa skill is available on this server.',
+    unavailableCopy:
+      'Alexa skill credentials are not configured on this server',
+  },
+]
 
 /* ─── Shared building blocks ──────────── */
 function Section({
@@ -55,8 +141,10 @@ function Section({
   return (
     <div className='mb-6'>
       {title && (
-        <div className='section-label' style={{ padding: '0 0 8px' }}>
-          {title}
+        <div style={{ padding: '0 0 8px' }}>
+          <div className='section-label' style={{ padding: 0 }}>
+            {title}
+          </div>
         </div>
       )}
       <div className='card overflow-hidden'>{children}</div>
@@ -66,14 +154,15 @@ function Section({
 
 function Row({
   children,
+  detail,
   icon,
   label,
   onClick,
-  sub,
 }: {
   icon?: string
   label: string
-  sub?: string
+  /** Persisted setting or status; visually distinct from explanatory help. */
+  detail?: string
   children?: React.ReactNode
   onClick?: () => void
 }) {
@@ -97,9 +186,9 @@ function Row({
         <div className='font-medium text-primary' style={{ fontSize: 14 }}>
           {label}
         </div>
-        {sub && (
-          <div className='text-muted' style={{ fontSize: 12, marginTop: 1 }}>
-            {sub}
+        {detail && (
+          <div className='text-primary' style={{ fontSize: 12, marginTop: 1 }}>
+            {detail}
           </div>
         )}
       </div>
@@ -172,33 +261,6 @@ function SelectField({
         </Option>
       ))}
     </Select>
-  )
-}
-
-function TabHeader({
-  action,
-  desc,
-  title,
-}: {
-  title: string
-  desc: string
-  action?: React.ReactNode
-}) {
-  return (
-    <div className='flex items-start justify-between gap-3 mb-5 flex-wrap'>
-      <div>
-        <h2
-          className='text-primary'
-          style={{ fontSize: 19, fontWeight: 800, margin: 0 }}
-        >
-          {title}
-        </h2>
-        <div className='text-muted' style={{ fontSize: 13, marginTop: 3 }}>
-          {desc}
-        </div>
-      </div>
-      {action}
-    </div>
   )
 }
 
@@ -632,7 +694,7 @@ function EditProfileModal({
                 <input
                   ref={photoInputRef}
                   type='file'
-                  accept='image/png,image/jpeg,image/gif'
+                  accept='image/png,image/jpeg'
                   className='sr-only'
                   onChange={e => {
                     const file = e.target.files?.[0]
@@ -647,7 +709,7 @@ function EditProfileModal({
                   Change photo
                 </button>
                 <div className='text-faint mt-1' style={{ fontSize: 11 }}>
-                  JPG, PNG or GIF · max 2 MB
+                  JPG or PNG · max 2 MB
                 </div>
               </div>
             </div>
@@ -663,24 +725,6 @@ function EditProfileModal({
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
-            </div>
-            <div>
-              <label
-                className='block font-semibold text-primary mb-1.5'
-                style={{ fontSize: 13 }}
-              >
-                Email
-              </label>
-              <input
-                className='input'
-                disabled
-                type='email'
-                value={live.email}
-              />
-              <div className='text-faint mt-1' style={{ fontSize: 11 }}>
-                Email is managed by your sign-in provider and cannot be changed
-                here.
-              </div>
             </div>
             <div className='flex gap-3'>
               <button
@@ -700,6 +744,98 @@ function EditProfileModal({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function EmailChangeModal({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void
+  onSubmit: (email: string, currentPassword: string) => Promise<void>
+}) {
+  const [email, setEmail] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 440 }}
+        onClick={event => event.stopPropagation()}
+      >
+        <div
+          className='flex items-center justify-between px-6 pt-6 pb-4'
+          style={{ borderBottom: '1px solid var(--line)' }}
+        >
+          <div className='font-bold text-primary' style={{ fontSize: 17 }}>
+            Change email address
+          </div>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <form
+          className='p-6 flex flex-col gap-4'
+          onSubmit={event => {
+            event.preventDefault()
+            setSubmitting(true)
+            void onSubmit(email, currentPassword).finally(() =>
+              setSubmitting(false),
+            )
+          }}
+        >
+          <p className='text-muted' style={{ fontSize: 13 }}>
+            We’ll email a one-time verification link to the new address. Your
+            current email will not change until it is confirmed.
+          </p>
+          <label
+            className='font-semibold text-primary'
+            style={{ fontSize: 13 }}
+          >
+            New email address
+            <input
+              className='input mt-1.5 w-full'
+              type='email'
+              autoComplete='email'
+              required
+              value={email}
+              onChange={event => setEmail(event.target.value)}
+            />
+          </label>
+          <label
+            className='font-semibold text-primary'
+            style={{ fontSize: 13 }}
+          >
+            Current password
+            <input
+              className='input mt-1.5 w-full'
+              type='password'
+              autoComplete='current-password'
+              required
+              value={currentPassword}
+              onChange={event => setCurrentPassword(event.target.value)}
+            />
+          </label>
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              type='button'
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button className='btn btn-primary flex-1' disabled={submitting}>
+              {submitting ? 'Sending…' : 'Send verification'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
@@ -1289,6 +1425,119 @@ function RecoveryCodesModal({
   )
 }
 
+function InvoiceHistoryModal({
+  error,
+  invoices,
+  isLoading,
+  onClose,
+  onRetry,
+}: {
+  invoices: Invoice[]
+  isLoading: boolean
+  error: unknown
+  onClose: () => void
+  onRetry: () => void
+}) {
+  const money = (amount: number) =>
+    new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount / 100)
+  return (
+    <div className='modal-overlay' onClick={onClose}>
+      <div
+        className='modal-panel'
+        style={{ maxWidth: 560 }}
+        onClick={event => event.stopPropagation()}
+      >
+        <div className='flex items-center justify-between px-6 pt-6 pb-4 border-b border-line'>
+          <h2
+            className='text-primary font-semibold'
+            style={{ fontSize: 18, margin: 0 }}
+          >
+            Billing history
+          </h2>
+          <button
+            className='btn btn-ghost btn-icon'
+            onClick={onClose}
+            aria-label='Close'
+          >
+            <Icon name='x' size={18} />
+          </button>
+        </div>
+        <div className='p-6 flex flex-col gap-4'>
+          {isLoading && (
+            <div className='text-muted' style={{ fontSize: 13 }} role='status'>
+              Loading invoices…
+            </div>
+          )}
+          {!isLoading && error != null && (
+            <div
+              className='text-sm'
+              role='alert'
+              style={{ color: 'var(--sig-over)' }}
+            >
+              {error instanceof Error
+                ? error.message
+                : 'The server could not return your billing history.'}
+            </div>
+          )}
+          {!isLoading && error == null && invoices.length === 0 && (
+            <div className='text-muted' style={{ fontSize: 13 }}>
+              No invoices have been recorded for this account.
+            </div>
+          )}
+          {invoices.length > 0 && (
+            <div
+              className='rounded-lg overflow-hidden'
+              style={{ border: '1px solid var(--line)' }}
+            >
+              {invoices.map(invoice => (
+                <div
+                  key={invoice.invoice_id}
+                  className='flex items-center justify-between gap-3 px-4 py-3'
+                  style={{ borderBottom: '1px solid var(--line)' }}
+                >
+                  <div className='min-w-0'>
+                    <div
+                      className='text-primary font-medium'
+                      style={{ fontSize: 13 }}
+                    >
+                      {invoice.invoice_id}
+                    </div>
+                    <div className='text-faint' style={{ fontSize: 11 }}>
+                      {new Date(invoice.received_at).toLocaleDateString()} ·{' '}
+                      {invoice.status}
+                    </div>
+                  </div>
+                  <div
+                    className='text-primary font-semibold'
+                    style={{ fontSize: 13, whiteSpace: 'nowrap' }}
+                  >
+                    {money(invoice.amount)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className='flex gap-3'>
+            <button
+              className='btn btn-secondary flex-1'
+              onClick={() => onRetry()}
+              disabled={isLoading}
+            >
+              Refresh
+            </button>
+            <button className='btn btn-primary flex-1' onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ApiTokenModal({
   onClose,
   onCreate,
@@ -1474,6 +1723,18 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const preferenceMutations = useSettingsPreferencesMutation()
   const { data: apiTokens = [] } = useApiTokens()
   const { data: storageUsage } = useStorageUsage()
+  const { data: integrationStatus } = useIntegrationStatus()
+  const [showInvoices, setShowInvoices] = useState(false)
+  // Invoices are fetched only when the server advertises a payment provider
+  // and the user actually asks for them, so the billing tab never calls an
+  // endpoint this deployment does not serve.
+  const invoiceQuery = useInvoices(
+    Boolean(integrationStatus?.billing.invoiceHistory) && showInvoices,
+  )
+  const webhookMutations = useWebhookMutation()
+  const importData = useImportData()
+  const [webhookDraft, setWebhookDraft] = useState('')
+  const importFileRef = useRef<HTMLInputElement>(null)
   const apiTokenMutations = useApiTokenMutations()
   const preferences = savedPreferences ?? DEFAULT_SETTINGS_PREFERENCES
   const currentUser = liveUser ?? members[0]
@@ -1506,6 +1767,56 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   }
   const [showInvite, setShowInvite] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
+  const [showEmailChange, setShowEmailChange] = useState(false)
+  const exportMyData = async () => {
+    try {
+      const response = await Fetcher.ExportMyData()
+      if (!response.ok) throw new Error('Could not export your data')
+      const blob = await response.blob()
+      const href = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = href
+      link.download = 'dydan-my-data.json'
+      link.click()
+      URL.revokeObjectURL(href)
+      ctx.showToast('Your data export has downloaded')
+    } catch (error) {
+      ctx.showToast(
+        error instanceof Error ? error.message : 'Could not export your data',
+      )
+    }
+  }
+  const handleImportFile = async (file: File | undefined | null) => {
+    if (!file) return
+    try {
+      if (file.size > 2 * 1024 * 1024) {
+        ctx.showToast('Export files must be smaller than 2 MB.')
+        return
+      }
+      const text = await file.text()
+      const document = JSON.parse(text)
+      await importData.mutateAsync(document)
+      ctx.showToast('Your settings were restored from the export file')
+    } catch (error) {
+      ctx.showToast(
+        error instanceof Error ? error.message : 'Could not restore your data',
+      )
+    }
+  }
+  const saveWebhook = async () => {
+    const url = webhookDraft.trim()
+    try {
+      await webhookMutations.set.mutateAsync(url)
+      setWebhookDraft('')
+      ctx.showToast(
+        url ? 'Webhook endpoint configured' : 'Webhook endpoint cleared',
+      )
+    } catch (error) {
+      ctx.showToast(
+        error instanceof Error ? error.message : 'Could not update webhook',
+      )
+    }
+  }
   const [profilePhoto, setProfilePhoto] = useState('')
   const [mfaSetup, setMfaSetup] = useState<MFASetup | null>(null)
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null)
@@ -1521,7 +1832,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const profilePhotoInputRef = useRef<HTMLInputElement>(null)
   const handlePhotoChange = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      ctx.showToast('Choose a PNG, JPG, or GIF image.')
+      ctx.showToast('Choose a JPG or PNG image.')
       return
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -1529,8 +1840,8 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
       return
     }
     try {
-      await account.uploadProfilePhoto.mutateAsync(file)
-      setProfilePhoto(URL.createObjectURL(file))
+      const photo = await account.uploadProfilePhoto.mutateAsync(file)
+      setProfilePhoto(photo.sign)
       ctx.showToast('Profile photo updated')
     } catch (err) {
       ctx.showToast(
@@ -1563,7 +1874,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
   // Member data may not have loaded yet on a cold start / fresh sign-in.
   if (!currentUser) return null
-  const profileImage = profilePhoto || profile?.image || ''
+  const profileImage = profileImageURL(profilePhoto || profile?.image || '')
   const circle =
     circles.find(item => item.id === profile?.circleID) ?? circles[0]
   const inviteCode = circle?.inviteCode ?? circle?.invite_code ?? 'Unavailable'
@@ -1573,7 +1884,10 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
   return (
     <>
-      <div className='page-container' style={{ paddingBottom: 80 }}>
+      <div
+        className='page-container settings-screen'
+        style={{ paddingBottom: 80 }}
+      >
         <div className='page-header pb-4'>
           <div>
             <h1
@@ -1623,8 +1937,8 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   color: 'var(--t-primary)',
                 },
                 "& .MuiTab-root[aria-selected='true']": {
-                  bgcolor: 'var(--brand-faint)',
-                  color: 'var(--brand)',
+                  bgcolor: 'var(--selected-bg)',
+                  color: 'var(--selected-text)',
                 },
               }}
             >
@@ -1640,11 +1954,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
           <div className='px-4 md:px-7 pt-6'>
             {/* ── Overview ── */}
             <TabPanel value='overview' sx={{ p: 0 }}>
-              <TabHeader
-                title='Overview'
-                desc='A snapshot of your account and quick access to every setting.'
-              />
-              <Section>
+              <Section title='Profile details'>
                 <div className='flex items-center gap-5 px-5 py-5 settings-profile-row'>
                   {profileImage ? (
                     <img
@@ -1746,19 +2056,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Profile (identity only) ── */}
             <TabPanel value='profile' sx={{ p: 0 }}>
-              <TabHeader
-                title='Profile'
-                desc='Your personal identity as it appears across the team.'
-                action={
-                  <button
-                    className='btn btn-primary btn-sm'
-                    onClick={() => setShowEditProfile(true)}
-                  >
-                    Edit profile
-                  </button>
-                }
-              />
-              <Section>
+              <Section title='Profile details'>
                 <div
                   className='flex items-center gap-5 px-5 py-5 border-b border-line'
                   style={{ borderColor: 'var(--line)' }}
@@ -1787,7 +2085,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     <input
                       ref={profilePhotoInputRef}
                       type='file'
-                      accept='image/png,image/jpeg,image/gif'
+                      accept='image/png,image/jpeg'
                       className='sr-only'
                       onChange={e => {
                         const file = e.target.files?.[0]
@@ -1802,11 +2100,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       Change photo
                     </button>
                     <div className='text-faint mt-1.5' style={{ fontSize: 11 }}>
-                      JPG, PNG or GIF · max 2 MB
+                      JPG or PNG · max 2 MB
                     </div>
                   </div>
                 </div>
-                <Row icon='user' label='Display name' sub={currentUser.name}>
+                <Row icon='user' label='Display name' detail={currentUser.name}>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
                     onClick={() => setShowEditProfile(true)}
@@ -1814,24 +2112,15 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Change
                   </button>
                 </Row>
-                <Row
-                  icon='mail'
-                  label='Email'
-                  sub={`${currentUser.email} — unavailable: changing an email requires verified delivery, which is not configured`}
-                >
+                <Row icon='mail' label='Email' detail={currentUser.email}>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
-                    disabled
-                    title='Verified email change is unavailable'
+                    onClick={() => setShowEmailChange(true)}
                   >
                     Change
                   </button>
                 </Row>
-                <Row
-                  icon='star'
-                  label='Role in team'
-                  sub='Determines what you can manage'
-                >
+                <Row icon='star' label='Role in team'>
                   <span
                     className='badge bg-brand-faint text-brand'
                     style={{ fontSize: 11, textTransform: 'capitalize' }}
@@ -1839,26 +2128,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     {currentUser.role}
                   </span>
                 </Row>
-                <Row
-                  icon='user'
-                  label='Profile fields'
-                  sub='The server currently supports your display name and profile photo.'
-                />
               </Section>
             </TabPanel>
 
             {/* ── Security ── */}
             <TabPanel value='security' sx={{ p: 0 }}>
-              <TabHeader
-                title='Security'
-                desc="Protect your account and manage where you're signed in."
-              />
               <Section title='Sign-in'>
-                <Row
-                  icon='lock'
-                  label='Password'
-                  sub='Changing it signs out your other active sessions'
-                >
+                <Row icon='lock' label='Password'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() => setShowPassword(true)}
@@ -1868,15 +2144,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 </Row>
               </Section>
               <Section title='Two-factor authentication'>
-                <Row
-                  icon='shield'
-                  label='Two-factor authentication'
-                  sub={
-                    mfaEnabled
-                      ? 'Your account is protected with a second step'
-                      : 'Add an extra layer of security'
-                  }
-                >
+                <Row icon='shield' label='Two-factor authentication'>
                   <JoyToggle
                     on={mfaEnabled}
                     onChange={() => {
@@ -1910,13 +2178,9 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     <Row
                       icon='phone'
                       label='Verification method'
-                      sub='Authenticator app (TOTP)'
+                      detail='Authenticator app (TOTP)'
                     />
-                    <Row
-                      icon='clipboard'
-                      label='Recovery codes'
-                      sub='Generate a replacement set after verifying your authenticator code'
-                    >
+                    <Row icon='clipboard' label='Recovery codes'>
                       <button
                         className='btn btn-secondary btn-sm'
                         onClick={() => setCredentialAction('recovery-codes')}
@@ -2049,27 +2313,22 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Team accounts ── */}
             <TabPanel value='team' sx={{ p: 0 }}>
-              <TabHeader
-                title='Team'
-                desc='Your team members and what they can access.'
-                action={
-                  !isSolo ? (
+              <Section title='Team settings'>
+                {!isSolo && (
+                  <Row icon='plus' label='Invite people'>
                     <button
                       className='btn btn-primary btn-sm'
                       onClick={() => setShowInvite(true)}
                     >
-                      <Icon name='plus' size={14} />
                       Invite
                     </button>
-                  ) : undefined
-                }
-              />
-              <Section title='Team settings'>
+                  </Row>
+                )}
                 {pendingJoinCode && (
                   <Row
                     icon='users'
                     label='Join shared team'
-                    sub={`Invite code: ${pendingJoinCode}`}
+                    detail={`Invite code: ${pendingJoinCode}`}
                   >
                     <button
                       className='btn btn-primary btn-sm'
@@ -2093,7 +2352,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 <Row
                   icon='home'
                   label='Team name'
-                  sub={circle?.name ?? 'Loading team details…'}
+                  detail={circle?.name ?? 'Loading team details…'}
                 >
                   <button
                     className='btn btn-ghost btn-sm text-brand'
@@ -2103,11 +2362,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Rename
                   </button>
                 </Row>
-                <Row
-                  icon='clipboard'
-                  label='Join code'
-                  sub='Share to let someone join instantly'
-                >
+                <Row icon='clipboard' label='Join code'>
                   <span
                     className='font-mono'
                     style={{
@@ -2121,11 +2376,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     {inviteCode}
                   </span>
                 </Row>
-                <Row
-                  icon='repeat'
-                  label='Regenerate join code'
-                  sub='Invalidates the current code'
-                >
+                <Row icon='repeat' label='Regenerate join code'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() =>
@@ -2153,11 +2404,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </button>
                 </Row>
                 {!isSolo && (
-                  <Row
-                    icon='log_out'
-                    label='Leave team'
-                    sub='Remove yourself from this team'
-                  >
+                  <Row icon='log_out' label='Leave team'>
                     <button
                       className='btn btn-ghost btn-sm text-sig-over'
                       onClick={() =>
@@ -2188,7 +2435,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 )}
               </Section>
               {!isSolo ? (
-                <Section>
+                <Section title='Team members'>
                   <div className='px-5 py-4'>
                     <div className='flex flex-col gap-3'>
                       {members.map(m => (
@@ -2267,7 +2514,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </div>
                 </Section>
               ) : (
-                <Section>
+                <Section title='Team status'>
                   <div className='px-5 py-5'>
                     <div className='flex items-center gap-4 mb-4'>
                       <div style={{ fontSize: 40, lineHeight: 1 }}>🏠</div>
@@ -2305,10 +2552,6 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Theme ── */}
             <TabPanel value='theme' sx={{ p: 0 }}>
-              <TabHeader
-                title='Theme'
-                desc='Choose your visual identity and default lens.'
-              />
               <Section title='Visual theme'>
                 <div className='px-5 py-4'>
                   <div className='settings-choice-grid'>
@@ -2352,7 +2595,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                                   : 'var(--t-primary)',
                             }}
                           >
-                            {t === 'dydan' ? 'dydan' : 'Sovereign'}
+                            {t}
                           </span>
                           {ctx.theme === t && (
                             <Icon
@@ -2383,7 +2626,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               <Section title='Appearance'>
                 <div className='px-5 py-4'>
                   <div
-                    className='view-toggle'
+                    className='view-toggle settings-appearance-toggle'
                     style={{ display: 'inline-flex' }}
                   >
                     {(['light', 'dark', 'system'] as const).map(m => (
@@ -2420,16 +2663,16 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                           savePreferences({ ...preferences, defaultView: v })
                         }}
                       >
-                        {v === 'focus' ? '⚡ Focus' : '✨ Quest'}
+                        <Icon
+                          name={v === 'focus' ? 'zap' : 'sparkle'}
+                          size={14}
+                        />
+                        {v === 'focus' ? 'Focus' : 'Quest'}
                       </button>
                     ))}
                   </div>
                 </div>
-                <Row
-                  icon='bars'
-                  label='Compact mode'
-                  sub='Reduce spacing for more content density'
-                >
+                <Row icon='bars' label='Compact mode'>
                   <JoyToggle
                     on={preferences.compactMode}
                     onChange={() =>
@@ -2445,25 +2688,22 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Language & region ── */}
             <TabPanel value='language' sx={{ p: 0 }}>
-              <TabHeader
-                title='Language & region'
-                desc='Language, direction, and regional formats.'
-              />
-              <Section>
-                <Row
-                  icon='globe'
-                  label='Language'
-                  sub='App language and text direction'
-                >
+              <Section title='Regional settings'>
+                <Row icon='globe' label='Language'>
                   <SelectField
                     value={locale.language}
                     onChange={v => {
                       setLanguage(v as typeof language)
-                      savePreferences({
-                        ...preferences,
-                        language: v as SettingsPreferences['language'],
-                      })
-                      ctx.showToast('Language updated')
+                      // The confirmation is emitted by savePreferences only
+                      // after the server has accepted the write, so a failed
+                      // save never reports "Language updated".
+                      savePreferences(
+                        {
+                          ...preferences,
+                          language: v as SettingsPreferences['language'],
+                        },
+                        'Language updated',
+                      )
                     }}
                     options={[
                       { value: 'en', label: 'English' },
@@ -2474,11 +2714,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     ]}
                   />
                 </Row>
-                <Row
-                  icon='rtl'
-                  label='Right-to-left layout'
-                  sub='Mirror the entire interface for RTL languages'
-                >
+                <Row icon='rtl' label='Right-to-left layout'>
                   <JoyToggle
                     on={isRTL}
                     onChange={() => {
@@ -2496,11 +2732,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     value={locale.dateFormat}
                     onChange={v => {
                       setDateFormat(v as typeof dateFormat)
-                      savePreferences({
-                        ...preferences,
-                        dateFormat: v as SettingsPreferences['dateFormat'],
-                      })
-                      ctx.showToast('Date format updated')
+                      savePreferences(
+                        {
+                          ...preferences,
+                          dateFormat: v as SettingsPreferences['dateFormat'],
+                        },
+                        'Date format updated',
+                      )
                     }}
                     options={[
                       { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
@@ -2514,11 +2752,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     value={locale.timeFormat}
                     onChange={v => {
                       setTimeFormat(v as typeof timeFormat)
-                      savePreferences({
-                        ...preferences,
-                        timeFormat: v as SettingsPreferences['timeFormat'],
-                      })
-                      ctx.showToast('Time format updated')
+                      savePreferences(
+                        {
+                          ...preferences,
+                          timeFormat: v as SettingsPreferences['timeFormat'],
+                        },
+                        'Time format updated',
+                      )
                     }}
                     options={[
                       { value: 'HH:mm', label: '24-hour' },
@@ -2531,11 +2771,13 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     value={locale.firstDay}
                     onChange={v => {
                       setFirstDayOfWeek(Number(v))
-                      savePreferences({
-                        ...preferences,
-                        firstDayOfWeek: Number(v),
-                      })
-                      ctx.showToast('Week start updated')
+                      savePreferences(
+                        {
+                          ...preferences,
+                          firstDayOfWeek: Number(v),
+                        },
+                        'Week start updated',
+                      )
                     }}
                     options={[
                       { value: '1', label: 'Monday' },
@@ -2544,15 +2786,18 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     ]}
                   />
                 </Row>
-                <Row
-                  icon='tag'
-                  label='Currency'
-                  sub='Unavailable — shopping and budget totals do not use a currency preference yet'
-                >
+                <Row icon='tag' label='Currency'>
                   <SelectField
-                    disabled
                     value={preferences.currency}
-                    onChange={() => undefined}
+                    onChange={v => {
+                      savePreferences(
+                        {
+                          ...preferences,
+                          currency: v as SettingsPreferences['currency'],
+                        },
+                        'Currency updated',
+                      )
+                    }}
                     options={[
                       { value: 'GBP', label: '£ GBP' },
                       { value: 'USD', label: '$ USD' },
@@ -2562,7 +2807,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     ]}
                   />
                 </Row>
-                <Row icon='map' label='Timezone' sub={locale.timezone}>
+                <Row icon='map' label='Timezone'>
                   <SelectField
                     value={locale.timezone}
                     onChange={v => {
@@ -2595,16 +2840,8 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Side panel ── */}
             <TabPanel value='sidepanel' sx={{ p: 0 }}>
-              <TabHeader
-                title='Side panel'
-                desc='Control how the navigation side panel behaves.'
-              />
-              <Section>
-                <Row
-                  icon='bars'
-                  label='Collapse side panel'
-                  sub='Show icons only to give screens more room'
-                >
+              <Section title='Navigation options'>
+                <Row icon='bars' label='Collapse side panel'>
                   <JoyToggle
                     on={ctx.sidebarCollapsed}
                     onChange={() => {
@@ -2616,11 +2853,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     }}
                   />
                 </Row>
-                <Row
-                  icon='star'
-                  label='Show item badges'
-                  sub='Display counts (e.g. Today) on nav items'
-                >
+                <Row icon='star' label='Show item badges'>
                   <JoyToggle
                     on={preferences.showItemBadges}
                     onChange={() =>
@@ -2631,11 +2864,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     }
                   />
                 </Row>
-                <Row
-                  icon='repeat'
-                  label='Remember collapsed state'
-                  sub='Keep the panel collapsed between sessions'
-                >
+                <Row icon='repeat' label='Remember collapsed state'>
                   <JoyToggle
                     on={preferences.rememberSidebar}
                     onChange={() =>
@@ -2651,120 +2880,155 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Notifications ── */}
             <TabPanel value='notifications' sx={{ p: 0 }}>
-              <TabHeader
-                title='Notifications'
-                desc="Choose what you're notified about and how."
-              />
-              <Section title='What to notify me about'>
+              <Section title='Alerts'>
                 {[
                   {
                     key: 'taskReminders' as const,
                     label: 'Task reminders',
-                    sub: 'Alerts for upcoming and overdue tasks',
                   },
                   {
                     key: 'routineNudges' as const,
                     label: 'Routine nudges',
-                    sub: 'Remind me when a routine is due',
                   },
                   {
                     key: 'familyActivity' as const,
                     label: 'Family activity',
-                    sub: 'When a team member completes something',
                   },
                   {
                     key: 'rewards' as const,
                     label: 'Rewards available',
-                    sub: 'When there are enough points to redeem',
                   },
                   {
                     key: 'weeklySummary' as const,
                     label: 'Weekly summary',
-                    sub: "Friday digest of the week's progress",
                   },
                   {
                     key: 'quietHours' as const,
                     label: 'Quiet hours (10 pm – 8 am)',
-                    sub: 'Suppress notifications during this window',
                   },
                 ].map(n => (
-                  <Row
-                    key={n.key}
-                    label={n.label}
-                    sub={`${n.sub} — unavailable: the server does not support category delivery preferences`}
-                  >
-                    <JoyToggle on={false} disabled />
+                  <Row key={n.key} label={n.label}>
+                    <JoyToggle
+                      on={preferences.notifications[n.key]}
+                      onChange={() =>
+                        savePreferences({
+                          ...preferences,
+                          notifications: {
+                            ...preferences.notifications,
+                            [n.key]: !preferences.notifications[n.key],
+                          },
+                        })
+                      }
+                    />
                   </Row>
                 ))}
               </Section>
               <Section title='Channels'>
-                <Row
-                  icon='phone'
-                  label='Push notifications'
-                  sub='Unavailable — device delivery cannot be disabled per account yet'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='phone' label='Push notifications'>
+                  <JoyToggle
+                    on={preferences.notifications.pushChannel}
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        notifications: {
+                          ...preferences.notifications,
+                          pushChannel: !preferences.notifications.pushChannel,
+                        },
+                      })
+                    }
+                  />
                 </Row>
-                <Row
-                  icon='mail'
-                  label='Email notifications'
-                  sub='Email delivery is configured by a DyDan administrator in Advanced settings.'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='mail' label='Email notifications'>
+                  <JoyToggle
+                    on={preferences.notifications.emailChannel}
+                    disabled={
+                      !integrationStatus?.settings.notificationEmail.available
+                    }
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        notifications: {
+                          ...preferences.notifications,
+                          emailChannel: !preferences.notifications.emailChannel,
+                        },
+                      })
+                    }
+                  />
                 </Row>
               </Section>
             </TabPanel>
 
             {/* ── Privacy ── */}
             <TabPanel value='privacy' sx={{ p: 0 }}>
-              <TabHeader
-                title='Privacy'
-                desc='Control what you share and how your data is used.'
-              />
-              <Section>
-                <Row
-                  icon='eye'
-                  label='Activity visible to team'
-                  sub='Unavailable — the server does not yet support per-account activity visibility'
-                >
-                  <JoyToggle on={false} disabled />
+              <Section title='Sharing preferences'>
+                <Row icon='eye' label='Activity visible to team'>
+                  <JoyToggle
+                    on={preferences.privacy.activityVisible}
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        privacy: {
+                          ...preferences.privacy,
+                          activityVisible: !preferences.privacy.activityVisible,
+                        },
+                      })
+                    }
+                  />
                 </Row>
-                <Row
-                  icon='activity'
-                  label='Usage analytics'
-                  sub='Unavailable — this build does not collect configurable usage analytics'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='activity' label='Usage analytics'>
+                  <JoyToggle
+                    on={preferences.privacy.analytics}
+                    disabled={!integrationStatus?.settings.analytics.available}
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        privacy: {
+                          ...preferences.privacy,
+                          analytics: !preferences.privacy.analytics,
+                        },
+                      })
+                    }
+                  />
                 </Row>
-                <Row
-                  icon='sparkle'
-                  label='Personalized suggestions'
-                  sub='Unavailable — personalized suggestions are not provided by this server'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='sparkle' label='Personalized suggestions'>
+                  <JoyToggle
+                    on={preferences.privacy.personalization}
+                    disabled={
+                      !integrationStatus?.settings.personalization.available
+                    }
+                    onChange={() =>
+                      savePreferences({
+                        ...preferences,
+                        privacy: {
+                          ...preferences.privacy,
+                          personalization: !preferences.privacy.personalization,
+                        },
+                      })
+                    }
+                  />
                 </Row>
-                <Row
-                  icon='eye'
-                  label='Privacy policy'
-                  sub='Unavailable — no published policy URL is configured'
-                >
-                  <button
-                    className='btn btn-ghost btn-icon'
-                    disabled
-                    title='No privacy policy URL is configured'
-                  >
-                    <Icon name='external' size={14} />
-                  </button>
+                <Row icon='eye' label='Privacy policy'>
+                  {integrationStatus?.legal.privacyPolicyUrl ? (
+                    <a
+                      className='btn btn-ghost btn-sm'
+                      href={integrationStatus.legal.privacyPolicyUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      <Icon name='external' size={14} />
+                      Open
+                    </a>
+                  ) : (
+                    <span className='text-faint' style={{ fontSize: 12 }}>
+                      Not configured
+                    </span>
+                  )}
                 </Row>
               </Section>
             </TabPanel>
 
             {/* ── Billing & plan ── */}
             <TabPanel value='billing' sx={{ p: 0 }}>
-              <TabHeader
-                title='Billing & plan'
-                desc='Your subscription, payment method, and invoices.'
-              />
               <Section title='Current plan'>
                 <div className='px-5 py-5 flex items-center gap-4 flex-wrap'>
                   <div
@@ -2820,21 +3084,31 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                 </div>
               </Section>
               <Section title='Payment'>
-                <Row
-                  icon='tag'
-                  label='Payment method'
-                  sub='Payment methods are managed in the secure checkout portal.'
-                />
+                <Row icon='tag' label='Payment method' />
                 <Row
                   icon='clipboard'
                   label='Billing history'
-                  sub='Invoice history is not exposed by this server yet.'
-                />
-                <Row
-                  icon='x'
-                  label='Cancel subscription'
-                  sub='Keep Premium until the end of the period'
+                  detail={
+                    integrationStatus?.billing.invoiceHistory &&
+                    invoiceQuery.data?.length
+                      ? `${invoiceQuery.data.length} invoice${invoiceQuery.data.length === 1 ? '' : 's'} on record`
+                      : undefined
+                  }
                 >
+                  {integrationStatus?.billing.invoiceHistory ? (
+                    <button
+                      className='btn btn-secondary btn-sm'
+                      onClick={() => setShowInvoices(true)}
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <span className='text-faint' style={{ fontSize: 12 }}>
+                      Not configured
+                    </span>
+                  )}
+                </Row>
+                <Row icon='x' label='Cancel subscription'>
                   <button
                     className='btn btn-ghost btn-sm text-sig-over'
                     onClick={() =>
@@ -2870,48 +3144,82 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Integrations ── */}
             <TabPanel value='integrations' sx={{ p: 0 }}>
-              <TabHeader
-                title='Integrations'
-                desc='Connect dydan to the tools your team uses.'
-              />
-              <Section>
-                <Row
-                  icon='calendar'
-                  label='Google Calendar'
-                  sub='Unavailable — this server has no Google Calendar credential configured'
-                >
-                  <JoyToggle on={false} disabled />
-                </Row>
-                <Row
-                  icon='calendar'
-                  label='Apple Calendar'
-                  sub='Unavailable — CalDAV account authorization is not configured'
-                >
-                  <JoyToggle on={false} disabled />
-                </Row>
-                <Row
-                  icon='bell'
-                  label='Amazon Alexa'
-                  sub='Unavailable — Alexa skill credentials are not configured'
-                >
-                  <JoyToggle on={false} disabled />
-                </Row>
-                <Row
-                  icon='external'
-                  label='Webhooks'
-                  sub='Unavailable — configure an endpoint before enabling webhook delivery'
-                >
-                  <JoyToggle on={false} disabled />
+              <Section title='Connected services'>
+                {/*
+                  The server advertises each provider through
+                  `GET /users/integrations`. When it reports a provider as
+                  unavailable there is no authorization endpoint to call, so
+                  these rows render the same read-only status the webhook row
+                  uses for non-editable circles — never a switch that cannot be
+                  turned on. Adding a provider means teaching the server its
+                  connect flow, after which this row can offer a real action.
+                */}
+                {INTEGRATION_ROWS.map(row => {
+                  const capability = integrationStatus
+                    ? integrationStatus[row.key]
+                    : undefined
+                  return (
+                    <Row key={row.key} icon={row.icon} label={row.label}>
+                      <span className='text-faint' style={{ fontSize: 12 }}>
+                        {capability === undefined
+                          ? '…'
+                          : capability.available
+                            ? 'Available'
+                            : 'Not configured'}
+                      </span>
+                    </Row>
+                  )
+                })}
+                <Row icon='external' label='Webhooks'>
+                  {integrationStatus?.webhooks.editable ? (
+                    <div
+                      className='flex items-center gap-2'
+                      style={{ maxWidth: 420 }}
+                    >
+                      <input
+                        className='input'
+                        aria-label='Webhook endpoint URL'
+                        value={webhookDraft}
+                        onChange={event => setWebhookDraft(event.target.value)}
+                        placeholder='https://example.com/hooks/dydan'
+                      />
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        disabled={webhookMutations.set.isPending}
+                        onClick={() => void saveWebhook()}
+                      >
+                        Save
+                      </button>
+                      {integrationStatus.webhooks.url && (
+                        <button
+                          className='btn btn-ghost btn-sm text-sig-over'
+                          disabled={webhookMutations.set.isPending}
+                          onClick={() => {
+                            setWebhookDraft('')
+                            void saveWebhook()
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className='text-faint' style={{ fontSize: 12 }}>
+                      {integrationStatus?.webhooks.plusOnly
+                        ? 'Plus plan required'
+                        : 'Admin only'}
+                    </span>
+                  )}
                 </Row>
               </Section>
               <Section title='API access'>
                 <Row
                   icon='lock'
                   label='Personal access token'
-                  sub={
+                  detail={
                     apiTokens.length
                       ? `${apiTokens.length} active token${apiTokens.length === 1 ? '' : 's'}`
-                      : 'Use for API requests on your behalf'
+                      : undefined
                   }
                 >
                   <button
@@ -2921,15 +3229,23 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Generate
                   </button>
                 </Row>
-                <Row
-                  icon='external'
-                  label='API documentation'
-                  sub='Unavailable — interactive API documentation is disabled on this server'
-                >
+                <Row icon='external' label='API documentation'>
                   <button
                     className='btn btn-ghost btn-icon'
-                    disabled
-                    title='Interactive API documentation is disabled'
+                    disabled={!integrationStatus?.apiDocs.enabled}
+                    title={
+                      integrationStatus?.apiDocs.enabled
+                        ? 'Open API documentation'
+                        : 'API documentation is disabled on this server'
+                    }
+                    onClick={() =>
+                      integrationStatus?.apiDocs.url &&
+                      window.open(
+                        integrationStatus.apiDocs.url,
+                        '_blank',
+                        'noopener,noreferrer',
+                      )
+                    }
                   >
                     <Icon name='external' size={14} />
                   </button>
@@ -2939,42 +3255,36 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── Advanced ── */}
             <TabPanel value='advanced' sx={{ p: 0 }}>
-              <TabHeader
-                title='Advanced'
-                desc='Advanced account settings, data controls, and experimental features.'
-              />
               <Section title='Data & storage'>
-                <Row
-                  icon='download'
-                  label='Export my data'
-                  sub='Unavailable — secure server backup export is not configured'
-                >
+                <Row icon='download' label='Export my data'>
                   <button
                     className='btn btn-secondary btn-sm'
-                    disabled
-                    title='Secure backup export is unavailable on this server'
+                    onClick={() => void exportMyData()}
                   >
                     Export
                   </button>
                 </Row>
-                <Row
-                  icon='upload'
-                  label='Import data'
-                  sub='Unavailable — secure server backup restore is not configured'
-                >
+                <Row icon='upload' label='Restore settings'>
+                  <input
+                    ref={importFileRef}
+                    type='file'
+                    accept='application/json,.json'
+                    hidden
+                    aria-label='Import data file'
+                    onChange={event => {
+                      void handleImportFile(event.target.files?.[0])
+                      event.target.value = ''
+                    }}
+                  />
                   <button
                     className='btn btn-secondary btn-sm'
-                    disabled
-                    title='Secure backup restore is unavailable on this server'
+                    disabled={importData.isPending}
+                    onClick={() => importFileRef.current?.click()}
                   >
                     Import
                   </button>
                 </Row>
-                <Row
-                  icon='database'
-                  label='Storage used'
-                  sub='Server-reported account storage'
-                >
+                <Row icon='database' label='Storage used'>
                   <span
                     className='text-faint font-mono'
                     style={{ fontSize: 12 }}
@@ -2984,11 +3294,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                       : 'Loading…'}
                   </span>
                 </Row>
-                <Row
-                  icon='refresh'
-                  label='Clear local cache'
-                  sub='Free up space — re-syncs on next launch'
-                >
+                <Row icon='refresh' label='Clear local cache'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() =>
@@ -3003,11 +3309,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Clear
                   </button>
                 </Row>
-                <Row
-                  icon='trash'
-                  label='Delete my account'
-                  sub='Permanently remove your account and all data'
-                >
+                <Row icon='trash' label='Delete my account'>
                   <button
                     className='btn btn-ghost btn-sm text-sig-over'
                     onClick={() => setShowDeleteAccount(true)}
@@ -3022,25 +3324,38 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               </Section>
 
               <Section title='Experimental'>
-                <Row
-                  icon='zap'
-                  label='Beta features'
-                  sub='Unavailable — this server has no per-account beta feature flags'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='zap' label='Beta features'>
+                  <JoyToggle
+                    on={preferences.betaFeatures}
+                    disabled={
+                      !integrationStatus?.settings.betaFeatures.available
+                    }
+                    onChange={() => {
+                      const next = !preferences.betaFeatures
+                      savePreferences(
+                        { ...preferences, betaFeatures: next },
+                        next
+                          ? 'Beta features enabled'
+                          : 'Beta features disabled',
+                      )
+                    }}
+                  />
                 </Row>
-                <Row
-                  icon='clipboard'
-                  label='Verbose logging'
-                  sub='Unavailable — the production diagnostics logger has no per-account verbosity control'
-                >
-                  <JoyToggle on={false} disabled />
+                <Row icon='clipboard' label='Verbose logging'>
+                  <JoyToggle
+                    on={preferences.verboseLogging}
+                    onChange={() => {
+                      const next = !preferences.verboseLogging
+                      savePreferences(
+                        { ...preferences, verboseLogging: next },
+                        next
+                          ? 'Verbose logging enabled'
+                          : 'Verbose logging disabled',
+                      )
+                    }}
+                  />
                 </Row>
-                <Row
-                  icon='refresh'
-                  label='Reset all settings'
-                  sub='Restore every preference to its default'
-                >
+                <Row icon='refresh' label='Reset all settings'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() =>
@@ -3072,49 +3387,34 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
 
             {/* ── About ── */}
             <TabPanel value='about' sx={{ p: 0 }}>
-              <TabHeader
-                title='About'
-                desc='dydan version, build information, and environment.'
-              />
               <Section title='Build information'>
-                <Row
-                  icon='info'
-                  label='Version'
-                  sub={`dydan ${appVersion} · UI prototype`}
-                >
+                <Row icon='info' label='Version'>
                   <span
-                    className='badge bg-brand-faint text-brand'
-                    style={{ fontSize: 10 }}
-                  >
-                    Preview
-                  </span>
-                </Row>
-                <Row
-                  icon='database'
-                  label='Environment'
-                  sub={`Build mode: ${import.meta.env.MODE}`}
-                >
-                  <span
-                    className='font-mono text-faint'
+                    className='font-mono text-primary'
                     style={{ fontSize: 12 }}
                   >
-                    {import.meta.env.MODE}
+                    {integrationStatus?.server.version || 'Loading…'}
                   </span>
                 </Row>
-                <Row
-                  icon='copy'
-                  label='Copy device diagnostics'
-                  sub='Useful when contacting support'
-                >
+                <Row icon='database' label='Deployment'>
+                  <span
+                    className='font-mono text-primary'
+                    style={{ fontSize: 12 }}
+                  >
+                    {integrationStatus?.server.deployment || 'Loading…'}
+                  </span>
+                </Row>
+                <Row icon='copy' label='Copy device diagnostics'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() => {
-                      void navigator.clipboard
-                        .writeText(
-                          `dydan ${appVersion}; mode: ${import.meta.env.MODE}; browser: ${navigator.userAgent}`,
-                        )
-                        .then(() => ctx.showToast('Diagnostics copied'))
-                        .catch(() => ctx.showToast('Copy failed'))
+                      void copyToClipboard(
+                        diagnosticsReport(integrationStatus?.server),
+                      ).then(result =>
+                        ctx.showToast(
+                          result.ok ? 'Diagnostics copied' : 'Copy failed',
+                        ),
+                      )
                     }}
                   >
                     Copy
@@ -3130,6 +3430,15 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
         <InviteModal
           inviteCode={inviteCode}
           onClose={() => setShowInvite(false)}
+        />
+      )}
+      {showInvoices && (
+        <InvoiceHistoryModal
+          invoices={invoiceQuery.data ?? []}
+          isLoading={invoiceQuery.isLoading}
+          error={invoiceQuery.error}
+          onClose={() => setShowInvoices(false)}
+          onRetry={() => void invoiceQuery.refetch()}
         />
       )}
       {showEditProfile && (
@@ -3148,6 +3457,29 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
           }}
           photoUrl={profileImage}
           onPhotoChange={handlePhotoChange}
+        />
+      )}
+      {showEmailChange && (
+        <EmailChangeModal
+          onClose={() => setShowEmailChange(false)}
+          onSubmit={async (email, currentPassword) => {
+            try {
+              await account.startEmailChange.mutateAsync({
+                email,
+                currentPassword,
+              })
+              ctx.showToast(
+                'Verification email sent. Your current email remains active until you confirm it.',
+              )
+              setShowEmailChange(false)
+            } catch (error) {
+              ctx.showToast(
+                error instanceof Error
+                  ? error.message
+                  : 'Could not start email change',
+              )
+            }
+          }}
         />
       )}
       {showPassword && (
