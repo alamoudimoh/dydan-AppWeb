@@ -6,6 +6,12 @@ export type ThemeOption = {
   value: string
   label: string
   disabled?: boolean
+  /**
+   * Optional color rendered as a small swatch beside the label, in both the
+   * trigger and each option. Used where the option's value is a persisted
+   * color, so the choice can be made by name rather than by eye.
+   */
+  swatch?: string
 }
 
 export default function ThemeSelect({
@@ -68,8 +74,25 @@ export default function ThemeSelect({
           }
         }}
       >
-        <span className='text-primary truncate'>
-          {selected?.label ?? label}
+        <span className='flex items-center gap-2 min-w-0'>
+          {selected?.swatch && (
+            <span
+              aria-hidden='true'
+              data-testid='color-swatch'
+              data-color={selected.swatch}
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 4,
+                flexShrink: 0,
+                background: selected.swatch,
+                border: '1px solid var(--line-strong)',
+              }}
+            />
+          )}
+          <span className='text-primary truncate'>
+            {selected?.label ?? label}
+          </span>
         </span>
         <Icon
           name='chevron_down'
@@ -117,7 +140,24 @@ export default function ThemeSelect({
                 disabled={option.disabled}
                 onClick={() => choose(option)}
               >
-                <span className='flex-1 text-start'>{option.label}</span>
+                <span className='flex items-center gap-2 flex-1 min-w-0'>
+                  {option.swatch && (
+                    <span
+                      aria-hidden='true'
+                      data-testid='color-swatch'
+                      data-color={option.swatch}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: 4,
+                        flexShrink: 0,
+                        background: option.swatch,
+                        border: '1px solid var(--line-strong)',
+                      }}
+                    />
+                  )}
+                  <span className='text-start truncate'>{option.label}</span>
+                </span>
                 {option.value === value && <Icon name='check' size={14} />}
               </button>
             ))}

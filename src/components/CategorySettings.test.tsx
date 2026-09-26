@@ -14,8 +14,9 @@ import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import CategorySettings from './CategorySettings'
 import { useChoreCategories } from '../hooks/useChoreCategories'
+import { COLORS, LABEL_COLORS } from '../utils/Colors'
+import CategorySettings from './CategorySettings'
 
 type FakeCategory = {
   id: number
@@ -65,8 +66,8 @@ const server = vi.hoisted(() => {
         return state.categories.filter(c => includeArchived || !c.archivedAt)
       },
       CreateCategory: async ({
-        name,
         color,
+        name,
       }: {
         name: string
         color?: string
@@ -80,9 +81,9 @@ const server = vi.hoisted(() => {
         return ok(created)
       },
       UpdateCategory: async ({
+        color,
         id,
         name,
-        color,
       }: {
         id: number
         name: string
@@ -275,18 +276,113 @@ describe('Settings -> Space -> Categories', () => {
     expect(await screen.findByText('Backyard')).toBeTruthy()
   })
 
-  it('recolors a category and keeps its name', async () => {
+  it('recolors a category from the color dropdown and keeps its name', async () => {
     const user = userEvent.setup()
     seed('Garden', '#26a69a')
     render(<CategorySettings />, { wrapper: Wrapper })
 
     await user.click(await screen.findByLabelText('Edit Garden'))
-    await user.click(screen.getByRole('radio', { name: 'Grape' }))
+
+    // The control is a dropdown, not a grid of radios: the trigger shows the
+    // current color, and the options only exist once it is open.
+    const trigger = screen.getByRole('button', { name: 'Category color' })
+    expect(trigger.getAttribute('aria-expanded')).toBe('false')
+    expect(trigger.textContent).toContain('Teal')
+    expect(screen.queryByRole('option', { name: /Grape/ })).toBeNull()
+
+    await user.click(trigger)
+    expect(trigger.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('option', { name: /Teal/ })).toBeTruthy()
+
+    await user.click(screen.getByRole('option', { name: /Grape/ }))
+    // Choosing an option closes the list and reflects the choice in the trigger.
+    expect(screen.queryByRole('option', { name: /Grape/ })).toBeNull()
+    expect(trigger.textContent).toContain('Grape')
+
     await user.click(screen.getByRole('button', { name: 'Save changes' }))
 
     expect(server.state.writes).toEqual(['update|1|Garden|#7e57c2'])
     expect(await screen.findByText('Garden')).toBeTruthy()
     await waitFor(() => expect(swatchColors()).toEqual(['#7e57c2']))
+  })
+
+  it('searches the color dropdown by color name', async () => {
+    const user = userEvent.setup()
+    seed('Garden', '#26a69a')
+    render(<CategorySettings />, { wrapper: Wrapper })
+
+    await user.click(await screen.findByLabelText('Edit Garden'))
+    await user.click(screen.getByRole('button', { name: 'Category color' }))
+
+    // The palette is large enough that ThemeSelect offers a search field.
+    const search = screen.getByLabelText('Search category color')
+    await user.type(search, 'cobalt')
+
+    expect(screen.getByRole('option', { name: /Cobalt/ })).toBeTruthy()
+    // The list narrows rather than showing every color behind the search term.
+    expect(screen.queryByRole('option', { name: /^Grape/ })).toBeNull()
+
+    await user.click(screen.getByRole('option', { name: /Cobalt/ }))
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    expect(server.state.writes).toEqual(['update|1|Garden|#3f51b5'])
+  })
+
+  it('offers every palette color by name and shows its swatch', async () => {
+    const user = userEvent.setup()
+    seed('Garden', '#26a69a')
+    render(<CategorySettings />, { wrapper: Wrapper })
+
+    await user.click(await screen.findByLabelText('Edit Garden'))
+    await user.click(screen.getByRole('button', { name: 'Category color' }))
+
+    const palette = LABEL_COLORS.filter(color => color.name !== 'Default')
+    const options = screen.getAllByRole('option')
+    expect(options).toHaveLength(palette.length)
+
+    // "Default" is the legacy no-color sentinel and stays out of the picker.
+    expect(screen.queryByRole('option', { name: /^Default/ })).toBeNull()
+
+    for (const color of palette) {
+      const option = screen.getByRole('option', {
+        name: new RegExp(color.name),
+      })
+      // The swatch is what makes the choice legible; the name alone would not
+      // tell the user which hex they picked.
+      expect(
+        option.querySelector(
+          `[data-testid='color-swatch'][data-color='${color.value}']`,
+        ),
+      ).toBeTruthy()
+    }
+  })
+
+  it('falls back to the neutral swatch for a category that has no color', async () => {
+    const user = userEvent.setup()
+    // A default seeded before colors existed.
+    seed('Garden', '')
+    render(<CategorySettings />, { wrapper: Wrapper })
+
+    await user.click(await screen.findByLabelText('Edit Garden'))
+    const trigger = screen.getByRole('button', { name: 'Category color' })
+
+    // Nothing is selected, so the control falls back to Ash rather than
+    // rendering an empty trigger.
+    expect(trigger.textContent).toContain('Ash')
+    expect(
+      trigger.querySelector(
+        `[data-testid='color-swatch'][data-color='${COLORS.ash}']`,
+      ),
+    ).toBeTruthy()
+
+    // Picking from the dropdown replaces the fallback rather than stacking on
+    // top of it.
+    await user.click(trigger)
+    await user.click(screen.getByRole('option', { name: /Coral/ }))
+    expect(trigger.textContent).toContain('Coral')
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(server.state.writes).toEqual(['update|1|Garden|#ff7043'])
   })
 
   it('archives a category, keeping the row and its id, and restores it again', async () => {
