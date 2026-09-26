@@ -84,7 +84,7 @@ export default function OnboardingScreen({ onComplete, theme }: Props) {
     >
       {/* Top bar */}
       <div className='flex items-center justify-between px-6 pt-6 pb-3'>
-        <LogoMark size={28} theme={theme} />
+        <LogoMark size={28} />
         {step !== 'done' && step !== 'welcome' && (
           <div className='flex items-center gap-2'>
             {[1, 2, 3].map(i => (

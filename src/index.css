@@ -76,6 +76,15 @@
   --focus-ring: #34236d;
   --focus-offset: #fff8e8;
 
+  /* Input control colors. The dydan appearances resolve these through their own
+     existing tokens so the approved Rhythm Violet boundary is unchanged; each
+     sovereign appearance below states its approved values explicitly. */
+  --input-bg: var(--surface);
+  --input-text: var(--t-primary);
+  --input-border: var(--line-strong);
+  --input-hover: var(--line-strong);
+  --input-focus: var(--focus-ring);
+
   --sig-done: #0b5d45;
   --sig-done-bg: #fff3d1;
   --sig-due: #704600;
@@ -122,6 +131,11 @@
   --shadow-lg: 0 12px 40px rgba(52, 35, 109, 0.18);
 
   --sidebar-w: 244px;
+
+  /* Shared shell height for the desktop header band. The brand-rail header and
+     the main top bar both resolve their height from this one token, so their
+     1px bottom borders always land on the same horizontal pixel line. */
+  --app-topbar-height: 60px;
 }
 
 /* dydan Dark — exact Rhythm Violet semantic values */
@@ -263,6 +277,18 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --focus-ring: #071a2c;
   --focus-offset: #f6f2e8;
 
+  /* Warm Ivory page means --line (#ebe7de) is too quiet to be the only boundary
+     of an interactive control, so inputs take their exact approved colors. */
+  --input-bg: #ffffff;
+  --input-text: #071a2c;
+  --input-border: #4d7794;
+  --input-hover: #071a2c;
+  --input-focus: #071a2c;
+
+  /* Light component distribution: approved palette values only. */
+  --card-border: var(--sv-sand);
+  --search-border: var(--sv-steel);
+
   --sig-done: #0d5a3d;
   --sig-done-bg: #f7edcf;
   --sig-due: #6a4300;
@@ -292,6 +318,32 @@ html[data-joy-color-scheme='dark']:not([data-theme='sovereign']) {
   --shadow-sm: 0 1px 4px rgba(7, 26, 44, 0.18);
   --shadow-md: 0 4px 16px rgba(7, 26, 44, 0.18);
   --shadow-lg: 0 12px 40px rgba(7, 26, 44, 0.18);
+}
+
+/* Sovereign Light shell distribution.
+   Light mode keeps the content canvas warm ivory and cards white, while the
+   navigation rail uses the approved inverse Navy/Brass treatment so Sovereign
+   reads as Navy & Brass instead of a mostly-white skin. These are scoped
+   component mappings only; the authored light semantic tokens above remain
+   unchanged. */
+html[data-theme='sovereign']:not([data-joy-color-scheme='dark']) .sidebar {
+  --surface: var(--sv-navy);
+  --surface-2: var(--sv-navy-deep);
+  --surface-3: var(--sv-navy-ink);
+  --t-primary: var(--sv-ivory);
+  --t-muted: var(--sv-sand);
+  --t-faint: var(--sv-navy-tint);
+  --line: var(--sv-regency-blue);
+  --line-strong: var(--sv-navy-light);
+  --brand: var(--sv-brass);
+  --brand-hover: var(--sv-brass-light);
+  --brand-detail: var(--sv-navy);
+  --selected-bg: var(--sv-brass);
+  --selected-text: var(--sv-navy);
+  --selected-border: var(--sv-navy);
+  --focus-ring: var(--sv-brass);
+  --focus-offset: var(--sv-navy);
+  --sig-over: var(--sv-ivory);
 }
 
 /* Sovereign Dark — exact Navy & Brass semantic values */
@@ -336,6 +388,12 @@ html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --selected-border: #071a2c;
   --focus-ring: #e0b45a;
   --focus-offset: #071a2c;
+
+  --input-bg: #142d40;
+  --input-text: #f6f2e8;
+  --input-border: #829fb4;
+  --input-hover: #f6f2e8;
+  --input-focus: #e0b45a;
 
   --sig-done: #f6f2e8;
   --sig-done-bg: #0d5a3d;
@@ -586,6 +644,44 @@ body.theme-transitioning * {
   transition: width 0.2s ease;
 }
 
+/* ─── Shared desktop header band ──────────
+   The brand-rail header (.sidebar-header) and the main top bar (.app-topbar)
+   are one horizontal band. Both resolve their height from the single
+   --app-topbar-height token with box-sizing: border-box, so their 1px bottom
+   borders land on exactly the same pixel line and no vertical step appears at
+   the rail/content boundary. */
+.sidebar-header,
+.app-topbar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.sidebar-header {
+  gap: 8px;
+  padding: 0 12px;
+}
+
+@media (min-width: 769px) {
+  .sidebar-header,
+  .app-topbar {
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+  }
+}
+
 /* ─── Shared page container — consistent content width ─── */
 .page-container {
   max-width: 1080px;
@@ -611,9 +707,17 @@ body.theme-transitioning * {
 .sidebar.collapsed .nav-item > span:not(.badge) {
   display: none;
 }
+/* Collapsed rail stacks the logo above the collapse control, which needs more
+   room than the shared desktop band. It keeps the token as a minimum and grows
+   from there instead of clipping, so collapse is never broken by the fixed
+   height. */
 .sidebar.collapsed .sidebar-header {
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
+  height: auto;
+  min-height: var(--app-topbar-height);
+  padding-block: 10px;
 }
 .collapse-toggle {
   display: inline-flex;
@@ -871,6 +975,56 @@ html[dir='ltr'] .main-scroll > * {
   box-shadow: none;
 }
 
+/* ─── Segmented tab control ──────────────
+   Shared in-page segmented control (Maintenance / Meters / Things,
+   Rewards / Requests / Points). It follows the same selected-state contract
+   as .view-toggle: the active segment resolves through the semantic selected
+   tokens instead of a surface token, so it stays unmistakably selected in
+   every theme and appearance. */
+.seg-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  background: var(--segmented-track, var(--surface-2));
+  border-radius: var(--r-md);
+}
+
+.seg-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--t-primary);
+  background: transparent;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+}
+
+.seg-tab:not(.active):hover {
+  background: var(--surface-3);
+  color: var(--t-primary);
+}
+
+.seg-tab.active,
+.seg-tab.active:hover {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+
+.seg-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
 /* ─── Buttons ──────────────────────────── */
 .btn {
   display: inline-flex;
@@ -965,7 +1119,7 @@ html[dir='ltr'] .main-scroll > * {
 
 /* The search field shares its container's border: no second focus ring. */
 .top-search {
-  border: 1px solid var(--line);
+  border: 1px solid var(--search-border, var(--line));
   border-radius: var(--r-md);
   transition: border-color 0.14s ease;
 }
@@ -985,7 +1139,7 @@ html[dir='ltr'] .main-scroll > * {
 /* ─── Card ─────────────────────────────── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid var(--card-border, var(--line));
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
 }
@@ -993,10 +1147,10 @@ html[dir='ltr'] .main-scroll > * {
 /* ─── Input ────────────────────────────── */
 .input {
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: var(--r-md);
-  color: var(--t-primary);
+  color: var(--input-text);
   font-family: var(--font-ui);
   font-size: 14px;
   padding: 9px 12px;
@@ -1005,9 +1159,12 @@ html[dir='ltr'] .main-scroll > * {
     border-color 0.14s ease,
     box-shadow 0.14s ease;
 }
+.input:hover {
+  border-color: var(--input-hover);
+}
 .input:focus,
 .input:focus-visible {
-  border-color: var(--focus-ring);
+  border-color: var(--input-focus);
   border-width: 1px;
   outline: none;
   box-shadow: none;
@@ -1019,9 +1176,9 @@ select.input,
 select {
   appearance: none;
   -webkit-appearance: none;
-  background-color: var(--surface);
-  color: var(--t-primary);
-  border: 1px solid var(--line-strong);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
   border-radius: var(--r-md);
   padding-inline-end: 34px;
   font: inherit;
@@ -1045,8 +1202,8 @@ select {
     13px 50%;
 }
 select option {
-  background: var(--surface);
-  color: var(--t-primary);
+  background: var(--input-bg);
+  color: var(--input-text);
 }
 input[type='date'].input {
   min-height: 42px;

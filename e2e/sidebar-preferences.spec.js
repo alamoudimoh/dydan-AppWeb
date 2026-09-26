@@ -28,7 +28,15 @@ test('sidebar preference controls persist their live choices across reloads', as
     }),
   ).toHaveAttribute('aria-pressed', 'true')
 
-  await sidebar.getByRole('button', { name: 'Sovereign', exact: true }).click()
+  // Both product themes are exposed with their lowercase ids.
+  await expect(
+    sidebar.getByRole('button', { name: 'dydan', exact: true }),
+  ).toBeVisible()
+  await expect(
+    sidebar.getByRole('button', { name: 'sovereign', exact: true }),
+  ).toBeVisible()
+
+  await sidebar.getByRole('button', { name: 'sovereign', exact: true }).click()
   await expect(html).toHaveAttribute('data-theme', 'sovereign')
 
   await page.reload({ waitUntil: 'networkidle' })

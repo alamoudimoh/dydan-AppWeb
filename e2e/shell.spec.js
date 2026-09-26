@@ -96,6 +96,100 @@ test('shell: collapsed sidebar state persists through Settings → Side panel', 
   runtimeGuard.assertClean()
 })
 
+test('shell: the brand header and top bar form one aligned header band', async ({
+  page,
+}) => {
+  const runtimeGuard = attachRuntimeErrorGuard(page)
+  await installApiMocks(page)
+  await installSmokeSession(page)
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  await page.waitForLoadState('networkidle')
+  await page.waitForTimeout(SETTLE)
+
+  const railHeader = page.locator('.sidebar-header')
+  const topBar = page.locator('.app-topbar')
+  await expect(railHeader).toBeVisible()
+  await expect(topBar).toBeVisible()
+
+  // Both headers resolve the same --app-topbar-height token, so the two 1px
+  // bottom borders must meet on exactly the same horizontal pixel line.
+  const token = await page.evaluate(() =>
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--app-topbar-height')
+      .trim(),
+  )
+  expect(token).toBe('60px')
+
+  const measure = async () => {
+    const box = async selector => {
+      const rect = await page
+        .locator(selector)
+        .evaluate(el => el.getBoundingClientRect())
+      return {
+        height: Math.round(rect.height * 100) / 100,
+        bottom: Math.round(rect.bottom * 100) / 100,
+      }
+    }
+    const [rail, main] = await Promise.all([
+      box('.sidebar-header'),
+      box('.app-topbar'),
+    ])
+    const borders = await page.evaluate(() => {
+      const read = selector => {
+        const style = getComputedStyle(document.querySelector(selector))
+        return {
+          width: style.borderBottomWidth,
+          style: style.borderBottomStyle,
+          color: style.borderBottomColor,
+        }
+      }
+      return { rail: read('.sidebar-header'), main: read('.app-topbar') }
+    })
+    return { rail, main, borders }
+  }
+
+  const expanded = await measure()
+  expect(expanded.rail.height).toBe(60)
+  expect(expanded.main.height).toBe(60)
+  // No visible vertical step at the rail/content boundary.
+  expect(expanded.main.bottom).toBe(expanded.rail.bottom)
+  expect(expanded.borders.rail).toEqual(expanded.borders.main)
+  expect(expanded.borders.rail.width).toBe('1px')
+
+  // Collapsed stacks logo over the collapse control, so it grows past the band
+  // instead of clipping its own controls.
+  await page.getByRole('button', { name: 'Toggle side panel' }).click()
+  await expect(page.locator('.app-shell')).toHaveClass(/sidebar-collapsed/)
+  await page.waitForTimeout(SETTLE)
+  const collapsed = await measure()
+  expect(collapsed.rail.height).toBeGreaterThanOrEqual(60)
+  const toggleInsideHeader = await page.evaluate(() => {
+    const header = document.querySelector('.sidebar-header')
+    const toggle = document.querySelector('.collapse-toggle')
+    const h = header.getBoundingClientRect()
+    const t = toggle.getBoundingClientRect()
+    return t.top >= h.top && t.bottom <= h.bottom
+  })
+  expect(toggleInsideHeader).toBe(true)
+  await expect(railHeader.getByRole('button')).toBeVisible()
+  await expect(topBar).toBeVisible()
+
+  // The same band holds when the rail flips to the other edge in RTL.
+  await page.getByRole('button', { name: 'Toggle side panel' }).click()
+  await page.waitForTimeout(SETTLE)
+  await page.getByRole('button', { name: /العربية/ }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await page.waitForTimeout(SETTLE)
+  const rtl = await measure()
+  expect(rtl.rail.height).toBe(60)
+  expect(rtl.main.height).toBe(60)
+  expect(rtl.main.bottom).toBe(rtl.rail.bottom)
+  expect(rtl.borders.rail).toEqual(rtl.borders.main)
+
+  runtimeGuard.assertClean()
+})
+
 test('shell: mobile bottom navigation renders five labeled items and navigates', async ({
   page,
 }) => {
@@ -157,7 +251,7 @@ test('shell: settings renders a horizontal tab strip above the content', async (
   await page.getByRole('tab', { name: /^theme$/i }).click()
   await expect(
     page.locator('.MuiTabPanel-root', {
-      hasText: 'Choose your visual identity',
+      hasText: 'Visual theme',
     }),
   ).toBeVisible()
 
