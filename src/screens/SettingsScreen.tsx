@@ -10,6 +10,8 @@ import QRCode from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 
 import { AppCtx, Icon, Theme, View } from '../App'
+import CategorySettings from '../components/CategorySettings'
+import { Row, Section } from '../components/SettingsSection'
 import { useLocalization } from '../contexts/LocalizationContext'
 import { useProductTheme } from '../contexts/ThemeContext'
 import {
@@ -131,71 +133,8 @@ const INTEGRATION_ROWS = [
 ]
 
 /* ─── Shared building blocks ──────────── */
-function Section({
-  children,
-  title,
-}: {
-  title?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className='mb-6'>
-      {title && (
-        <div style={{ padding: '0 0 8px' }}>
-          <div className='section-label' style={{ padding: 0 }}>
-            {title}
-          </div>
-        </div>
-      )}
-      <div className='card overflow-hidden'>{children}</div>
-    </div>
-  )
-}
-
-function Row({
-  children,
-  detail,
-  icon,
-  label,
-  onClick,
-}: {
-  icon?: string
-  label: string
-  /** Persisted setting or status; visually distinct from explanatory help. */
-  detail?: string
-  children?: React.ReactNode
-  onClick?: () => void
-}) {
-  return (
-    <div
-      className='flex items-center gap-4 px-5 py-4 border-b border-line last:border-0'
-      style={{
-        borderColor: 'var(--line)',
-        cursor: onClick ? 'pointer' : undefined,
-      }}
-      onClick={onClick}
-    >
-      {icon && (
-        <Icon
-          name={icon}
-          size={18}
-          style={{ color: 'var(--t-muted)', flexShrink: 0 }}
-        />
-      )}
-      <div className='flex-1 min-w-0'>
-        <div className='font-medium text-primary' style={{ fontSize: 14 }}>
-          {label}
-        </div>
-        {detail && (
-          <div className='text-primary' style={{ fontSize: 12, marginTop: 1 }}>
-            {detail}
-          </div>
-        )}
-      </div>
-      {children && <div className='flex-shrink-0'>{children}</div>}
-    </div>
-  )
-}
+// Section and Row now live in ../components/SettingsSection so the Category
+// settings section can reuse them without importing this screen.
 
 function JoyToggle({
   disabled = false,
@@ -2548,6 +2487,11 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   </div>
                 </Section>
               )}
+
+              {/* Categories are scoped to the Circle, which a solo account
+                  also has, so this section is deliberately outside the
+                  isSolo branches above. */}
+              <CategorySettings />
             </TabPanel>
 
             {/* ── Theme ── */}
