@@ -24,17 +24,7 @@ export const resolveIntlLocale = language => {
   return INTL_LOCALE_MAP[base] || language
 }
 
-export const LANGUAGE_CODES = Object.freeze([
-  'ar-SA',
-  'de',
-  'en',
-  'es',
-  'fr',
-  'nl',
-  'ja',
-  'pt',
-  'zh-CN',
-])
+export const LANGUAGE_CODES = Object.freeze(['en', 'ar-SA'])
 
 /**
  * Localized language label with nativeName fallback from catalog metadata.

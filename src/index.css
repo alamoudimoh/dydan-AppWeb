@@ -86,6 +86,9 @@
   --input-hover: var(--line-strong);
   --input-focus: var(--focus-ring);
   --search-bg: var(--surface-2);
+  --search-border: var(--line-strong);
+  --search-text: var(--t-primary);
+  --search-placeholder: var(--t-muted);
 
   --sig-done: #0b5d45;
   --sig-done-bg: #fff3d1;
@@ -406,6 +409,8 @@ html[data-theme='sovereign'][data-joy-color-scheme='dark'] {
   --input-border: #829fb4;
   --input-hover: #f6f2e8;
   --input-focus: #e0b45a;
+  --search-bg: var(--surface-2);
+  --search-border: var(--line-strong);
 
   --sig-done: #f6f2e8;
   --sig-done-bg: #0d5a3d;
@@ -767,6 +772,8 @@ body.theme-transitioning * {
 .main-scroll {
   flex: 1;
   min-height: 0;
+  /* One anchor for page headers and the Quest hero below the persistent top bar. */
+  padding-block-start: 26px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
@@ -1135,6 +1142,13 @@ html[dir='ltr'] .main-scroll > * {
   border-radius: var(--r-md);
   transition: border-color 0.14s ease;
 }
+.top-search input {
+  color: var(--search-text);
+}
+.top-search input::placeholder {
+  color: var(--search-placeholder);
+  opacity: 1;
+}
 .top-search:focus-within {
   border-color: var(--focus-ring);
 }
@@ -1182,7 +1196,7 @@ html[dir='ltr'] .main-scroll > * {
   box-shadow: none;
 }
 .input::placeholder {
-  color: var(--t-faint);
+  color: var(--t-muted);
 }
 select.input,
 select {
@@ -1668,7 +1682,7 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
 
 /* ─── Page header ──────────────────────── */
 .page-header {
-  padding: 26px 28px 32px;
+  padding: 0 28px 32px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1722,7 +1736,7 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
   box-shadow: none !important;
 }
 .task-search-input::placeholder {
-  color: var(--t-faint);
+  color: var(--search-placeholder);
 }
 .shopping-icon-field .themed-trigger .text-muted {
   display: none;
@@ -1829,8 +1843,11 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
   min-width: 58px;
 }
 @media (max-width: 768px) {
+  .main-scroll {
+    padding-block-start: 20px;
+  }
   .page-header {
-    padding: 20px 16px 26px;
+    padding: 0 16px 26px;
   }
 }
 .calendar-layout {

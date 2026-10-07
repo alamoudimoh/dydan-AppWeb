@@ -157,7 +157,7 @@ export default function ShoppingScreen({
       <div className='px-4 md:px-7'>
         <div
           className='grid gap-5 shopping-lists-grid'
-          style={{ gridTemplateColumns: '220px 1fr' }}
+          style={{ gridTemplateColumns: '220px minmax(0, 1fr)' }}
         >
           {/* List sidebar */}
           <div className='flex flex-col gap-2'>
@@ -167,7 +167,7 @@ export default function ShoppingScreen({
               return (
                 <button
                   key={l.id}
-                  className='text-start p-3 rounded-lg cursor-pointer'
+                  className='card text-start p-3 cursor-pointer'
                   style={{
                     background: isActive
                       ? 'var(--brand-faint)'
@@ -204,7 +204,7 @@ export default function ShoppingScreen({
           </div>
 
           {/* List content */}
-          <div>
+          <div className='min-w-0'>
             {isCreatingList ? (
               <div
                 className='card p-5 border border-line'
@@ -375,9 +375,9 @@ export default function ShoppingScreen({
             ) : currentList ? (
               <>
                 {/* List header */}
-                <div className='flex items-center justify-between mb-4'>
+                <div className='flex items-center justify-between gap-3 flex-wrap mb-4'>
                   <div>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-2 flex-wrap'>
                       <span style={{ fontSize: 24 }}>{currentList.emoji}</span>
                       <h2
                         className='text-primary font-bold'

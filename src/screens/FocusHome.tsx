@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import { AppCtx, Icon } from '../App'
 import type { Member, Task } from '../data'
 import { formatDate, formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
+import { greetingPeriod } from '../utils/greeting.js'
 
 function StatCard({
   color,
@@ -199,6 +203,12 @@ export default function FocusHome({
   isSolo: boolean
   onComplete: (id: string) => void
 }) {
+  const { t } = useTranslation()
+  const [localNow, setLocalNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = window.setInterval(() => setLocalNow(new Date()), 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
   const {
     activity,
     currentUser,
@@ -254,7 +264,7 @@ export default function FocusHome({
               lineHeight: 1.2,
             }}
           >
-            Good morning, {me.name}
+            {t(`home.greeting.${greetingPeriod(localNow)}`)}, {me.name}
           </h1>
           <p className='text-muted' style={{ fontSize: 14, margin: '6px 0 0' }}>
             {overdueList.length > 0

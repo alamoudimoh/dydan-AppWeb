@@ -38,12 +38,6 @@ export const TIME_FORMATS = {
 export const AVAILABLE_LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English' },
   { code: 'ar-SA', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español' },
-  { code: 'zh-CN', name: 'Chinese', nativeName: '中文' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
 ] as const
 
 const resolveIntlLocale = (lang: Lang) =>

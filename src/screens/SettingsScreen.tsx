@@ -1681,7 +1681,6 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
   const {
     dateFormat,
     firstDayOfWeek,
-    isRTL,
     language,
     setDateFormat,
     setFirstDayOfWeek,
@@ -2301,7 +2300,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     Rename
                   </button>
                 </Row>
-                <Row icon='clipboard' label='Join code'>
+                <Row icon='clipboard' label='dydan code'>
                   <span
                     className='font-mono'
                     style={{
@@ -2315,7 +2314,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     {inviteCode}
                   </span>
                 </Row>
-                <Row icon='repeat' label='Regenerate join code'>
+                <Row icon='repeat' label='Regenerate dydan code'>
                   <button
                     className='btn btn-secondary btn-sm'
                     onClick={() =>
@@ -2326,15 +2325,15 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                             result.inviteCode ?? result.invite_code
                           ctx.showToast(
                             nextCode
-                              ? `New join code: ${nextCode}`
-                              : 'New join code generated',
+                              ? `New dydan code: ${nextCode}`
+                              : 'New dydan code generated',
                           )
                         })
                         .catch(err =>
                           ctx.showToast(
                             err instanceof Error
                               ? err.message
-                              : 'Could not regenerate join code',
+                              : 'Could not regenerate dydan code',
                           ),
                         )
                     }
@@ -2652,23 +2651,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                     options={[
                       { value: 'en', label: 'English' },
                       { value: 'ar-SA', label: 'العربية' },
-                      { value: 'fr', label: 'Français' },
-                      { value: 'de', label: 'Deutsch' },
-                      { value: 'es', label: 'Español' },
                     ]}
-                  />
-                </Row>
-                <Row icon='rtl' label='Right-to-left layout'>
-                  <JoyToggle
-                    on={isRTL}
-                    onChange={() => {
-                      const nextLanguage = isRTL ? 'en' : 'ar-SA'
-                      setLanguage(nextLanguage)
-                      savePreferences({
-                        ...preferences,
-                        language: nextLanguage,
-                      })
-                    }}
                   />
                 </Row>
                 <Row icon='calendar' label='Date format'>
