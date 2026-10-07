@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Task } from '../data'
 import { formatDate } from '../data'
 import { useLiveData } from '../model/liveData'
@@ -112,42 +113,35 @@ export default function CalendarScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Calendar
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Scheduled tasks and events
-          </div>
-        </div>
-        <div className='flex gap-2 flex-wrap'>
-          <div
-            className='view-toggle'
-            style={{ width: 'auto' }}
-            role='group'
-            aria-label='Calendar view'
-          >
-            <button
-              className={`view-toggle-btn ${viewMode === 'month' ? 'active' : ''}`}
-              aria-pressed={viewMode === 'month'}
-              onClick={() => setViewMode('month')}
+      <PageHeader
+        title='Calendar'
+        subtitle='Scheduled tasks and events'
+        actions={
+          <div className='flex gap-2 flex-wrap'>
+            <div
+              className='view-toggle'
+              style={{ width: 'auto' }}
+              role='group'
+              aria-label='Calendar view'
             >
-              Month
-            </button>
-            <button
-              className={`view-toggle-btn ${viewMode === 'week' ? 'active' : ''}`}
-              aria-pressed={viewMode === 'week'}
-              onClick={() => setViewMode('week')}
-            >
-              Week
-            </button>
+              <button
+                className={`view-toggle-btn ${viewMode === 'month' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'month'}
+                onClick={() => setViewMode('month')}
+              >
+                Month
+              </button>
+              <button
+                className={`view-toggle-btn ${viewMode === 'week' ? 'active' : ''}`}
+                aria-pressed={viewMode === 'week'}
+                onClick={() => setViewMode('week')}
+              >
+                Week
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         <div className='grid gap-5 calendar-layout'>

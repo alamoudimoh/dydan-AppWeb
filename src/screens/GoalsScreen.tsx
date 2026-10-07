@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Goal } from '../data'
 import { type GoalMutationInput, useGoalMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
@@ -100,25 +101,18 @@ export default function GoalsScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Goals
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Live circle goals and measured progress
-          </div>
-        </div>
-        {!isChild && (
-          <button className='btn btn-primary' onClick={() => begin()}>
-            <Icon name='plus' size={14} />
-            New goal
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title='Goals'
+        subtitle='Live circle goals and measured progress'
+        actions={
+          !isChild ? (
+            <button className='btn btn-primary' onClick={() => begin()}>
+              <Icon name='plus' size={14} />
+              New goal
+            </button>
+          ) : undefined
+        }
+      />
       <div className='px-4 md:px-7'>
         {editing !== undefined && (
           <div className='card p-5 mb-5'>

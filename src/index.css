@@ -1689,6 +1689,32 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
   gap: 12px;
   flex-wrap: wrap;
 }
+/* Shared page-header layout contract (Fix 02): the eyebrow slot reserves
+   identical height on every primary page so the primary page title stays
+   at one consistent vertical anchor whether or not eyebrow metadata
+   (e.g. the Today date) is present. */
+.page-header__main {
+  min-width: 0;
+}
+.page-header__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  min-height: 17px;
+  margin-bottom: 4px;
+}
+.page-header__subtitle {
+  font-size: 13px;
+  margin-top: 4px;
+}
+.page-header__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
 /* Consistent typography: lowercase display and actions, uppercase field labels. */
 .form-title {
   font-family: var(--font-ui);

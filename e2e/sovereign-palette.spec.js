@@ -165,7 +165,13 @@ for (const [theme, appearance] of [
 
     // A real input paints the approved input colors, including the hover and
     // focus boundaries, and never falls back to a disappearing separator.
+    // Creation fields live in the Project-pattern modal (which autofocuses
+    // its first field like the Project editor, so blur before asserting the
+    // resting boundary).
+    await page.getByRole('button', { name: 'New asset' }).click()
     const input = page.getByLabel('New maintenance asset name')
+    await expect(input).toBeVisible()
+    await input.evaluate(element => element.blur())
     await expectPainted(
       input,
       'backgroundColor',
@@ -217,7 +223,10 @@ for (const [theme, appearance] of [
       expect(await tokenValue(page, name), name).toBe(expected)
     }
 
+    await page.getByRole('button', { name: 'New asset' }).click()
     const input = page.getByLabel('New maintenance asset name')
+    await expect(input).toBeVisible()
+    await input.evaluate(element => element.blur())
     const expectedBorder = await resolvedColor(page, '--input-border')
     await expectPainted(input, 'borderTopColor', expectedBorder)
     await input.hover()

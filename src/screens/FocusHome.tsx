@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Member, Task } from '../data'
 import { formatDate, formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
@@ -236,43 +237,24 @@ export default function FocusHome({
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
       {/* Hero greeting */}
-      <div className='page-header pb-6'>
-        <div>
-          <div
-            className='text-faint'
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: 4,
-            }}
-          >
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </div>
-          <h1
-            className='text-primary'
-            style={{
-              fontSize: 26,
-              fontWeight: 800,
-              margin: 0,
-              lineHeight: 1.2,
-            }}
-          >
+      <PageHeader
+        title={
+          <>
             {t(`home.greeting.${greetingPeriod(localNow)}`)}, {me.name}
-          </h1>
-          <p className='text-muted' style={{ fontSize: 14, margin: '6px 0 0' }}>
-            {overdueList.length > 0
-              ? `${overdueList.length} task${overdueList.length > 1 ? 's' : ''} overdue — let's clear them first.`
-              : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`}
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        eyebrow={new Date().toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })}
+        subtitle={
+          overdueList.length > 0
+            ? `${overdueList.length} task${overdueList.length > 1 ? 's' : ''} overdue — let's clear them first.`
+            : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Stats row */}

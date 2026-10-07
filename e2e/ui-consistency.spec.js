@@ -39,7 +39,7 @@ test('focus greeting uses the browser timezone at each period boundary', async (
   }
 })
 
-test('primary pages share the same scroll-area start on desktop and mobile', async ({
+test('primary page titles share the same visual anchor on desktop and mobile', async ({
   page,
 }) => {
   await prepare(page)
@@ -60,12 +60,10 @@ test('primary pages share the same scroll-area start on desktop and mobile', asy
     const positions = []
     for (const path of paths) {
       await page.goto(path)
-      await expect(page.locator('.main-scroll > div').first()).toBeVisible()
+      const title = page.getByTestId('page-title').first()
+      await expect(title).toBeVisible()
       positions.push(
-        await page
-          .locator('.main-scroll > div > :first-child')
-          .first()
-          .evaluate(element => element.getBoundingClientRect().top),
+        await title.evaluate(element => element.getBoundingClientRect().top),
       )
     }
     expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(2)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import { formatTimestamp } from '../data'
 import { useRewardMutations, useRewardRequests } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
@@ -147,25 +148,18 @@ export default function RewardsScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Rewards
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Server-backed reward catalog and approval requests
-          </div>
-        </div>
-        {isAdmin && (
-          <button className='btn btn-primary' onClick={startNew}>
-            <Icon name='plus' size={14} />
-            New reward
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title='Rewards'
+        subtitle='Server-backed reward catalog and approval requests'
+        actions={
+          isAdmin ? (
+            <button className='btn btn-primary' onClick={startNew}>
+              <Icon name='plus' size={14} />
+              New reward
+            </button>
+          ) : undefined
+        }
+      />
       <div className='px-4 md:px-7'>
         {isAdmin && editingId !== undefined && (
           <div

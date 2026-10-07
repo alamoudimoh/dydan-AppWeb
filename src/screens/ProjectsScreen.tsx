@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
 import IconPicker from '../components/IconPicker'
+import PageHeader from '../components/PageHeader'
 import ThemeSelect from '../components/ThemeSelect'
 import type { Project } from '../data'
 import { useProjectMutations } from '../hooks/useHousehold'
@@ -123,25 +124,18 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Projects
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Organized work with multiple tasks
-          </div>
-        </div>
-        {!isChild && (
-          <button className='btn btn-primary' onClick={startNew}>
-            <Icon name='plus' size={14} />
-            New project
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title='Projects'
+        subtitle='Organized work with multiple tasks'
+        actions={
+          !isChild ? (
+            <button className='btn btn-primary' onClick={startNew}>
+              <Icon name='plus' size={14} />
+              New project
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {editorMode && (

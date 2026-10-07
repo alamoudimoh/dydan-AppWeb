@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Task } from '../data'
 import { useLiveData } from '../model/liveData'
 
@@ -152,41 +153,25 @@ export default function TodayScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <div
-            className='text-faint'
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: 4,
-            }}
-          >
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Today
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+      <PageHeader
+        title='Today'
+        eyebrow={new Date().toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })}
+        subtitle={
+          <>
             {done.length} of {filteredToday.length} tasks complete
             {totalPoints > 0 && (
               <span className='ms-2 text-brand font-bold'>
                 +{totalPoints} pts
               </span>
             )}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Progress */}

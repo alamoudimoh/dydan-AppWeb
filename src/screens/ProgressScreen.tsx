@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Task } from '../data'
 import { todayKey, useLiveData } from '../model/liveData'
 
@@ -96,48 +97,45 @@ export default function ProgressScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Progress
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+      <PageHeader
+        title='Progress'
+        subtitle={
+          <>
             team workload and completion reporting for the last{' '}
             {RANGE_LABELS[range].toLowerCase()}
+          </>
+        }
+        actions={
+          <div
+            className='flex gap-1 p-1 rounded-full'
+            style={{
+              background: 'var(--surface-2)',
+              borderRadius: 'var(--r-full)',
+            }}
+          >
+            {(['7d', '30d', '90d'] as Range[]).map(r => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className='px-4 py-1.5 font-semibold'
+                style={{
+                  background: range === r ? 'var(--brand)' : 'transparent',
+                  color:
+                    range === r ? 'var(--brand-contrast)' : 'var(--t-muted)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderRadius: 'var(--r-full)',
+                  fontSize: 12,
+                  fontFamily: 'var(--font-ui)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {RANGE_LABELS[r]}
+              </button>
+            ))}
           </div>
-        </div>
-        {/* Range selector */}
-        <div
-          className='flex gap-1 p-1 rounded-full'
-          style={{
-            background: 'var(--surface-2)',
-            borderRadius: 'var(--r-full)',
-          }}
-        >
-          {(['7d', '30d', '90d'] as Range[]).map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className='px-4 py-1.5 font-semibold'
-              style={{
-                background: range === r ? 'var(--brand)' : 'transparent',
-                color: range === r ? 'var(--brand-contrast)' : 'var(--t-muted)',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: 'var(--r-full)',
-                fontSize: 12,
-                fontFamily: 'var(--font-ui)',
-                transition: 'all 0.15s',
-              }}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       <div className='px-4 md:px-7 flex flex-col gap-6'>
         {/* Overview stat row */}

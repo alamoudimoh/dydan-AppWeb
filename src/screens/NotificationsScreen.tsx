@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type {
   Notification,
   NotificationType,
@@ -92,25 +93,18 @@ export default function NotificationsScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Notifications
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
-          </div>
-        </div>
-        {unreadCount > 0 && (
-          <button className='btn btn-secondary' onClick={onMarkAllRead}>
-            <Icon name='check' size={14} />
-            Mark all read
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title='Notifications'
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+        actions={
+          unreadCount > 0 ? (
+            <button className='btn btn-secondary' onClick={onMarkAllRead}>
+              <Icon name='check' size={14} />
+              Mark all read
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Filter strip */}

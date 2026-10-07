@@ -13,11 +13,14 @@ test('maintenance links, readings, thing state, and metadata persist across relo
   await page.goto('/maintenance', { waitUntil: 'networkidle' })
 
   // Asset and meter creation use the real mutation contracts and stateful mock
-  // server; both records must remain after a browser reload.
+  // server; both records must remain after a browser reload. Creation fields
+  // live inside Project-pattern modals opened from explicit header actions.
+  await page.getByRole('button', { name: 'New asset' }).click()
   await page.getByLabel('New maintenance asset name').fill('Family car')
   await page.getByRole('button', { name: 'Create asset' }).click()
   await expect(page.getByText('Family car', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: /Meters \(0\)/ }).click()
+  await page.getByRole('button', { name: 'New meter' }).click()
   await page.getByLabel('New meter name').fill('Odometer')
   await page.getByLabel('New meter unit').selectOption('km')
   await page.getByLabel('New meter initial reading').fill('100')
@@ -38,6 +41,7 @@ test('maintenance links, readings, thing state, and metadata persist across relo
   await expect(asset.getByText(/Odometer \(125 km\)/)).toBeVisible()
 
   await page.getByRole('button', { name: /Things \(0\)/ }).click()
+  await page.getByRole('button', { name: 'New thing' }).click()
   await page.getByLabel('New thing name').fill('Garage light')
   await page.getByLabel('New thing type').selectOption('boolean')
   await page.getByRole('button', { name: 'Create thing' }).click()

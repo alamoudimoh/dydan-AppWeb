@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import PageHeader from '../components/PageHeader'
 import type { Task } from '../data'
 import { formatDate } from '../data'
 import { useLiveData } from '../model/liveData'
@@ -201,20 +202,15 @@ export default function AllTasksScreen({
 
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            All Tasks
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+      <PageHeader
+        title='All Tasks'
+        subtitle={
+          <>
             {filtered.length} task{filtered.length !== 1 ? 's' : ''}{' '}
             {search ? `matching "${search}"` : ''}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Summary chips */}
