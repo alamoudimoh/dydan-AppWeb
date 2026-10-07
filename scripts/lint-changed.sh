@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base=${VERIFY_BASE_SHA:-origin/develop}
+base=${VERIFY_BASE_SHA:-origin/main}
 if [[ "$base" =~ ^0+$ ]] || ! git rev-parse --verify "$base^{commit}" >/dev/null 2>&1; then
   base=HEAD
 fi

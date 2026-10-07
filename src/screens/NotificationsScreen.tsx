@@ -10,6 +10,7 @@ import type {
 import { formatTimestamp } from '../data'
 import { useRewardMutations } from '../hooks/useHousehold.js'
 import { useLiveData } from '../model/liveData'
+import { selectPendingRewardRequests } from '../model/rewardRequests'
 
 const TYPE_META: Record<
   NotificationType,
@@ -60,9 +61,7 @@ export default function NotificationsScreen({
 
   const visible =
     filter === 'unread' ? notifications.filter(n => !isRead(n)) : notifications
-  const pendingRewardRequests = rewardRequests.filter(
-    (request: RewardRequest) => request.status === 'pending',
-  )
+  const pendingRewardRequests = selectPendingRewardRequests(rewardRequests)
 
   /**
    * Opening a notification marks it read and then navigates to the record the

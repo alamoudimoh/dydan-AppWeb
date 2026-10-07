@@ -19,6 +19,7 @@ import {
 } from 'react'
 
 import { subscribeTokenChanges } from '../utils/TokenStorage'
+import { toNotifications } from './notifications'
 import { dayKey, todayKey, toTasks } from './tasks'
 export { dayKey, todayKey } // screens import these from liveData
 
@@ -30,7 +31,6 @@ import type {
   Member,
   Meter,
   Notification,
-  NotificationType,
   Project,
   Reward,
   RewardRequest,
@@ -63,7 +63,6 @@ import type {
   ApiGoal,
   ApiMaintenanceCenter,
   ApiMeter,
-  ApiNotification,
   ApiProfile,
   ApiProject,
   ApiReward,
@@ -94,25 +93,6 @@ const PROJECT_PALETTE = [
 ]
 const GOAL_PALETTE = ['var(--goal-1)', 'var(--goal-2)', 'var(--goal-3)']
 const ROUTINE_ICONS = ['🌅', '🌙', '🏠', '🎒', '🧺', '🍽️', '🚿', '📚']
-
-function mapNotificationType(type: string | undefined): NotificationType {
-  const known: NotificationType[] = [
-    'task_due',
-    'task_assigned',
-    'task_approved',
-    'task_rejected',
-    'reward_available',
-    'reward_request',
-    'goal_achieved',
-    'streak_milestone',
-    'circle_invite',
-    'system',
-  ]
-  if (type && (known as string[]).includes(type))
-    return type as NotificationType
-  if (type === 'chore' || type === 'task') return 'task_assigned'
-  return 'system'
-}
 
 /* ── adapters ───────────────────────────────── */
 
@@ -427,20 +407,6 @@ function toThings(things: ApiThing[]): Thing[] {
       category: t.category?.name,
     }
   })
-}
-
-function toNotifications(list: ApiNotification[]): Notification[] {
-  return list.map(n => ({
-    id: String(n.id),
-    type: mapNotificationType(n.type),
-    title: n.title ?? n.type ?? 'Notification',
-    body: n.body ?? n.message ?? '',
-    isRead: n.readAt != null || n.isRead === true || n.read === true,
-    timestamp: n.createdAt,
-    actorId: undefined,
-    entityType: n.entityType ?? undefined,
-    entityId: n.entityId ?? undefined,
-  }))
 }
 
 function toCalendarEvents(chores: ApiChore[]): CalendarEvent[] {
