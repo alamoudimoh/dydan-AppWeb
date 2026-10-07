@@ -148,7 +148,7 @@ function JoyToggle({
   return (
     <Switch
       checked={on}
-      onChange={onChange}
+      {...(onChange ? { onChange } : {})}
       disabled={disabled}
       color={on ? 'primary' : 'neutral'}
       variant='solid'

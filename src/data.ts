@@ -11,25 +11,25 @@
 export type Task = {
   id: string
   title: string
-  description?: string
+  description?: string | undefined
   status: 'todo' | 'done' | 'overdue' | 'upcoming'
   priority: 'high' | 'medium' | 'low'
-  assigneeId?: string
-  dueDate?: string
-  dueTime?: string
-  category?: string
-  categoryColor?: string
+  assigneeId?: string | undefined
+  dueDate?: string | undefined
+  dueTime?: string | undefined
+  category?: string | undefined
+  categoryColor?: string | undefined
   /** Server-side category identity. The chore API persists only this id. */
-  categoryId?: number | null
-  projectId?: string
+  categoryId?: number | null | undefined
+  projectId?: string | undefined
   routineId?: string
-  points?: number
+  points?: number | undefined
   isRecurring?: boolean
-  recurrence?: string
+  recurrence?: string | undefined
   tags?: string[]
   subtasks?: SubTask[]
-  completedAt?: string
-  notes?: string
+  completedAt?: string | undefined
+  notes?: string | undefined
 }
 
 export type SubTask = {
@@ -57,7 +57,7 @@ export type Project = {
   name: string
   description: string
   color: string
-  icon?: string
+  icon?: string | undefined
   progress: number
   taskIds: string[]
   owner: string
@@ -68,18 +68,18 @@ export type Project = {
 export type Routine = {
   id: string
   name: string
-  description?: string
+  description?: string | undefined
   schedule: string
-  time?: string
+  time?: string | undefined
   taskTitles: string[]
   streak: number
-  assigneeId?: string
+  assigneeId?: string | undefined
   lastCompleted?: string
   icon: string
   active?: boolean
   assignmentStrategy?: 'specific' | 'rotating' | 'random'
   requiresApproval?: boolean
-  pointsPerTask?: number
+  pointsPerTask?: number | undefined
 }
 
 export type ShoppingList = {
@@ -95,14 +95,14 @@ export type ShoppingItem = {
   id: string
   text: string
   done: boolean
-  addedById?: string
-  quantity?: string
+  addedById?: string | undefined
+  quantity?: string | undefined
 }
 
 export type Goal = {
   id: string
   name: string
-  description?: string
+  description?: string | undefined
   isFamily: boolean
   progress: number
   target: number
@@ -111,7 +111,8 @@ export type Goal = {
   contributorIds?: string[]
   emoji: string
   color: string
-  metricType?: 'TASK_COMPLETIONS' | 'CATEGORY_COMPLETIONS' | 'POINTS_EARNED'
+  metricType?:
+    'TASK_COMPLETIONS' | 'CATEGORY_COMPLETIONS' | 'POINTS_EARNED' | undefined
   startDate?: string
   endDate?: string
   status?: string
@@ -120,7 +121,7 @@ export type Goal = {
 export type Reward = {
   id: string
   name: string
-  description?: string
+  description?: string | undefined
   pointsCost: number
   icon: string
   isActive?: boolean
@@ -135,18 +136,18 @@ export type ActivityItem = {
   text: string
   timestamp: string
   icon: string
-  points?: number
+  points?: number | undefined
 }
 
 export type MaintenanceItem = {
   id: string
   name: string
-  description?: string
-  lastDone?: string
+  description?: string | undefined
+  lastDone?: string | undefined
   nextDue: string
   intervalDays: number
   category: string
-  assigneeId?: string
+  assigneeId?: string | undefined
   status: 'ok' | 'due-soon' | 'overdue'
   icon: string
 }
@@ -155,10 +156,10 @@ export type CalendarEvent = {
   id: string
   title: string
   date: string
-  time?: string
+  time?: string | undefined
   allDay?: boolean
   color: string
-  assigneeId?: string
+  assigneeId?: string | undefined
   type: 'task' | 'routine' | 'event'
 }
 
@@ -181,14 +182,14 @@ export type Notification = {
   body: string
   isRead: boolean
   timestamp: string
-  actorId?: string
+  actorId?: string | undefined
   /**
    * Server-supplied record reference. `chore` targets open the task detail,
    * `reward_request` targets open the rewards screen. Notifications without a
    * target are informational and only mark themselves read.
    */
-  entityType?: string
-  entityId?: number
+  entityType?: string | undefined
+  entityId?: number | undefined
 }
 
 export type Meter = {
@@ -196,10 +197,10 @@ export type Meter = {
   name: string
   unit: string
   currentReading: number
-  previousReading?: number
+  previousReading?: number | undefined
   lastUpdated: string
   reminderDays: number
-  assigneeId?: string
+  assigneeId?: string | undefined
   nextDue: string
   status: 'ok' | 'due-soon' | 'overdue'
   icon: string
@@ -209,12 +210,12 @@ export type Meter = {
 export type Thing = {
   id: string
   name: string
-  type: 'toggle' | 'numeric' | 'text'
+  type: 'toggle' | 'numeric' | 'text' | 'boolean' | 'number' | 'action'
   state: string
   lastChanged: string
   history: { value: string; at: string }[]
   icon: string
-  category?: string
+  category?: string | undefined
 }
 
 export type RewardRequest = {
@@ -223,8 +224,8 @@ export type RewardRequest = {
   requesterId: string
   status: 'pending' | 'approved' | 'rejected' | 'cancelled'
   requestedAt: string
-  resolvedAt?: string
-  resolvedById?: string
+  resolvedAt?: string | undefined
+  resolvedById?: string | undefined
 }
 
 /* ─── Shared formatters (pure, real time) ───── */

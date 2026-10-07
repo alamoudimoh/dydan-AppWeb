@@ -41,7 +41,7 @@ export function Row({
   icon?: string
   label: string
   /** Persisted setting or status; visually distinct from explanatory help. */
-  detail?: string
+  detail?: string | undefined
   children?: ReactNode
   onClick?: () => void
 }) {

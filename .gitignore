@@ -17,6 +17,7 @@ coverage
 *.local
 
 # Editor directories and files
+.impeccable/
 .vscode/*
 !.vscode/extensions.json
 .idea

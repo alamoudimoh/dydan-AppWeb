@@ -18,13 +18,6 @@ import { useChoreCategories } from '../hooks/useChoreCategories'
 import { COLORS, LABEL_COLORS } from '../utils/Colors'
 import CategorySettings from './CategorySettings'
 
-type FakeCategory = {
-  id: number
-  name: string
-  color?: string
-  archivedAt?: string | null
-}
-
 // vi.mock factories are hoisted above the module body, so the fake server has
 // to be built inside vi.hoisted to be reachable from the factory.
 const server = vi.hoisted(() => {
@@ -32,7 +25,7 @@ const server = vi.hoisted(() => {
     categories: [] as {
       id: number
       name: string
-      color?: string
+      color?: string | undefined
       archivedAt?: string | null
     }[],
     nextId: 1,
@@ -70,7 +63,7 @@ const server = vi.hoisted(() => {
         name,
       }: {
         name: string
-        color?: string
+        color?: string | undefined
       }) => {
         state.writes.push(`create|${name}|${color ?? ''}`)
         if (duplicate(name)) {
@@ -87,7 +80,7 @@ const server = vi.hoisted(() => {
       }: {
         id: number
         name: string
-        color?: string
+        color?: string | undefined
       }) => {
         state.writes.push(`update|${id}|${name}|${color ?? ''}`)
         const found = state.categories.find(c => c.id === id)
@@ -159,7 +152,7 @@ const seed = (name: string, color: string) => {
 }
 
 const swatchColors = () =>
-  screen.queryAllByTestId('category-swatch').map(node => node.dataset.color)
+  screen.queryAllByTestId('category-swatch').map(node => node.dataset['color'])
 
 const pickerNames = () =>
   Array.from(screen.getByTestId('picker').querySelectorAll('button')).map(

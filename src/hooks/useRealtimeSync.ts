@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core'
 import { useQueryClient } from '@tanstack/react-query'
+import type { Event as PolyfillEvent } from 'event-source-polyfill'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useEffect, useRef } from 'react'
 
@@ -8,17 +9,17 @@ import { realtimeInvalidationKeys } from '../utils/RealtimeInvalidation'
 import { getAccessToken } from '../utils/TokenStorage'
 import { KEYS } from './useHousehold'
 
-const keyForPrefix = prefix => {
+const keyForPrefix = (prefix: string) => {
   const keys = {
-    calendar: KEYS.calendar,
+    calendar: ['calendar'] as const,
     chores: KEYS.chores,
     circle: KEYS.members,
-    history: KEYS.history,
+    history: ['history'] as const,
     notifications: KEYS.notifications,
     rewards: KEYS.rewards,
     user: KEYS.profile,
   }
-  return keys[prefix]
+  return keys[prefix as keyof typeof keys]
 }
 
 /** Synchronize React Query projections from the authenticated server SSE feed. */
@@ -35,7 +36,7 @@ export function useRealtimeSync(isAuthenticated: boolean) {
       sourceRef.current?.close()
       sourceRef.current = null
     }
-    const invalidate = (event: MessageEvent<string>) => {
+    const invalidate = (event: { data: string }) => {
       let type = ''
       try {
         type = (JSON.parse(event.data) as { type?: string }).type ?? ''
@@ -71,7 +72,17 @@ export function useRealtimeSync(isAuthenticated: boolean) {
       }
       sourceRef.current = source
       source.onmessage = invalidate
-      source.addEventListener('heartbeat', invalidate)
+      const onHeartbeat = (event: Event | PolyfillEvent) => {
+        if ('data' in event && typeof event.data === 'string') {
+          invalidate({ data: event.data })
+        }
+      }
+      // Native and polyfilled EventSource expose incompatible listener overloads.
+      if (source instanceof EventSourcePolyfill) {
+        source.addEventListener('heartbeat', onHeartbeat)
+      } else {
+        source.addEventListener('heartbeat', onHeartbeat)
+      }
     }
 
     // StrictMode intentionally mounts effects twice in development. Delay the

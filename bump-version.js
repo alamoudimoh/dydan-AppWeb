@@ -75,7 +75,7 @@ try {
       '"',
   )
   console.log('3. Tag: git tag v' + newVersion)
-  console.log('4. Push: git push origin develop --tags')
+  console.log('4. Push: git push origin main --tags')
 } catch (error) {
   console.error('Error updating versions:', error.message)
   process.exit(1)

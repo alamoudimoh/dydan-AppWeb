@@ -69,22 +69,25 @@ export type IntegrationStatus = {
   }
 }
 
+type ApiIntegrationStatus = Omit<IntegrationStatus, 'server' | 'settings'> & {
+  server?: Partial<IntegrationStatus['server']>
+  settings?: Partial<IntegrationStatus['settings']>
+}
+
 const normalizeIntegrationStatus = (
-  status: Omit<IntegrationStatus, 'settings'> & {
-    settings?: Partial<IntegrationStatus['settings']>
-  },
+  status: ApiIntegrationStatus,
 ): IntegrationStatus => ({
   ...status,
   server: {
-    version: '',
-    commit: '',
-    buildDate: '',
-    deployment: '',
-    operatingSystem: '',
-    architecture: '',
-    database: '',
-    storage: '',
     ...status.server,
+    version: status.server?.version ?? '',
+    commit: status.server?.commit ?? '',
+    buildDate: status.server?.buildDate ?? '',
+    deployment: status.server?.deployment ?? '',
+    operatingSystem: status.server?.operatingSystem ?? '',
+    architecture: status.server?.architecture ?? '',
+    database: status.server?.database ?? '',
+    storage: status.server?.storage ?? '',
   },
   settings: {
     notificationEmail: {
@@ -133,9 +136,9 @@ export function useIntegrationStatus() {
   return useQuery({
     queryKey: integrationsKey,
     queryFn: () =>
-      parse<Omit<IntegrationStatus, 'settings'>>(
-        Fetcher.GetIntegrationStatus(),
-      ).then(normalizeIntegrationStatus),
+      parse<ApiIntegrationStatus>(Fetcher.GetIntegrationStatus()).then(
+        normalizeIntegrationStatus,
+      ),
     enabled: Boolean(getAccessToken()),
   })
 }

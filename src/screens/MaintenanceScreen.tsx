@@ -125,8 +125,12 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
     try {
       await mutations.createAsset.mutateAsync({
         name: assetForm.name.trim(),
-        description: assetForm.description.trim() || undefined,
-        category: assetForm.category.trim() || undefined,
+        ...(assetForm.description.trim() && {
+          description: assetForm.description.trim(),
+        }),
+        ...(assetForm.category.trim() && {
+          category: assetForm.category.trim(),
+        }),
       })
       setAssetForm({ name: '', category: '', description: '' })
       ctx.showToast('Maintenance asset created')
@@ -147,8 +151,10 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
       await mutations.updateAsset.mutateAsync({
         id,
         name: draft.name.trim(),
-        description: draft.description.trim() || undefined,
-        category: draft.category.trim() || undefined,
+        ...(draft.description.trim() && {
+          description: draft.description.trim(),
+        }),
+        ...(draft.category.trim() && { category: draft.category.trim() }),
       })
       setAssetDrafts(current => {
         const next = { ...current }

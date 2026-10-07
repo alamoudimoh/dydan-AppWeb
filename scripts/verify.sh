@@ -7,5 +7,6 @@ cd "$repo_dir"
 bash scripts/check-runtime-artifacts.sh
 npm ci
 bash scripts/lint-changed.sh
+npm run typecheck
 npm run test --if-present
 npm run build

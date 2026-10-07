@@ -143,22 +143,22 @@ const approvedResources = {
   },
 }
 
-const MOMENT_LOCALE_PACKS = {
-  ar: () => import('moment/locale/ar'),
-  de: () => import('moment/locale/de'),
-  es: () => import('moment/locale/es'),
-  fr: () => import('moment/locale/fr'),
-  ja: () => import('moment/locale/ja'),
-  nl: () => import('moment/locale/nl'),
-  'pt-br': () => import('moment/locale/pt-br'),
-  pt: () => import('moment/locale/pt-br'),
-  'zh-cn': () => import('moment/locale/zh-cn'),
-  zh: () => import('moment/locale/zh-cn'),
+const MOMENT_LOCALE_PACKS: Record<string, () => Promise<unknown>> = {
+  ar: () => import('moment/locale/ar.js'),
+  de: () => import('moment/locale/de.js'),
+  es: () => import('moment/locale/es.js'),
+  fr: () => import('moment/locale/fr.js'),
+  ja: () => import('moment/locale/ja.js'),
+  nl: () => import('moment/locale/nl.js'),
+  'pt-br': () => import('moment/locale/pt-br.js'),
+  pt: () => import('moment/locale/pt-br.js'),
+  'zh-cn': () => import('moment/locale/zh-cn.js'),
+  zh: () => import('moment/locale/zh-cn.js'),
 }
 
-const loadedMomentLocales = new Set()
+const loadedMomentLocales = new Set<() => Promise<unknown>>()
 
-export const loadMomentLocale = language => {
+export const loadMomentLocale = (language: string) => {
   const key = String(language || '').toLowerCase()
   const pack =
     MOMENT_LOCALE_PACKS[key] || MOMENT_LOCALE_PACKS[key.split('-')[0]]
@@ -216,11 +216,11 @@ i18n
 const origGetRule = i18n.services.pluralResolver.getRule.bind(
   i18n.services.pluralResolver,
 )
-i18n.services.pluralResolver.getRule = (code, options = {}) => {
+i18n.services.pluralResolver.getRule = (code: string, options = {}) => {
   if (code && String(code).startsWith('ar')) {
     return {
       resolvedOptions: () => ({ pluralCategories: ['one', 'other'] }),
-      select: count => (count === 1 ? 'one' : 'other'),
+      select: (count: number) => (count === 1 ? 'one' : 'other'),
     }
   }
   return origGetRule(code, options)

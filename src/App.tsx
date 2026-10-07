@@ -591,7 +591,7 @@ function ToastContainer({ toasts }: { toasts: { id: string; msg: string }[] }) {
 }
 
 /* ─── Splash while restoring the session ── */
-function SplashScreen({ theme }: { theme: Theme }) {
+function SplashScreen(_props: { theme: Theme }) {
   return (
     <div
       style={{
@@ -725,9 +725,8 @@ export default function App() {
     if (settingsPreferences.rememberSidebar) {
       setSidebarCollapsed(settingsPreferences.sidebarCollapsed)
     }
-    document.documentElement.dataset.density = settingsPreferences.compactMode
-      ? 'compact'
-      : 'comfortable'
+    document.documentElement.dataset['density'] =
+      settingsPreferences.compactMode ? 'compact' : 'comfortable'
   }, [
     setBrand,
     setDateFormat,

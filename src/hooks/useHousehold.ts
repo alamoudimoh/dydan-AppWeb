@@ -510,7 +510,7 @@ export function useRewardRequests(mine = false) {
 export type TaskMutationInput = {
   id?: number | string
   title?: string
-  description?: string
+  description?: string | undefined
   assigneeId?: number | string | null | undefined
   dueDate?: string | null | undefined
   priority?: number | null | undefined

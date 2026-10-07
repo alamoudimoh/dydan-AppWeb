@@ -22,8 +22,11 @@
     "useUnknownInCatchVariables": true,
 
     // Modules
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "skipLibCheck": true,
     "rootDir": ".",
 
     // Emit

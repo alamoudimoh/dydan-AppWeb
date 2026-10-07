@@ -18,7 +18,6 @@ export default function AuthScreen({
   isSessionExpired,
   onAuthenticated,
   onCreateAccount,
-  theme,
 }: Props) {
   const { signIn, verifyMfa } = useAuth()
   const [step, setStep] = useState<AuthStep>('signin')

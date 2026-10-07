@@ -11,7 +11,7 @@ type Props = {
   onComplete: () => void
 }
 
-export default function OnboardingScreen({ onComplete, theme }: Props) {
+export default function OnboardingScreen({ onComplete }: Props) {
   const { signIn } = useAuth()
   const [step, setStep] = useState<Step>('welcome')
   const [displayName, setDisplayName] = useState('')

@@ -19,7 +19,7 @@ type Draft = { id?: number; name: string; color: string }
 
 const emptyDraft: Draft = { name: '', color: COLORS.teal }
 
-function Swatch({ color }: { color?: string }) {
+function Swatch({ color }: { color?: string | undefined }) {
   const value = color || COLORS.ash
   return (
     <span
@@ -235,7 +235,7 @@ export default function CategorySettings() {
       ) : (
         <>
           {active.map(category => (
-            <Row key={category.id} icon={undefined} label={category.name}>
+            <Row key={category.id} label={category.name}>
               <div className='flex items-center gap-3'>
                 <Swatch color={category.color} />
                 <button

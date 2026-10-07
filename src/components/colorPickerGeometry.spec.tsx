@@ -314,11 +314,12 @@ describe('the opt-in reaches the DOM', () => {
     const popover = screen.getByRole('listbox').closest('.theme-popover')
     // Contained, and its separator sits above the list it narrows.
     expect(popover?.contains(search)).toBe(true)
+    const searchContainer = search.closest('.theme-select-search')
+    expect(searchContainer).not.toBeNull()
     expect(
-      search
-        .closest('.theme-select-search')
-        ?.compareDocumentPosition(screen.getByRole('listbox')) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
+      searchContainer &&
+        searchContainer.compareDocumentPosition(screen.getByRole('listbox')) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })
 

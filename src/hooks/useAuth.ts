@@ -103,17 +103,19 @@ export function useAuth() {
     if (hasAccessToken() || restoreAttemptedRef.current) return
     restoreAttemptedRef.current = true
     let cancelled = false
-    apiClient.refreshToken({ allowLogoutFallback: false }).then(result => {
-      if (cancelled) return
-      if (result?.success) {
-        // Access token landed in memory via saveTokens; drop any stale
-        // profile and let the re-enabled query fetch the fresh one.
-        queryClient.invalidateQueries({ queryKey: ['userProfile'] })
-      }
-      // Re-render so the profile query re-evaluates `enabled` now that the
-      // token presence may have changed.
-      setAuthState(prev => ({ ...prev, isLoading: false }))
-    })
+    apiClient
+      .refreshToken({ allowLogoutFallback: false })
+      .then((result: { success?: boolean } | undefined) => {
+        if (cancelled) return
+        if (result?.success) {
+          // Access token landed in memory via saveTokens; drop any stale
+          // profile and let the re-enabled query fetch the fresh one.
+          queryClient.invalidateQueries({ queryKey: ['userProfile'] })
+        }
+        // Re-render so the profile query re-evaluates `enabled` now that the
+        // token presence may have changed.
+        setAuthState(prev => ({ ...prev, isLoading: false }))
+      })
     return () => {
       cancelled = true
     }
