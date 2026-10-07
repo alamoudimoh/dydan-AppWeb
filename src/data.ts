@@ -221,7 +221,7 @@ export type RewardRequest = {
   id: string
   rewardId: string
   requesterId: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
   requestedAt: string
   resolvedAt?: string
   resolvedById?: string

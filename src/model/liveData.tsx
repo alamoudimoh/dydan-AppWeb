@@ -20,6 +20,7 @@ import {
 
 import { subscribeTokenChanges } from '../utils/TokenStorage'
 import { toNotifications } from './notifications'
+import { toRewardRequests } from './rewardRequests'
 import { dayKey, todayKey, toTasks } from './tasks'
 export { dayKey, todayKey } // screens import these from liveData
 
@@ -66,7 +67,6 @@ import type {
   ApiProfile,
   ApiProject,
   ApiReward,
-  ApiRewardRequest,
   ApiRoutinePack,
   ApiShoppingList,
   ApiThing,
@@ -264,23 +264,6 @@ function toRewards(rewards: ApiReward[]): Reward[] {
     pointsCost: r.costPoints,
     icon: icons[i % icons.length],
     isActive: r.isActive,
-  }))
-}
-
-function toRewardRequests(requests: ApiRewardRequest[]): RewardRequest[] {
-  return requests.map(r => ({
-    id: String(r.id),
-    rewardId: String(r.rewardId),
-    requesterId:
-      r.userId != null
-        ? String(r.userId)
-        : (r.requesterName ?? String(r.createdBy ?? 0)),
-    status: (r.status === 'approved' || r.status === 'rejected'
-      ? r.status
-      : 'pending') as RewardRequest['status'],
-    requestedAt: r.requestedAt ?? '',
-    resolvedAt: r.resolvedAt ?? undefined,
-    resolvedById: r.resolvedBy != null ? String(r.resolvedBy) : undefined,
   }))
 }
 
