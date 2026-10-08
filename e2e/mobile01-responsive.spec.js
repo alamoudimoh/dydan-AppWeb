@@ -346,7 +346,8 @@ test.describe('mobile responsive regression (fix/mobile-01)', () => {
     await page.goto('/')
     await expect(page.locator('.main-scroll').first()).toBeVisible()
 
-    await page.getByRole('button', { name: 'new task' }).click()
+    await page.getByRole('button', { name: 'Create' }).click()
+    await page.getByRole('menuitem', { name: 'Task' }).click()
     const panel = page.locator('.modal-panel')
     await expect(panel).toBeVisible()
 

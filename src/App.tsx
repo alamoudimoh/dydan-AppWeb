@@ -14,7 +14,12 @@ import {
   registerPushNotifications,
 } from './CapacitorListener'
 import ConfirmDialog from './components/ConfirmDialog'
-import CreateTaskModal from './components/CreateTaskModal'
+import CreateEntityModal from './components/create/CreateEntityModal'
+import CreateSelector from './components/create/CreateSelector'
+import type {
+  CreateEntityOptions,
+  CreateEntityType,
+} from './components/create/types'
 import TaskDetailModal from './components/TaskDetailModal'
 import { useLocalization } from './contexts/LocalizationContext'
 import {
@@ -109,7 +114,6 @@ export type AppCtx = {
   screen: Screen
   isRTL: boolean
   taskDetail: Task | null
-  showCreateTask: boolean
   navigate: (s: Screen) => void
   setView: (v: View) => void
   setTheme: (t: Theme) => void
@@ -117,7 +121,7 @@ export type AppCtx = {
   toggleRTL: () => void
   openTask: (t: Task) => void
   closeTask: () => void
-  openCreate: () => void
+  openCreate: (type?: CreateEntityType, options?: CreateEntityOptions) => void
   closeCreate: () => void
   showToast: (msg: string) => void
   signOut: () => void
@@ -128,11 +132,6 @@ export type AppCtx = {
   toggleSidebar: () => void
   setSidebarCollapsed: (v: boolean) => void
 }
-
-/* UI priority ("high"/"medium"/"low") → server numeric priority.
-   Server scale (see model/liveData toPriority): <=2 low, 3 medium, >=4 high. */
-const PRIORITY_TO_NUM: Record<string, number> = { low: 2, medium: 3, high: 4 }
-const priorityNum = (p?: Task['priority']) => (p ? PRIORITY_TO_NUM[p] : 3)
 
 /* ─── Route ⇄ Screen mapping ─────────── */
 const SCREEN_PATH: Record<Screen, string> = {
@@ -174,6 +173,10 @@ const ICON_PATHS: Record<string, string> = {
   routines: 'M4 6h16|M4 12h16|M4 18h16',
   maintenance:
     'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
+  meter:
+    'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z|M12 12l4-4|M6.5 16a7 7 0 0 1 11 0',
+  shopping_item:
+    'M9 11l3 3L22 4|M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11|M12 5v4',
   shopping:
     'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z|M3 6h18|M16 10a4 4 0 0 1-8 0',
   goals:
@@ -269,6 +272,7 @@ export function Icon({
       strokeLinejoin='round'
       className={className}
       style={style}
+      data-icon={name}
       aria-hidden='true'
     >
       {paths.map((d, i) => (
@@ -324,10 +328,10 @@ const NAV_ORGANIZE: NavDef[] = [
     icon: 'projects',
     childHidden: true,
   },
-  { id: 'routines', labelKey: 'nav.routines', icon: 'routines' },
+  { id: 'routines', labelKey: 'nav.routines', icon: 'repeat' },
   {
     id: 'maintenance',
-    labelKey: 'nav.maintenance',
+    labelKey: 'nav.assets',
     icon: 'maintenance',
     childHidden: true,
   },
@@ -703,8 +707,11 @@ export default function App() {
 
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [taskDetail, setTaskDetail] = useState<Task | null>(null)
-  const [showCreateTask, setShowCreateTask] = useState(false)
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
+  const [createSelectorOpen, setCreateSelectorOpen] = useState(false)
+  const [createRequest, setCreateRequest] = useState<{
+    type: CreateEntityType
+    options?: CreateEntityOptions
+  } | null>(null)
   const [toasts, setToasts] = useState<{ id: string; msg: string }[]>([])
   const [confirmDialog, setConfirmDialog] =
     useState<ConfirmDialogConfig | null>(null)
@@ -777,7 +784,9 @@ export default function App() {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (screen !== 'all-tasks') return
-    if (params.get('create') === '1') setShowCreateTask(true)
+    if (params.get('create') === '1') {
+      setCreateRequest(current => current ?? { type: 'task' })
+    }
     const taskID = params.get('task')
     const task = taskID ? tasks.find(item => item.id === taskID) : undefined
     if (task) setTaskDetail(task)
@@ -870,7 +879,6 @@ export default function App() {
       screen,
       isRTL,
       taskDetail,
-      showCreateTask,
       navigate: (s: Screen) => routerNav(SCREEN_PATH[s]),
       setView: setViewCb,
       setTheme: setThemeCb,
@@ -878,10 +886,12 @@ export default function App() {
       toggleRTL: toggleRTLcb,
       openTask: (tk: Task) => setTaskDetail(tk),
       closeTask: () => setTaskDetail(null),
-      openCreate: () => setShowCreateTask(true),
+      openCreate: (type = 'task', options) => {
+        setCreateSelectorOpen(false)
+        setCreateRequest({ type, ...(options ? { options } : {}) })
+      },
       closeCreate: () => {
-        setShowCreateTask(false)
-        setTaskToEdit(null)
+        setCreateRequest(null)
       },
       showToast,
       signOut: () => {
@@ -903,7 +913,6 @@ export default function App() {
       screen,
       isRTL,
       taskDetail,
-      showCreateTask,
       sidebarCollapsed,
       routerNav,
       setViewCb,
@@ -920,7 +929,7 @@ export default function App() {
 
   const openEditTask = (tk: Task) => {
     setTaskDetail(null)
-    setTaskToEdit(tk)
+    setCreateRequest({ options: { task: tk }, type: 'task' })
   }
 
   /* ─── Auth gate ─── */
@@ -1018,16 +1027,34 @@ export default function App() {
             )}
           </div>
           <div className='flex gap-2 ms-auto'>
-            <IconButton
-              variant='solid'
-              color='primary'
-              title='new task'
-              aria-label='new task'
-              onClick={ctx.openCreate}
-              sx={{ borderRadius: 'var(--r-md)', flexShrink: 0 }}
-            >
-              <Icon name='plus' size={18} />
-            </IconButton>
+            <div className='create-launcher'>
+              <IconButton
+                variant='solid'
+                color='primary'
+                title={t('create.open')}
+                aria-label={t('create.open')}
+                aria-haspopup='menu'
+                aria-expanded={createSelectorOpen}
+                onClick={() => setCreateSelectorOpen(open => !open)}
+                sx={{ borderRadius: 'var(--r-md)', flexShrink: 0 }}
+              >
+                <Icon name='plus' size={18} />
+              </IconButton>
+              {createSelectorOpen && (
+                <CreateSelector
+                  onClose={() => setCreateSelectorOpen(false)}
+                  onSelect={type => {
+                    setCreateSelectorOpen(false)
+                    setCreateRequest({
+                      type,
+                      ...(type === 'shopping-list'
+                        ? { options: { allowShared: !isSolo } }
+                        : {}),
+                    })
+                  }}
+                />
+              )}
+            </div>
             <div className='relative'>
               <IconButton
                 variant='plain'
@@ -1176,41 +1203,14 @@ export default function App() {
           onReopen={reopenTask}
         />
       )}
-      {showCreateTask && (
-        <CreateTaskModal
-          ctx={ctx}
-          onCreated={async (title, details) => {
-            await mutations.createTask.mutateAsync({
-              title,
-              description: details?.description,
-              priority: priorityNum(details?.priority),
-              assigneeId: details?.assigneeId || (currentUser?.id ?? undefined),
-              dueDate: details?.dueDate,
-              points: details?.points,
-              categoryId: details?.categoryId,
-            })
-          }}
-        />
-      )}
-      {taskToEdit && (
-        <CreateTaskModal
-          ctx={ctx}
-          taskToEdit={taskToEdit}
-          onCreated={async (title, details) => {
-            await mutations.updateTask.mutateAsync({
-              id: taskToEdit.id,
-              title,
-              assigneeId: details?.assigneeId ?? undefined,
-              // The task editor represents a cleared date as an empty string;
-              // do not pass that through to the API mutation, where
-              // `new Date('')` is invalid and would block an otherwise valid
-              // point/category edit.
-              dueDate: details?.dueDate || undefined,
-              priority: priorityNum(details?.priority),
-              points: details?.points,
-              categoryId: details?.categoryId,
-            })
-          }}
+      {createRequest && (
+        <CreateEntityModal
+          key={`${createRequest.type}-${createRequest.options?.task?.id ?? createRequest.options?.project?.id ?? createRequest.options?.routine?.id ?? createRequest.options?.goal?.id ?? createRequest.options?.reward?.id ?? createRequest.options?.listId ?? 'new'}`}
+          type={createRequest.type}
+          {...(createRequest.options ? { options: createRequest.options } : {})}
+          onClose={ctx.closeCreate}
+          showToast={showToast}
+          currentUser={currentUser ?? null}
         />
       )}
 

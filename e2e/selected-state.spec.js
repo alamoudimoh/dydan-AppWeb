@@ -9,8 +9,8 @@ import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
 /**
- * Segmented controls that represent a selection (Maintenance / Meters /
- * Things and Rewards / Requests / Points) must resolve their selected state
+ * Segmented controls that represent a selection (Assets / Meters /
+ * Trackers and Rewards / Requests / Points) must resolve their selected state
  * from the semantic selected tokens, never from a surface token. A surface
  * token disappears into the track, which is exactly the weak selected state
  * this suite locks out in all four theme × appearance combinations.

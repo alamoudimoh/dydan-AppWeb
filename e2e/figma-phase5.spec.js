@@ -19,7 +19,7 @@ test('Phase 5 Figma household routes render their live screen headings', async (
     ['/projects', 'Projects'],
     ['/routines', 'Routines'],
     ['/shopping', 'Shopping'],
-    ['/maintenance', 'Maintenance'],
+    ['/maintenance', 'Assets'],
     ['/goals', 'Goals'],
     ['/activity', 'Activity'],
     ['/notifications', 'Notifications'],

@@ -67,15 +67,20 @@ test('category color dropdown: the field is compact and stays responsive', async
   expect(nameBox.width).toBeGreaterThan(triggerBox.width)
   expect(nameBox.width).toBeGreaterThan(320)
 
-  // Responsive: at phone width the field shrinks to the space available
-  // rather than holding a fixed 320px, so it neither overflows the screen nor
-  // leaves a gap it does not need. The shrink is the point — a fixed width
-  // would pass an "does not overflow" check while behaving worse.
+  // Responsive: inside the canonical mobile modal the capped field must stay
+  // within both the modal body and viewport. At 390px the available body can
+  // still fit the full 320px cap; narrower viewports are covered by the shared
+  // modal responsive suite.
   await page.setViewportSize({ width: 390, height: 844 })
   const narrow = await page.locator(FIELD).boundingBox()
+  const modalBody = await page.locator('.create-modal-body').boundingBox()
   expect(narrow.width).toBeLessThanOrEqual(390)
   expect(narrow.width).toBeGreaterThan(0)
-  expect(narrow.width).toBeLessThan(triggerBox.width)
+  expect(narrow.width).toBeLessThanOrEqual(triggerBox.width)
+  expect(narrow.x).toBeGreaterThanOrEqual(modalBody.x)
+  expect(narrow.x + narrow.width).toBeLessThanOrEqual(
+    modalBody.x + modalBody.width,
+  )
 
   runtimeGuard.assertClean()
 })

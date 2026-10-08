@@ -57,7 +57,7 @@ const AR_ROUTES = [
     auth: true,
     dir: 'rtl',
     lang: 'ar-SA',
-    arabic: /الصيانة/,
+    arabic: /الأصول/,
   },
   {
     path: '/shopping',

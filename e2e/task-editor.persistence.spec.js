@@ -7,7 +7,7 @@ import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 const openTaskEditor = async page => {
   await page.goto('/all-tasks?create=1', { waitUntil: 'networkidle' })
   await expect(
-    page.getByRole('heading', { name: 'new task', exact: true }),
+    page.getByRole('heading', { name: 'New task', exact: true }),
   ).toBeVisible()
 }
 
@@ -35,7 +35,7 @@ test('task editor persists the selected server category and points before confir
   const modal = page.locator('.modal-panel')
   await modal.getByLabel('Title').fill('Persisted category task')
   await modal.getByRole('button', { name: 'household', exact: true }).click()
-  await modal.getByLabel('Task points').fill('55')
+  await modal.getByLabel('Points').fill('55')
   await modal.getByRole('button', { name: 'Create task', exact: true }).click()
 
   await expect(modal).toBeVisible()
@@ -131,9 +131,9 @@ test('task editor sends edited points and the real category id in the update pay
   await page.getByRole('button', { name: 'Edit', exact: true }).click()
   const modal = page.locator('.modal-panel')
   await expect(
-    modal.getByRole('heading', { name: 'modify task', exact: true }),
+    modal.getByRole('heading', { name: 'Modify task', exact: true }),
   ).toBeVisible()
-  await modal.getByLabel('Task points').fill('75')
+  await modal.getByLabel('Points').fill('75')
   await modal.getByRole('button', { name: 'work', exact: true }).click()
   await modal.getByRole('button', { name: 'Save changes', exact: true }).click()
 

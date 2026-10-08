@@ -43,7 +43,7 @@ const CATEGORIES = [
   'Household',
   'Shopping',
   'Pet Care',
-  'Maintenance',
+  'Assets',
 ]
 
 export default function ProgressScreen({

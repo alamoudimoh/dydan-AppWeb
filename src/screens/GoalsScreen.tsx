@@ -1,12 +1,8 @@
-import { useState } from 'react'
-
 import { AppCtx, Icon } from '../App'
 import PageHeader from '../components/PageHeader'
 import type { Goal } from '../data'
-import { type GoalMutationInput, useGoalMutations } from '../hooks/useHousehold'
+import { useGoalMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
-
-type Draft = GoalMutationInput
 
 const today = () => new Date().toISOString().slice(0, 10)
 const nextMonth = () => {
@@ -14,14 +10,6 @@ const nextMonth = () => {
   date.setMonth(date.getMonth() + 1)
   return date.toISOString().slice(0, 10)
 }
-const blank = (): Draft => ({
-  name: '',
-  metricType: 'TASK_COMPLETIONS',
-  target: 10,
-  startDate: today(),
-  endDate: nextMonth(),
-})
-
 export default function GoalsScreen({
   ctx,
   isChild,
@@ -32,48 +20,6 @@ export default function GoalsScreen({
 }) {
   const { goals } = useLiveData()
   const mutations = useGoalMutations()
-  const [editing, setEditing] = useState<Goal | null | undefined>(undefined)
-  const [draft, setDraft] = useState<Draft>(blank)
-
-  const begin = (goal?: Goal) => {
-    setEditing(goal ?? null)
-    setDraft(
-      goal
-        ? {
-            name: goal.name,
-            metricType: goal.metricType ?? 'TASK_COMPLETIONS',
-            target: goal.target,
-            startDate: goal.startDate ?? today(),
-            endDate: goal.endDate ?? nextMonth(),
-            status: goal.status === 'archived' ? 'archived' : 'active',
-          }
-        : blank(),
-    )
-  }
-  const save = async () => {
-    if (
-      !draft.name.trim() ||
-      draft.target < 1 ||
-      !draft.startDate ||
-      !draft.endDate
-    ) {
-      ctx.showToast('Enter a goal name, target, and valid date range')
-      return
-    }
-    try {
-      if (editing)
-        await mutations.updateGoal.mutateAsync({ ...draft, id: editing.id })
-      else await mutations.createGoal.mutateAsync(draft)
-      ctx.showToast(
-        editing ? 'Goal updated from the server' : 'Goal created on the server',
-      )
-      setEditing(undefined)
-    } catch (error) {
-      ctx.showToast(
-        error instanceof Error ? error.message : 'Could not save goal',
-      )
-    }
-  }
   const archive = (goal: Goal) =>
     ctx.showConfirm({
       title: 'Archive goal?',
@@ -106,122 +52,17 @@ export default function GoalsScreen({
         subtitle='Live circle goals and measured progress'
         actions={
           !isChild ? (
-            <button className='btn btn-primary' onClick={() => begin()}>
-              <Icon name='plus' size={14} />
+            <button
+              className='btn btn-primary'
+              onClick={() => ctx.openCreate('goal')}
+            >
+              <Icon name='goals' size={14} />
               New goal
             </button>
           ) : undefined
         }
       />
       <div className='px-4 md:px-7'>
-        {editing !== undefined && (
-          <div className='card p-5 mb-5'>
-            <div
-              className='grid gap-3'
-              style={{
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              }}
-            >
-              <label className='flex flex-col gap-1'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  NAME
-                </span>
-                <input
-                  className='input'
-                  value={draft.name}
-                  onChange={event =>
-                    setDraft(value => ({ ...value, name: event.target.value }))
-                  }
-                />
-              </label>
-              <label className='flex flex-col gap-1'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  MEASURE
-                </span>
-                <select
-                  className='input'
-                  value={draft.metricType}
-                  onChange={event =>
-                    setDraft(value => ({
-                      ...value,
-                      metricType: event.target.value as Draft['metricType'],
-                    }))
-                  }
-                >
-                  <option value='TASK_COMPLETIONS'>Tasks completed</option>
-                  <option value='POINTS_EARNED'>Points earned</option>
-                </select>
-              </label>
-              <label className='flex flex-col gap-1'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  TARGET
-                </span>
-                <input
-                  className='input'
-                  type='number'
-                  min='1'
-                  value={draft.target}
-                  onChange={event =>
-                    setDraft(value => ({
-                      ...value,
-                      target: Number(event.target.value),
-                    }))
-                  }
-                />
-              </label>
-              <label className='flex flex-col gap-1'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  START
-                </span>
-                <input
-                  className='input'
-                  type='date'
-                  value={draft.startDate}
-                  onChange={event =>
-                    setDraft(value => ({
-                      ...value,
-                      startDate: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <label className='flex flex-col gap-1'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  END
-                </span>
-                <input
-                  className='input'
-                  type='date'
-                  value={draft.endDate}
-                  onChange={event =>
-                    setDraft(value => ({
-                      ...value,
-                      endDate: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-            </div>
-            <div className='flex gap-2 mt-4'>
-              <button
-                className='btn btn-primary'
-                onClick={() => void save()}
-                disabled={
-                  mutations.createGoal.isPending ||
-                  mutations.updateGoal.isPending
-                }
-              >
-                {editing ? 'Save changes' : 'Create goal'}
-              </button>
-              <button
-                className='btn btn-secondary'
-                onClick={() => setEditing(undefined)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
         <div
           className='grid gap-3'
           style={{
@@ -258,7 +99,7 @@ export default function GoalsScreen({
                   <div className='flex gap-2 mt-4'>
                     <button
                       className='btn btn-secondary btn-sm'
-                      onClick={() => begin(goal)}
+                      onClick={() => ctx.openCreate('goal', { goal })}
                     >
                       Modify
                     </button>

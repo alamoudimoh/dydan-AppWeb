@@ -281,9 +281,10 @@ function toActivity(
       const actor = members.find(m => m.id === String(row.completedBy))
       const actorName = actor?.name ?? `Member ${row.completedBy}`
       const skipped = row.status === 2
+      const type: ActivityItem['type'] = skipped ? 'points' : 'completed'
       return {
         id: `h${row.id ?? row.choreId}-${row.createdAt ?? row.performedAt ?? ''}`,
-        type: (skipped ? 'points' : 'completed') as ActivityItem['type'],
+        type,
         actorId: String(row.completedBy),
         text: skipped
           ? `${actorName} skipped ${name}`
@@ -331,7 +332,7 @@ function toMaintenance(center: ApiMaintenanceCenter | null): MaintenanceItem[] {
         : undefined,
       nextDue: entry.nextDueDate ? entry.nextDueDate.slice(0, 10) : '',
       intervalDays: 0,
-      category: entry.assetName ?? 'Maintenance',
+      category: entry.assetName ?? 'Assets',
       assigneeId: undefined,
       status: mapStatus(entry),
       icon: iconMap[entry.assetName ?? ''] ?? '🔧',

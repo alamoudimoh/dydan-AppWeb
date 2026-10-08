@@ -1,14 +1,10 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
-import IconPicker from '../components/IconPicker'
 import PageHeader from '../components/PageHeader'
-import ThemeSelect from '../components/ThemeSelect'
 import type { Project } from '../data'
 import { useProjectMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
-
-type EditorMode = 'new' | 'modify' | null
 
 export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
   const {
@@ -19,12 +15,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
   } = useLiveData()
   const projectMutations = useProjectMutations()
   const [selected, setSelected] = useState<string | null>(null)
-  const [editorMode, setEditorMode] = useState<EditorMode>(null)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [draftName, setDraftName] = useState('')
-  const [draftDescription, setDraftDescription] = useState('')
-  const [draftColor, setDraftColor] = useState('var(--project-1)')
-  const [draftIcon, setDraftIcon] = useState('📁')
 
   const isChild = ctx.persona === 'child'
   const projects = isChild
@@ -44,64 +34,16 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
   }
 
   const startNew = () => {
-    setEditorMode('new')
-    setEditingId(null)
-    setDraftName('')
-    setDraftDescription('')
-    setDraftColor('var(--project-1)')
-    setDraftIcon('📁')
+    ctx.openCreate('project', {
+      onCreated: project => {
+        const created = project as { id?: number | string }
+        if (created?.id !== undefined) setSelected(String(created.id))
+      },
+    })
   }
 
   const startModify = (project: Project) => {
-    setEditorMode('modify')
-    setEditingId(project.id)
-    setDraftName(project.name)
-    setDraftDescription(project.description)
-    setDraftColor(project.color)
-    setDraftIcon(project.icon ?? '📁')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const saveProject = () => {
-    if (!draftName.trim()) {
-      ctx.showToast('Project name is required')
-      return
-    }
-
-    if (editorMode === 'new') {
-      projectMutations.createProject.mutate(
-        {
-          name: draftName.trim(),
-          description: draftDescription.trim(),
-          color: draftColor,
-          icon: draftIcon,
-        },
-        {
-          onError: error => ctx.showToast(error.message),
-          onSuccess: project => {
-            setSelected(String(project.id))
-            ctx.showToast('Project created')
-          },
-        },
-      )
-    } else if (editorMode === 'modify' && editingId) {
-      projectMutations.updateProject.mutate(
-        {
-          id: Number(editingId),
-          name: draftName.trim(),
-          description: draftDescription.trim(),
-          color: draftColor,
-          icon: draftIcon,
-        },
-        {
-          onError: error => ctx.showToast(error.message),
-          onSuccess: () => ctx.showToast('Project modified'),
-        },
-      )
-    }
-
-    setEditorMode(null)
-    setEditingId(null)
+    ctx.openCreate('project', { project })
   }
 
   const deleteProject = (project: Project) => {
@@ -130,7 +72,7 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
         actions={
           !isChild ? (
             <button className='btn btn-primary' onClick={startNew}>
-              <Icon name='plus' size={14} />
+              <Icon name='projects' size={14} />
               New project
             </button>
           ) : undefined
@@ -138,96 +80,6 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
       />
 
       <div className='px-4 md:px-7'>
-        {editorMode && (
-          <div className='card p-5 mb-5'>
-            <div className='flex items-center justify-between mb-4'>
-              <div className='form-title text-primary' style={{ fontSize: 16 }}>
-                {editorMode === 'new' ? 'New project' : 'Modify project'}
-              </div>
-              <button
-                className='btn btn-ghost btn-icon'
-                onClick={() => setEditorMode(null)}
-              >
-                <Icon name='x' size={16} />
-              </button>
-            </div>
-            <div className='grid gap-4'>
-              <div>
-                <label
-                  className='section-label'
-                  style={{ padding: '0 0 6px', display: 'block' }}
-                >
-                  Project name
-                </label>
-                <input
-                  className='input'
-                  value={draftName}
-                  onChange={e => setDraftName(e.target.value)}
-                  placeholder='Project name'
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label
-                  className='section-label'
-                  style={{ padding: '0 0 6px', display: 'block' }}
-                >
-                  Description
-                </label>
-                <input
-                  className='input'
-                  value={draftDescription}
-                  onChange={e => setDraftDescription(e.target.value)}
-                  placeholder='Project description'
-                />
-              </div>
-              <div
-                className='grid gap-4'
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                }}
-              >
-                <div className='flex flex-col gap-1.5'>
-                  <span className='section-label' style={{ padding: 0 }}>
-                    ICON
-                  </span>
-                  <IconPicker
-                    value={draftIcon}
-                    onChange={setDraftIcon}
-                    label='Project icon'
-                  />
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <span className='section-label' style={{ padding: 0 }}>
-                    COLOR
-                  </span>
-                  <ThemeSelect
-                    label='Project color'
-                    value={draftColor}
-                    onChange={setDraftColor}
-                    options={[
-                      { value: 'var(--project-1)', label: 'Color 1' },
-                      { value: 'var(--project-2)', label: 'Color 2' },
-                      { value: 'var(--project-3)', label: 'Color 3' },
-                    ]}
-                  />
-                </div>
-              </div>
-              <div className='flex gap-2'>
-                <button className='btn btn-primary' onClick={saveProject}>
-                  {editorMode === 'new' ? 'Create project' : 'Save changes'}
-                </button>
-                <button
-                  className='btn btn-secondary'
-                  onClick={() => setEditorMode(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div
           className='grid gap-4'
           style={{

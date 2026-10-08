@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AppCtx, Icon } from '../App'
-import FormModal from '../components/FormModal'
 import PageHeader from '../components/PageHeader'
 import { formatDate } from '../data'
 import {
@@ -18,7 +17,7 @@ import {
 } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
-type Tab = 'assets' | 'meters' | 'things'
+type Tab = 'assets' | 'meters' | 'trackers'
 
 const METER_UNITS = ['count', 'km', 'miles', 'hours', 'cycles'] as const
 const THING_TYPES = ['boolean', 'text', 'number', 'action'] as const
@@ -37,32 +36,8 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
 
   const [tab, setTab] = useState<Tab>('assets')
   const [readingInputs, setReadingInputs] = useState<Record<string, string>>({})
-  // Creation dialogs follow the Project creation interaction pattern:
-  // an explicit header action opens a modal; fields live inside the modal,
-  // never inline in the page body.
-  const [createModal, setCreateModal] = useState<
-    'asset' | 'meter' | 'thing' | null
-  >(null)
-  const closeCreateModal = () => setCreateModal(null)
-  const openAssetModal = () => {
-    setAssetForm({ name: '', category: '', description: '' })
-    setCreateModal('asset')
-  }
-  const openMeterModal = () => {
-    setMeterForm({ name: '', unit: 'count', initialReading: '' })
-    setCreateModal('meter')
-  }
-  const openThingModal = () => {
-    setThingForm({ name: '', type: 'boolean' })
-    setCreateModal('thing')
-  }
 
-  // Asset create / edit / link state.
-  const [assetForm, setAssetForm] = useState({
-    name: '',
-    category: '',
-    description: '',
-  })
+  // Asset edit / link state. Creation is owned by CreateEntityModal.
   const [assetDrafts, setAssetDrafts] = useState<
     Record<number, { name: string; category: string; description: string }>
   >({})
@@ -71,19 +46,13 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
     Record<number, { meterId: string; choreId: string }>
   >({})
 
-  // Meter create / edit state.
-  const [meterForm, setMeterForm] = useState({
-    name: '',
-    unit: 'count',
-    initialReading: '',
-  })
+  // Meter edit state. Creation is owned by CreateEntityModal.
   const [meterDrafts, setMeterDrafts] = useState<
     Record<number, { name: string; unit: string }>
   >({})
   const [expandedMeter, setExpandedMeter] = useState<number | null>(null)
 
-  // Thing create / edit state.
-  const [thingForm, setThingForm] = useState({ name: '', type: 'boolean' })
+  // Tracker edit state. Legacy "thing" identifiers remain internal for API compatibility.
   const [thingDrafts, setThingDrafts] = useState<
     Record<number, { name: string; type: string }>
   >({})
@@ -98,12 +67,10 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
   const markDone = async (id: string) => {
     try {
       await taskMutations.completeTask.mutateAsync(taskID(id))
-      ctx.showToast('Maintenance task marked done')
+      ctx.showToast(t('assets.toast.taskDone'))
     } catch (error) {
       ctx.showToast(
-        error instanceof Error
-          ? error.message
-          : 'Could not complete maintenance task',
+        error instanceof Error ? error.message : t('assets.error.completeTask'),
       )
     }
   }
@@ -130,40 +97,17 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
     const next = state === 'on' ? 'off' : 'on'
     try {
       await mutations.updateThingState.mutateAsync({ id, state: next })
-      ctx.showToast(`Thing updated to ${next}`)
+      ctx.showToast(t('assets.toast.trackerState', { state: next }))
     } catch (error) {
       ctx.showToast(
-        error instanceof Error ? error.message : 'Could not update thing',
+        error instanceof Error
+          ? error.message
+          : t('assets.error.updateTracker'),
       )
     }
   }
 
   /* ── Asset actions ── */
-
-  const createAsset = async () => {
-    if (!assetForm.name.trim()) {
-      ctx.showToast('Enter an asset name')
-      return
-    }
-    try {
-      await mutations.createAsset.mutateAsync({
-        name: assetForm.name.trim(),
-        ...(assetForm.description.trim() && {
-          description: assetForm.description.trim(),
-        }),
-        ...(assetForm.category.trim() && {
-          category: assetForm.category.trim(),
-        }),
-      })
-      setAssetForm({ name: '', category: '', description: '' })
-      setCreateModal(null)
-      ctx.showToast('Maintenance asset created')
-    } catch (error) {
-      ctx.showToast(
-        error instanceof Error ? error.message : 'Could not create asset',
-      )
-    }
-  }
 
   const saveAssetEdit = async (id: number) => {
     const draft = assetDrafts[id]
@@ -211,7 +155,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
       return
     }
     if (!selection.meterId && !selection.choreId) {
-      ctx.showToast('Choose a meter or maintenance task to link')
+      ctx.showToast(t('assets.error.chooseLink'))
       return
     }
     try {
@@ -246,36 +190,6 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
 
   /* ── Meter actions ── */
 
-  const createMeter = async () => {
-    if (!meterForm.name.trim()) {
-      ctx.showToast('Enter a meter name')
-      return
-    }
-    const initialReading = Number(meterForm.initialReading || '0')
-    if (
-      !Number.isInteger(initialReading) ||
-      initialReading < 0 ||
-      !METER_UNITS.includes(meterForm.unit as (typeof METER_UNITS)[number])
-    ) {
-      ctx.showToast('Choose a unit and a non-negative initial reading')
-      return
-    }
-    try {
-      await mutations.createMeter.mutateAsync({
-        name: meterForm.name.trim(),
-        unit: meterForm.unit,
-        initialReading,
-      })
-      setMeterForm({ name: '', unit: 'count', initialReading: '' })
-      setCreateModal(null)
-      ctx.showToast('Meter created')
-    } catch (error) {
-      ctx.showToast(
-        error instanceof Error ? error.message : 'Could not create meter',
-      )
-    }
-  }
-
   const saveMeterEdit = async (id: number) => {
     const draft = meterDrafts[id]
     if (!draft || !draft.name.trim()) {
@@ -305,41 +219,16 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
     }
   }
 
-  /* ── Thing actions ── */
-
-  const createThing = async () => {
-    if (!thingForm.name.trim()) {
-      ctx.showToast('Enter a thing name')
-      return
-    }
-    if (!THING_TYPES.includes(thingForm.type as (typeof THING_TYPES)[number])) {
-      ctx.showToast('Choose a valid thing type')
-      return
-    }
-    try {
-      await mutations.createThing.mutateAsync({
-        name: thingForm.name.trim(),
-        type: thingForm.type,
-        state: thingForm.type === 'boolean' ? 'off' : '',
-      })
-      setThingForm({ name: '', type: 'boolean' })
-      setCreateModal(null)
-      ctx.showToast('Thing created')
-    } catch (error) {
-      ctx.showToast(
-        error instanceof Error ? error.message : 'Could not create thing',
-      )
-    }
-  }
+  /* ── Tracker actions (legacy thing API identifiers remain internal) ── */
 
   const saveThingEdit = async (id: number, currentState: string) => {
     const draft = thingDrafts[id]
     if (!draft || !draft.name.trim()) {
-      ctx.showToast('Enter a thing name')
+      ctx.showToast(t('create.validation.trackerName'))
       return
     }
     if (!THING_TYPES.includes(draft.type as (typeof THING_TYPES)[number])) {
-      ctx.showToast('Choose a valid thing type')
+      ctx.showToast(t('assets.error.trackerType'))
       return
     }
     try {
@@ -354,10 +243,12 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
         delete next[id]
         return next
       })
-      ctx.showToast('Thing updated')
+      ctx.showToast(t('assets.toast.trackerUpdated'))
     } catch (error) {
       ctx.showToast(
-        error instanceof Error ? error.message : 'Could not update thing',
+        error instanceof Error
+          ? error.message
+          : t('assets.error.updateTracker'),
       )
     }
   }
@@ -365,12 +256,12 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
   const deleteThing = async (id: number, name: string) => {
     try {
       await mutations.deleteThing.mutateAsync(id)
-      ctx.showToast(`Thing "${name}" deleted`)
+      ctx.showToast(t('assets.toast.trackerDeleted', { name }))
     } catch (error) {
       ctx.showToast(
         error instanceof Error
           ? error.message
-          : 'Could not delete thing (is it linked to a task?)',
+          : t('assets.error.deleteTracker'),
       )
     }
   }
@@ -378,23 +269,32 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
   return (
     <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
       <PageHeader
-        title='Maintenance'
-        subtitle='Live maintenance assets, meters, and things'
+        title={t('nav.assets')}
+        subtitle={t('assets.page.subtitle')}
         actions={
           tab === 'assets' ? (
-            <button className='btn btn-primary' onClick={openAssetModal}>
-              <Icon name='plus' size={14} />
-              {t('maintenance.newAsset', { defaultValue: 'New asset' })}
+            <button
+              className='btn btn-primary'
+              onClick={() => ctx.openCreate('asset')}
+            >
+              <Icon name='maintenance' size={14} />
+              {t('create.asset.title')}
             </button>
           ) : tab === 'meters' ? (
-            <button className='btn btn-primary' onClick={openMeterModal}>
-              <Icon name='plus' size={14} />
-              {t('maintenance.newMeter', { defaultValue: 'New meter' })}
+            <button
+              className='btn btn-primary'
+              onClick={() => ctx.openCreate('meter')}
+            >
+              <Icon name='meter' size={14} />
+              {t('create.meter.title')}
             </button>
           ) : (
-            <button className='btn btn-primary' onClick={openThingModal}>
-              <Icon name='plus' size={14} />
-              {t('maintenance.newThing', { defaultValue: 'New thing' })}
+            <button
+              className='btn btn-primary'
+              onClick={() => ctx.openCreate('tracker')}
+            >
+              <Icon name='activity' size={14} />
+              {t('create.tracker.title')}
             </button>
           )
         }
@@ -403,16 +303,22 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
         <div
           className='seg-tabs mb-5'
           role='group'
-          aria-label='Maintenance sections'
+          aria-label={t('assets.sectionsLabel')}
         >
           {(
             [
               {
                 id: 'assets',
-                label: `Maintenance (${maintenanceItems.length})`,
+                label: t('assets.tabs.assets', { count: assets.length }),
               },
-              { id: 'meters', label: `Meters (${meters.length})` },
-              { id: 'things', label: `Things (${things.length})` },
+              {
+                id: 'meters',
+                label: t('assets.tabs.meters', { count: meters.length }),
+              },
+              {
+                id: 'trackers',
+                label: t('assets.tabs.trackers', { count: things.length }),
+              },
             ] as const
           ).map(item => (
             <button
@@ -625,11 +531,11 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
 
                       <div className='flex flex-col gap-2 p-3'>
                         <div className='font-semibold text-primary'>
-                          Linked maintenance tasks
+                          {t('assets.linkedTasks')}
                         </div>
                         {linkedChores.length === 0 && (
                           <div className='text-faint' style={{ fontSize: 12 }}>
-                            No maintenance tasks linked to this asset.
+                            {t('assets.empty.linkedTasks')}
                           </div>
                         )}
                         {linkedChores.map(chore => (
@@ -654,7 +560,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                         <div className='flex gap-2'>
                           <select
                             className='input flex-1'
-                            aria-label='Maintenance task to link'
+                            aria-label={t('assets.taskToLinkLabel')}
                             value={selection.choreId}
                             onChange={event =>
                               setLinkSelection(current => ({
@@ -667,7 +573,9 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                               }))
                             }
                           >
-                            <option value=''>Link a maintenance task…</option>
+                            <option value=''>
+                              {t('assets.linkTaskPlaceholder')}
+                            </option>
                             {unlinkedChores.map(chore => (
                               <option key={chore.id} value={chore.id}>
                                 {chore.name}
@@ -690,7 +598,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                         </div>
                         {detail && detail.history.length === 0 && (
                           <div className='text-faint' style={{ fontSize: 12 }}>
-                            No completed maintenance recorded yet.
+                            {t('assets.empty.history')}
                           </div>
                         )}
                         {(detail?.history ?? []).map(entry => (
@@ -720,11 +628,11 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
               )
             })}
             {assets.length === 0 && (
-              <div className='empty-state'>No assets are configured.</div>
+              <div className='empty-state'>{t('assets.empty.assets')}</div>
             )}
 
             <div className='font-semibold text-primary mt-2'>
-              Due maintenance tasks
+              {t('assets.dueTasks')}
             </div>
             {maintenanceItems.map(item => (
               <div key={item.id} className='card p-5 flex items-start gap-4'>
@@ -754,7 +662,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
               </div>
             ))}
             {maintenanceItems.length === 0 && (
-              <div className='empty-state'>No maintenance tasks are due.</div>
+              <div className='empty-state'>{t('assets.empty.due')}</div>
             )}
           </div>
         )}
@@ -769,7 +677,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
               return (
                 <div key={meter.id} className='card p-5'>
                   <div className='flex items-start gap-4 flex-wrap'>
-                    <div style={{ fontSize: 28 }}>📊</div>
+                    <Icon name='meter' size={28} />
                     <div className='flex-1 min-w-[200px]'>
                       <div className='font-bold text-primary'>{meter.name}</div>
                       <div className='text-muted'>
@@ -927,7 +835,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
           </div>
         )}
 
-        {tab === 'things' && (
+        {tab === 'trackers' && (
           <div className='flex flex-col gap-3'>
             <div
               className='grid gap-3'
@@ -943,12 +851,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                 return (
                   <div key={thing.id} className='card p-5'>
                     <div className='flex items-start justify-between'>
-                      <div style={{ fontSize: 28 }}>
-                        {(thing.categoryRef ?? thing.category)?.name ===
-                        'plants'
-                          ? '🌿'
-                          : '🔧'}
-                      </div>
+                      <Icon name='activity' size={28} />
                       <span className='badge'>{thing.state || thing.type}</span>
                     </div>
                     <div className='font-bold text-primary mt-3'>
@@ -964,7 +867,9 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                       <div className='flex flex-col gap-2 mt-3'>
                         <input
                           className='input'
-                          aria-label={`Thing ${thing.name} name`}
+                          aria-label={t('assets.trackerNameAria', {
+                            name: thing.name,
+                          })}
                           value={draft.name}
                           onChange={event =>
                             setThingDrafts(current => ({
@@ -975,11 +880,13 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                               },
                             }))
                           }
-                          placeholder='Thing name'
+                          placeholder={t('create.tracker.namePlaceholder')}
                         />
                         <select
                           className='input'
-                          aria-label={`Thing ${thing.name} type`}
+                          aria-label={t('assets.trackerTypeAria', {
+                            name: thing.name,
+                          })}
                           value={draft.type}
                           onChange={event =>
                             setThingDrafts(current => ({
@@ -1022,8 +929,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
                         </button>
                       ) : (
                         <div className='text-muted' style={{ fontSize: 12 }}>
-                          This thing’s state is read-only because its type does
-                          not support a toggle action.
+                          {t('assets.trackerReadonly')}
                         </div>
                       )}
                       <button
@@ -1098,281 +1004,11 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
               })}
             </div>
             {things.length === 0 && (
-              <div className='empty-state'>No things are configured.</div>
+              <div className='empty-state'>{t('assets.empty.trackers')}</div>
             )}
           </div>
         )}
       </div>
-
-      {createModal === 'asset' && (
-        <FormModal
-          title={t('maintenance.newAsset', { defaultValue: 'New asset' })}
-          onClose={closeCreateModal}
-          actions={
-            <>
-              <button
-                className='btn btn-primary'
-                disabled={mutations.createAsset.isPending}
-                onClick={() => void createAsset()}
-              >
-                {t('maintenance.createAsset', { defaultValue: 'Create asset' })}
-              </button>
-              <button className='btn btn-secondary' onClick={closeCreateModal}>
-                {t('action.cancel', { defaultValue: 'Cancel' })}
-              </button>
-            </>
-          }
-        >
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Asset name
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.assetNameLabel', {
-                defaultValue: 'New maintenance asset name',
-              })}
-              value={assetForm.name}
-              onChange={event =>
-                setAssetForm(current => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.assetNamePlaceholder', {
-                defaultValue: 'New asset name',
-              })}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Category
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.assetCategoryLabel', {
-                defaultValue: 'New maintenance asset category',
-              })}
-              value={assetForm.category}
-              onChange={event =>
-                setAssetForm(current => ({
-                  ...current,
-                  category: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.assetCategoryPlaceholder', {
-                defaultValue: 'Category',
-              })}
-            />
-          </div>
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Description
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.assetDescriptionLabel', {
-                defaultValue: 'New maintenance asset description',
-              })}
-              value={assetForm.description}
-              onChange={event =>
-                setAssetForm(current => ({
-                  ...current,
-                  description: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.assetDescriptionPlaceholder', {
-                defaultValue: 'Description (optional)',
-              })}
-            />
-          </div>
-        </FormModal>
-      )}
-
-      {createModal === 'meter' && (
-        <FormModal
-          title={t('maintenance.newMeter', { defaultValue: 'New meter' })}
-          onClose={closeCreateModal}
-          actions={
-            <>
-              <button
-                className='btn btn-primary'
-                disabled={mutations.createMeter.isPending}
-                onClick={() => void createMeter()}
-              >
-                {t('maintenance.createMeter', { defaultValue: 'Create meter' })}
-              </button>
-              <button className='btn btn-secondary' onClick={closeCreateModal}>
-                {t('action.cancel', { defaultValue: 'Cancel' })}
-              </button>
-            </>
-          }
-        >
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Meter name
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.meterNameLabel', {
-                defaultValue: 'New meter name',
-              })}
-              value={meterForm.name}
-              onChange={event =>
-                setMeterForm(current => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.meterNamePlaceholder', {
-                defaultValue: 'New meter name',
-              })}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Unit
-            </label>
-            <select
-              className='input'
-              aria-label={t('maintenance.meterUnitLabel', {
-                defaultValue: 'New meter unit',
-              })}
-              value={meterForm.unit}
-              onChange={event =>
-                setMeterForm(current => ({
-                  ...current,
-                  unit: event.target.value,
-                }))
-              }
-            >
-              {METER_UNITS.map(unit => (
-                <option key={unit} value={unit}>
-                  {unit}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Initial reading
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.meterReadingLabel', {
-                defaultValue: 'New meter initial reading',
-              })}
-              type='number'
-              min='0'
-              step='1'
-              value={meterForm.initialReading}
-              onChange={event =>
-                setMeterForm(current => ({
-                  ...current,
-                  initialReading: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.meterReadingPlaceholder', {
-                defaultValue: 'Initial reading',
-              })}
-            />
-          </div>
-        </FormModal>
-      )}
-
-      {createModal === 'thing' && (
-        <FormModal
-          title={t('maintenance.newThing', { defaultValue: 'New thing' })}
-          onClose={closeCreateModal}
-          actions={
-            <>
-              <button
-                className='btn btn-primary'
-                disabled={mutations.createThing.isPending}
-                onClick={() => void createThing()}
-              >
-                {t('maintenance.createThing', { defaultValue: 'Create thing' })}
-              </button>
-              <button className='btn btn-secondary' onClick={closeCreateModal}>
-                {t('action.cancel', { defaultValue: 'Cancel' })}
-              </button>
-            </>
-          }
-        >
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Thing name
-            </label>
-            <input
-              className='input'
-              aria-label={t('maintenance.thingNameLabel', {
-                defaultValue: 'New thing name',
-              })}
-              value={thingForm.name}
-              onChange={event =>
-                setThingForm(current => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
-              placeholder={t('maintenance.thingNamePlaceholder', {
-                defaultValue: 'New thing name',
-              })}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label
-              className='section-label'
-              style={{ padding: '0 0 6px', display: 'block' }}
-            >
-              Type
-            </label>
-            <select
-              className='input'
-              aria-label={t('maintenance.thingTypeLabel', {
-                defaultValue: 'New thing type',
-              })}
-              value={thingForm.type}
-              onChange={event =>
-                setThingForm(current => ({
-                  ...current,
-                  type: event.target.value,
-                }))
-              }
-            >
-              {THING_TYPES.map(type => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
-        </FormModal>
-      )}
     </div>
   )
 }

@@ -82,9 +82,9 @@ test('fix02: maintenance creation fields are hidden until the dialog opens', asy
 }) => {
   await prepare(page)
   await page.goto('/maintenance')
-  await expect(page.getByLabel('New maintenance asset name')).toHaveCount(0)
-  await expect(page.getByLabel('New meter name')).toHaveCount(0)
-  await expect(page.getByLabel('New thing name')).toHaveCount(0)
+  await expect(page.getByLabel('Asset name')).toHaveCount(0)
+  await expect(page.getByLabel('Meter name')).toHaveCount(0)
+  await expect(page.getByLabel('Tracker name')).toHaveCount(0)
   await expect(page.locator('.modal-overlay')).toHaveCount(0)
 })
 
@@ -99,11 +99,9 @@ test('fix02: create asset opens a Project-pattern modal', async ({ page }) => {
   // Project-pattern structure: form-title header + section-label fields +
   // primary create / secondary cancel footer (not the task popup's flex-1).
   await expect(dialog.locator('.form-title')).toBeVisible()
-  await expect(page.getByLabel('New maintenance asset name')).toBeVisible()
-  await expect(page.getByLabel('New maintenance asset category')).toBeVisible()
-  await expect(
-    page.getByLabel('New maintenance asset description'),
-  ).toBeVisible()
+  await expect(page.getByLabel('Asset name')).toBeVisible()
+  await expect(page.getByLabel('Category')).toBeVisible()
+  await expect(page.getByLabel('Description (optional)')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Create asset' })).toBeVisible()
 })
 
@@ -114,22 +112,24 @@ test('fix02: create meter opens a Project-pattern modal', async ({ page }) => {
   await page.getByRole('button', { name: 'New meter' }).click()
   const dialog = page.getByRole('dialog', { name: 'New meter' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('New meter name')).toBeVisible()
-  await expect(page.getByLabel('New meter unit')).toBeVisible()
-  await expect(page.getByLabel('New meter initial reading')).toBeVisible()
+  await expect(page.getByLabel('Meter name')).toBeVisible()
+  await expect(page.getByLabel('Unit')).toBeVisible()
+  await expect(page.getByLabel('Initial reading')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Create meter' })).toBeVisible()
 })
 
-test('fix02: create thing opens a Project-pattern modal', async ({ page }) => {
+test('fix02: create tracker opens the shared modal', async ({ page }) => {
   await prepare(page)
   await page.goto('/maintenance')
-  await page.getByRole('button', { name: /Things \(\d+\)/ }).click()
-  await page.getByRole('button', { name: 'New thing' }).click()
-  const dialog = page.getByRole('dialog', { name: 'New thing' })
+  await page.getByRole('button', { name: /Trackers \(\d+\)/ }).click()
+  await page.getByRole('button', { name: 'New tracker' }).click()
+  const dialog = page.getByRole('dialog', { name: 'New tracker' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('New thing name')).toBeVisible()
-  await expect(page.getByLabel('New thing type')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Create thing' })).toBeVisible()
+  await expect(page.getByLabel('Tracker name')).toBeVisible()
+  await expect(page.getByLabel('Type')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Create tracker' }),
+  ).toBeVisible()
 })
 
 test('fix02: maintenance modals cancel without creating', async ({ page }) => {
@@ -140,10 +140,10 @@ test('fix02: maintenance modals cancel without creating', async ({ page }) => {
   await expect(page.locator('.modal-overlay')).toBeVisible()
   await page.getByRole('button', { name: 'Cancel' }).click()
   await expect(page.locator('.modal-overlay')).toHaveCount(0)
-  await expect(page.getByLabel('New maintenance asset name')).toHaveCount(0)
+  await expect(page.getByLabel('Asset name')).toHaveCount(0)
   // Overlay + X dismissal also leaves no record behind.
   await page.getByRole('button', { name: 'New asset' }).click()
-  await page.getByLabel('New maintenance asset name').fill('Should not save')
+  await page.getByLabel('Asset name').fill('Should not save')
   await page.locator('.modal-overlay').click({ position: { x: 10, y: 10 } })
   await expect(page.locator('.modal-overlay')).toHaveCount(0)
   await expect(page.getByText('Should not save')).toHaveCount(0)
@@ -156,10 +156,7 @@ test('fix02: existing project creation still works', async ({ page }) => {
   await page.goto('/projects')
   await expect(page.getByTestId('page-title')).toHaveText('Projects')
   await page.getByRole('button', { name: 'New project' }).click()
-  // Project editor keeps its inline card workflow (not converted to a modal).
-  await expect(
-    page.locator('.form-title', { hasText: 'New project' }),
-  ).toBeVisible()
+  await expect(page.getByTestId('create-modal')).toBeVisible()
   await page.getByPlaceholder('Project name').fill('Fix02 project')
   await page.getByPlaceholder('Project description').fill('Regression check')
   await expect(
@@ -167,9 +164,7 @@ test('fix02: existing project creation still works', async ({ page }) => {
   ).toBeVisible()
   // Cancel dismisses without creating.
   await page.getByRole('button', { name: 'Cancel' }).click()
-  await expect(
-    page.locator('.form-title', { hasText: 'New project' }),
-  ).toHaveCount(0)
+  await expect(page.getByTestId('create-modal')).toHaveCount(0)
   runtimeGuard.assertClean()
 })
 
@@ -183,7 +178,7 @@ test('fix02: rtl rendering keeps header anchor and maintenance modals valid', as
   // Localized creation action resolves in Arabic.
   await page.getByRole('button', { name: 'أصل جديد' }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
-  await expect(page.getByLabel('اسم أصل الصيانة الجديد')).toBeVisible()
+  await expect(page.getByLabel('اسم الأصل')).toBeVisible()
   await page.getByRole('button', { name: 'إلغاء' }).click()
   await expect(page.locator('.modal-overlay')).toHaveCount(0)
   // Header anchor holds across pages in RTL too.

@@ -77,8 +77,11 @@ export default function SearchScreen({
             <div className='text-muted' style={{ fontSize: 13 }}>
               Try a different search term
             </div>
-            <button className='btn btn-primary mt-4' onClick={ctx.openCreate}>
-              <Icon name='plus' size={14} />
+            <button
+              className='btn btn-primary mt-4'
+              onClick={() => ctx.openCreate('task')}
+            >
+              <Icon name='tasks' size={14} />
               Create a task
             </button>
           </div>

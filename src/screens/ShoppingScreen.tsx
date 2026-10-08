@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
 import PageHeader from '../components/PageHeader'
+import { useLocalization } from '../contexts/LocalizationContext'
 import { useShoppingMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
@@ -12,18 +13,14 @@ export default function ShoppingScreen({
   ctx: AppCtx
   isSolo: boolean
 }) {
+  const { t } = useLocalization()
   const { memberById, shoppingLists } = useLiveData()
   const shoppingMutations = useShoppingMutations()
   const lists = shoppingLists
   const [activeListId, setActiveListId] = useState<string | null>(null)
   const activeId = activeListId ?? lists[0]?.id ?? null
-  const [newItem, setNewItem] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
-
-  const [isCreatingList, setIsCreatingList] = useState(false)
-  const [newListName, setNewListName] = useState('')
-  const [newListShared, setNewListShared] = useState(false)
 
   const [isEditingList, setIsEditingList] = useState(false)
   const [editListName, setEditListName] = useState('')
@@ -31,25 +28,6 @@ export default function ShoppingScreen({
   const visibleLists = isSolo ? lists.filter(l => !l.isShared) : lists
   const currentList =
     visibleLists.find(l => l.id === activeId) || visibleLists[0]
-
-  const handleCreateList = () => {
-    if (!newListName.trim()) return
-    shoppingMutations.createList.mutate(
-      {
-        name: newListName.trim(),
-        scope: !isSolo && newListShared ? 'circle' : 'personal',
-      },
-      {
-        onError: error => ctx.showToast(error.message),
-        onSuccess: list => {
-          setActiveListId(String((list as { id: number }).id))
-          setIsCreatingList(false)
-          setNewListName('')
-          ctx.showToast(`List "${newListName.trim()}" created`)
-        },
-      },
-    )
-  }
 
   const toggleItem = (listId: string, itemId: string) => {
     const nlistId = Number(listId)
@@ -69,28 +47,6 @@ export default function ShoppingScreen({
     shoppingMutations.toggleItem.mutate(
       { listId: nlistId, itemId: nitemId, checked: !item.done },
       { onError: error => ctx.showToast(error.message) },
-    )
-  }
-
-  const addItem = (listId: string) => {
-    if (!newItem.trim()) return
-    const nlistId = Number(listId)
-    if (!Number.isFinite(nlistId)) {
-      ctx.showToast('Invalid shopping list')
-      return
-    }
-    shoppingMutations.addItem.mutate(
-      {
-        listId: nlistId,
-        name: newItem.trim(),
-      },
-      {
-        onError: error => ctx.showToast(error.message),
-        onSuccess: () => {
-          ctx.showToast(`"${newItem.trim()}" added`)
-          setNewItem('')
-        },
-      },
     )
   }
 
@@ -140,10 +96,19 @@ export default function ShoppingScreen({
         actions={
           <button
             className='btn btn-primary'
-            onClick={() => setIsCreatingList(true)}
+            onClick={() =>
+              ctx.openCreate('shopping-list', {
+                allowShared: !isSolo,
+                onCreated: list => {
+                  const created = list as { id?: number | string }
+                  if (created?.id !== undefined)
+                    setActiveListId(String(created.id))
+                },
+              })
+            }
           >
-            <Icon name='plus' size={14} />
-            New list
+            <Icon name='shopping' size={14} />
+            {t('create.shoppingList.title')}
           </button>
         }
       />
@@ -199,78 +164,7 @@ export default function ShoppingScreen({
 
           {/* List content */}
           <div className='min-w-0'>
-            {isCreatingList ? (
-              <div
-                className='card p-5 border border-line'
-                style={{ borderRadius: 'var(--r-xl)' }}
-              >
-                <div className='flex items-center justify-between mb-4'>
-                  <h2
-                    className='form-title text-primary'
-                    style={{ fontSize: 18, margin: 0 }}
-                  >
-                    new list
-                  </h2>
-                  <button
-                    className='btn btn-ghost btn-icon'
-                    onClick={() => setIsCreatingList(false)}
-                  >
-                    <Icon name='x' size={16} />
-                  </button>
-                </div>
-                <div className='flex flex-col gap-4'>
-                  <div className='flex gap-3'>
-                    <div className='flex flex-col gap-1 flex-1'>
-                      <label className='section-label' style={{ padding: 0 }}>
-                        LIST NAME
-                      </label>
-                      <input
-                        className='input'
-                        value={newListName}
-                        onChange={e => setNewListName(e.target.value)}
-                        placeholder='e.g. Groceries, Target, Hardware...'
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-                  {!isSolo && (
-                    <label className='flex items-center gap-2 cursor-pointer mt-1'>
-                      <input
-                        type='checkbox'
-                        checked={newListShared}
-                        onChange={e => setNewListShared(e.target.checked)}
-                        style={{
-                          accentColor: 'var(--brand)',
-                          width: 16,
-                          height: 16,
-                        }}
-                      />
-                      <span
-                        className='text-primary font-medium'
-                        style={{ fontSize: 14 }}
-                      >
-                        Share with team
-                      </span>
-                    </label>
-                  )}
-                  <div className='flex justify-end gap-2 mt-2'>
-                    <button
-                      className='btn btn-ghost'
-                      onClick={() => setIsCreatingList(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className='btn btn-primary'
-                      onClick={handleCreateList}
-                      disabled={!newListName.trim()}
-                    >
-                      Create list
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : isEditingList && currentList ? (
+            {isEditingList && currentList ? (
               <div
                 className='card p-5 border border-line'
                 style={{ borderRadius: 'var(--r-xl)' }}
@@ -443,24 +337,18 @@ export default function ShoppingScreen({
                   </div>
                 </div>
 
-                {/* Add item input */}
-                <div className='flex gap-2 mb-4'>
-                  <input
-                    className='input flex-1'
-                    placeholder='New item...'
-                    value={newItem}
-                    onChange={e => setNewItem(e.target.value)}
-                    onKeyDown={e =>
-                      e.key === 'Enter' && addItem(currentList.id)
-                    }
-                  />
+                {/* Shopping items are created through the canonical modal. */}
+                <div className='flex justify-end mb-4'>
                   <button
                     className='btn btn-primary'
-                    onClick={() => addItem(currentList.id)}
-                    disabled={!newItem.trim()}
+                    onClick={() =>
+                      ctx.openCreate('shopping-item', {
+                        listId: currentList.id,
+                      })
+                    }
                   >
-                    <Icon name='plus' size={15} />
-                    New item
+                    <Icon name='shopping_item' size={15} />
+                    {t('create.shoppingItem.title')}
                   </button>
                 </div>
 
@@ -473,7 +361,7 @@ export default function ShoppingScreen({
                         List is empty
                       </div>
                       <div className='text-muted' style={{ fontSize: 13 }}>
-                        Type above to add your first item.
+                        {t('shopping.emptyInstruction')}
                       </div>
                     </div>
                   ) : (
@@ -692,10 +580,19 @@ export default function ShoppingScreen({
                 </div>
                 <button
                   className='btn btn-primary mt-3'
-                  onClick={() => setIsCreatingList(true)}
+                  onClick={() =>
+                    ctx.openCreate('shopping-list', {
+                      allowShared: !isSolo,
+                      onCreated: list => {
+                        const created = list as { id?: number | string }
+                        if (created?.id !== undefined)
+                          setActiveListId(String(created.id))
+                      },
+                    })
+                  }
                 >
-                  <Icon name='plus' size={15} />
-                  New list
+                  <Icon name='shopping' size={15} />
+                  {t('create.shoppingList.title')}
                 </button>
               </div>
             )}

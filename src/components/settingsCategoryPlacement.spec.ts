@@ -23,7 +23,9 @@ const stripComments = (source: string) =>
   source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
 
 const settingsScreen = stripComments(read('../screens/SettingsScreen.tsx'))
-const createTaskModal = read('./CreateTaskModal.tsx')
+const categorySettings = read('./CategorySettings.tsx')
+const createEntityModal = read('./create/CreateEntityModal.tsx')
+const entityConfigs = read('./create/entityConfigs.tsx')
 
 const tabIds = [...settingsScreen.matchAll(/\{ id: '([^']+)', label:/g)].map(
   match => match[1],
@@ -135,8 +137,9 @@ describe('Settings Space terminology', () => {
   })
 
   it('points the task editor empty state at the renamed path', () => {
-    expect(createTaskModal).toContain('Settings → Space → Categories')
-    expect(createTaskModal).not.toContain('Team')
+    const i18n = read('../i18n.ts')
+    expect(i18n).toContain('Settings → Space → Categories')
+    expect(i18n).not.toContain('Settings → Team → Categories')
   })
 })
 
@@ -250,26 +253,36 @@ describe('single Categories implementation', () => {
   })
 })
 
+describe('category creation contract', () => {
+  it('uses the unified entity controller rather than a feature-local form', () => {
+    expect(categorySettings).toContain("type='category'")
+    expect(categorySettings).not.toContain('<FormModal')
+    expect(entityConfigs).toContain("type: 'category'")
+  })
+})
+
 describe('task editor category picker contract', () => {
   it('reads the active-only category query, so archived rows are not selectable', () => {
-    // CreateTaskModal calls the hook with no options, which defaults
+    // CreateEntityModal calls the hook with no options, which defaults
     // includeArchived to false. That is what keeps an archived category out of
     // new assignment, and it is the contract PickerHarness mirrors in
     // CategorySettings.test.tsx.
-    expect(createTaskModal).toMatch(/useChoreCategories\(\s*\)/)
-    expect(createTaskModal).not.toMatch(/useChoreCategories\(\s*\{/)
+    expect(createEntityModal).toMatch(/useChoreCategories\(\s*\)/)
+    expect(createEntityModal).not.toMatch(/useChoreCategories\(\s*\{/)
   })
 
   it('keeps a task already assigned to an archived category resolved', () => {
     // The editor seeds selection from the task, and the visible name comes from
     // the embedded chore payload rather than the active list, so archiving
     // cannot blank an existing task's category.
-    expect(createTaskModal).toMatch(/taskToEdit\?\.categoryId/)
-    expect(createTaskModal).toMatch(/categoryId,/)
+    expect(entityConfigs).toMatch(/options\?\.task\?\.categoryId/)
+    expect(createEntityModal).toMatch(/options\?\.task\?\.categoryId/)
+    expect(createEntityModal).toMatch(/options\.task\.category/)
   })
 
   it('points the empty state at the section that actually manages categories', () => {
-    expect(createTaskModal).toContain('Settings → Space → Categories')
-    expect(createTaskModal).not.toContain('Create one from Settings')
+    const i18n = read('../i18n.ts')
+    expect(i18n).toContain('Settings → Space → Categories')
+    expect(i18n).not.toContain('Create one from Settings')
   })
 })

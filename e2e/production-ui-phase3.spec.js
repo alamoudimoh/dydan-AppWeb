@@ -85,7 +85,7 @@ test('phase 3: the shared task modal confines its controls at phone widths', asy
   await page.goto('/all-tasks?create=1', { waitUntil: 'networkidle' })
   const panel = page.locator('.modal-panel')
   await expect(panel).toBeVisible()
-  await expect(panel.getByRole('heading', { name: 'new task' })).toBeVisible()
+  await expect(panel.getByRole('heading', { name: 'New task' })).toBeVisible()
 
   await panel.getByRole('button', { name: 'household' }).click()
   await panel

@@ -80,7 +80,9 @@ test('shopping shares the main header and responsive content grid', async ({
     await expect(
       page.getByRole('heading', { name: 'Shopping', exact: true }),
     ).toBeVisible()
-    await expect(page.getByRole('button', { name: 'New list' })).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: 'New shopping list' }),
+    ).toBeVisible()
     const columns = await page
       .locator('.shopping-lists-grid')
       .evaluate(

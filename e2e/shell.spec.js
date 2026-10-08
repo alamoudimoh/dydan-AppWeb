@@ -258,7 +258,7 @@ test('shell: settings renders a horizontal tab strip above the content', async (
   runtimeGuard.assertClean()
 })
 
-test('shell: top bar exposes new task and notifications beside search', async ({
+test('shell: top bar exposes universal Create and notifications beside search', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -270,7 +270,7 @@ test('shell: top bar exposes new task and notifications beside search', async ({
 
   const topBar = page.locator('.main-content > div').first()
   await expect(topBar.locator('.top-search')).toBeVisible()
-  await expect(topBar.getByRole('button', { name: 'new task' })).toBeVisible()
+  await expect(topBar.getByRole('button', { name: 'Create' })).toBeVisible()
 
   // The notifications bell is the plain icon button without an explicit label.
   const bell = topBar.locator('.relative > button')

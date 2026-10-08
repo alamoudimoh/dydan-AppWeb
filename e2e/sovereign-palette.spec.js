@@ -169,7 +169,7 @@ for (const [theme, appearance] of [
     // its first field like the Project editor, so blur before asserting the
     // resting boundary).
     await page.getByRole('button', { name: 'New asset' }).click()
-    const input = page.getByLabel('New maintenance asset name')
+    const input = page.getByLabel('Asset name')
     await expect(input).toBeVisible()
     await input.evaluate(element => element.blur())
     await expectPainted(
@@ -224,7 +224,7 @@ for (const [theme, appearance] of [
     }
 
     await page.getByRole('button', { name: 'New asset' }).click()
-    const input = page.getByLabel('New maintenance asset name')
+    const input = page.getByLabel('Asset name')
     await expect(input).toBeVisible()
     await input.evaluate(element => element.blur())
     const expectedBorder = await resolvedColor(page, '--input-border')

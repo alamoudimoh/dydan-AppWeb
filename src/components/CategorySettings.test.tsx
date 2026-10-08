@@ -3,7 +3,7 @@
  * Settings -> Space -> Categories, end to end against a fake /api/v1/categories.
  *
  * A picker harness stands in for the task editor: it calls the very same
- * `useChoreCategories()` with the very same defaults that CreateTaskModal
+ * `useChoreCategories()` with the very same defaults that CreateEntityModal
  * uses (see settingsCategoryPlacement.spec.ts, which pins that), so asserting
  * on it asserts the real picker contract. Both live under one QueryClient,
  * which is what makes the cross-component refresh requirement testable.
@@ -126,7 +126,7 @@ function Wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
-/** Mirrors CreateTaskModal: the active-only category query, as buttons. */
+/** Mirrors CreateEntityModal: the active-only category query, as buttons. */
 function PickerHarness() {
   const { categories } = useChoreCategories()
   return (
@@ -225,10 +225,8 @@ describe('Settings -> Space -> Categories', () => {
       await screen.findByRole('button', { name: /New category/ }),
     )
     await user.click(screen.getByRole('button', { name: 'Create category' }))
-    expect(await screen.findByTestId('category-error')).toBeTruthy()
-    expect(screen.getByTestId('category-error').textContent).toMatch(
-      /cannot be empty/i,
-    )
+    expect(await screen.findByRole('alert')).toBeTruthy()
+    expect(screen.getByRole('alert').textContent).toMatch(/cannot be empty/i)
     expect(server.state.writes).toEqual([])
 
     await user.type(screen.getByLabelText('Category name'), '   ')
@@ -247,9 +245,9 @@ describe('Settings -> Space -> Categories', () => {
     await user.type(screen.getByLabelText('Category name'), 'garden')
     await user.click(screen.getByRole('button', { name: 'Create category' }))
 
-    expect(await screen.findByTestId('category-error')).toBeTruthy()
+    expect(await screen.findByRole('alert')).toBeTruthy()
     // The server's own 409 message, not a generic failure.
-    expect(screen.getByTestId('category-error').textContent).toContain(
+    expect(screen.getByRole('alert').textContent).toContain(
       'a category with this name already exists',
     )
   })

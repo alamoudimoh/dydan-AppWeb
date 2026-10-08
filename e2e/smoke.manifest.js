@@ -80,7 +80,7 @@ const PAGE = Object.freeze({
     id: 'maintenance',
     path: '/maintenance',
     auth: true,
-    heading: /^maintenance$/i,
+    heading: /^assets$/i,
     nav: true,
   },
   shopping: {

@@ -7,13 +7,6 @@ import { useRewardMutations, useRewardRequests } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
 
 type Tab = 'catalog' | 'requests' | 'points'
-type RewardForm = { name: string; description: string; costPoints: string }
-
-const blankForm = (): RewardForm => ({
-  name: '',
-  description: '',
-  costPoints: '100',
-})
 
 export default function RewardsScreen({
   ctx,
@@ -36,10 +29,6 @@ export default function RewardsScreen({
   const isAdmin = ctx.persona === 'parent'
   const myRequestsQuery = useRewardRequests(!isAdmin)
   const [tab, setTab] = useState<Tab>('catalog')
-  const [editingId, setEditingId] = useState<string | null | undefined>(
-    undefined,
-  )
-  const [form, setForm] = useState<RewardForm>(blankForm)
   const [pendingID, setPendingID] = useState<string | null>(null)
 
   if (!currentUser) return null
@@ -59,49 +48,14 @@ export default function RewardsScreen({
     request => request.status === 'pending',
   )
   const startNew = () => {
-    setForm(blankForm())
-    setEditingId(null)
     setTab('catalog')
+    ctx.openCreate('reward')
   }
   const startEdit = (id: string) => {
     const reward = rewards.find(item => item.id === id)
     if (!reward) return
-    setForm({
-      name: reward.name,
-      description: reward.description ?? '',
-      costPoints: String(reward.pointsCost),
-    })
-    setEditingId(id)
     setTab('catalog')
-  }
-  const save = async () => {
-    const name = form.name.trim()
-    const costPoints = Number(form.costPoints)
-    if (!name || !Number.isInteger(costPoints) || costPoints < 1) {
-      ctx.showToast('Enter a reward name and a positive whole-number cost')
-      return
-    }
-    try {
-      if (editingId)
-        await mutations.updateReward.mutateAsync({
-          id: editingId,
-          name,
-          description: form.description.trim(),
-          costPoints,
-        })
-      else
-        await mutations.createReward.mutateAsync({
-          name,
-          description: form.description.trim(),
-          costPoints,
-        })
-      ctx.showToast(editingId ? 'Reward saved' : 'Reward created')
-      setEditingId(undefined)
-    } catch (error) {
-      ctx.showToast(
-        error instanceof Error ? error.message : 'Could not save reward',
-      )
-    }
+    ctx.openCreate('reward', { reward })
   }
   const request = async (id: string) => {
     setPendingID(id)
@@ -154,97 +108,13 @@ export default function RewardsScreen({
         actions={
           isAdmin ? (
             <button className='btn btn-primary' onClick={startNew}>
-              <Icon name='plus' size={14} />
+              <Icon name='gift' size={14} />
               New reward
             </button>
           ) : undefined
         }
       />
       <div className='px-4 md:px-7'>
-        {isAdmin && editingId !== undefined && (
-          <div
-            className='card p-5 mb-5'
-            aria-label={editingId ? 'Modify reward' : 'New reward'}
-          >
-            <div className='form-title text-primary mb-4'>
-              {editingId ? 'Modify reward' : 'New reward'}
-            </div>
-            <div
-              className='grid gap-4'
-              style={{
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              }}
-            >
-              <label className='flex flex-col gap-1.5'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  REWARD NAME
-                </span>
-                <input
-                  className='input'
-                  value={form.name}
-                  onChange={event =>
-                    setForm(current => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <label className='flex flex-col gap-1.5'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  POINTS COST
-                </span>
-                <input
-                  className='input'
-                  type='number'
-                  min='1'
-                  step='1'
-                  value={form.costPoints}
-                  onChange={event =>
-                    setForm(current => ({
-                      ...current,
-                      costPoints: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <label className='col-span-full flex flex-col gap-1.5'>
-                <span className='section-label' style={{ padding: 0 }}>
-                  DESCRIPTION
-                </span>
-                <textarea
-                  className='input'
-                  rows={2}
-                  value={form.description}
-                  onChange={event =>
-                    setForm(current => ({
-                      ...current,
-                      description: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-            </div>
-            <div className='flex gap-2 mt-5'>
-              <button
-                className='btn btn-primary'
-                disabled={
-                  mutations.createReward.isPending ||
-                  mutations.updateReward.isPending
-                }
-                onClick={save}
-              >
-                Save reward
-              </button>
-              <button
-                className='btn btn-secondary'
-                onClick={() => setEditingId(undefined)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
         <div
           className='card mb-5 p-5'
           style={{ background: 'var(--callout-bg)', border: 'none' }}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Icon } from '../App'
 import {
@@ -13,11 +14,10 @@ import {
 } from '../hooks/useChoreCategories'
 import { COLORS } from '../utils/Colors'
 import ColorPicker from './ColorPicker'
+import CreateEntityModal from './create/CreateEntityModal'
 import { Row, Section } from './SettingsSection'
 
 type Draft = { id?: number; name: string; color: string }
-
-const emptyDraft: Draft = { name: '', color: COLORS.teal }
 
 function Swatch({ color }: { color?: string | undefined }) {
   const value = color || COLORS.ash
@@ -53,15 +53,17 @@ function Swatch({ color }: { color?: string | undefined }) {
  * are just as editable there.
  */
 export default function CategorySettings() {
+  const { t } = useTranslation()
   // includeArchived so archived rows are listed with a Restore action. Task
   // pickers read the active-only query and are unaffected.
   const { categories, isLoading } = useChoreCategories({
     includeArchived: true,
   })
-  const { archiveCategory, createCategory, restoreCategory, updateCategory } =
+  const { archiveCategory, restoreCategory, updateCategory } =
     useCategoryMutations()
 
   const [draft, setDraft] = useState<Draft | null>(null)
+  const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -69,7 +71,8 @@ export default function CategorySettings() {
 
   const startCreate = () => {
     setError(null)
-    setDraft({ ...emptyDraft })
+    setDraft(null)
+    setCreating(true)
   }
 
   const startEdit = (category: ChoreCategory) => {
@@ -83,11 +86,12 @@ export default function CategorySettings() {
 
   const cancel = () => {
     setDraft(null)
+    setCreating(false)
     setError(null)
   }
 
   const save = async () => {
-    if (!draft) return
+    if (!draft || draft.id === undefined) return
     const name = normalizeCategoryName(draft.name)
     if (!name.ok) {
       setError(name.error)
@@ -96,20 +100,13 @@ export default function CategorySettings() {
     setError(null)
     setBusy(true)
     try {
-      if (draft.id === undefined) {
-        await createCategory.mutateAsync({
-          name: name.name,
-          color: draft.color,
-        })
-      } else {
-        // Name and color go together: the server persists both, so an edit
-        // that only renames must not blank the color.
-        await updateCategory.mutateAsync({
-          id: draft.id,
-          name: name.name,
-          color: draft.color,
-        })
-      }
+      // Name and color go together: the server persists both, so an edit
+      // that only renames must not blank the color.
+      await updateCategory.mutateAsync({
+        id: draft.id,
+        name: name.name,
+        color: draft.color,
+      })
       setDraft(null)
     } catch (caught) {
       // Surfaces the server's own message, including the 409 duplicate-name
@@ -136,7 +133,7 @@ export default function CategorySettings() {
   }
 
   const renderEditor = () => {
-    if (!draft) return null
+    if (!draft || draft.id === undefined) return null
     const editing = draft.id !== undefined
     return (
       <div
@@ -199,115 +196,128 @@ export default function CategorySettings() {
   }
 
   return (
-    <Section title='Categories'>
-      <div className='px-5 py-4 flex flex-col gap-3'>
-        <div className='flex items-center justify-between gap-3'>
-          <p className='text-muted' style={{ fontSize: 12, margin: 0 }}>
-            Categories group your tasks, assets and goals. They are shared with
-            everyone in your circle.
-          </p>
-          <button
-            className='btn btn-primary btn-sm'
-            onClick={startCreate}
-            disabled={busy}
-          >
-            <Icon name='plus' size={14} />
-            New category
-          </button>
-        </div>
-        {error && (
-          <div
-            role='alert'
-            data-testid='category-error'
-            className='text-sig-over'
-            style={{ fontSize: 12 }}
-          >
-            {error}
-          </div>
-        )}
-        {renderEditor()}
-      </div>
-
-      {isLoading ? (
-        <div className='px-5 py-4 text-faint' style={{ fontSize: 12 }}>
-          Loading categories…
-        </div>
-      ) : (
-        <>
-          {active.map(category => (
-            <Row key={category.id} label={category.name}>
-              <div className='flex items-center gap-3'>
-                <Swatch color={category.color} />
-                <button
-                  className='btn btn-ghost btn-sm'
-                  aria-label={'Edit ' + category.name}
-                  onClick={() => startEdit(category)}
-                  disabled={busy}
-                >
-                  <Icon name='edit' size={15} />
-                </button>
-                <button
-                  className='btn btn-ghost btn-sm'
-                  aria-label={'Archive ' + category.name}
-                  title={'Archive ' + category.name}
-                  onClick={() => void runArchive(category.id, true)}
-                  disabled={busy}
-                >
-                  {/* Deliberately not a trash icon: archiving is reversible
-                      and the row keeps every existing task assignment. */}
-                  <Icon name='x' size={15} />
-                </button>
-              </div>
-            </Row>
-          ))}
-          {active.length === 0 && !draft && (
-            <div
-              className='px-5 py-4 text-faint'
-              style={{ fontSize: 12 }}
-              data-testid='category-empty'
+    <>
+      <Section title='Categories'>
+        <div className='px-5 py-4 flex flex-col gap-3'>
+          <div className='flex items-center justify-between gap-3'>
+            <p className='text-muted' style={{ fontSize: 12, margin: 0 }}>
+              Categories group your tasks, assets and goals. They are shared
+              with everyone in your circle.
+            </p>
+            <button
+              className='btn btn-primary btn-sm'
+              onClick={startCreate}
+              disabled={busy}
             >
-              No categories yet. Create one to start grouping your tasks.
+              <Icon name='tag' size={14} />
+              {t('create.category.title')}
+            </button>
+          </div>
+          {error && (!draft || draft.id !== undefined) && (
+            <div
+              role='alert'
+              data-testid='category-error'
+              className='text-sig-over'
+              style={{ fontSize: 12 }}
+            >
+              {error}
             </div>
           )}
-        </>
-      )}
+          {renderEditor()}
+        </div>
 
-      {archived.length > 0 && (
-        <>
-          <div className='px-5 pt-4 pb-2 section-label' style={{ padding: 0 }}>
-            Archived
+        {isLoading ? (
+          <div className='px-5 py-4 text-faint' style={{ fontSize: 12 }}>
+            Loading categories…
           </div>
-          {archived.map(category => (
-            <Row
-              key={category.id}
-              label={category.name}
-              detail='Archived — existing tasks keep this category'
-            >
-              <div className='flex items-center gap-3'>
-                <span
-                  aria-hidden='true'
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: 4,
-                    flexShrink: 0,
-                    background: category.color || COLORS.ash,
-                    border: '1px solid var(--line-strong)',
-                    opacity: 0.45,
-                  }}
-                />
-                <button
-                  className='btn btn-secondary btn-sm'
-                  onClick={() => void runArchive(category.id, false)}
-                  disabled={busy}
-                >
-                  Restore
-                </button>
+        ) : (
+          <>
+            {active.map(category => (
+              <Row key={category.id} label={category.name}>
+                <div className='flex items-center gap-3'>
+                  <Swatch color={category.color} />
+                  <button
+                    className='btn btn-ghost btn-sm'
+                    aria-label={'Edit ' + category.name}
+                    onClick={() => startEdit(category)}
+                    disabled={busy}
+                  >
+                    <Icon name='edit' size={15} />
+                  </button>
+                  <button
+                    className='btn btn-ghost btn-sm'
+                    aria-label={'Archive ' + category.name}
+                    title={'Archive ' + category.name}
+                    onClick={() => void runArchive(category.id, true)}
+                    disabled={busy}
+                  >
+                    {/* Deliberately not a trash icon: archiving is reversible
+                      and the row keeps every existing task assignment. */}
+                    <Icon name='x' size={15} />
+                  </button>
+                </div>
+              </Row>
+            ))}
+            {active.length === 0 && !draft && !creating && (
+              <div
+                className='px-5 py-4 text-faint'
+                style={{ fontSize: 12 }}
+                data-testid='category-empty'
+              >
+                No categories yet. Create one to start grouping your tasks.
               </div>
-            </Row>
-          ))}
-        </>
-      )}
-    </Section>
+            )}
+          </>
+        )}
+
+        {archived.length > 0 && (
+          <>
+            <div
+              className='px-5 pt-4 pb-2 section-label'
+              style={{ padding: 0 }}
+            >
+              Archived
+            </div>
+            {archived.map(category => (
+              <Row
+                key={category.id}
+                label={category.name}
+                detail='Archived — existing tasks keep this category'
+              >
+                <div className='flex items-center gap-3'>
+                  <span
+                    aria-hidden='true'
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 4,
+                      flexShrink: 0,
+                      background: category.color || COLORS.ash,
+                      border: '1px solid var(--line-strong)',
+                      opacity: 0.45,
+                    }}
+                  />
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={() => void runArchive(category.id, false)}
+                    disabled={busy}
+                  >
+                    Restore
+                  </button>
+                </div>
+              </Row>
+            ))}
+          </>
+        )}
+      </Section>
+
+      {creating ? (
+        <CreateEntityModal
+          type='category'
+          onClose={cancel}
+          showToast={() => undefined}
+        />
+      ) : null}
+    </>
   )
 }
