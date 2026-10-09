@@ -118,10 +118,18 @@ const smokeChore = {
 const smokeShoppingList = {
   id: 7,
   name: 'Smoke Shopping List',
-  description: '',
   createdBy: 1,
-  isArchived: false,
+  circleId: null,
   items: [],
+}
+
+const smokeShoppingListSummary = {
+  id: smokeShoppingList.id,
+  name: smokeShoppingList.name,
+  createdBy: smokeShoppingList.createdBy,
+  circleId: smokeShoppingList.circleId,
+  itemCount: 0,
+  checkedCount: 0,
 }
 
 const smokeAsset = {
@@ -934,7 +942,7 @@ export const apiMockContract = [
     method: 'GET',
     path: /^\/api\/v1\/shopping-lists$/,
     query: noUnexpectedQuery(['includeArchived']),
-    response: () => json({ res: [smokeShoppingList] }),
+    response: () => json({ res: [smokeShoppingListSummary] }),
   }),
   endpoint({
     method: 'GET',

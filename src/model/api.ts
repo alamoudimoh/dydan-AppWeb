@@ -153,6 +153,11 @@ export type ApiShoppingList = {
   items: ApiShoppingItem[]
 }
 
+export type ApiShoppingListSummary = Omit<ApiShoppingList, 'items'> & {
+  itemCount: number
+  checkedCount: number
+}
+
 export type ApiGoal = {
   id: number
   circleId?: number

@@ -1,5 +1,6 @@
 import '../i18n'
 
+import type { TFunction } from 'i18next'
 import moment from 'moment'
 import {
   createContext,
@@ -49,7 +50,7 @@ type LocalizationState = {
   isRTL: boolean
   setLang: (l: Lang) => void
   toggleLang: () => void
-  t: (key: string) => string
+  t: TFunction
 
   /* Real app extended API */
   language: Lang

@@ -26,6 +26,7 @@ import type {
   ApiRewardRequest,
   ApiRoutinePack,
   ApiShoppingList,
+  ApiShoppingListSummary,
   ApiThing,
 } from '../model/api'
 import * as Fetcher from '../utils/Fetcher'
@@ -241,7 +242,20 @@ export function useRoutineMutations() {
 export function useShoppingLists() {
   return useQuery({
     queryKey: KEYS.shopping,
-    queryFn: () => parseRes<ApiShoppingList[]>(Fetcher.GetShoppingLists()),
+    queryFn: async () => {
+      // The collection route intentionally returns summaries without `items`.
+      // Hydrate each accessible list through its detail route so list-scoped,
+      // cross-list, and grouped views all use persisted server data. A failed
+      // detail request rejects the query rather than being disguised as [].
+      const summaries = await parseRes<ApiShoppingListSummary[]>(
+        Fetcher.GetShoppingLists(),
+      )
+      return Promise.all(
+        summaries.map(summary =>
+          parseRes<ApiShoppingList>(Fetcher.GetShoppingList(summary.id)),
+        ),
+      )
+    },
     enabled: authEnabled(),
   })
 }

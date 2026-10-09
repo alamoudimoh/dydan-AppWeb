@@ -834,6 +834,129 @@ html[dir='ltr'] .main-scroll > * {
   }
 }
 
+/* Shopping uses the shared page header + segmented tabs contract. These
+   classes only describe the list/item hierarchy inside each tab. */
+.shopping-list-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.shopping-list-card[aria-selected='true'] {
+  color: var(--selected-text);
+  background: var(--selected-bg);
+  border-color: var(--selected-border);
+}
+
+.shopping-list-card[aria-selected='true'] .text-primary,
+.shopping-list-card[aria-selected='true'] .text-muted {
+  color: inherit;
+}
+
+.shopping-entity-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  color: var(--brand);
+  background: var(--brand-faint);
+}
+
+.shopping-item-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.shopping-item-row:last-child {
+  border-bottom: 0;
+}
+
+.shopping-item-check {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  color: var(--check-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.shopping-item-check.is-checked {
+  border-color: var(--check-bg);
+  background: var(--check-bg);
+}
+
+.shopping-item-check:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.shopping-completed-heading {
+  padding: 8px 14px;
+  color: var(--t-muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shopping-overview-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.shopping-group-empty {
+  padding: 18px 14px;
+  font-size: 13px;
+}
+
+.shopping-share-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: var(--t-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+@media (max-width: 540px) {
+  .shopping-list-card {
+    padding: 10px;
+  }
+
+  .shopping-share-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .shopping-share-row .btn {
+    margin-inline-start: 46px;
+  }
+}
+
 @media (max-width: 640px) {
   /* Profile card: let the identity block and actions wrap and wrap long text
      instead of clipping the email address on narrow screens. */
