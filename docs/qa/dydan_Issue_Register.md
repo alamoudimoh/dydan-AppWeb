@@ -7,7 +7,7 @@
 
 ## 1. حدود السجل ودقة الأدلة
 
-- هذا سجل **14 بندًا** يجمع بلاغات المستخدم، ملاحظات UI/UX، إصلاحات أُنجزت، وبنودًا تحتاج تحققًا. لا يجوز تحويل ملاحظة غير متحققة إلى Bug تقني مؤكد.
+- هذا سجل **20 بندًا** يجمع بلاغات المستخدم، ملاحظات UI/UX، إصلاحات أُنجزت، وبنودًا تحتاج تحققًا. لا يجوز تحويل ملاحظة غير متحققة إلى Bug تقني مؤكد.
 - **Open:** ملاحظة/خلل قائم أو مطلب إصلاح لم يصلنا دليل إغلاقه بعد.
 - **Needs Verification:** توجد قرائن أو تنفيذ جزئي، لكن يلزم إثبات فعلي قبل الإغلاق.
 - **Closed:** أُغلق النطاق بدليل تنفيذ/اختبار/تقرير واضح ومذكور في البند.
@@ -23,6 +23,7 @@
 - التسمية الظاهرة `Maintenance → Assets` و`Things → Trackers` نُفذت في الواجهة ضمن Fix 03، لكن تقرير التنفيذ نفسه ذكر بقاء `/maintenance` و`/things` وبعض hooks/screen identifiers والـAPIs القديمة داخليًا؛ لذلك الهجرة ليست End-to-End بعد.
 - Fix 05 أنشأ Global Page UI System فعليًا: `PageShell`, `PageTabs`, `FilterSegment`, `EmptyState`, `PageHero`, `PageSection`, `EntityCard/EntityGrid/EntityList` مع tokens مركزية في `src/index.css`. المصدر يثبت migration واسعًا للصفحات، لكن القبول البصري النهائي ما زال يحتاج مراجعة فعلية؛ كما أن بوابة الاختبار البنيوية الحالية لا تشمل كل الشاشات التي ذكرها تقرير التنفيذ (مثل Activity/Notifications/Search) ضمن قائمة `PRIMARY_SHELL`.
 - خدمة `dydan-web.service` شُخّصت بأنها ماتت وبقيت dead بسبب `Restart=on-failure`، مع عدم وجود listener على 2925. تم تحديد الإصلاح الدائم المقترح، لكن لا يوجد في هذه المحادثة بعد دليل تنفيذ/تحقق نهائي بعد التعديل.
+- مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بعد Fix 05 أثبتت ست ملاحظات إضافية: flash للثيم عند refresh، عدم احترام المحتوى السفلي للـmobile footer dock/safe area، اختلاف أزرار الإضافة بين الصفحات في الموضع والحجم، تكرار Shopping selected-list summary مع detail في mobile stack، ازدحام vertical rhythm في Shopping على الجوال، وعدم توازن Home stat grid عندما تكون ثلاث بطاقات.
 
 ## 3. الجدول الرئيسي
 
@@ -42,8 +43,14 @@
 | [DYD-012](#dyd-012) | Terminology | خلل سابق | Join code كان يظهر بدل dydan code | P3 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-013](#dyd-013) | Infrastructure | خلل تشغيل مؤكد | dydan-web.service يتوقف ولا يعود تلقائيًا؛ 2925 يصبح connection refused | P1 | **Open** | تشخيص 2026-10-10؛ Restart=on-failure + service dead |
 | [DYD-014](#dyd-014) | UI/UX | خلل سابق محدود | Shopping list buttons/content wrapping كان فيه alignment issue | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
+| [DYD-015](#dyd-015) | Theme / Startup UI | بلاغ بصري مؤكد | عند refresh يظهر theme غير المختار لجزء من الثانية ثم يتحول للثيم المحفوظ | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-016](#dyd-016) | Mobile UI | بلاغ بصري مؤكد | المحتوى السفلي لا يحترم mobile footer dock / safe area وقد يصل خلفه أو يقترب منه بشكل غير صحيح | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-017](#dyd-017) | UI/UX Architecture | بلاغ بصري مؤكد | أزرار الإضافة في PageHeader تختلف بين الصفحات في الموضع والحجم والسلوك على mobile | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-018](#dyd-018) | Shopping / Mobile UI | بلاغ بصري مؤكد | Shopping يكرر selected-list summary ثم يعرض نفس القائمة مرة أخرى كرأس detail في التخطيط العمودي | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-019](#dyd-019) | Shopping / Mobile UI | بلاغ بصري مؤكد | vertical rhythm في Shopping مزدحم بين tabs/list/detail/actions/items/share | P2 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-020](#dyd-020) | Home / Mobile UI | بلاغ بصري مؤكد | Home stats بثلاث بطاقات يظهر 2+1 ويترك نصف صف فارغ | P2 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
 
-**ملخص الحالات:** Open: 2 · Needs Verification: 3 · Closed: 9 · **الإجمالي: 14**
+**ملخص الحالات:** Open: 8 · Needs Verification: 3 · Closed: 9 · **الإجمالي: 20**
 
 ## 4. تفاصيل البنود
 
@@ -175,6 +182,60 @@
 - **الإغلاق:** Fix 01 نفذ هذا النطاق المحدود.
 - **الدليل:** commit `859d50492c18ce43198c4b64714a79233599982d`.
 - **حدود الإغلاق:** لا يغلق DYD-006؛ المشكلة الحالية أوسع وتشمل hierarchy/tabs/empty state/sharing/content presentation.
+
+### DYD-015 — Theme flash عند refresh
+
+- **التصنيف / النوع / الأولوية / الحالة:** Theme / Startup UI · بلاغ بصري مؤكد · P1 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** عند refresh/reload يظهر theme مختلف عن اختيار المستخدم لجزء من الثانية، ثم يتحول إلى الثيم المحفوظ بعد بدء التطبيق.
+- **السلوك المطلوب:** أول frame مرئي يجب أن يستخدم theme المختار أو يمنع إظهار واجهة ذات theme خاطئ حتى تصبح قيمة الثيم معروفة؛ لا FOUC/theme flash.
+- **معايير القبول:** hard refresh وreload متكرر في Dydan/Sovereign وlight/dark؛ لا يظهر أي frame من theme غير المختار. التحقق بصريًا وفنيًا قبل React paint/hydration وليس بإخفاء transition فقط.
+- **حدود الإثبات:** الخلل بصري مؤكد؛ السبب التقني لم يُشخّص بعد.
+
+### DYD-016 — Mobile footer dock / safe-area overlap
+
+- **التصنيف / النوع / الأولوية / الحالة:** Mobile UI · بلاغ بصري مؤكد · P1 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** نهاية محتوى الصفحة لا تحجز مساحة متوافقة مع الـmobile footer dock/safe area؛ المحتوى قد يصل خلف الـdock أو يصبح قريبًا منه بصورة غير صحيحة.
+- **السلوك المطلوب:** PageShell/mobile scroll region يحجز bottom inset موحدًا مبنيًا على ارتفاع الـfooter dock + `env(safe-area-inset-bottom)` حيث يلزم.
+- **معايير القبول:** آخر عنصر في كل primary page يمكن تمريره بالكامل فوق الـdock ولا يُحجب، في 390×900 وعلى device-like viewport، LTR/RTL، مع وجود/غياب safe-area inset.
+- **حدود الإثبات:** لا يُحل بإضافة padding يدوي مختلف لكل صفحة؛ يجب أن يكون Global PageShell/AppShell rule.
+
+### DYD-017 — اختلاف PageHeader create actions على mobile
+
+- **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · بلاغ بصري مؤكد · P1 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** أزرار الإضافة/الإنشاء في رؤوس الصفحات تختلف في موضعها وحجمها عند mobile؛ مثال واضح اختلاف `New Goal` عن `New Shopping List`.
+- **السلوك المطلوب:** `PageHeader` يمتلك عقدًا موحدًا للـcontextual primary action على mobile: نفس height/min-width policy، نفس alignment، نفس wrapping/stacking rule، ونفس gap من title/subtitle.
+- **معايير القبول:** المقارنة بين Projects/Routines/Assets/Shopping/Goals وغيرها تُظهر نفس action geometry عندما تكون من نفس النوع، مع اختلاف النص/icon فقط؛ لا screen-specific button positioning.
+- **حدود الإثبات:** هذا بند مستقل عن ثبات page-title anchor؛ يمكن أن يكون العنوان ثابتًا بينما action layout ما زال غير موحد.
+
+### DYD-018 — Shopping selected-list duplication على mobile
+
+- **التصنيف / النوع / الأولوية / الحالة:** Shopping / Mobile UI · بلاغ بصري مؤكد · P1 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** في mobile stack تظهر بطاقة القائمة المختارة كـsummary ثم يعاد اسم/summary نفس القائمة مباشرة في منطقة detail، فيبدو المحتوى مكررًا.
+- **السلوك المطلوب:** master/detail responsive pattern يجب ألا يعرض نفس الهوية/summary مرتين متتاليتين عند collapse إلى عمود واحد. يبقى اختيار القائمة واضحًا دون duplicate visual block.
+- **معايير القبول:** اختيار قائمة ذات عناصر على 390×900 يعرض هوية القائمة مرة واحدة فقط قبل العناصر/actions، مع بقاء modify/new-item functionality واضحة.
+- **حدود الإثبات:** لا يجوز حذف معلومات لازمة من desktop؛ الحل يجب أن يكون responsive composition مشتركًا.
+
+### DYD-019 — Shopping mobile vertical rhythm مزدحم
+
+- **التصنيف / النوع / الأولوية / الحالة:** Shopping / Mobile UI · بلاغ بصري مؤكد · P2 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** التسلسل `Tabs → selected list → detail controls → New Item → items → share` متقارب ومجزأ بصريًا، ويستهلك مساحة رأسية أكثر من اللازم.
+- **السلوك المطلوب:** بعد إزالة التكرار، تستخدم Shopping نفس shared section/card/action rhythm المعتمد لباقي الصفحات، مع hierarchy واضح بين list identity وactions وitems وsharing.
+- **معايير القبول:** لا توجد كتل متجاورة تؤدي نفس الغرض، والمسافات تستمد من shared tokens/PageSection وليس margins محلية متفرقة.
+- **حدود الإثبات:** لا يُقاس النجاح بمجرد تقليل ارتفاع الصفحة؛ المطلوب hierarchy أوضح بدون فقد وظيفة.
+
+### DYD-020 — Home stat grid غير متوازن عند ثلاث بطاقات
+
+- **التصنيف / النوع / الأولوية / الحالة:** Home / Mobile UI · بلاغ بصري مؤكد · P2 · Open
+- **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
+- **الوصف:** على mobile تظهر بطاقات الإحصائيات بثلاثة عناصر على هيئة صف من بطاقتين ثم بطاقة ثالثة بعرض نصف الصف، فتترك نصف صف فارغًا.
+- **السلوك المطلوب:** mobile dashboard grid يتعامل مع العدد الفردي بشكل مقصود؛ البطاقة الأخيرة لا تبدو كخلل تخطيط.
+- **معايير القبول:** عند 3 بطاقات، إما الأخيرة تمتد عرض الصف أو يستخدم pattern متوازن معتمد؛ لا نصف صف فارغ غير مقصود. يجب ألا يكسر ذلك 2/4 بطاقات أو desktop.
+- **حدود الإثبات:** تعديل grid فقط؛ لا تغيير في معنى أو بيانات بطاقات Home.
 
 ## 5. ملكية الملف والتحديث
 
