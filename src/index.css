@@ -137,10 +137,39 @@
 
   --sidebar-w: 244px;
 
+  /* ── Global page-layout spacing vocabulary (Fix 05) ──
+     One small central vocabulary. Screens consume these roles through the
+     shared primitives below — never by copying numeric values per screen. */
+  --page-max-standard: 1080px;
+  --page-max-wide: 1280px;
+  --page-max-reading: 720px;
+  --page-gutter: 28px;
+  --page-bottom: 48px;
+  --page-top-inset: 26px;
+  --header-rhythm: 4px;
+  --header-hero-gap: 20px;
+  --header-tabs-gap: 20px;
+  --hero-tabs-gap: 20px;
+  --tabs-content-gap: 20px;
+  --section-gap: 24px;
+  --card-padding: 20px;
+  --grid-gap: 16px;
+  --empty-max: 440px;
+  --empty-padding-block: 60px;
+  --empty-padding-inline: 32px;
+  --empty-gap: 12px;
+
   /* Shared shell height for the desktop header band. The brand-rail header and
      the main top bar both resolve their height from this one token, so their
      1px bottom borders always land on the same horizontal pixel line. */
   --app-topbar-height: 60px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --page-gutter: 16px;
+    --page-top-inset: 20px;
+  }
 }
 
 /* dydan Dark — exact Rhythm Violet semantic values */
@@ -2347,4 +2376,255 @@ html[data-density='compact'] .page-container .card > .px-5.py-5 {
 
 .color-picker-field .member-options::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ─── Global page UI system (Fix 05) ─────────────────────
+   One canonical implementation per UI pattern. Screens compose these
+   primitives instead of redefining geometry. */
+.page {
+  width: 100%;
+  max-width: var(--page-max-standard);
+  margin: 0 auto;
+  padding: 0 0 var(--page-bottom);
+  min-width: 0;
+  overflow-x: clip;
+}
+.page--standard {
+  max-width: var(--page-max-standard);
+}
+.page--wide {
+  max-width: var(--page-max-wide);
+}
+.page--reading {
+  max-width: var(--page-max-reading);
+}
+.page-body {
+  padding-inline: var(--page-gutter);
+  min-width: 0;
+}
+
+/* Canonical page tabs — single source of truth for Assets / Shopping /
+   Rewards tab geometry. Mirrors the approved segmented contract with an
+   explicit stable height so equivalent instances match within subpixels. */
+.page-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--tabs-content-gap);
+  background: var(--segmented-track, var(--surface-2));
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  min-width: 0;
+}
+.page-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--t-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+}
+.page-tab:not(.active):hover {
+  background: var(--surface-3);
+  color: var(--t-primary);
+}
+.page-tab.active,
+.page-tab.active:hover {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+.page-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* Canonical compact filter / segmented control (Routines, task filters). */
+.filter-segment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  min-width: 0;
+}
+.filter-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 11px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--action-secondary-border);
+  background: var(--action-secondary-bg);
+  color: var(--action-secondary-text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.filter-segment-btn.active {
+  background: var(--action-primary-bg);
+  border-color: var(--action-primary-border);
+  color: var(--action-primary-text);
+}
+.filter-segment-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+@media (max-width: 768px) {
+  .filter-segment {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+  .filter-segment-btn {
+    flex: 0 0 auto;
+  }
+}
+
+/* Canonical empty state — geometry owned here, content supplied by pages. */
+.empty-state {
+  width: 100%;
+  max-width: var(--empty-max);
+  margin-inline: auto;
+}
+.empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--t-muted);
+}
+.empty-state__title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--t-primary);
+}
+.empty-state__description {
+  font-size: 13px;
+  color: var(--t-muted);
+  max-width: 36ch;
+}
+.empty-state__action {
+  margin-top: 4px;
+}
+
+/* Shared hero / summary outer geometry. */
+.page-hero {
+  width: 100%;
+  min-width: 0;
+  border-radius: var(--r-lg);
+  padding: var(--card-padding);
+  margin-bottom: var(--hero-tabs-gap);
+  border: 1px solid transparent;
+}
+.page-hero--callout {
+  background: var(--callout-bg);
+  color: var(--callout-text);
+  border-color: transparent;
+}
+.page-hero--surface {
+  background: var(--surface);
+  color: var(--t-primary);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.page-hero--dashboard {
+  background: var(--home-hero-bg);
+  color: var(--home-hero-text);
+  border-color: transparent;
+  padding: 28px 24px;
+}
+@media (max-width: 768px) {
+  .page-hero {
+    padding: 16px;
+  }
+  .page-hero--dashboard {
+    padding: 20px 16px 28px;
+    border-radius: var(--r-lg);
+  }
+}
+
+/* Shared section pattern. */
+.page-section {
+  margin-bottom: var(--section-gap);
+  min-width: 0;
+}
+.page-section:last-child {
+  margin-bottom: 0;
+}
+.page-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+.page-section__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--t-primary);
+}
+.page-section__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Shared entity-card anatomy + grids. */
+.entity-card--standard {
+  padding: var(--card-padding);
+}
+.entity-card--compact {
+  padding: 16px;
+}
+.entity-card--summary {
+  padding: 16px;
+}
+.entity-grid {
+  display: grid;
+  gap: var(--grid-gap);
+  min-width: 0;
+}
+.entity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Header→hero and header→tabs rhythm uses the shared vocabulary. */
+.page-body > .page-hero:first-child {
+  margin-top: 0;
+}
+.page-header + .page-body,
+.page-body > .page-tabs:first-child {
+  margin-top: 0;
+}
+.page-header__actions .filter-segment {
+  margin-bottom: 0;
 }

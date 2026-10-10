@@ -76,12 +76,12 @@ for (const { appearance, theme } of COMBINATIONS) {
     const selectedBg = await resolvedColor(page, '--selected-bg')
     const selectedText = await resolvedColor(page, '--selected-text')
     const trackBg = await page.evaluate(() => {
-      const track = document.querySelector('.seg-tabs')
+      const track = document.querySelector('.page-tabs')
       return getComputedStyle(track).backgroundColor
     })
 
     // The active segment is the selected one by default.
-    const active = page.locator('.seg-tab.active')
+    const active = page.locator('.page-tab.active')
     await expect(active).toHaveCount(1)
     await expect(active).toHaveAttribute('aria-pressed', 'true')
     await expectPainted(active, 'backgroundColor', selectedBg)
@@ -91,14 +91,14 @@ for (const { appearance, theme } of COMBINATIONS) {
 
     // Switching tabs moves the selected treatment, it does not leave it behind.
     await page.getByRole('button', { name: /Meters \(\d+\)/ }).click()
-    const meters = page.locator('.seg-tab.active')
+    const meters = page.locator('.page-tab.active')
     await expect(meters).toHaveCount(1)
     await expect(meters).toHaveText(/Meters/)
     await expectPainted(meters, 'backgroundColor', selectedBg)
     await expectPainted(meters, 'color', selectedText)
 
     // The inactive segment stays on the plain track with primary text.
-    const inactive = page.locator('.seg-tab:not(.active)').first()
+    const inactive = page.locator('.page-tab:not(.active)').first()
     await expectPainted(inactive, 'backgroundColor', 'rgba(0, 0, 0, 0)')
     await expectPainted(
       inactive,
@@ -118,7 +118,7 @@ for (const { appearance, theme } of COMBINATIONS) {
 
     // The same contract holds for the Rewards segmented control.
     await page.goto('/rewards', { waitUntil: 'networkidle' })
-    const rewardsActive = page.locator('.seg-tab.active')
+    const rewardsActive = page.locator('.page-tab.active')
     await expect(rewardsActive).toHaveCount(1)
     await expectPainted(rewardsActive, 'backgroundColor', selectedBg)
 

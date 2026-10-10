@@ -1,6 +1,12 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  PageSection,
+  PageShell,
+  PageTabs,
+} from '../components/page'
 import PageHeader from '../components/PageHeader'
 import { useLocalization } from '../contexts/LocalizationContext'
 import { ShoppingItem, ShoppingList } from '../data'
@@ -165,15 +171,12 @@ export default function ShoppingScreen({
   )
 
   const zeroLists = (
-    <div className='empty-state' data-testid='shopping-zero-lists'>
-      <Icon name='shopping' size={38} />
-      <div className='font-bold text-primary'>
-        {tr('shopping.empty.noListsTitle')}
-      </div>
-      <div className='text-muted' style={{ fontSize: 13 }}>
-        {tr('shopping.empty.noListsDescription')}
-      </div>
-    </div>
+    <EmptyState
+      testId='shopping-zero-lists'
+      icon={<Icon name='shopping' size={38} />}
+      title={tr('shopping.empty.noListsTitle')}
+      description={tr('shopping.empty.noListsDescription')}
+    />
   )
 
   const renderListDetail = (list: ShoppingList) => {
@@ -330,15 +333,12 @@ export default function ShoppingScreen({
 
         <div className='card overflow-hidden'>
           {list.items.length === 0 ? (
-            <div className='empty-state' data-testid='shopping-zero-items'>
-              <Icon name='shopping_item' size={34} />
-              <div className='font-bold text-primary'>
-                {tr('shopping.empty.listTitle')}
-              </div>
-              <div className='text-muted' style={{ fontSize: 13 }}>
-                {tr('shopping.empty.listDescription')}
-              </div>
-            </div>
+            <EmptyState
+              testId='shopping-zero-items'
+              icon={<Icon name='shopping_item' size={34} />}
+              title={tr('shopping.empty.listTitle')}
+              description={tr('shopping.empty.listDescription')}
+            />
           ) : (
             <>
               {todo.map(item => {
@@ -469,15 +469,12 @@ export default function ShoppingScreen({
     if (!visibleLists.length) return zeroLists
     if (!allItems.length)
       return (
-        <div className='empty-state' data-testid='shopping-zero-all-items'>
-          <Icon name='shopping_item' size={38} />
-          <div className='font-bold text-primary'>
-            {tr('shopping.empty.allItemsTitle')}
-          </div>
-          <div className='text-muted' style={{ fontSize: 13 }}>
-            {tr('shopping.empty.allItemsDescription')}
-          </div>
-        </div>
+        <EmptyState
+          testId='shopping-zero-all-items'
+          icon={<Icon name='shopping_item' size={38} />}
+          title={tr('shopping.empty.allItemsTitle')}
+          description={tr('shopping.empty.allItemsDescription')}
+        />
       )
     return (
       <div className='card overflow-hidden' data-testid='shopping-items-tab'>
@@ -533,91 +530,76 @@ export default function ShoppingScreen({
   }
 
   return (
-    <div
-      style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}
-      data-testid='shopping-page'
+    <PageShell
+      testId='shopping-page'
+      header={
+        <PageHeader
+          title={tr('nav.shopping')}
+          subtitle={
+            isSolo
+              ? tr('shopping.page.subtitleSolo')
+              : tr('shopping.page.subtitleFamily')
+          }
+          actions={
+            <button
+              type='button'
+              className='btn btn-primary'
+              data-testid='shopping-create-list'
+              onClick={openCreateList}
+            >
+              <Icon name='shopping' size={14} />
+              {tr('create.shoppingList.title')}
+            </button>
+          }
+        />
+      }
     >
-      <PageHeader
-        title={tr('nav.shopping')}
-        subtitle={
-          isSolo
-            ? tr('shopping.page.subtitleSolo')
-            : tr('shopping.page.subtitleFamily')
-        }
-        actions={
-          <button
-            type='button'
-            className='btn btn-primary'
-            data-testid='shopping-create-list'
-            onClick={openCreateList}
-          >
-            <Icon name='shopping' size={14} />
-            {tr('create.shoppingList.title')}
-          </button>
-        }
+      <PageTabs
+        ariaLabel={tr('shopping.sectionsLabel')}
+        testId='shopping-tabs'
+        value={tab}
+        onChange={id => setTab(id as ShoppingTab)}
+        tabs={[
+          { id: 'lists', label: tr('shopping.tabs.lists') },
+          { id: 'items', label: tr('shopping.tabs.items') },
+          { id: 'overview', label: tr('shopping.tabs.overview') },
+        ]}
       />
 
-      <div className='px-4 md:px-7'>
-        <div
-          className='seg-tabs mb-5'
-          role='group'
-          aria-label={tr('shopping.sectionsLabel')}
-          data-testid='shopping-tabs'
-        >
-          {(
-            [
-              { id: 'lists', label: tr('shopping.tabs.lists') },
-              { id: 'items', label: tr('shopping.tabs.items') },
-              { id: 'overview', label: tr('shopping.tabs.overview') },
-            ] as const
-          ).map(item => (
-            <button
-              key={item.id}
-              type='button'
-              className={`seg-tab ${tab === item.id ? 'active' : ''}`}
-              aria-pressed={tab === item.id}
-              onClick={() => setTab(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
+      {shoppingQuery.isPending ? (
+        <div className='card' data-testid='shopping-loading'>
+          <EmptyState
+            icon={<Icon name='shopping' size={34} />}
+            title={tr('shopping.loading')}
+          />
         </div>
+      ) : shoppingQuery.isError ? (
+        <div className='card' role='alert' data-testid='shopping-load-error'>
+          <EmptyState
+            icon={<Icon name='shopping' size={34} />}
+            title={tr('shopping.error.loadTitle')}
+            description={tr('shopping.error.loadDescription')}
+            action={
+              <button
+                type='button'
+                className='btn btn-secondary mt-2'
+                onClick={() => shoppingQuery.refetch()}
+              >
+                {tr('shopping.retry')}
+              </button>
+            }
+          />
+        </div>
+      ) : tab === 'lists' ? (
+        renderListsTab()
+      ) : tab === 'items' ? (
+        renderItemsTab()
+      ) : (
+        renderOverviewTab()
+      )}
 
-        {shoppingQuery.isPending ? (
-          <div className='card empty-state' data-testid='shopping-loading'>
-            <Icon name='shopping' size={34} />
-            <div className='text-muted'>{tr('shopping.loading')}</div>
-          </div>
-        ) : shoppingQuery.isError ? (
-          <div
-            className='card empty-state'
-            role='alert'
-            data-testid='shopping-load-error'
-          >
-            <Icon name='shopping' size={34} />
-            <div className='font-bold text-primary'>
-              {tr('shopping.error.loadTitle')}
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              {tr('shopping.error.loadDescription')}
-            </div>
-            <button
-              type='button'
-              className='btn btn-secondary mt-2'
-              onClick={() => shoppingQuery.refetch()}
-            >
-              {tr('shopping.retry')}
-            </button>
-          </div>
-        ) : tab === 'lists' ? (
-          renderListsTab()
-        ) : tab === 'items' ? (
-          renderItemsTab()
-        ) : (
-          renderOverviewTab()
-        )}
-
-        {isSolo ? (
+      {isSolo ? (
+        <PageSection>
           <aside
             className='shopping-share-row mt-5'
             data-testid='shopping-sharing-action'
@@ -642,8 +624,8 @@ export default function ShoppingScreen({
               {tr('shopping.sharing.action')}
             </button>
           </aside>
-        ) : null}
-      </div>
-    </div>
+        </PageSection>
+      ) : null}
+    </PageShell>
   )
 }

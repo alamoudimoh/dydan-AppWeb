@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  EntityCard,
+  PageSection,
+  PageShell,
+} from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type { Member, Task } from '../data'
 import { formatDate, formatTimestamp } from '../data'
@@ -22,7 +28,7 @@ function StatCard({
   icon: string
 }) {
   return (
-    <div className='card p-5 flex flex-col gap-2'>
+    <EntityCard variant='summary' className='flex flex-col gap-2'>
       <div className='flex items-center justify-between'>
         <span
           className='text-muted'
@@ -59,7 +65,7 @@ function StatCard({
           {sub}
         </div>
       )}
-    </div>
+    </EntityCard>
   )
 }
 
@@ -235,28 +241,30 @@ export default function FocusHome({
   const activeGoal = goals[0]
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      {/* Hero greeting */}
-      <PageHeader
-        title={
-          <>
-            {t(`home.greeting.${greetingPeriod(localNow)}`)}, {me.name}
-          </>
-        }
-        eyebrow={new Date().toLocaleDateString('en-GB', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        })}
-        subtitle={
-          overdueList.length > 0
-            ? `${overdueList.length} task${overdueList.length > 1 ? 's' : ''} overdue — let's clear them first.`
-            : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`
-        }
-      />
-
-      <div className='px-4 md:px-7'>
+    <PageShell
+      testId='home-page'
+      header={
+        <PageHeader
+          title={
+            <>
+              {t(`home.greeting.${greetingPeriod(localNow)}`)}, {me.name}
+            </>
+          }
+          eyebrow={new Date().toLocaleDateString('en-GB', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}
+          subtitle={
+            overdueList.length > 0
+              ? `${overdueList.length} task${overdueList.length > 1 ? 's' : ''} overdue — let's clear them first.`
+              : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`
+          }
+        />
+      }
+    >
+      <PageSection>
         {/* Stats row */}
         <div
           className='grid gap-3 mb-6'
@@ -375,12 +383,11 @@ export default function FocusHome({
               </div>
               <div className='py-1'>
                 {myTasks.length === 0 ? (
-                  <div className='empty-state py-10'>
-                    <div style={{ fontSize: 32 }}>🎉</div>
-                    <div className='font-bold text-primary'>
-                      All done for today!
-                    </div>
-                  </div>
+                  <EmptyState
+                    testId='home-zero-today'
+                    icon={<span aria-hidden='true'>🎉</span>}
+                    title='All done for today!'
+                  />
                 ) : (
                   myTasks.map(t => (
                     <TaskRow
@@ -702,7 +709,7 @@ export default function FocusHome({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </PageSection>
+    </PageShell>
   )
 }

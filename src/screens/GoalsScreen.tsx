@@ -1,4 +1,11 @@
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  EntityCard,
+  EntityGrid,
+  PageSection,
+  PageShell,
+} from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type { Goal } from '../data'
 import { useGoalMutations } from '../hooks/useHousehold'
@@ -46,36 +53,35 @@ export default function GoalsScreen({
     })
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <PageHeader
-        title='Goals'
-        subtitle='Live circle goals and measured progress'
-        actions={
-          !isChild ? (
-            <button
-              className='btn btn-primary'
-              onClick={() => ctx.openCreate('goal')}
-            >
-              <Icon name='goals' size={14} />
-              New goal
-            </button>
-          ) : undefined
-        }
-      />
-      <div className='px-4 md:px-7'>
-        <div
-          className='grid gap-3'
-          style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          }}
-        >
+    <PageShell
+      testId='goals-page'
+      header={
+        <PageHeader
+          title='Goals'
+          subtitle='Live circle goals and measured progress'
+          actions={
+            !isChild ? (
+              <button
+                className='btn btn-primary'
+                onClick={() => ctx.openCreate('goal')}
+              >
+                <Icon name='goals' size={14} />
+                New goal
+              </button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      <PageSection>
+        <EntityGrid min={260} testId='goals-grid'>
           {goals.map(goal => {
             const percent = Math.min(
               100,
               Math.round((goal.progress / goal.target) * 100),
             )
             return (
-              <div key={goal.id} className='card p-5'>
+              <EntityCard key={goal.id}>
                 <div className='flex items-start justify-between gap-3'>
                   <div>
                     <div className='font-bold text-primary'>{goal.name}</div>
@@ -111,19 +117,18 @@ export default function GoalsScreen({
                     </button>
                   </div>
                 )}
-              </div>
+              </EntityCard>
             )
           })}
-        </div>
-        {!goals.length && (
-          <div className='empty-state'>
-            <div className='font-bold text-primary'>No goals yet</div>
-            <div className='text-muted'>
-              Create a live goal to track measured progress.
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </EntityGrid>
+      </PageSection>
+      {!goals.length && (
+        <EmptyState
+          testId='goals-zero'
+          title='No goals yet'
+          description='Create a live goal to track measured progress.'
+        />
+      )}
+    </PageShell>
   )
 }

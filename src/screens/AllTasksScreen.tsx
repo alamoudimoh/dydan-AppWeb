@@ -1,6 +1,12 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  FilterSegment,
+  PageSection,
+  PageShell,
+} from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type { Task } from '../data'
 import { formatDate } from '../data'
@@ -201,209 +207,171 @@ export default function AllTasksScreen({
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <PageHeader
-        title='All Tasks'
-        subtitle={
-          <>
-            {filtered.length} task{filtered.length !== 1 ? 's' : ''}{' '}
-            {search ? `matching "${search}"` : ''}
-          </>
-        }
-      />
-
-      <div className='px-4 md:px-7'>
-        {/* Summary chips */}
-        <div className='flex flex-wrap gap-2 mb-4'>
-          {statusCounts.overdue > 0 && (
-            <button
-              onClick={() => setFilter('overdue')}
-              className='badge bg-sig-over-bg text-sig-over'
-              style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-            >
-              {statusCounts.overdue} overdue
-            </button>
-          )}
+    <PageShell
+      testId='all-tasks-page'
+      header={
+        <PageHeader
+          title='All Tasks'
+          subtitle={
+            <>
+              {filtered.length} task{filtered.length !== 1 ? 's' : ''}{' '}
+              {search ? `matching "${search}"` : ''}
+            </>
+          }
+        />
+      }
+    >
+      {/* Summary chips */}
+      <div className='flex flex-wrap gap-2 mb-4'>
+        {statusCounts.overdue > 0 && (
           <button
-            onClick={() => setFilter('todo')}
-            className='badge bg-surface-2 text-muted'
+            onClick={() => setFilter('overdue')}
+            className='badge bg-sig-over-bg text-sig-over'
             style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
           >
-            {statusCounts.todo} to do
+            {statusCounts.overdue} overdue
           </button>
-          <button
-            onClick={() => setFilter('upcoming')}
-            className='badge bg-brand-faint text-brand'
-            style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-          >
-            {statusCounts.upcoming} upcoming
-          </button>
-          <button
-            onClick={() => setFilter('done')}
-            className='badge bg-sig-done-bg text-sig-done'
-            style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-          >
-            {statusCounts.done} done
-          </button>
-        </div>
-
-        {/* Search + filter bar */}
-        <div className='flex gap-2 mb-4'>
-          <div className='task-search-shell flex-1 relative'>
-            <Icon
-              name='search'
-              size={15}
-              style={{
-                position: 'absolute',
-                left: 11,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--t-faint)',
-              }}
-            />
-            <input
-              className='task-search-input'
-              aria-label='Filter all tasks'
-              style={{ paddingInlineStart: 34, fontSize: 14 }}
-              placeholder='Search tasks...'
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <button
-            className={`btn btn-secondary ${showFilters ? 'border-brand text-brand' : ''}`}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Icon name='bars' size={15} />
-            Filters
-          </button>
-        </div>
-
-        {/* Filter panel */}
-        {showFilters && (
-          <div className='card p-4 mb-4'>
-            <div className='flex flex-wrap gap-4'>
-              <div>
-                <div className='section-label mb-2' style={{ padding: 0 }}>
-                  Status
-                </div>
-                <div className='flex flex-wrap gap-1'>
-                  {(
-                    ['all', 'todo', 'overdue', 'upcoming', 'done'] as Filter[]
-                  ).map(f => (
-                    <button
-                      key={f}
-                      onClick={() => setFilter(f)}
-                      className='btn btn-sm capitalize'
-                      style={{
-                        background:
-                          filter === f ? 'var(--brand)' : 'var(--surface-2)',
-                        color:
-                          filter === f
-                            ? 'var(--brand-contrast)'
-                            : 'var(--t-muted)',
-                        border: 'none',
-                      }}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {!isChild && (
-                <div>
-                  <div className='section-label mb-2' style={{ padding: 0 }}>
-                    Group by
-                  </div>
-                  <div className='flex flex-wrap gap-1'>
-                    {(
-                      [
-                        'status',
-                        'assignee',
-                        'category',
-                        'priority',
-                      ] as GroupBy[]
-                    ).map(g => (
-                      <button
-                        key={g}
-                        onClick={() => setGroupBy(g)}
-                        className='btn btn-sm capitalize'
-                        style={{
-                          background:
-                            groupBy === g ? 'var(--brand)' : 'var(--surface-2)',
-                          color:
-                            groupBy === g
-                              ? 'var(--brand-contrast)'
-                              : 'var(--t-muted)',
-                          border: 'none',
-                        }}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         )}
+        <button
+          onClick={() => setFilter('todo')}
+          className='badge bg-surface-2 text-muted'
+          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
+        >
+          {statusCounts.todo} to do
+        </button>
+        <button
+          onClick={() => setFilter('upcoming')}
+          className='badge bg-brand-faint text-brand'
+          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
+        >
+          {statusCounts.upcoming} upcoming
+        </button>
+        <button
+          onClick={() => setFilter('done')}
+          className='badge bg-sig-done-bg text-sig-done'
+          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
+        >
+          {statusCounts.done} done
+        </button>
+      </div>
 
-        {/* Task groups */}
-        {groups.length === 0 ? (
-          <div className='empty-state'>
-            <div style={{ fontSize: 48 }}>🔍</div>
-            <div className='font-bold text-primary' style={{ fontSize: 16 }}>
-              No tasks found
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              {search
-                ? 'Try a different search.'
-                : 'Add your first task to get started.'}
-            </div>
-            <div className='text-muted' style={{ fontSize: 12 }}>
-              Use + beside notifications to create a task.
-            </div>
+      {/* Search + filter bar */}
+      <div className='flex gap-2 mb-4'>
+        <div className='task-search-shell flex-1 relative'>
+          <Icon
+            name='search'
+            size={15}
+            style={{
+              position: 'absolute',
+              left: 11,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--t-faint)',
+            }}
+          />
+          <input
+            className='task-search-input'
+            aria-label='Filter all tasks'
+            style={{ paddingInlineStart: 34, fontSize: 14 }}
+            placeholder='Search tasks...'
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <button
+          className={`btn btn-secondary ${showFilters ? 'border-brand text-brand' : ''}`}
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <Icon name='bars' size={15} />
+          Filters
+        </button>
+      </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <div className='card p-4 mb-4'>
+          <div className='flex flex-wrap gap-4'>
+            <PageSection title='Status'>
+              <FilterSegment
+                ariaLabel='Task status filter'
+                value={filter}
+                onChange={id => setFilter(id as Filter)}
+                options={(
+                  ['all', 'todo', 'overdue', 'upcoming', 'done'] as Filter[]
+                ).map(f => ({ id: f, label: f }))}
+              />
+            </PageSection>
+            {!isChild && (
+              <PageSection title='Group by'>
+                <FilterSegment
+                  ariaLabel='Task group by'
+                  value={groupBy}
+                  onChange={id => setGroupBy(id as GroupBy)}
+                  options={(
+                    ['status', 'assignee', 'category', 'priority'] as GroupBy[]
+                  ).map(g => ({ id: g, label: g }))}
+                />
+              </PageSection>
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Task groups */}
+      {groups.length === 0 ? (
+        search ? (
+          <EmptyState
+            testId='all-tasks-zero-results'
+            icon={<span aria-hidden='true'>🔍</span>}
+            title='No matching tasks'
+            description='Try a different search.'
+          />
         ) : (
-          groups.map(group => (
-            <div key={group.key} className='mb-5'>
-              <div className='flex items-center gap-2 mb-2 px-1'>
-                <span
-                  className='font-bold text-primary'
-                  style={{ fontSize: 13 }}
-                >
-                  {group.label}
-                </span>
+          <EmptyState
+            testId='all-tasks-zero'
+            icon={<span aria-hidden='true'>🔍</span>}
+            title='No tasks found'
+            description='Add your first task to get started.'
+          />
+        )
+      ) : (
+        groups.map(group => (
+          <PageSection
+            key={group.key}
+            title={
+              <>
+                {group.label}{' '}
                 <span
                   className='badge bg-surface-2 text-muted'
                   style={{ fontSize: 11 }}
                 >
                   {group.tasks.length}
                 </span>
-              </div>
-              <div className='card overflow-hidden'>
-                {group.tasks.map((t, i) => (
-                  <div
-                    key={t.id}
-                    style={{
-                      borderBottom:
-                        i < group.tasks.length - 1
-                          ? '1px solid var(--line)'
-                          : 'none',
-                    }}
-                  >
-                    <TaskRow
-                      task={t}
-                      onOpen={() => ctx.openTask(t)}
-                      onComplete={onComplete}
-                    />
-                  </div>
-                ))}
-              </div>
+              </>
+            }
+          >
+            <div className='card overflow-hidden'>
+              {group.tasks.map((t, i) => (
+                <div
+                  key={t.id}
+                  style={{
+                    borderBottom:
+                      i < group.tasks.length - 1
+                        ? '1px solid var(--line)'
+                        : 'none',
+                  }}
+                >
+                  <TaskRow
+                    task={t}
+                    onOpen={() => ctx.openTask(t)}
+                    onComplete={onComplete}
+                  />
+                </div>
+              ))}
             </div>
-          ))
-        )}
-      </div>
-    </div>
+          </PageSection>
+        ))
+      )}
+    </PageShell>
   )
 }

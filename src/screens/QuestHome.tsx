@@ -1,4 +1,12 @@
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  EntityCard,
+  EntityGrid,
+  PageHero,
+  PageSection,
+  PageShell,
+} from '../components/page'
 import type { Reward, Task } from '../data'
 import { formatTimestamp } from '../data'
 import { todayKey, useLiveData } from '../model/liveData'
@@ -189,181 +197,180 @@ export default function QuestHome({
   )
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
+    <PageShell testId='home-page'>
       {/* Hero */}
-      <div
-        style={{
-          background: 'var(--home-hero-bg)',
-          padding: '28px 24px 40px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Background circles */}
+      <PageHero variant='dashboard' testId='home-hero'>
         <div
           style={{
-            position: 'absolute',
-            width: 200,
-            height: 200,
-            borderRadius: '50%',
-            background:
-              'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
-            top: -60,
-            right: -40,
+            position: 'relative',
+            overflow: 'hidden',
           }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            width: 100,
-            height: 100,
-            borderRadius: '50%',
-            background:
-              'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
-            bottom: -20,
-            left: 20,
-          }}
-        />
-
-        <div
-          className='flex items-start justify-between mb-5'
-          style={{ position: 'relative' }}
         >
-          <div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: 'var(--home-hero-text)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                marginBottom: 6,
-              }}
-            >
-              Quest Mode
-            </div>
-            <h1
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: 'var(--home-hero-text)',
-                margin: 0,
-                lineHeight: 1.2,
-              }}
-            >
-              {persona === 'child'
-                ? `Hey, ${liam?.name ?? 'there'}! 👋`
-                : `Quest View`}
-            </h1>
-            <div
-              style={{
-                fontSize: 14,
-                color: 'var(--home-hero-text)',
-                marginTop: 4,
-              }}
-            >
-              {done.length === todayTasks.length && todayTasks.length > 0
-                ? 'All tasks done! Amazing! 🎉'
-                : `${todo.length} quest${todo.length !== 1 ? 's' : ''} to complete today`}
-            </div>
-          </div>
-          <div className='flex flex-col items-end gap-1'>
-            <div
-              style={{
-                background:
-                  'color-mix(in srgb, var(--home-hero-text) 14%, var(--home-hero-bg))',
-                borderRadius: 'var(--r-full)',
-                padding: '4px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-              }}
-            >
-              <Icon
-                name='star'
-                size={13}
-                style={{ color: 'var(--home-hero-accent)' }}
-              />
-              <span
-                style={{
-                  fontSize: 14,
-                  fontWeight: 800,
-                  color: 'var(--home-hero-text)',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                {currentMember?.points ?? 0}
-              </span>
-              <span style={{ fontSize: 11, color: 'var(--home-hero-text)' }}>
-                pts
-              </span>
-            </div>
-            <div
-              style={{
-                background:
-                  'color-mix(in srgb, var(--home-hero-text) 12%, var(--home-hero-bg))',
-                borderRadius: 'var(--r-full)',
-                padding: '4px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-              }}
-            >
-              <Icon
-                name='fire'
-                size={13}
-                style={{ color: 'var(--home-hero-accent)' }}
-              />
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: 'var(--home-hero-text)',
-                }}
-              >
-                {currentMember?.streak ?? 0} day streak
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Daily progress bar */}
-        <div>
-          <div
-            className='flex justify-between mb-2'
-            style={{ fontSize: 12, color: 'var(--home-hero-text)' }}
-          >
-            <span>Today's progress</span>
-            <span style={{ fontWeight: 800 }}>
-              {done.length}/{todayTasks.length}
-            </span>
-          </div>
+          {/* Background circles */}
           <div
             style={{
-              height: 12,
+              position: 'absolute',
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
               background:
-                'color-mix(in srgb, var(--home-hero-text) 20%, var(--home-hero-bg))',
-              borderRadius: 99,
-              overflow: 'hidden',
+                'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
+              top: -60,
+              right: -40,
             }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              background:
+                'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
+              bottom: -20,
+              left: 20,
+            }}
+          />
+
+          <div
+            className='flex items-start justify-between mb-5'
+            style={{ position: 'relative' }}
           >
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: 'var(--home-hero-text)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  marginBottom: 6,
+                }}
+              >
+                Quest Mode
+              </div>
+              <h1
+                style={{
+                  fontSize: 24,
+                  fontWeight: 800,
+                  color: 'var(--home-hero-text)',
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                {persona === 'child'
+                  ? `Hey, ${liam?.name ?? 'there'}! 👋`
+                  : `Quest View`}
+              </h1>
+              <div
+                style={{
+                  fontSize: 14,
+                  color: 'var(--home-hero-text)',
+                  marginTop: 4,
+                }}
+              >
+                {done.length === todayTasks.length && todayTasks.length > 0
+                  ? 'All tasks done! Amazing! 🎉'
+                  : `${todo.length} quest${todo.length !== 1 ? 's' : ''} to complete today`}
+              </div>
+            </div>
+            <div className='flex flex-col items-end gap-1'>
+              <div
+                style={{
+                  background:
+                    'color-mix(in srgb, var(--home-hero-text) 14%, var(--home-hero-bg))',
+                  borderRadius: 'var(--r-full)',
+                  padding: '4px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}
+              >
+                <Icon
+                  name='star'
+                  size={13}
+                  style={{ color: 'var(--home-hero-accent)' }}
+                />
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: 'var(--home-hero-text)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  {currentMember?.points ?? 0}
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--home-hero-text)' }}>
+                  pts
+                </span>
+              </div>
+              <div
+                style={{
+                  background:
+                    'color-mix(in srgb, var(--home-hero-text) 12%, var(--home-hero-bg))',
+                  borderRadius: 'var(--r-full)',
+                  padding: '4px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                }}
+              >
+                <Icon
+                  name='fire'
+                  size={13}
+                  style={{ color: 'var(--home-hero-accent)' }}
+                />
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: 'var(--home-hero-text)',
+                  }}
+                >
+                  {currentMember?.streak ?? 0} day streak
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Daily progress bar */}
+          <div>
+            <div
+              className='flex justify-between mb-2'
+              style={{ fontSize: 12, color: 'var(--home-hero-text)' }}
+            >
+              <span>Today's progress</span>
+              <span style={{ fontWeight: 800 }}>
+                {done.length}/{todayTasks.length}
+              </span>
+            </div>
             <div
               style={{
-                height: '100%',
-                width: `${progressPct}%`,
-                background: 'var(--home-hero-accent)',
+                height: 12,
+                background:
+                  'color-mix(in srgb, var(--home-hero-text) 20%, var(--home-hero-bg))',
                 borderRadius: 99,
-                transition: 'width 0.5s ease',
+                overflow: 'hidden',
               }}
-            />
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${progressPct}%`,
+                  background: 'var(--home-hero-accent)',
+                  borderRadius: 99,
+                  transition: 'width 0.5s ease',
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </PageHero>
 
-      {/* Content */}
-      <div className='px-4 md:px-6' style={{ marginTop: 16 }}>
+      <PageSection>
         {/* Streak card */}
-        <div className='card p-4 mb-4 flex items-center gap-4'>
+        <EntityCard variant='summary' className='mb-4 flex items-center gap-4'>
           <div style={{ fontSize: 32 }}>🔥</div>
           <div className='flex-1'>
             <div className='font-bold text-primary' style={{ fontSize: 14 }}>
@@ -377,39 +384,27 @@ export default function QuestHome({
             </div>
             <StreakPips streak={currentMember?.streak ?? 0} total={20} />
           </div>
-        </div>
+        </EntityCard>
 
         {/* Tasks for today */}
-        <div className='mb-5'>
-          <div className='flex items-center justify-between mb-3'>
-            <h2
-              className='text-primary font-bold'
-              style={{ fontSize: 16, margin: 0 }}
-            >
-              My quests today
-            </h2>
+        <PageSection
+          title='My quests today'
+          action={
             <button
               className='btn btn-ghost btn-sm text-brand'
               onClick={() => ctx.navigate('today')}
             >
               See all
             </button>
-          </div>
-
+          }
+        >
           {todo.length === 0 && done.length > 0 ? (
-            <div className='card p-8 text-center'>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>🏆</div>
-              <div className='font-bold text-primary' style={{ fontSize: 16 }}>
-                All done! Amazing work!
-              </div>
-              <div
-                className='text-muted'
-                style={{ fontSize: 13, marginTop: 4 }}
-              >
-                You earned {done.reduce((acc, t) => acc + (t.points || 0), 0)}{' '}
-                points today
-              </div>
-            </div>
+            <EmptyState
+              testId='home-zero-quests'
+              icon={<span aria-hidden='true'>🏆</span>}
+              title='All done! Amazing work!'
+              description={`You earned ${done.reduce((acc, t) => acc + (t.points || 0), 0)} points today`}
+            />
           ) : (
             <div className='flex flex-col gap-2'>
               {todo.map(t => (
@@ -435,27 +430,23 @@ export default function QuestHome({
               )}
             </div>
           )}
-        </div>
+        </PageSection>
 
         {/* Goals section */}
-        <div className='mb-5'>
-          <div className='flex items-center justify-between mb-3'>
-            <h2
-              className='text-primary font-bold'
-              style={{ fontSize: 16, margin: 0 }}
-            >
-              My goals
-            </h2>
+        <PageSection
+          title='My goals'
+          action={
             <button
               className='btn btn-ghost btn-sm text-brand'
               onClick={() => ctx.navigate('goals')}
             >
               Details
             </button>
-          </div>
+          }
+        >
           <div className='flex flex-col gap-3'>
             {personalGoal && (
-              <div className='card p-4'>
+              <EntityCard variant='summary'>
                 <div className='flex items-center gap-3 mb-3'>
                   <span style={{ fontSize: 24 }}>{personalGoal.emoji}</span>
                   <div>
@@ -505,11 +496,11 @@ export default function QuestHome({
                     Reward: {personalGoal.reward}
                   </div>
                 )}
-              </div>
+              </EntityCard>
             )}
             {!isSolo && familyGoal && (
-              <div
-                className='card p-4'
+              <EntityCard
+                variant='summary'
                 style={{
                   border: '1px solid var(--brand)',
                   background: 'var(--brand-faint)',
@@ -570,20 +561,15 @@ export default function QuestHome({
                     All contributing
                   </span>
                 </div>
-              </div>
+              </EntityCard>
             )}
           </div>
-        </div>
+        </PageSection>
 
         {/* Rewards */}
-        <div className='mb-5'>
-          <div className='flex items-center justify-between mb-3'>
-            <h2
-              className='text-primary font-bold'
-              style={{ fontSize: 16, margin: 0 }}
-            >
-              Rewards
-            </h2>
+        <PageSection
+          title='Rewards'
+          action={
             <div
               className='flex items-center gap-1 text-brand font-bold'
               style={{ fontSize: 13, fontFamily: 'var(--font-mono)' }}
@@ -591,8 +577,9 @@ export default function QuestHome({
               <Icon name='star' size={13} />
               {currentMember?.points ?? 0} pts
             </div>
-          </div>
-          <div className='grid grid-cols-2 gap-2 md:grid-cols-3'>
+          }
+        >
+          <EntityGrid min={160}>
             {rewards.slice(0, 4).map(r => (
               <RewardCard
                 key={r.id}
@@ -600,53 +587,55 @@ export default function QuestHome({
                 currentPoints={currentMember?.points ?? 0}
               />
             ))}
-          </div>
-        </div>
+          </EntityGrid>
+        </PageSection>
 
         {/* Recent activity */}
         {!isSolo && (
-          <div className='card overflow-hidden mb-4'>
-            <div
-              className='px-4 py-3 border-b border-line font-bold text-primary'
-              style={{ borderColor: 'var(--line)', fontSize: 14 }}
-            >
-              Recent activity
-            </div>
-            {activity.slice(0, 5).map(a => {
-              const actor = memberById(a.actorId)
-              return (
-                <div
-                  key={a.id}
-                  className='flex items-start gap-3 px-4 py-3 border-b border-line'
-                  style={{ borderColor: 'var(--line)' }}
-                >
+          <PageSection title='Recent activity'>
+            <div className='card overflow-hidden mb-4'>
+              <div
+                className='px-4 py-3 border-b border-line font-bold text-primary'
+                style={{ borderColor: 'var(--line)', fontSize: 14 }}
+              >
+                Recent activity
+              </div>
+              {activity.slice(0, 5).map(a => {
+                const actor = memberById(a.actorId)
+                return (
                   <div
-                    className='avatar'
-                    style={{
-                      width: 28,
-                      height: 28,
-                      background: actor?.avatarColor || 'var(--brand)',
-                      fontSize: 10,
-                      flexShrink: 0,
-                    }}
+                    key={a.id}
+                    className='flex items-start gap-3 px-4 py-3 border-b border-line'
+                    style={{ borderColor: 'var(--line)' }}
                   >
-                    {actor?.initials}
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <div className='text-primary' style={{ fontSize: 12 }}>
-                      {a.text}
+                    <div
+                      className='avatar'
+                      style={{
+                        width: 28,
+                        height: 28,
+                        background: actor?.avatarColor || 'var(--brand)',
+                        fontSize: 10,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {actor?.initials}
                     </div>
-                    <div className='text-faint' style={{ fontSize: 10 }}>
-                      {formatTimestamp(a.timestamp)}
+                    <div className='flex-1 min-w-0'>
+                      <div className='text-primary' style={{ fontSize: 12 }}>
+                        {a.text}
+                      </div>
+                      <div className='text-faint' style={{ fontSize: 10 }}>
+                        {formatTimestamp(a.timestamp)}
+                      </div>
                     </div>
+                    <span style={{ fontSize: 16 }}>{a.icon}</span>
                   </div>
-                  <span style={{ fontSize: 16 }}>{a.icon}</span>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          </PageSection>
         )}
-      </div>
-    </div>
+      </PageSection>
+    </PageShell>
   )
 }

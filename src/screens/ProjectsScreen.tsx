@@ -1,6 +1,13 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import {
+  EmptyState,
+  EntityCard,
+  EntityGrid,
+  PageSection,
+  PageShell,
+} from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type { Project } from '../data'
 import { useProjectMutations } from '../hooks/useHousehold'
@@ -65,36 +72,33 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <PageHeader
-        title='Projects'
-        subtitle='Organized work with multiple tasks'
-        actions={
-          !isChild ? (
-            <button className='btn btn-primary' onClick={startNew}>
-              <Icon name='projects' size={14} />
-              New project
-            </button>
-          ) : undefined
-        }
-      />
-
-      <div className='px-4 md:px-7'>
-        <div
-          className='grid gap-4'
-          style={{
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
-          }}
-        >
+    <PageShell
+      testId='projects-page'
+      header={
+        <PageHeader
+          title='Projects'
+          subtitle='Organized work with multiple tasks'
+          actions={
+            !isChild ? (
+              <button className='btn btn-primary' onClick={startNew}>
+                <Icon name='projects' size={14} />
+                New project
+              </button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      <PageSection>
+        <EntityGrid min={250} testId='projects-grid'>
           {projects.map(p => {
             const owner = memberById(p.owner)
             const taskCount = tasks.filter(t => t.projectId === p.id).length
             const isSelected = selected === p.id
             return (
-              <div
+              <EntityCard
                 key={p.id}
-                className='card p-5 cursor-pointer'
+                className='cursor-pointer'
                 style={{
                   border: isSelected
                     ? '1px solid var(--selected-border)'
@@ -187,12 +191,14 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
                     </span>
                   </div>
                 )}
-              </div>
+              </EntityCard>
             )
           })}
-        </div>
+        </EntityGrid>
+      </PageSection>
 
-        {selectedProject && (
+      {selectedProject && (
+        <PageSection>
           <div className='card mt-5 overflow-hidden'>
             <div
               className='flex items-center justify-between px-5 py-4 border-b border-line'
@@ -252,13 +258,12 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
 
             <div className='py-1'>
               {projectTasks.length === 0 ? (
-                <div className='empty-state py-10'>
-                  <div style={{ fontSize: 32 }}>📋</div>
-                  <div className='font-bold text-primary'>No tasks yet</div>
-                  <span className='text-muted' style={{ fontSize: 12 }}>
-                    Use + beside notifications to create a task.
-                  </span>
-                </div>
+                <EmptyState
+                  testId='projects-zero-tasks'
+                  icon={<span aria-hidden='true'>📋</span>}
+                  title='No tasks yet'
+                  description='Use + beside notifications to create a task.'
+                />
               ) : (
                 projectTasks.map(t => (
                   <div
@@ -308,8 +313,8 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
               )}
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        </PageSection>
+      )}
+    </PageShell>
   )
 }

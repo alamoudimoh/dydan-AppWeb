@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import { EmptyState, FilterSegment, PageShell } from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type {
   Notification,
@@ -92,267 +93,260 @@ export default function NotificationsScreen({
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <PageHeader
-        title='Notifications'
-        subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
-        actions={
-          unreadCount > 0 ? (
-            <button className='btn btn-secondary' onClick={onMarkAllRead}>
-              <Icon name='check' size={14} />
-              Mark all read
-            </button>
-          ) : undefined
-        }
+    <PageShell
+      testId='notifications-page'
+      header={
+        <PageHeader
+          title='Notifications'
+          subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+          actions={
+            unreadCount > 0 ? (
+              <button className='btn btn-secondary' onClick={onMarkAllRead}>
+                <Icon name='check' size={14} />
+                Mark all read
+              </button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      <FilterSegment
+        ariaLabel='Notification filter'
+        value={filter}
+        onChange={id => setFilter(id as FilterMode)}
+        options={[
+          { id: 'all', label: 'All' },
+          {
+            id: 'unread',
+            label: `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
+          },
+        ]}
       />
 
-      <div className='px-4 md:px-7'>
-        {/* Filter strip */}
-        <div className='flex gap-2 mb-5'>
-          {(['all', 'unread'] as FilterMode[]).map(f => (
-            <button
-              key={f}
-              className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setFilter(f)}
-            >
-              {f === 'all'
-                ? 'All'
-                : `Unread${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
-            </button>
-          ))}
-        </div>
+      {visible.length === 0 ? (
+        <EmptyState
+          testId='notifications-zero'
+          icon={<span aria-hidden='true'>🔔</span>}
+          title='No unread notifications'
+          description="You're all caught up. New notifications will appear here."
+        />
+      ) : (
+        <div
+          className='flex flex-col'
+          style={{
+            borderRadius: 'var(--r-lg)',
+            overflow: 'hidden',
+            border: '1px solid var(--line)',
+          }}
+        >
+          {visible.map((n, i) => {
+            const meta = TYPE_META[n.type]
+            const actor = n.actorId ? memberById(n.actorId) : null
+            const read = isRead(n)
+            const isLast = i === visible.length - 1
 
-        {visible.length === 0 ? (
-          <div className='empty-state'>
-            <div style={{ fontSize: 48 }}>🔔</div>
-            <div className='font-bold text-primary' style={{ fontSize: 16 }}>
-              No unread notifications
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              You're all caught up. New notifications will appear here.
-            </div>
-          </div>
-        ) : (
-          <div
-            className='flex flex-col'
-            style={{
-              borderRadius: 'var(--r-lg)',
-              overflow: 'hidden',
-              border: '1px solid var(--line)',
-            }}
-          >
-            {visible.map((n, i) => {
-              const meta = TYPE_META[n.type]
-              const actor = n.actorId ? memberById(n.actorId) : null
-              const read = isRead(n)
-              const isLast = i === visible.length - 1
-
-              return (
-                <button
-                  key={n.id}
-                  onClick={() => handleNotifClick(n)}
-                  className='w-full flex items-start gap-4 px-5 py-4 text-start'
+            return (
+              <button
+                key={n.id}
+                onClick={() => handleNotifClick(n)}
+                className='w-full flex items-start gap-4 px-5 py-4 text-start'
+                style={{
+                  background: read
+                    ? 'var(--surface)'
+                    : 'color-mix(in srgb, var(--brand) 4%, var(--surface))',
+                  border: 'none',
+                  borderBottom: isLast ? 'none' : '1px solid var(--line)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-ui)',
+                  transition: 'background 0.15s',
+                }}
+              >
+                {/* Type icon */}
+                <div
                   style={{
-                    background: read
-                      ? 'var(--surface)'
-                      : 'color-mix(in srgb, var(--brand) 4%, var(--surface))',
-                    border: 'none',
-                    borderBottom: isLast ? 'none' : '1px solid var(--line)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-ui)',
-                    transition: 'background 0.15s',
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    background: `color-mix(in srgb, ${meta.color} 12%, transparent)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  {/* Type icon */}
+                  <Icon
+                    name={meta.icon}
+                    size={16}
+                    style={{ color: meta.color }}
+                  />
+                </div>
+
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-start justify-between gap-3'>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-center gap-2 flex-wrap mb-0.5'>
+                        {!read && (
+                          <span
+                            style={{
+                              width: 7,
+                              height: 7,
+                              borderRadius: '50%',
+                              background: 'var(--brand)',
+                              display: 'inline-block',
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                        <span
+                          className='font-bold text-primary'
+                          style={{ fontSize: 13 }}
+                        >
+                          {n.title}
+                        </span>
+                        <span
+                          className='badge'
+                          style={{
+                            background: `color-mix(in srgb, ${meta.color} 10%, transparent)`,
+                            color: meta.color,
+                            fontSize: 10,
+                          }}
+                        >
+                          {meta.label}
+                        </span>
+                      </div>
+                      <div className='text-muted' style={{ fontSize: 13 }}>
+                        {n.body}
+                      </div>
+                      {actor && (
+                        <div className='flex items-center gap-1.5 mt-1.5'>
+                          <div
+                            className='avatar'
+                            style={{
+                              width: 18,
+                              height: 18,
+                              background: actor.avatarColor,
+                              fontSize: 7,
+                            }}
+                          >
+                            {actor.initials}
+                          </div>
+                          <span className='text-faint' style={{ fontSize: 11 }}>
+                            from {actor.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className='flex flex-col items-end gap-2 flex-shrink-0'>
+                      <span className='text-faint' style={{ fontSize: 11 }}>
+                        {formatTimestamp(n.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Live pending reward requests */}
+      {pendingRewardRequests.length > 0 && ctx.persona !== 'child' && (
+        <div className='card mt-4 overflow-hidden'>
+          {pendingRewardRequests.map(
+            (request: RewardRequest, index: number) => {
+              const requester = memberById(request.requesterId)
+              const reward = rewards.find(
+                (item: Reward) => item.id === request.rewardId,
+              )
+              const requesterName = requester?.name ?? 'A member'
+              const rewardName = reward?.name ?? 'a reward'
+              const busy =
+                rewardMutations.approveRequest.isPending ||
+                rewardMutations.rejectRequest.isPending
+
+              return (
+                <div
+                  key={request.id}
+                  className='p-4 flex items-center gap-4'
+                  style={{
+                    borderBottom:
+                      index === pendingRewardRequests.length - 1
+                        ? 'none'
+                        : '1px solid var(--line)',
+                  }}
+                >
                   <div
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                      background: `color-mix(in srgb, ${meta.color} 12%, transparent)`,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 'var(--r-md)',
+                      background: 'var(--sig-flag-bg)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
                     <Icon
-                      name={meta.icon}
-                      size={16}
-                      style={{ color: meta.color }}
+                      name='gift'
+                      size={18}
+                      style={{ color: 'var(--sig-flag)' }}
                     />
                   </div>
-
                   <div className='flex-1 min-w-0'>
-                    <div className='flex items-start justify-between gap-3'>
-                      <div className='flex-1 min-w-0'>
-                        <div className='flex items-center gap-2 flex-wrap mb-0.5'>
-                          {!read && (
-                            <span
-                              style={{
-                                width: 7,
-                                height: 7,
-                                borderRadius: '50%',
-                                background: 'var(--brand)',
-                                display: 'inline-block',
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                          <span
-                            className='font-bold text-primary'
-                            style={{ fontSize: 13 }}
-                          >
-                            {n.title}
-                          </span>
-                          <span
-                            className='badge'
-                            style={{
-                              background: `color-mix(in srgb, ${meta.color} 10%, transparent)`,
-                              color: meta.color,
-                              fontSize: 10,
-                            }}
-                          >
-                            {meta.label}
-                          </span>
-                        </div>
-                        <div className='text-muted' style={{ fontSize: 13 }}>
-                          {n.body}
-                        </div>
-                        {actor && (
-                          <div className='flex items-center gap-1.5 mt-1.5'>
-                            <div
-                              className='avatar'
-                              style={{
-                                width: 18,
-                                height: 18,
-                                background: actor.avatarColor,
-                                fontSize: 7,
-                              }}
-                            >
-                              {actor.initials}
-                            </div>
-                            <span
-                              className='text-faint'
-                              style={{ fontSize: 11 }}
-                            >
-                              from {actor.name}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className='flex flex-col items-end gap-2 flex-shrink-0'>
-                        <span className='text-faint' style={{ fontSize: 11 }}>
-                          {formatTimestamp(n.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Live pending reward requests */}
-        {pendingRewardRequests.length > 0 && ctx.persona !== 'child' && (
-          <div className='card mt-4 overflow-hidden'>
-            {pendingRewardRequests.map(
-              (request: RewardRequest, index: number) => {
-                const requester = memberById(request.requesterId)
-                const reward = rewards.find(
-                  (item: Reward) => item.id === request.rewardId,
-                )
-                const requesterName = requester?.name ?? 'A member'
-                const rewardName = reward?.name ?? 'a reward'
-                const busy =
-                  rewardMutations.approveRequest.isPending ||
-                  rewardMutations.rejectRequest.isPending
-
-                return (
-                  <div
-                    key={request.id}
-                    className='p-4 flex items-center gap-4'
-                    style={{
-                      borderBottom:
-                        index === pendingRewardRequests.length - 1
-                          ? 'none'
-                          : '1px solid var(--line)',
-                    }}
-                  >
                     <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 'var(--r-md)',
-                        background: 'var(--sig-flag-bg)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
+                      className='font-bold text-primary'
+                      style={{ fontSize: 13 }}
                     >
-                      <Icon
-                        name='gift'
-                        size={18}
-                        style={{ color: 'var(--sig-flag)' }}
-                      />
+                      Pending reward request
                     </div>
-                    <div className='flex-1 min-w-0'>
-                      <div
-                        className='font-bold text-primary'
-                        style={{ fontSize: 13 }}
-                      >
-                        Pending reward request
-                      </div>
-                      <div className='text-muted' style={{ fontSize: 12 }}>
-                        {requesterName} has requested {rewardName}
-                      </div>
-                    </div>
-                    <div className='flex gap-2'>
-                      <button
-                        className='btn btn-sm btn-secondary'
-                        disabled={busy}
-                        onClick={() =>
-                          rewardMutations.rejectRequest.mutate(request.id, {
-                            onSuccess: () =>
-                              ctx.showToast('Reward request rejected'),
-                            onError: (error: Error) =>
-                              ctx.showToast(
-                                error instanceof Error
-                                  ? error.message
-                                  : 'Could not reject reward request',
-                              ),
-                          })
-                        }
-                      >
-                        Reject
-                      </button>
-                      <button
-                        className='btn btn-sm btn-primary'
-                        disabled={busy}
-                        onClick={() =>
-                          rewardMutations.approveRequest.mutate(request.id, {
-                            onSuccess: () =>
-                              ctx.showToast('Reward request approved'),
-                            onError: (error: Error) =>
-                              ctx.showToast(
-                                error instanceof Error
-                                  ? error.message
-                                  : 'Could not approve reward request',
-                              ),
-                          })
-                        }
-                      >
-                        Approve
-                      </button>
+                    <div className='text-muted' style={{ fontSize: 12 }}>
+                      {requesterName} has requested {rewardName}
                     </div>
                   </div>
-                )
-              },
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+                  <div className='flex gap-2'>
+                    <button
+                      className='btn btn-sm btn-secondary'
+                      disabled={busy}
+                      onClick={() =>
+                        rewardMutations.rejectRequest.mutate(request.id, {
+                          onSuccess: () =>
+                            ctx.showToast('Reward request rejected'),
+                          onError: (error: Error) =>
+                            ctx.showToast(
+                              error instanceof Error
+                                ? error.message
+                                : 'Could not reject reward request',
+                            ),
+                        })
+                      }
+                    >
+                      Reject
+                    </button>
+                    <button
+                      className='btn btn-sm btn-primary'
+                      disabled={busy}
+                      onClick={() =>
+                        rewardMutations.approveRequest.mutate(request.id, {
+                          onSuccess: () =>
+                            ctx.showToast('Reward request approved'),
+                          onError: (error: Error) =>
+                            ctx.showToast(
+                              error instanceof Error
+                                ? error.message
+                                : 'Could not approve reward request',
+                            ),
+                        })
+                      }
+                    >
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              )
+            },
+          )}
+        </div>
+      )}
+    </PageShell>
   )
 }

@@ -20,7 +20,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "node --test && npm run test:ui",
-    "test:ui": "vitest run --pool=forks src/utils/tokenStorage.audit.spec.js src/utils/tokenStorage.native.audit.spec.js src/utils/passwordResetCredential.audit.spec.js src/utils/passwordResetTransport.audit.spec.js src/utils/accountOperations.audit.spec.js src/hooks/settingsPreferenceModel.spec.ts src/components/CategorySettings.test.tsx src/components/ColorPicker.test.tsx src/components/colorPickerGeometry.spec.tsx src/components/settingsCategoryPlacement.spec.ts",
+    "test:ui": "vitest run --pool=forks src/utils/tokenStorage.audit.spec.js src/utils/tokenStorage.native.audit.spec.js src/utils/passwordResetCredential.audit.spec.js src/utils/passwordResetTransport.audit.spec.js src/utils/accountOperations.audit.spec.js src/hooks/settingsPreferenceModel.spec.ts src/components/CategorySettings.test.tsx src/components/ColorPicker.test.tsx src/components/colorPickerGeometry.spec.tsx src/components/settingsCategoryPlacement.spec.ts src/components/page/pageSystem.spec.tsx",
     "test:coverage": "npm run test:ui -- --coverage",
     "test:smoke": "playwright test --project=chromium",
     "test:smoke:sovereign": "CI=1 VITE_APP_BRAND=sovereign playwright test --project=sovereign",
