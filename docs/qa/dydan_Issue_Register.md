@@ -3,7 +3,7 @@
 > **الملف الوحيد المعتمد لملاحظات المستخدم وحالة الإصلاحات الخاصة بـ dydan.**
 > **المسؤول عن التحرير والمراجعة والإغلاق:** ChatGPT (Planner) بالتوجيه المباشر من المستخدم؛ وليس أي CLI Agent.
 > **آخر تحديث:** 2026-10-10 · **المسار:** docs/qa/dydan_Issue_Register.md
-> **آخر فرع تم اعتماده لهذا التحديث:** fix/04-shopping-layout-diagnostics · **Baseline قبل هذا التحديث:** 375ec71e4d4e139995b02e6e43db58a1c856f084
+> **آخر فرع تم اعتماده لهذا التحديث:** fix/05-global-page-ui-system · **Implementation commit المُراجع:** 6cf43dad50fe93c647a17e1219e02545f409f6a0 · **Baseline:** 1aa1635fc93cf6bcd0801ce202935e141e5fa3e0
 
 ## 1. حدود السجل ودقة الأدلة
 
@@ -19,9 +19,9 @@
 ## 2. نطاق الملاحظات المؤكدة حاليًا
 
 - تم تنفيذ Fix 01 ثم Fix 02 ثم Fix 03 مع تقارير موثقة من المستخدم.
-- Fix 04 الخاص بإعادة هيكلة Shopping وتشخيص مسار البيانات **طُلب وتم تجهيز برومبته، لكن لا يوجد حتى الآن تقرير تنفيذ نهائي قدمه المستخدم**؛ لذلك لا يُعتبر مغلقًا.
+- تنفيذ Shopping المقصود في Fix 04 موجود على baseline الذي دخل Fix 05، وFix 05 حافظ عليه وأضاف PageTabs/EmptyState/PageShell المشتركة. راجعت commit `6cf43dad50fe93c647a17e1219e02545f409f6a0` وتأكدت أن parent هو `1aa1635fc93cf6bcd0801ce202935e141e5fa3e0` وأن التغيير يشمل 37 ملفًا. رغم ذلك، إغلاق الملاحظات البصرية ينتظر فحصًا فعليًا للواجهة، وتشخيص الـBackend لا يُغلق باختبارات API mocked.
 - التسمية الظاهرة `Maintenance → Assets` و`Things → Trackers` نُفذت في الواجهة ضمن Fix 03، لكن تقرير التنفيذ نفسه ذكر بقاء `/maintenance` و`/things` وبعض hooks/screen identifiers والـAPIs القديمة داخليًا؛ لذلك الهجرة ليست End-to-End بعد.
-- التباين الحالي في spacing/tabs/empty states/cards/hero blocks ظهر عبر عدة صفحات، وليس مشكلة Shopping وحدها؛ المطلوب Global UI Standard وليس ترقيع كل صفحة منفردة.
+- Fix 05 أنشأ Global Page UI System فعليًا: `PageShell`, `PageTabs`, `FilterSegment`, `EmptyState`, `PageHero`, `PageSection`, `EntityCard/EntityGrid/EntityList` مع tokens مركزية في `src/index.css`. المصدر يثبت migration واسعًا للصفحات، لكن القبول البصري النهائي ما زال يحتاج مراجعة فعلية؛ كما أن بوابة الاختبار البنيوية الحالية لا تشمل كل الشاشات التي ذكرها تقرير التنفيذ (مثل Activity/Notifications/Search) ضمن قائمة `PRIMARY_SHELL`.
 - خدمة `dydan-web.service` شُخّصت بأنها ماتت وبقيت dead بسبب `Restart=on-failure`، مع عدم وجود listener على 2925. تم تحديد الإصلاح الدائم المقترح، لكن لا يوجد في هذه المحادثة بعد دليل تنفيذ/تحقق نهائي بعد التعديل.
 
 ## 3. الجدول الرئيسي
@@ -33,9 +33,9 @@
 | [DYD-003](#dyd-003) | UI/UX Architecture | خلل نظام تصميم | Task / Project / Routine / Asset / Meter / Tracker / Shopping كانت تستخدم أنماط إنشاء مختلفة | P1 | **Closed** | Fix 03 — commit 640fe0bb01c445ad4b24ed63441f3c258d5d524e |
 | [DYD-004](#dyd-004) | UI/UX Architecture | مطلب نظام | Universal + كنقطة بدء موحدة للإنشاء | P1 | **Closed** | Fix 03 — selector موحد ومركزي |
 | [DYD-005](#dyd-005) | Domain / Backend | هجرة غير مكتملة | Assets/Trackers ظاهريًا بينما Maintenance/Things ما زالت موجودة داخليًا | P1 | **Open** | تقرير Fix 03 نفسه |
-| [DYD-006](#dyd-006) | UI/UX | خلل بصري/هيكلي مؤكد | Shopping layout/hierarchy غير منظم ومختلف عن Assets | P1 | **Open** | ملاحظات المستخدم + Fix 04 المطلوب |
+| [DYD-006](#dyd-006) | UI/UX | خلل بصري/هيكلي مؤكد | Shopping layout/hierarchy غير منظم ومختلف عن Assets | P1 | **Needs Verification** | Fix 04 behavior + Fix 05 shared PageTabs/PageShell؛ يحتاج قبول بصري فعلي |
 | [DYD-007](#dyd-007) | Frontend / Backend | تشخيص بيانات | احتمال وجود خلل Shopping في API/data flow بعد إصلاح الواجهة | P1 | **Needs Verification** | المطلوب في Fix 04 |
-| [DYD-008](#dyd-008) | UI/UX Architecture | خلل Global Standard | اختلاف tabs / empty states / cards / hero / spacing عبر جميع الصفحات | P1 | **Open** | Screenshots وملاحظات المستخدم 2026-10-10 |
+| [DYD-008](#dyd-008) | UI/UX Architecture | خلل Global Standard | اختلاف tabs / empty states / cards / hero / spacing عبر جميع الصفحات | P1 | **Needs Verification** | Fix 05 — commit 6cf43dad50fe93c647a17e1219e02545f409f6a0؛ التطبيق موجود ويحتاج قبول بصري/اكتمال gate |
 | [DYD-009](#dyd-009) | Frontend | خلل سابق | Greeting كان hardcoded بدل time-aware/localized | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-010](#dyd-010) | Localization | خلل سابق | Language selector وRTL/LTR labels غير منضبطة | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-011](#dyd-011) | Theme / UI | خلل سابق | Search placeholder/border/text tokens غير متسقة بين الثيمات | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
@@ -43,7 +43,7 @@
 | [DYD-013](#dyd-013) | Infrastructure | خلل تشغيل مؤكد | dydan-web.service يتوقف ولا يعود تلقائيًا؛ 2925 يصبح connection refused | P1 | **Open** | تشخيص 2026-10-10؛ Restart=on-failure + service dead |
 | [DYD-014](#dyd-014) | UI/UX | خلل سابق محدود | Shopping list buttons/content wrapping كان فيه alignment issue | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 
-**ملخص الحالات:** Open: 4 · Needs Verification: 1 · Closed: 9 · **الإجمالي: 14**
+**ملخص الحالات:** Open: 2 · Needs Verification: 3 · Closed: 9 · **الإجمالي: 14**
 
 ## 4. تفاصيل البنود
 
@@ -94,13 +94,14 @@
 
 ### DYD-006 — Shopping layout/hierarchy غير منظم
 
-- **التصنيف / النوع / الأولوية / الحالة:** UI/UX · خلل بصري/هيكلي مؤكد · P1 · Open
+- **التصنيف / النوع / الأولوية / الحالة:** UI/UX · خلل بصري/هيكلي مؤكد · P1 · Needs Verification
 - **المصدر:** screenshots وملاحظات المستخدم.
 - **الوصف:** Shopping كانت تعرض CTA مكرر، empty state منفصل بصريًا، sharing block كبير، وبنية لا تتبع نفس discipline الموجودة في Assets.
 - **السلوك المطلوب:** Shopping يتبع نفس page pattern العام، بثلاثة tabs: **Shopping Lists / Items / Overview**.
 - **قواعد المحتوى:** Shopping Lists للقوائم، Items لكل العناصر مع parent list context، Overview يجمع كل list مع items التابعة لها. sharing يبقى secondary.
 - **معايير القبول:** زر واحد `New Shopping List` في header؛ لا duplicate CTA في empty state؛ tabs تستخدم shared pattern؛ responsive + RTL/LTR.
-- **حدود الإثبات:** Fix 04 طُلب، لكن لا يوجد تقرير تنفيذ نهائي في المحادثة حتى الآن.
+- **دليل التنفيذ الحالي:** Fix 05 commit `6cf43dad50fe93c647a17e1219e02545f409f6a0` يحتوي Shopping على `PageShell` و`PageTabs` المشتركة، ويحافظ على Lists/Items/Overview، وملف `e2e/fix04-shopping-layout-diagnostics.spec.js` يتحقق من CTA واحد، parent-list context، Overview grouping، وفصل API failure عن empty state.
+- **حدود الإثبات:** اختبارات Shopping تستخدم API mocks، والـPlanner لم يفحص حتى الآن render فعليًا في المتصفح بعد Fix 05؛ لذلك لا أُغلق الملاحظة البصرية بمجرد تقرير الـCLI.
 
 ### DYD-007 — احتمال خلل Backend/Data Flow في Shopping
 
@@ -108,18 +109,23 @@
 - **المصدر:** المستخدم ذكر أن Shopping فيها خلل واضح وقد يكون backend، وطلب إصلاح frontend أولًا ثم التشخيص.
 - **السلوك المطلوب:** بعد تصحيح UI يتم تتبع المسار الحقيقي: UI → state/hooks → API client → endpoint → response → persistence → refresh → list/item relation.
 - **معايير القبول:** create list، refresh، create item، refresh، إثبات parent relationship؛ ثم تصنيف الخلل بدليل كـ FRONTEND / API CLIENT / BACKEND/API / PERSISTENCE / NONE.
-- **حدود الإثبات:** لا يجوز اعتبار empty response دليلاً أن الحساب فعلاً بلا بيانات، ولا إخفاء API failure بـ`[]`.
+- **دليل التنفيذ الحالي:** اختبارات Fix 04 الموجودة على فرع Fix 05 تثبت عقد الـfrontend/client مع mock routes وتتحقق من create list → create item → reload → parent context، كما تتحقق من أن 503 لا يتحول إلى empty state.
+- **حدود الإثبات:** هذه الاختبارات **mocked** وليست اتصالًا بالـBackend الحقيقي. لذلك تقرير الـCLI «لا يوجد backend defect» يعني فقط أنه لم يثبت defect؛ ولا يثبت سلامة الـBackend/persistence الفعلي. يبقى البند Needs Verification حتى اختبار live API/data persistence.
 
 ### DYD-008 — Global Page UI Standard غير مطبق عبر كل الصفحات
 
-- **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · خلل Global Standard · P1 · Open
+- **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · خلل Global Standard · P1 · Needs Verification
 - **المصدر:** screenshots وملاحظات المستخدم بتاريخ 2026-10-10.
 - **الوصف:** الاختلاف ليس في ست صفحات فقط. Home, Today, All Tasks, Calendar, Projects, Routines, Assets, Shopping, Goals, Rewards وغيرها تستخدم spacing/tabs/empty states/card geometry/hero sizes/content start positions مختلفة.
 - **السلوك المطلوب:** Global Page Shell واحد + shared page primitives، بحيث أي صفحة مستقبلية ترث نفس القواعد بدل إضافة CSS خاص.
 - **المكونات المطلوب توحيدها:** PageShell, PageHeader, PageTabs, PageHero, PageSection, EntityCard/row variants, EmptyState, filters/segmented controls، مع spacing/gutters/radii/responsive/RTL ثابتة.
 - **معايير القبول:** نفس الـvisual anchors والمقاسات لأنماط UI المتشابهة على desktop/mobile وLTR/RTL، مع اختبار يمنع إنشاء custom tab/empty-state/page geometry بلا shared source.
 - **مرجع التصميم المنفصل:** `docs/design/dydan-ui-foundation.md`.
-- **حدود الإثبات:** إنشاء ملف المعيار لا يغلق البند؛ المطلوب تطبيق architectural primitives في الكود والتحقق بصريًا.
+- **دليل التنفيذ الحالي:** Fix 05 commit `6cf43dad50fe93c647a17e1219e02545f409f6a0` أنشأ shared page primitives والتوكنز المركزية، وهاجر 16 screen source files. راجعت فعليًا `PageShell`, `PageTabs`, `FilterSegment`, `EmptyState`, `PageHero`, `PageSection`, `EntityCard` واختبارات `pageSystem.spec.tsx` و`fix05-global-page-geometry.spec.js`.
+- **نتائج التقرير المقبولة كدليل تنفيذ:** title anchor 107px desktop و103.5px mobile على مجموعة الاختبار؛ PageTabs بارتفاع موحد؛ RTL/LTR وmobile overflow gates؛ create system لم يتغير.
+- **ملاحظة Planner:** تقرير التنفيذ يقول إن Activity/Notifications/Search هاجرت، والمصدر يؤكد وجود `PageShell` فيها، لكن قائمة `PRIMARY_SHELL` في `pageSystem.spec.tsx` لا تشمل Activity/Notifications/Search، كما أن E2E geometry يغطي 12 route فقط. لذلك enforcement ليس شاملًا لكل ما وُصف بأنه primary page بعد.
+- **ملاحظة responsive:** اختلاف top للـtabs على mobile بسبب wrapping للعنوان/الإجراء/النص قد يكون سلوكًا صحيحًا لأنه ناتج من نفس القاعدة المشتركة، وليس بالضرورة inconsistency. القبول النهائي يكون بصريًا لا بمجرد أرقام التقرير.
+- **حدود الإثبات:** لا يُغلق البند حتى مراجعة render الفعلي من المستخدم/Planner وإما قبول هذه الفروقات أو طلب ضبط إضافي، مع استكمال test gate إن اعتُبرت Activity/Notifications/Search ضمن primary routes.
 
 ### DYD-009 — Greeting hardcoded
 
