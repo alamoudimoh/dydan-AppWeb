@@ -3,7 +3,7 @@
 > **الملف الوحيد المعتمد لملاحظات المستخدم وحالة الإصلاحات الخاصة بـ dydan.**
 > **المسؤول عن التحرير والمراجعة والإغلاق:** ChatGPT (Planner) بالتوجيه المباشر من المستخدم؛ وليس أي CLI Agent.
 > **آخر تحديث:** 2026-10-10 · **المسار:** docs/qa/dydan_Issue_Register.md
-> **آخر فرع تم اعتماده لهذا التحديث:** fix/05-global-page-ui-system · **Implementation commit المُراجع:** 6cf43dad50fe93c647a17e1219e02545f409f6a0 · **Baseline:** 1aa1635fc93cf6bcd0801ce202935e141e5fa3e0
+> **آخر فرع تم اعتماده لهذا التحديث:** fix/06-mobile-ui-regressions · **Implementation commit الحالي:** 901d1f902c87c577b0d785bd03d66c2c50ea8420 · **Baseline:** 32f5e5ebdaf1593d8271ca1334ca047ecb1295ce
 
 ## 1. حدود السجل ودقة الأدلة
 
@@ -24,6 +24,7 @@
 - Fix 05 أنشأ Global Page UI System فعليًا: `PageShell`, `PageTabs`, `FilterSegment`, `EmptyState`, `PageHero`, `PageSection`, `EntityCard/EntityGrid/EntityList` مع tokens مركزية في `src/index.css`. المصدر يثبت migration واسعًا للصفحات، لكن القبول البصري النهائي ما زال يحتاج مراجعة فعلية؛ كما أن بوابة الاختبار البنيوية الحالية لا تشمل كل الشاشات التي ذكرها تقرير التنفيذ (مثل Activity/Notifications/Search) ضمن قائمة `PRIMARY_SHELL`.
 - خدمة `dydan-web.service` شُخّصت بأنها ماتت وبقيت dead بسبب `Restart=on-failure`، مع عدم وجود listener على 2925. تم تحديد الإصلاح الدائم المقترح، لكن لا يوجد في هذه المحادثة بعد دليل تنفيذ/تحقق نهائي بعد التعديل.
 - مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بعد Fix 05 أثبتت ست ملاحظات إضافية: flash للثيم عند refresh، عدم احترام المحتوى السفلي للـmobile footer dock/safe area، اختلاف أزرار الإضافة بين الصفحات في الموضع والحجم، تكرار Shopping selected-list summary مع detail في mobile stack، ازدحام vertical rhythm في Shopping على الجوال، وعدم توازن Home stat grid عندما تكون ثلاث بطاقات.
+- Fix 06 موجود على commit `901d1f902c87c577b0d785bd03d66c2c50ea8420`، لكن مراجعة Planner لعشر screenshots موحّدة المقاس `1917×1906` بتاريخ 2026-10-11 أثبتت أن Global UI Standard ما زال غير مغلق بصريًا. الـshell نفسه اقترب من الاتساق (معظم أول content blocks تبدأ عند y≈290–291 px في الصور)، لكن component anatomy/ordering ما زال مختلفًا: أزرار الإضافة ليست بعرض واحد، Rewards يضع hero قبل tabs بينما Assets/Shopping يبدآن بالtabs، وpage-level empty states تختلف في الأيقونة/البنية/المحاذاة وبعض الصفحات لا تعرض empty state أصلًا.
 
 ## 3. الجدول الرئيسي
 
@@ -36,7 +37,7 @@
 | [DYD-005](#dyd-005) | Domain / Backend | هجرة غير مكتملة | Assets/Trackers ظاهريًا بينما Maintenance/Things ما زالت موجودة داخليًا | P1 | **Open** | تقرير Fix 03 نفسه |
 | [DYD-006](#dyd-006) | UI/UX | خلل بصري/هيكلي مؤكد | Shopping layout/hierarchy غير منظم ومختلف عن Assets | P1 | **Needs Verification** | Fix 04 behavior + Fix 05 shared PageTabs/PageShell؛ يحتاج قبول بصري فعلي |
 | [DYD-007](#dyd-007) | Frontend / Backend | تشخيص بيانات | احتمال وجود خلل Shopping في API/data flow بعد إصلاح الواجهة | P1 | **Needs Verification** | المطلوب في Fix 04 |
-| [DYD-008](#dyd-008) | UI/UX Architecture | خلل Global Standard | اختلاف tabs / empty states / cards / hero / spacing عبر جميع الصفحات | P1 | **Needs Verification** | Fix 05 — commit 6cf43dad50fe93c647a17e1219e02545f409f6a0؛ التطبيق موجود ويحتاج قبول بصري/اكتمال gate |
+| [DYD-008](#dyd-008) | UI/UX Architecture | خلل Global Standard | اختلاف tabs / empty states / cards / hero / spacing عبر جميع الصفحات | P1 | **Open** | مراجعة Pixel-level لعشر screenshots بعد Fix 06؛ النظام ما زال غير متسق بصريًا |
 | [DYD-009](#dyd-009) | Frontend | خلل سابق | Greeting كان hardcoded بدل time-aware/localized | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-010](#dyd-010) | Localization | خلل سابق | Language selector وRTL/LTR labels غير منضبطة | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-011](#dyd-011) | Theme / UI | خلل سابق | Search placeholder/border/text tokens غير متسقة بين الثيمات | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
@@ -45,12 +46,12 @@
 | [DYD-014](#dyd-014) | UI/UX | خلل سابق محدود | Shopping list buttons/content wrapping كان فيه alignment issue | P2 | **Closed** | Fix 01 — commit 859d50492c18ce43198c4b64714a79233599982d |
 | [DYD-015](#dyd-015) | Theme / Startup UI | بلاغ بصري مؤكد | عند refresh يظهر theme غير المختار لجزء من الثانية ثم يتحول للثيم المحفوظ | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
 | [DYD-016](#dyd-016) | Mobile UI | بلاغ بصري مؤكد | المحتوى السفلي لا يحترم mobile footer dock / safe area وقد يصل خلفه أو يقترب منه بشكل غير صحيح | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
-| [DYD-017](#dyd-017) | UI/UX Architecture | بلاغ بصري مؤكد | أزرار الإضافة في PageHeader تختلف بين الصفحات في الموضع والحجم والسلوك على mobile | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
+| [DYD-017](#dyd-017) | UI/UX Architecture | بلاغ بصري مؤكد | أزرار الإضافة في PageHeader تختلف بين الصفحات في المقاس/الموضع على desktop وmobile | P1 | **Open** | الفيديو + Pixel audit للصور بتاريخ 2026-10-11 |
 | [DYD-018](#dyd-018) | Shopping / Mobile UI | بلاغ بصري مؤكد | Shopping يكرر selected-list summary ثم يعرض نفس القائمة مرة أخرى كرأس detail في التخطيط العمودي | P1 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
 | [DYD-019](#dyd-019) | Shopping / Mobile UI | بلاغ بصري مؤكد | vertical rhythm في Shopping مزدحم بين tabs/list/detail/actions/items/share | P2 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
 | [DYD-020](#dyd-020) | Home / Mobile UI | بلاغ بصري مؤكد | Home stats بثلاث بطاقات يظهر 2+1 ويترك نصف صف فارغ | P2 | **Open** | مراجعة تسجيل الشاشة الصامت 1000223048.mp4 — 2026-10-10 |
 
-**ملخص الحالات:** Open: 8 · Needs Verification: 3 · Closed: 9 · **الإجمالي: 20**
+**ملخص الحالات:** Open: 9 · Needs Verification: 2 · Closed: 9 · **الإجمالي: 20**
 
 ## 4. تفاصيل البنود
 
@@ -121,7 +122,7 @@
 
 ### DYD-008 — Global Page UI Standard غير مطبق عبر كل الصفحات
 
-- **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · خلل Global Standard · P1 · Needs Verification
+- **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · خلل Global Standard · P1 · Open
 - **المصدر:** screenshots وملاحظات المستخدم بتاريخ 2026-10-10.
 - **الوصف:** الاختلاف ليس في ست صفحات فقط. Home, Today, All Tasks, Calendar, Projects, Routines, Assets, Shopping, Goals, Rewards وغيرها تستخدم spacing/tabs/empty states/card geometry/hero sizes/content start positions مختلفة.
 - **السلوك المطلوب:** Global Page Shell واحد + shared page primitives، بحيث أي صفحة مستقبلية ترث نفس القواعد بدل إضافة CSS خاص.
@@ -132,7 +133,9 @@
 - **نتائج التقرير المقبولة كدليل تنفيذ:** title anchor 107px desktop و103.5px mobile على مجموعة الاختبار؛ PageTabs بارتفاع موحد؛ RTL/LTR وmobile overflow gates؛ create system لم يتغير.
 - **ملاحظة Planner:** تقرير التنفيذ يقول إن Activity/Notifications/Search هاجرت، والمصدر يؤكد وجود `PageShell` فيها، لكن قائمة `PRIMARY_SHELL` في `pageSystem.spec.tsx` لا تشمل Activity/Notifications/Search، كما أن E2E geometry يغطي 12 route فقط. لذلك enforcement ليس شاملًا لكل ما وُصف بأنه primary page بعد.
 - **ملاحظة responsive:** اختلاف top للـtabs على mobile بسبب wrapping للعنوان/الإجراء/النص قد يكون سلوكًا صحيحًا لأنه ناتج من نفس القاعدة المشتركة، وليس بالضرورة inconsistency. القبول النهائي يكون بصريًا لا بمجرد أرقام التقرير.
-- **حدود الإثبات:** لا يُغلق البند حتى مراجعة render الفعلي من المستخدم/Planner وإما قبول هذه الفروقات أو طلب ضبط إضافي، مع استكمال test gate إن اعتُبرت Activity/Notifications/Search ضمن primary routes.
+- **مراجعة Pixel-level بعد Fix 06 (2026-10-11):** الصور العشر كلها `1917×1906`. الـcontent left anchor متقارب عند x≈408–409 px، وأول major content block في معظم الصفحات يبدأ عند y≈290–291 px؛ لذلك أصل الـPageShell تحسن. لكن التباينات التالية مؤكدة: (1) Projects/Routines/Assets/Goals primary action ≈`204×60` px عند x≈1671 بينما Shopping ≈`252×60` px عند x≈1623 رغم تساوي الـright edge؛ (2) Assets/Shopping tabs تبدأ بصريًا حول y≈290 بينما Rewards hero يبدأ هناك ويدفع tabs إلى y≈508–515، أي إن ترتيب الـpage regions مختلف؛ (3) Today/Routines تستخدم page-empty icons بينما Assets/Rewards لا تستخدم icon في equivalent page-empty presentation، وProjects لا تعرض page-empty state أصلًا؛ (4) Rewards empty state محصور داخل EntityGrid بدل full content region؛ (5) Home summary cards وRewards summary hero لا يشتركان في anatomy موحدة رغم أنهما summary surfaces.
+- **القرار:** لا يكفي أن تستخدم الصفحات نفس أسماء components؛ يجب أن يكون ترتيب الـslots، anatomy، المقاسات، والأيقونات موحّدًا حسب role. Tabs هي primary navigation ويجب أن تسبق أي hero/summary في tabbed pages. Page-level EmptyState يجب أن يكون full-width/centered مع icon + title + description موحدة البنية. Summary/Hero surfaces يجب أن تشترك في primitive واحد للـgeometry/anatomy، والـprimary page action يجب أن يكون له fixed desktop width وfull-width mobile contract.
+- **حدود الإثبات:** البند مفتوح ويحتاج Fix معماري جديد + browser geometry matrix حقيقي على desktop/mobile وLTR/RTL.
 
 ### DYD-009 — Greeting hardcoded
 
@@ -201,13 +204,13 @@
 - **معايير القبول:** آخر عنصر في كل primary page يمكن تمريره بالكامل فوق الـdock ولا يُحجب، في 390×900 وعلى device-like viewport، LTR/RTL، مع وجود/غياب safe-area inset.
 - **حدود الإثبات:** لا يُحل بإضافة padding يدوي مختلف لكل صفحة؛ يجب أن يكون Global PageShell/AppShell rule.
 
-### DYD-017 — اختلاف PageHeader create actions على mobile
+### DYD-017 — اختلاف PageHeader create actions على desktop/mobile
 
 - **التصنيف / النوع / الأولوية / الحالة:** UI/UX Architecture · بلاغ بصري مؤكد · P1 · Open
 - **المصدر:** مراجعة بصرية مباشرة لتسجيل الشاشة الصامت `1000223048.mp4` بتاريخ 2026-10-10.
-- **الوصف:** أزرار الإضافة/الإنشاء في رؤوس الصفحات تختلف في موضعها وحجمها عند mobile؛ مثال واضح اختلاف `New Goal` عن `New Shopping List`.
-- **السلوك المطلوب:** `PageHeader` يمتلك عقدًا موحدًا للـcontextual primary action على mobile: نفس height/min-width policy، نفس alignment، نفس wrapping/stacking rule، ونفس gap من title/subtitle.
-- **معايير القبول:** المقارنة بين Projects/Routines/Assets/Shopping/Goals وغيرها تُظهر نفس action geometry عندما تكون من نفس النوع، مع اختلاف النص/icon فقط؛ لا screen-specific button positioning.
+- **الوصف:** أزرار الإضافة/الإنشاء في رؤوس الصفحات تختلف في المقاس/الموضع بين الصفحات. في Pixel audit للdesktop: Projects/Routines/Assets/Goals ≈`204×60` px في الصور بينما Shopping ≈`252×60` px. على mobile سبق أن ظهر اختلاف في stacking/position بين `New Goal` و`New Shopping List`.
+- **السلوك المطلوب:** `PageHeader` يمتلك عقدًا موحدًا للـpage primary action على desktop وmobile: desktop fixed inline-size واحدة تكفي أطول label مع نفس height/right anchor؛ mobile full-width بنفس height؛ نفس icon size/padding/radius/typography والـgap من title/subtitle.
+- **معايير القبول:** المقارنة بين Projects/Routines/Assets/Shopping/Goals/Rewards (عند توفر action) تُظهر نفس primary-action width/height والـanchor ضمن <=1 CSS px في نفس viewport؛ النص/icon فقط يختلفان؛ لا screen-specific sizing/positioning.
 - **حدود الإثبات:** هذا بند مستقل عن ثبات page-title anchor؛ يمكن أن يكون العنوان ثابتًا بينما action layout ما زال غير موحد.
 
 ### DYD-018 — Shopping selected-list duplication على mobile
