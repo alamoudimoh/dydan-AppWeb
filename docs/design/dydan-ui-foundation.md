@@ -1,6 +1,6 @@
 # dydan — UI/UX foundation
 
-Branch: `fix/04-shopping-layout-diagnostics`
+Branch: `fix/06-mobile-ui-regressions`
 
 This document is the maintained UI/UX foundation for dydan. It records the
 global presentation rules that all current and future product screens must
@@ -133,10 +133,12 @@ The global vertical sequence is:
 1. application top bar,
 2. page top anchor,
 3. page header,
-4. optional hero/support block,
-5. optional tabs/filter/navigation strip,
+4. primary page navigation/control slot (PageTabs, FilterSegment, or equivalent role),
+5. optional hero/summary slot,
 6. page content,
 7. optional secondary/support content.
+
+Primary navigation comes before hero/summary content. In a tabbed page, `PageTabs` must be the first body-level region after `PageHeader`; a page-specific hero may not push the tab strip lower than equivalent tabbed pages.
 
 For equivalent page patterns, the gaps between these layers must be identical.
 
@@ -206,6 +208,8 @@ Rules:
 
 - the primary `h1` uses one product-wide anchor,
 - contextual primary actions occupy the same logical trailing region,
+- page-level primary create actions use one fixed desktop inline-size (190 CSS px), one shared height (40 CSS px), one icon size/padding/radius/typography contract, and a common trailing edge,
+- on mobile, the same page-level primary action becomes 100% of the available header content width while preserving the same control height,
 - subtitle spacing is fixed,
 - a missing eyebrow must not move the title,
 - mobile stacking behavior must be consistent,
@@ -239,6 +243,8 @@ Current examples that should converge on this one primitive include:
 
 Feature screens must not author their own tab measurements.
 
+For every tabbed primary page, the tab strip occupies the canonical primary-navigation slot immediately after the page header. Assets, Shopping, Rewards, and future tabbed pages must therefore share the same tab top anchor at the same viewport when their PageHeader contract is equivalent. Hero/summary content belongs after tabs, not before them.
+
 ### 7.2 Hero / summary block
 
 Hero blocks are optional.
@@ -246,15 +252,18 @@ Hero blocks are optional.
 Use them only when the page has genuine summary information that deserves a
 higher hierarchy, such as balances, progress summaries, or key status.
 
-A hero is not permission to invent arbitrary width, height, radius, padding, or
-typography. A shared `PageHero` / summary primitive should define:
+A hero is not permission to invent arbitrary width, height, radius, padding, or typography. A shared `PageHero` / `SummaryCard` foundation must define:
 
 - width behavior,
-- minimum/maximum height,
+- canonical minimum block size (140 CSS px for top-level summary surfaces unless a documented structural variant is required),
 - internal padding,
-- title/value hierarchy,
+- radius/border/shadow geometry,
+- a consistent anatomy: icon slot + label/title + primary value/content + supporting text,
+- one shared icon container/size for product-facing summary cards,
 - responsive collapse,
 - theme-aware surface treatment.
+
+Home top summary metrics and Rewards points summary must consume the same summary-card geometry/anatomy. Color/surface variant may differ by semantic role; geometry and information structure may not.
 
 If no hero is needed, the page proceeds directly from header to tabs/content.
 
@@ -302,10 +311,11 @@ It owns:
 
 Rules:
 
-- empty-state vertical placement must not vary by feature,
-- icons are optional but, when used, follow one size/system,
-- primary create CTA is omitted when the same create CTA already exists in the
-  page header,
+- page-level empty-state vertical placement must not vary by feature,
+- a page-level empty state uses the full available content region rather than occupying one grid column,
+- page-level empty states require the shared vector icon system plus title plus supporting description; emoji-only icons and missing-icon variants are not allowed for this role,
+- inline/subsection empties are a separate compact variant and must not be confused with page-level empties,
+- primary create CTA is omitted when the same create CTA already exists in the page header,
 - empty state is not used for API/network failure,
 - feature copy changes; geometry does not.
 
@@ -487,6 +497,7 @@ Rules:
 - no horizontal page overflow,
 - no fixed card widths that break mobile,
 - primary page actions remain reachable,
+- the scroll container reserves the fixed mobile navigation dock height plus the actual bottom safe-area inset and normal breathing space globally; the final content element must be scrollable fully above the dock,
 - tab systems remain usable,
 - equivalent geometry remains equivalent after responsive adaptation,
 - mobile uses the same primitives, not an unrelated mobile design,
@@ -540,7 +551,7 @@ primitives equivalent to:
 - `PageShell`
 - `PageHeader` (already present)
 - `PageTabs`
-- `PageHero`
+- `PageHero` / `SummaryCard`
 - `PageSection`
 - `EntityCard` / approved compact row variants
 - `EmptyState`
@@ -565,8 +576,9 @@ At minimum, verification should be able to detect:
 
 - divergent page-title anchors,
 - divergent page gutters,
-- custom tab geometry,
-- custom empty-state geometry,
+- divergent page-level primary-action width/height/anchor,
+- custom tab geometry or tab strips appearing in different primary-navigation slots,
+- custom page-level empty-state geometry/anatomy or missing required icon/title/description,
 - duplicate page-level primary create actions,
 - one-off modal shells,
 - page overflow at supported mobile width.
