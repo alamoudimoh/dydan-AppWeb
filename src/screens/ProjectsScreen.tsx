@@ -1,10 +1,13 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import { PanelCard } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
   EntityCard,
   EntityGrid,
+  InlineEmptyState,
+  PageEmptyState,
   PageSection,
   PageShell,
 } from '../components/page'
@@ -79,242 +82,250 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
           title='Projects'
           subtitle='Organized work with multiple tasks'
           primaryAction={
-            !isChild ? (
-              <button className='btn btn-primary' onClick={startNew}>
-                <Icon name='projects' size={14} />
-                New project
-              </button>
-            ) : undefined
+            !isChild
+              ? { label: 'New project', icon: 'projects', onClick: startNew }
+              : undefined
           }
         />
       }
     >
-      <PageSection>
-        <EntityGrid min={250} testId='projects-grid'>
-          {projects.map(p => {
-            const owner = memberById(p.owner)
-            const taskCount = tasks.filter(t => t.projectId === p.id).length
-            const isSelected = selected === p.id
-            return (
-              <EntityCard
-                key={p.id}
-                className='cursor-pointer'
-                style={{
-                  border: isSelected
-                    ? '1px solid var(--selected-border)'
-                    : '1px solid var(--line)',
-                  opacity: p.status === 'paused' ? 0.72 : 1,
-                }}
-                onClick={() => setSelected(isSelected ? null : p.id)}
-              >
-                <div className='flex items-start justify-between mb-3'>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 'var(--r-md)',
-                      background: `color-mix(in srgb, ${p.color} 13%, transparent)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span
-                      role='img'
-                      aria-label='Project icon'
-                      style={{ fontSize: 23, lineHeight: 1 }}
-                    >
-                      {p.icon ?? '📁'}
-                    </span>
-                  </div>
-                  <span
-                    className='badge'
-                    style={{
-                      background: `color-mix(in srgb, ${statusColor(p.status)} 10%, transparent)`,
-                      color: statusColor(p.status),
-                      fontSize: 10,
-                    }}
-                  >
-                    {p.status === 'paused' ? 'inactive' : p.status}
-                  </span>
-                </div>
-                <div
-                  className='font-bold text-primary mb-1'
-                  style={{ fontSize: 14 }}
-                >
-                  {p.name}
-                </div>
-                <div className='text-muted mb-4' style={{ fontSize: 12 }}>
-                  {p.description}
-                </div>
-                <div
-                  className='flex justify-between text-faint mb-2'
-                  style={{ fontSize: 11 }}
-                >
-                  <span>
-                    {taskCount} task{taskCount !== 1 ? 's' : ''}
-                  </span>
-                  <span className='font-bold' style={{ color: p.color }}>
-                    {p.progress}%
-                  </span>
-                </div>
-                <div className='progress-track' style={{ height: 6 }}>
-                  <div
-                    className='progress-fill'
-                    style={{ width: `${p.progress}%`, background: p.color }}
-                  />
-                </div>
-                {p.dueDate && (
-                  <div
-                    className='flex items-center gap-1 mt-3 text-faint'
-                    style={{ fontSize: 11 }}
-                  >
-                    <Icon name='calendar' size={11} />
-                    Due {p.dueDate}
-                  </div>
-                )}
-                {owner && (
-                  <div className='flex items-center gap-1 mt-2'>
-                    <div
-                      className='avatar'
-                      style={{
-                        width: 18,
-                        height: 18,
-                        background: owner.avatarColor,
-                        fontSize: 7,
-                      }}
-                    >
-                      {owner.initials}
-                    </div>
-                    <span className='text-faint' style={{ fontSize: 11 }}>
-                      {owner.name}
-                    </span>
-                  </div>
-                )}
-              </EntityCard>
-            )
-          })}
-        </EntityGrid>
-      </PageSection>
-
-      {selectedProject && (
+      <PageFlow>
         <PageSection>
-          <div className='card mt-5 overflow-hidden'>
-            <div
-              className='flex items-center justify-between px-5 py-4 border-b border-line'
-              style={{ borderColor: 'var(--line)' }}
-            >
-              <div className='flex items-center gap-3'>
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 'var(--r-xs)',
-                    background: selectedProject.color,
-                  }}
-                />
-                <div>
-                  <div
-                    className='font-bold text-primary'
-                    style={{ fontSize: 16 }}
-                  >
-                    {selectedProject.name}
-                  </div>
-                  <div className='text-faint' style={{ fontSize: 11 }}>
-                    {selectedProject.status === 'paused'
-                      ? 'Inactive'
-                      : 'Active'}
-                  </div>
-                </div>
-              </div>
-              <button
-                className='btn btn-ghost btn-icon'
-                onClick={() => setSelected(null)}
-              >
-                <Icon name='x' size={16} />
-              </button>
-            </div>
+          {projects.length === 0 ? (
+            <PageEmptyState
+              icon='projects'
+              testId='projects-zero'
+              title='No projects yet'
+              description='Create a project to organize related tasks.'
+            />
+          ) : (
+            <EntityGrid variant='standard' testId='projects-grid'>
+              {projects.map(p => {
+                const owner = memberById(p.owner)
+                const taskCount = tasks.filter(t => t.projectId === p.id).length
+                const isSelected = selected === p.id
+                return (
+                  <EntityCard
+                    key={p.id}
 
-            {!isChild && (
-              <div
-                className='flex flex-wrap gap-2 px-5 py-3 border-b border-line'
-                style={{ borderColor: 'var(--line)' }}
-              >
-                <button
-                  className='btn btn-secondary btn-sm'
-                  onClick={() => startModify(selectedProject)}
-                >
-                  Modify
-                </button>
-                <button
-                  className='btn btn-ghost btn-sm'
-                  style={{ color: 'var(--sig-over)' }}
-                  onClick={() => deleteProject(selectedProject)}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-
-            <div className='py-1'>
-              {projectTasks.length === 0 ? (
-                <EmptyState
-                  testId='projects-zero-tasks'
-                  icon={<span aria-hidden='true'>📋</span>}
-                  title='No tasks yet'
-                  description='Use + beside notifications to create a task.'
-                />
-              ) : (
-                projectTasks.map(t => (
-                  <div
-                    key={t.id}
-                    className='task-row'
-                    onClick={() => ctx.openTask(t)}
+                    style={{
+                      borderColor: isSelected
+                        ? 'var(--selected-border)'
+                        : 'var(--line)',
+                      opacity: p.status === 'paused' ? 0.72 : 1,
+                    }}
+                    onClick={() => setSelected(isSelected ? null : p.id)}
                   >
-                    <div
-                      className={`task-check ${t.status === 'done' ? 'checked' : ''}`}
-                    >
-                      {t.status === 'done' && (
-                        <Icon
-                          name='check'
-                          size={11}
-                          style={{ color: 'white' }}
-                        />
-                      )}
-                    </div>
-                    <div className='flex-1 min-w-0'>
+                    <div className='flex items-start justify-between mb-3'>
                       <div
-                        className='text-primary font-medium'
                         style={{
-                          fontSize: 14,
-                          textDecoration:
-                            t.status === 'done' ? 'line-through' : 'none',
+                          width: 36,
+                          height: 36,
+                          borderRadius: 'var(--r-md)',
+                          background: `color-mix(in srgb, ${p.color} 13%, transparent)`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
-                        {t.title}
-                      </div>
-                      {t.subtasks && (
-                        <div
-                          className='text-faint'
-                          style={{ fontSize: 11, marginTop: 2 }}
+                        <span
+                          role='img'
+                          aria-label='Project icon'
+                          style={{ fontSize: 23, lineHeight: 1 }}
                         >
-                          {t.subtasks.filter(s => s.done).length}/
-                          {t.subtasks.length} subtasks
+                          {p.icon ?? '📁'}
+                        </span>
+                      </div>
+                      <span
+                        className='badge'
+                        style={{
+                          background: `color-mix(in srgb, ${statusColor(p.status)} 10%, transparent)`,
+                          color: statusColor(p.status),
+                          fontSize: 10,
+                        }}
+                      >
+                        {p.status === 'paused' ? 'inactive' : p.status}
+                      </span>
+                    </div>
+                    <div
+                      className='font-bold text-primary mb-1'
+                      style={{ fontSize: 14 }}
+                    >
+                      {p.name}
+                    </div>
+                    <div className='text-muted mb-4' style={{ fontSize: 12 }}>
+                      {p.description}
+                    </div>
+                    <div
+                      className='flex justify-between text-faint mb-2'
+                      style={{ fontSize: 11 }}
+                    >
+                      <span>
+                        {taskCount} task{taskCount !== 1 ? 's' : ''}
+                      </span>
+                      <span className='font-bold' style={{ color: p.color }}>
+                        {p.progress}%
+                      </span>
+                    </div>
+                    <div className='progress-track' style={{ height: 6 }}>
+                      <div
+                        className='progress-fill'
+                        style={{ width: `${p.progress}%`, background: p.color }}
+                      />
+                    </div>
+                    {p.dueDate && (
+                      <div
+                        className='flex items-center gap-1 mt-3 text-faint'
+                        style={{ fontSize: 11 }}
+                      >
+                        <Icon name='calendar' size={11} />
+                        Due {p.dueDate}
+                      </div>
+                    )}
+                    {owner && (
+                      <div className='flex items-center gap-1 mt-2'>
+                        <div
+                          className='avatar'
+                          style={{
+                            width: 18,
+                            height: 18,
+                            background: owner.avatarColor,
+                            fontSize: 7,
+                          }}
+                        >
+                          {owner.initials}
                         </div>
+                        <span className='text-faint' style={{ fontSize: 11 }}>
+                          {owner.name}
+                        </span>
+                      </div>
+                    )}
+                  </EntityCard>
+                )
+              })}
+            </EntityGrid>
+          )}
+        </PageSection>
+
+        {selectedProject && (
+          <PageSection>
+            <PanelCard variant='flush'>
+              <div
+                className='flex items-center justify-between px-5 py-4 border-b border-line'
+                style={{ borderColor: 'var(--line)' }}
+              >
+                <div className='flex items-center gap-3'>
+                  <div
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 'var(--r-xs)',
+                      background: selectedProject.color,
+                    }}
+                  />
+                  <div>
+                    <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 16 }}
+                    >
+                      {selectedProject.name}
+                    </div>
+                    <div className='text-faint' style={{ fontSize: 11 }}>
+                      {selectedProject.status === 'paused'
+                        ? 'Inactive'
+                        : 'Active'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className='btn btn-ghost btn-icon'
+                  onClick={() => setSelected(null)}
+                >
+                  <Icon name='x' size={16} />
+                </button>
+              </div>
+
+              {!isChild && (
+                <div
+                  className='flex flex-wrap gap-2 px-5 py-3 border-b border-line'
+                  style={{ borderColor: 'var(--line)' }}
+                >
+                  <button
+                    className='btn btn-secondary btn-sm'
+                    onClick={() => startModify(selectedProject)}
+                  >
+                    Modify
+                  </button>
+                  <button
+                    className='btn btn-ghost btn-sm'
+                    style={{ color: 'var(--sig-over)' }}
+                    onClick={() => deleteProject(selectedProject)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+
+              <div className='py-1'>
+                {projectTasks.length === 0 ? (
+                  <InlineEmptyState
+                    testId='projects-zero-tasks'
+                    icon='projects'
+                    title='No tasks yet'
+                    description='Use + beside notifications to create a task.'
+                  />
+                ) : (
+                  projectTasks.map(t => (
+                    <div
+                      key={t.id}
+                      className='task-row'
+                      onClick={() => ctx.openTask(t)}
+                    >
+                      <div
+                        className={`task-check ${t.status === 'done' ? 'checked' : ''}`}
+                      >
+                        {t.status === 'done' && (
+                          <Icon
+                            name='check'
+                            size={11}
+                            style={{ color: 'white' }}
+                          />
+                        )}
+                      </div>
+                      <div className='flex-1 min-w-0'>
+                        <div
+                          className='text-primary font-medium'
+                          style={{
+                            fontSize: 14,
+                            textDecoration:
+                              t.status === 'done' ? 'line-through' : 'none',
+                          }}
+                        >
+                          {t.title}
+                        </div>
+                        {t.subtasks && (
+                          <div
+                            className='text-faint'
+                            style={{ fontSize: 11, marginTop: 2 }}
+                          >
+                            {t.subtasks.filter(s => s.done).length}/
+                            {t.subtasks.length} subtasks
+                          </div>
+                        )}
+                      </div>
+                      {t.dueDate && (
+                        <span className='text-faint' style={{ fontSize: 11 }}>
+                          {t.dueDate}
+                        </span>
                       )}
                     </div>
-                    {t.dueDate && (
-                      <span className='text-faint' style={{ fontSize: 11 }}>
-                        {t.dueDate}
-                      </span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </PageSection>
-      )}
+                  ))
+                )}
+              </div>
+            </PanelCard>
+          </PageSection>
+        )}
+      </PageFlow>
     </PageShell>
   )
 }

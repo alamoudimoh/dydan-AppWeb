@@ -1,9 +1,13 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import { PanelCard } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
+  EntityCard,
+  EntityGrid,
   FilterSegment,
+  PageEmptyState,
   PageSection,
   PageShell,
 } from '../components/page'
@@ -182,180 +186,202 @@ export default function TodayScreen({
         />
       }
     >
-      {/* Progress */}
-      <div className='mb-4'>
-        <div
-          className='flex justify-between text-faint mb-1.5'
-          style={{ fontSize: 11 }}
-        >
-          <span>Daily progress</span>
-          <span className='font-bold' style={{ color: 'var(--brand)' }}>
-            {filteredToday.length
-              ? Math.round((done.length / filteredToday.length) * 100)
-              : 0}
-            %
-          </span>
-        </div>
-        <div className='progress-track' style={{ height: 8 }}>
+      <PageFlow
+        navigation={
+          <PageSection>
+            {' '}
+            {/* Progress */}
+            <div>
+              <div
+                className='flex justify-between text-faint mb-1.5'
+                style={{ fontSize: 11 }}
+              >
+                <span>Daily progress</span>
+                <span className='font-bold' style={{ color: 'var(--brand)' }}>
+                  {filteredToday.length
+                    ? Math.round((done.length / filteredToday.length) * 100)
+                    : 0}
+                  %
+                </span>
+              </div>
+              <div className='progress-track' style={{ height: 8 }}>
+                <div
+                  className='progress-fill done'
+                  style={{
+                    width: filteredToday.length
+                      ? `${(done.length / filteredToday.length) * 100}%`
+                      : '0%',
+                  }}
+                />
+              </div>
+            </div>
+            {/* Filter tabs */}
+            {!isSolo && !isChild && (
+              <FilterSegment
+                ariaLabel='Today task filter'
+                testId='today-filter'
+                value={filter}
+                onChange={id => setFilter(id as typeof filter)}
+                options={[
+                  { id: 'all', label: 'All' },
+                  { id: 'mine', label: 'Mine' },
+                  { id: 'family', label: 'Household' },
+                ]}
+              />
+            )}
+          </PageSection>
+        }
+      >
+        {/* Overdue banner */}
+        {filteredOverdue.length > 0 && (
           <div
-            className='progress-fill done'
+            className='rounded-lg p-4 '
             style={{
-              width: filteredToday.length
-                ? `${(done.length / filteredToday.length) * 100}%`
-                : '0%',
+              background: 'var(--sig-over-bg)',
+              border: '1px solid var(--sig-over)',
+              borderRadius: 'var(--r-lg)',
             }}
+          >
+            <div className='flex items-center gap-2 mb-2'>
+              <Icon
+                name='error'
+                size={15}
+                style={{ color: 'var(--sig-over)' }}
+              />
+              <span
+                className='font-bold text-sig-over'
+                style={{ fontSize: 13 }}
+              >
+                Overdue
+              </span>
+            </div>
+            {filteredOverdue.map(t => (
+              <TaskRow
+                key={t.id}
+                task={t}
+                onOpen={() => ctx.openTask(t)}
+                onComplete={onComplete}
+                compact
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Todo tasks */}
+        {todo.length > 0 && (
+          <PanelCard variant='flush'>
+            <div
+              className='px-4 py-3 border-b border-line flex items-center gap-2'
+              style={{ borderColor: 'var(--line)' }}
+            >
+              <span className='font-bold text-primary' style={{ fontSize: 14 }}>
+                To do
+              </span>
+              <span className='badge bg-surface-2 text-muted'>
+                {todo.length}
+              </span>
+            </div>
+            {todo.map(t => (
+              <TaskRow
+                key={t.id}
+                task={t}
+                onOpen={() => ctx.openTask(t)}
+                onComplete={onComplete}
+              />
+            ))}
+          </PanelCard>
+        )}
+
+        {/* Done tasks */}
+        {done.length > 0 && (
+          <PanelCard variant='flush'>
+            <div
+              className='px-4 py-3 border-b border-line flex items-center gap-2'
+              style={{ borderColor: 'var(--line)' }}
+            >
+              <Icon
+                name='check'
+                size={14}
+                style={{ color: 'var(--sig-done)' }}
+              />
+              <span className='font-bold text-primary' style={{ fontSize: 14 }}>
+                Completed
+              </span>
+              <span className='badge bg-sig-done-bg text-sig-done'>
+                {done.length}
+              </span>
+            </div>
+            {done.map(t => (
+              <TaskRow
+                key={t.id}
+                task={t}
+                onOpen={() => ctx.openTask(t)}
+                onComplete={onComplete}
+              />
+            ))}
+          </PanelCard>
+        )}
+
+        {/* Empty state */}
+        {filteredToday.length === 0 && (
+          <PageEmptyState
+            testId='today-zero'
+            icon='check'
+            title='Nothing due today!'
+            description='Enjoy your free time or add something new.'
           />
-        </div>
-      </div>
+        )}
 
-      {/* Filter tabs */}
-      {!isSolo && !isChild && (
-        <FilterSegment
-          ariaLabel='Today task filter'
-          testId='today-filter'
-          value={filter}
-          onChange={id => setFilter(id as typeof filter)}
-          options={[
-            { id: 'all', label: 'All' },
-            { id: 'mine', label: 'Mine' },
-            { id: 'family', label: 'Household' },
-          ]}
-        />
-      )}
-
-      {/* Overdue banner */}
-      {filteredOverdue.length > 0 && (
-        <div
-          className='rounded-lg p-4 mb-4'
-          style={{
-            background: 'var(--sig-over-bg)',
-            border: '1px solid var(--sig-over)',
-            borderRadius: 'var(--r-lg)',
-          }}
-        >
-          <div className='flex items-center gap-2 mb-2'>
-            <Icon name='error' size={15} style={{ color: 'var(--sig-over)' }} />
-            <span className='font-bold text-sig-over' style={{ fontSize: 13 }}>
-              Overdue
-            </span>
-          </div>
-          {filteredOverdue.map(t => (
-            <TaskRow
-              key={t.id}
-              task={t}
-              onOpen={() => ctx.openTask(t)}
-              onComplete={onComplete}
-              compact
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Todo tasks */}
-      {todo.length > 0 && (
-        <div className='card overflow-hidden mb-4'>
-          <div
-            className='px-4 py-3 border-b border-line flex items-center gap-2'
-            style={{ borderColor: 'var(--line)' }}
-          >
-            <span className='font-bold text-primary' style={{ fontSize: 14 }}>
-              To do
-            </span>
-            <span className='badge bg-surface-2 text-muted'>{todo.length}</span>
-          </div>
-          {todo.map(t => (
-            <TaskRow
-              key={t.id}
-              task={t}
-              onOpen={() => ctx.openTask(t)}
-              onComplete={onComplete}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Done tasks */}
-      {done.length > 0 && (
-        <div className='card overflow-hidden mb-4' style={{ opacity: 0.9 }}>
-          <div
-            className='px-4 py-3 border-b border-line flex items-center gap-2'
-            style={{ borderColor: 'var(--line)' }}
-          >
-            <Icon name='check' size={14} style={{ color: 'var(--sig-done)' }} />
-            <span className='font-bold text-primary' style={{ fontSize: 14 }}>
-              Completed
-            </span>
-            <span className='badge bg-sig-done-bg text-sig-done'>
-              {done.length}
-            </span>
-          </div>
-          {done.map(t => (
-            <TaskRow
-              key={t.id}
-              task={t}
-              onOpen={() => ctx.openTask(t)}
-              onComplete={onComplete}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {filteredToday.length === 0 && (
-        <EmptyState
-          testId='today-zero'
-          icon={<span aria-hidden='true'>🎉</span>}
-          title='Nothing due today!'
-          description='Enjoy your free time or add something new.'
-        />
-      )}
-
-      {/* Household section - family only */}
-      {!isSolo && !isChild && (
-        <PageSection title='Household members'>
-          <div className='grid grid-cols-3 gap-3'>
-            {members.map(m => {
-              const memberTasks = todayBase.filter(t => t.assigneeId === m.id)
-              const memberDone = memberTasks.filter(t => t.status === 'done')
-              return (
-                <div key={m.id} className='card p-3 text-center'>
-                  <div
-                    className='avatar mx-auto mb-2'
-                    style={{
-                      width: 36,
-                      height: 36,
-                      background: m.avatarColor,
-                      fontSize: 13,
-                    }}
-                  >
-                    {m.initials}
-                  </div>
-                  <div
-                    className='font-semibold text-primary'
-                    style={{ fontSize: 12 }}
-                  >
-                    {m.name}
-                  </div>
-                  <div className='text-faint' style={{ fontSize: 11 }}>
-                    {memberDone.length}/{memberTasks.length} done
-                  </div>
-                  <div className='progress-track mt-1.5' style={{ height: 4 }}>
+        {/* Household section - family only */}
+        {!isSolo && !isChild && (
+          <PageSection title='Household members'>
+            <EntityGrid variant='dense'>
+              {members.map(m => {
+                const memberTasks = todayBase.filter(t => t.assigneeId === m.id)
+                const memberDone = memberTasks.filter(t => t.status === 'done')
+                return (
+                  <EntityCard key={m.id} align='center' variant='compact'>
                     <div
-                      className='progress-fill'
+                      className='avatar mx-auto mb-2'
                       style={{
-                        width: memberTasks.length
-                          ? `${(memberDone.length / memberTasks.length) * 100}%`
-                          : '0%',
+                        width: 36,
+                        height: 36,
                         background: m.avatarColor,
+                        fontSize: 13,
                       }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </PageSection>
-      )}
+                    >
+                      {m.initials}
+                    </div>
+                    <div
+                      className='font-semibold text-primary'
+                      style={{ fontSize: 12 }}
+                    >
+                      {m.name}
+                    </div>
+                    <div className='text-faint' style={{ fontSize: 11 }}>
+                      {memberDone.length}/{memberTasks.length} done
+                    </div>
+                    <div
+                      className='progress-track mt-1.5'
+                      style={{ height: 4 }}
+                    >
+                      <div
+                        className='progress-fill'
+                        style={{
+                          width: memberTasks.length
+                            ? `${(memberDone.length / memberTasks.length) * 100}%`
+                            : '0%',
+                          background: m.avatarColor,
+                        }}
+                      />
+                    </div>
+                  </EntityCard>
+                )
+              })}
+            </EntityGrid>
+          </PageSection>
+        )}
+      </PageFlow>
     </PageShell>
   )
 }

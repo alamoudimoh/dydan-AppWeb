@@ -2,8 +2,6 @@
 import Option from '@mui/joy/Option'
 import Select from '@mui/joy/Select'
 import Switch from '@mui/joy/Switch'
-import Tab from '@mui/joy/Tab'
-import TabList from '@mui/joy/TabList'
 import TabPanel from '@mui/joy/TabPanel'
 import Tabs from '@mui/joy/Tabs'
 import QRCode from 'qrcode'
@@ -11,6 +9,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { AppCtx, Icon, Theme, View } from '../App'
 import CategorySettings from '../components/CategorySettings'
+import { EntityGrid, EntityRow } from '../components/page'
+import { PageFlow, PageTabs } from '../components/page'
 import { PageShell } from '../components/page'
 import PageHeader from '../components/PageHeader'
 import { Row, Section } from '../components/SettingsSection'
@@ -1833,590 +1833,339 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
           />
         }
       >
-        <div className='settings-screen'>
-          <Tabs
-            value={tab}
-            onChange={(_, v) => v && setTabPersisted(v as string)}
-            sx={{ bgcolor: 'transparent' }}
-          >
-            {/* Horizontal, scrollable tab strip */}
-            <div
-              className='sticky top-0 z-30'
-              style={{ background: 'var(--page)' }}
+        <PageFlow
+          navigation={
+            <PageTabs
+              ariaLabel='Settings sections'
+              testId='settings-tabs'
+              variant='scroll'
+              semantics='tabs'
+              value={tab}
+              onChange={setTabPersisted}
+              tabs={TABS.map(item => ({ id: item.id, label: item.label }))}
+            />
+          }
+        >
+          <div className='settings-screen'>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => v && setTabPersisted(v as string)}
+              sx={{ bgcolor: 'transparent' }}
             >
-              <TabList
-                disableUnderline
-                sx={{
-                  gap: 0.5,
-                  overflowX: 'auto',
-                  flexWrap: 'nowrap',
-                  scrollbarWidth: 'none',
-                  borderBottom: '1px solid var(--line)',
-                  pb: '6px',
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  '& .MuiTab-root': {
-                    flex: 'none',
-                    whiteSpace: 'nowrap',
-                    borderRadius: 'var(--r-md)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: 'var(--t-muted)',
-                    minHeight: 34,
-                    px: 1.5,
-                  },
-                  '& .MuiTab-root:hover': {
-                    bgcolor: 'var(--surface-2)',
-                    color: 'var(--t-primary)',
-                  },
-                  "& .MuiTab-root[aria-selected='true']": {
-                    bgcolor: 'var(--selected-bg)',
-                    color: 'var(--selected-text)',
-                  },
-                }}
-              >
-                {TABS.map(tb => (
-                  <Tab key={tb.id} value={tb.id} disableIndicator>
-                    <Icon name={tb.icon} size={14} />
-                    <span className='ms-1.5'>{tb.label}</span>
-                  </Tab>
-                ))}
-              </TabList>
-            </div>
-
-            <div className='pt-6'>
-              {/* ── Overview ── */}
-              <TabPanel value='overview' sx={{ p: 0 }}>
-                <Section title='Profile details'>
-                  <div className='flex items-center gap-5 px-5 py-5 settings-profile-row'>
-                    {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt='Profile'
-                        className='avatar'
-                        style={{ width: 56, height: 56, objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div
-                        className='avatar'
-                        style={{
-                          width: 56,
-                          height: 56,
-                          background: currentUser.avatarColor,
-                          fontSize: 22,
-                        }}
-                      >
-                        {currentUser.initials}
-                      </div>
-                    )}
-                    <div className='flex-1 settings-profile-main'>
-                      <div
-                        className='font-bold text-primary'
-                        style={{ fontSize: 16 }}
-                      >
-                        {currentUser.name}
-                      </div>
-                      <div className='text-muted' style={{ fontSize: 13 }}>
-                        {currentUser.email}
-                      </div>
-                      <div className='flex gap-1.5 mt-1.5'>
-                        <span
-                          className='badge bg-brand-faint text-brand'
-                          style={{ fontSize: 11 }}
-                        >
-                          {currentUser.role}
-                        </span>
-                        <span
-                          className='badge bg-sig-done-bg text-sig-done'
-                          style={{ fontSize: 11 }}
-                        >
-                          {profile?.subscription ?? 'No active subscription'}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() => go('profile')}
-                    >
-                      Edit profile
-                    </button>
-                  </div>
-                </Section>
-                <div
-                  className='grid gap-3'
-                  style={{
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(200px, 1fr))',
-                  }}
+              <div>
+                {/* ── Overview ── */}
+                <TabPanel
+                  value='overview'
+                  id='settings-tabs-panel-overview'
+                  aria-labelledby='settings-tabs-overview'
+                  sx={{ p: 0 }}
                 >
-                  {TABS.filter(t => t.id !== 'overview').map(t => (
-                    <button
-                      key={t.id}
-                      className='card flex items-center gap-3 p-4 text-start'
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => go(t.id)}
-                    >
-                      <div
-                        className='flex items-center justify-center'
-                        style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: 'var(--r-md)',
-                          background: 'var(--brand-faint)',
-                          color: 'var(--brand)',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon name={t.icon} size={16} />
+                  <Section title='Profile details'>
+                    <div className='flex items-center gap-5 px-5 py-5 settings-profile-row'>
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt='Profile'
+                          className='avatar'
+                          style={{ width: 56, height: 56, objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div
+                          className='avatar'
+                          style={{
+                            width: 56,
+                            height: 56,
+                            background: currentUser.avatarColor,
+                            fontSize: 22,
+                          }}
+                        >
+                          {currentUser.initials}
+                        </div>
+                      )}
+                      <div className='flex-1 settings-profile-main'>
+                        <div
+                          className='font-bold text-primary'
+                          style={{ fontSize: 16 }}
+                        >
+                          {currentUser.name}
+                        </div>
+                        <div className='text-muted' style={{ fontSize: 13 }}>
+                          {currentUser.email}
+                        </div>
+                        <div className='flex gap-1.5 mt-1.5'>
+                          <span
+                            className='badge bg-brand-faint text-brand'
+                            style={{ fontSize: 11 }}
+                          >
+                            {currentUser.role}
+                          </span>
+                          <span
+                            className='badge bg-sig-done-bg text-sig-done'
+                            style={{ fontSize: 11 }}
+                          >
+                            {profile?.subscription ?? 'No active subscription'}
+                          </span>
+                        </div>
                       </div>
-                      <span
-                        className='font-semibold text-primary'
-                        style={{ fontSize: 13 }}
-                      >
-                        {t.label}
-                      </span>
-                      <Icon
-                        name='chevron_right'
-                        size={15}
-                        style={{
-                          color: 'var(--t-faint)',
-                          marginInlineStart: 'auto',
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </TabPanel>
-
-              {/* ── Profile (identity only) ── */}
-              <TabPanel value='profile' sx={{ p: 0 }}>
-                <Section title='Profile details'>
-                  <div
-                    className='flex items-center gap-5 px-5 py-5 border-b border-line'
-                    style={{ borderColor: 'var(--line)' }}
-                  >
-                    {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt='Profile'
-                        className='avatar'
-                        style={{ width: 64, height: 64, objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div
-                        className='avatar'
-                        style={{
-                          width: 64,
-                          height: 64,
-                          background: currentUser.avatarColor,
-                          fontSize: 24,
-                        }}
-                      >
-                        {currentUser.initials}
-                      </div>
-                    )}
-                    <div className='flex-1'>
-                      <input
-                        ref={profilePhotoInputRef}
-                        type='file'
-                        accept='image/png,image/jpeg'
-                        className='sr-only'
-                        onChange={e => {
-                          const file = e.target.files?.[0]
-                          if (file) handlePhotoChange(file)
-                          e.currentTarget.value = ''
-                        }}
-                      />
                       <button
                         className='btn btn-secondary btn-sm'
-                        onClick={() => profilePhotoInputRef.current?.click()}
+                        onClick={() => go('profile')}
                       >
-                        Change photo
+                        Edit profile
                       </button>
-                      <div
-                        className='text-faint mt-1.5'
-                        style={{ fontSize: 11 }}
-                      >
-                        JPG or PNG · max 2 MB
-                      </div>
                     </div>
-                  </div>
-                  <Row
-                    icon='user'
-                    label='Display name'
-                    detail={currentUser.name}
-                  >
-                    <button
-                      className='btn btn-ghost btn-sm text-brand'
-                      onClick={() => setShowEditProfile(true)}
-                    >
-                      Change
-                    </button>
-                  </Row>
-                  <Row icon='mail' label='Email' detail={currentUser.email}>
-                    <button
-                      className='btn btn-ghost btn-sm text-brand'
-                      onClick={() => setShowEmailChange(true)}
-                    >
-                      Change
-                    </button>
-                  </Row>
-                  <Row icon='star' label='Role in space'>
-                    <span
-                      className='badge bg-brand-faint text-brand'
-                      style={{ fontSize: 11, textTransform: 'capitalize' }}
-                    >
-                      {currentUser.role}
-                    </span>
-                  </Row>
-                </Section>
-              </TabPanel>
+                  </Section>
+                  <EntityGrid variant='compact'>
+                    {TABS.filter(t => t.id !== 'overview').map(t => (
+                      <EntityRow key={t.id} onClick={() => go(t.id)}>
+                        <div
+                          className='flex items-center justify-center'
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 'var(--r-md)',
+                            background: 'var(--brand-faint)',
+                            color: 'var(--brand)',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Icon name={t.icon} size={16} />
+                        </div>
+                        <span
+                          className='font-semibold text-primary'
+                          style={{ fontSize: 13 }}
+                        >
+                          {t.label}
+                        </span>
+                        <Icon
+                          name='chevron_right'
+                          size={15}
+                          style={{
+                            color: 'var(--t-faint)',
+                            marginInlineStart: 'auto',
+                          }}
+                        />
+                      </EntityRow>
+                    ))}
+                  </EntityGrid>
+                </TabPanel>
 
-              {/* ── Security ── */}
-              <TabPanel value='security' sx={{ p: 0 }}>
-                <Section title='Sign-in'>
-                  <Row icon='lock' label='Password'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() => setShowPassword(true)}
+                {/* ── Profile (identity only) ── */}
+                <TabPanel
+                  value='profile'
+                  id='settings-tabs-panel-profile'
+                  aria-labelledby='settings-tabs-profile'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Profile details'>
+                    <div
+                      className='flex items-center gap-5 px-5 py-5 border-b border-line'
+                      style={{ borderColor: 'var(--line)' }}
                     >
-                      Update password
-                    </button>
-                  </Row>
-                </Section>
-                <Section title='Two-factor authentication'>
-                  <Row icon='shield' label='Two-factor authentication'>
-                    <JoyToggle
-                      on={mfaEnabled}
-                      onChange={() => {
-                        if (mfaLoading) return
-                        if (mfaEnabled) {
-                          ctx.showConfirm({
-                            title: 'Disable two-factor authentication?',
-                            message:
-                              'This makes your account less secure. Are you sure?',
-                            confirmLabel: 'Disable',
-                            danger: true,
-                            onConfirm: () => setCredentialAction('disable-mfa'),
-                          })
-                        } else {
-                          void account.setupMFA
-                            .mutateAsync()
-                            .then(setMfaSetup)
-                            .catch(err =>
-                              ctx.showToast(
-                                err instanceof Error
-                                  ? err.message
-                                  : 'Unable to start two-factor setup',
-                              ),
-                            )
-                        }
-                      }}
-                    />
-                  </Row>
-                  {mfaEnabled && (
-                    <>
-                      <Row
-                        icon='phone'
-                        label='Verification method'
-                        detail='Authenticator app (TOTP)'
-                      />
-                      <Row icon='clipboard' label='Recovery codes'>
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt='Profile'
+                          className='avatar'
+                          style={{ width: 64, height: 64, objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div
+                          className='avatar'
+                          style={{
+                            width: 64,
+                            height: 64,
+                            background: currentUser.avatarColor,
+                            fontSize: 24,
+                          }}
+                        >
+                          {currentUser.initials}
+                        </div>
+                      )}
+                      <div className='flex-1'>
+                        <input
+                          ref={profilePhotoInputRef}
+                          type='file'
+                          accept='image/png,image/jpeg'
+                          className='sr-only'
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) handlePhotoChange(file)
+                            e.currentTarget.value = ''
+                          }}
+                        />
                         <button
                           className='btn btn-secondary btn-sm'
-                          onClick={() => setCredentialAction('recovery-codes')}
+                          onClick={() => profilePhotoInputRef.current?.click()}
                         >
-                          Regenerate
+                          Change photo
                         </button>
-                      </Row>
-                    </>
-                  )}
-                </Section>
-                <Section title='Active sessions'>
-                  <div className='px-5 py-4'>
-                    <div className='flex flex-col gap-3'>
-                      {sessionsLoading && (
-                        <div className='text-muted' style={{ fontSize: 13 }}>
-                          Loading active sessions…
+                        <div
+                          className='text-faint mt-1.5'
+                          style={{ fontSize: 11 }}
+                        >
+                          JPG or PNG · max 2 MB
                         </div>
-                      )}
-                      {!sessionsLoading && sessions.length === 0 && (
-                        <div className='text-muted' style={{ fontSize: 13 }}>
-                          No active sessions were returned by the server.
-                        </div>
-                      )}
-                      {sessions.map(s => (
-                        <div key={s.id} className='flex items-center gap-3'>
-                          <div
-                            style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: 'var(--r-sm)',
-                              background: 'var(--surface-2)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                          >
-                            <Icon
-                              name={
-                                /phone|ios|android/i.test(s.device ?? '')
-                                  ? 'phone'
-                                  : 'monitor'
-                              }
-                              size={16}
-                              style={{ color: 'var(--t-muted)' }}
-                            />
-                          </div>
-                          <div className='flex-1 min-w-0'>
-                            <div
-                              className='font-medium text-primary truncate'
-                              style={{ fontSize: 13 }}
-                            >
-                              {s.device || 'Signed-in device'}
-                            </div>
-                            <div
-                              className='text-faint'
-                              style={{ fontSize: 11 }}
-                            >
-                              {s.location ? `${s.location} · ` : ''}Last active{' '}
-                              {new Date(s.lastActiveAt).toLocaleString()}
-                            </div>
-                          </div>
-                          {s.current ? (
-                            <span
-                              className='badge bg-sig-done-bg text-sig-done'
-                              style={{ fontSize: 10 }}
-                            >
-                              Current
-                            </span>
-                          ) : (
-                            <button
-                              className='btn btn-ghost btn-sm text-sig-over'
-                              style={{ fontSize: 11 }}
-                              onClick={() =>
-                                ctx.showConfirm({
-                                  title: 'Sign out this device?',
-                                  message: `This will end the session on ${s.device || 'this device'}.`,
-                                  confirmLabel: 'Sign out',
-                                  danger: true,
-                                  onConfirm: () =>
-                                    void account.revokeSession
-                                      .mutateAsync(s.id)
-                                      .then(() =>
-                                        ctx.showToast('Device signed out'),
-                                      )
-                                      .catch(err =>
-                                        ctx.showToast(
-                                          err instanceof Error
-                                            ? err.message
-                                            : 'Could not sign out this device',
-                                        ),
-                                      ),
-                                })
-                              }
-                            >
-                              Sign out
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                      </div>
                     </div>
-                    <button
-                      className='btn btn-secondary btn-sm mt-4'
-                      style={{ fontSize: 12 }}
-                      onClick={() =>
-                        ctx.showConfirm({
-                          title: 'Sign out all other devices?',
-                          message:
-                            "All other sessions will be ended. You'll stay signed in on this device.",
-                          confirmLabel: 'Sign out all',
-                          danger: true,
-                          onConfirm: () =>
-                            void account.revokeOtherSessions
+                    <Row
+                      icon='user'
+                      label='Display name'
+                      detail={currentUser.name}
+                    >
+                      <button
+                        className='btn btn-ghost btn-sm text-brand'
+                        onClick={() => setShowEditProfile(true)}
+                      >
+                        Change
+                      </button>
+                    </Row>
+                    <Row icon='mail' label='Email' detail={currentUser.email}>
+                      <button
+                        className='btn btn-ghost btn-sm text-brand'
+                        onClick={() => setShowEmailChange(true)}
+                      >
+                        Change
+                      </button>
+                    </Row>
+                    <Row icon='star' label='Role in space'>
+                      <span
+                        className='badge bg-brand-faint text-brand'
+                        style={{ fontSize: 11, textTransform: 'capitalize' }}
+                      >
+                        {currentUser.role}
+                      </span>
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Security ── */}
+                <TabPanel
+                  value='security'
+                  id='settings-tabs-panel-security'
+                  aria-labelledby='settings-tabs-security'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Sign-in'>
+                    <Row icon='lock' label='Password'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() => setShowPassword(true)}
+                      >
+                        Update password
+                      </button>
+                    </Row>
+                  </Section>
+                  <Section title='Two-factor authentication'>
+                    <Row icon='shield' label='Two-factor authentication'>
+                      <JoyToggle
+                        on={mfaEnabled}
+                        onChange={() => {
+                          if (mfaLoading) return
+                          if (mfaEnabled) {
+                            ctx.showConfirm({
+                              title: 'Disable two-factor authentication?',
+                              message:
+                                'This makes your account less secure. Are you sure?',
+                              confirmLabel: 'Disable',
+                              danger: true,
+                              onConfirm: () =>
+                                setCredentialAction('disable-mfa'),
+                            })
+                          } else {
+                            void account.setupMFA
                               .mutateAsync()
-                              .then(() =>
-                                ctx.showToast('All other devices signed out'),
-                              )
+                              .then(setMfaSetup)
                               .catch(err =>
                                 ctx.showToast(
                                   err instanceof Error
                                     ? err.message
-                                    : 'Could not sign out other devices',
+                                    : 'Unable to start two-factor setup',
                                 ),
-                              ),
-                        })
-                      }
-                    >
-                      Sign out all other devices
-                    </button>
-                  </div>
-                </Section>
-              </TabPanel>
-
-              {/* ── Space accounts ── */}
-              <TabPanel value='team' sx={{ p: 0 }}>
-                <Section title='Space settings'>
-                  {!isSolo && (
-                    <Row icon='plus' label='Invite people'>
-                      <button
-                        className='btn btn-primary btn-sm'
-                        onClick={() => setShowInvite(true)}
-                      >
-                        Invite
-                      </button>
+                              )
+                          }
+                        }}
+                      />
                     </Row>
-                  )}
-                  {pendingJoinCode && (
-                    <Row
-                      icon='users'
-                      label='Join shared space'
-                      detail={`Invite code: ${pendingJoinCode}`}
-                    >
-                      <button
-                        className='btn btn-primary btn-sm'
-                        onClick={() =>
-                          void account.joinCircle
-                            .mutateAsync(pendingJoinCode)
-                            .then(() => ctx.showToast('Join request sent'))
-                            .catch(err =>
-                              ctx.showToast(
-                                err instanceof Error
-                                  ? err.message
-                                  : 'Could not join this space',
-                              ),
-                            )
-                        }
-                      >
-                        Request to join
-                      </button>
-                    </Row>
-                  )}
-                  <Row
-                    icon='home'
-                    label='Space name'
-                    detail={circle?.name ?? 'Loading space details…'}
-                  >
-                    <button
-                      className='btn btn-ghost btn-sm text-brand'
-                      onClick={() => setShowRenameTeam(true)}
-                      disabled={!circle}
-                    >
-                      Rename
-                    </button>
-                  </Row>
-                  <Row icon='clipboard' label='dydan code'>
-                    <span
-                      className='font-mono'
-                      style={{
-                        fontSize: 13,
-                        color: 'var(--t-primary)',
-                        background: 'var(--surface-2)',
-                        padding: '4px 8px',
-                        borderRadius: 'var(--r-sm)',
-                      }}
-                    >
-                      {inviteCode}
-                    </span>
-                  </Row>
-                  <Row icon='repeat' label='Regenerate dydan code'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() =>
-                        void account.regenerateInviteCode
-                          .mutateAsync()
-                          .then(result => {
-                            const nextCode =
-                              result.inviteCode ?? result.invite_code
-                            ctx.showToast(
-                              nextCode
-                                ? `New dydan code: ${nextCode}`
-                                : 'New dydan code generated',
-                            )
-                          })
-                          .catch(err =>
-                            ctx.showToast(
-                              err instanceof Error
-                                ? err.message
-                                : 'Could not regenerate dydan code',
-                            ),
-                          )
-                      }
-                    >
-                      Regenerate
-                    </button>
-                  </Row>
-                  {!isSolo && (
-                    <Row icon='log_out' label='Leave space'>
-                      <button
-                        className='btn btn-ghost btn-sm text-sig-over'
-                        onClick={() =>
-                          ctx.showConfirm({
-                            title: 'Leave the space?',
-                            message:
-                              "You'll lose access to shared lists, goals, and space activity.",
-                            confirmLabel: 'Leave',
-                            danger: true,
-                            onConfirm: () =>
-                              circle &&
-                              void account.leaveCircle
-                                .mutateAsync(circle.id)
-                                .then(() => ctx.showToast('You left the space'))
-                                .catch(err =>
-                                  ctx.showToast(
-                                    err instanceof Error
-                                      ? err.message
-                                      : 'Could not leave this space',
-                                  ),
-                                ),
-                          })
-                        }
-                      >
-                        Leave
-                      </button>
-                    </Row>
-                  )}
-                </Section>
-                {!isSolo ? (
-                  <Section title='Members'>
+                    {mfaEnabled && (
+                      <>
+                        <Row
+                          icon='phone'
+                          label='Verification method'
+                          detail='Authenticator app (TOTP)'
+                        />
+                        <Row icon='clipboard' label='Recovery codes'>
+                          <button
+                            className='btn btn-secondary btn-sm'
+                            onClick={() =>
+                              setCredentialAction('recovery-codes')
+                            }
+                          >
+                            Regenerate
+                          </button>
+                        </Row>
+                      </>
+                    )}
+                  </Section>
+                  <Section title='Active sessions'>
                     <div className='px-5 py-4'>
                       <div className='flex flex-col gap-3'>
-                        {members.map(m => (
-                          <div key={m.id} className='flex items-center gap-3'>
+                        {sessionsLoading && (
+                          <div className='text-muted' style={{ fontSize: 13 }}>
+                            Loading active sessions…
+                          </div>
+                        )}
+                        {!sessionsLoading && sessions.length === 0 && (
+                          <div className='text-muted' style={{ fontSize: 13 }}>
+                            No active sessions were returned by the server.
+                          </div>
+                        )}
+                        {sessions.map(s => (
+                          <div key={s.id} className='flex items-center gap-3'>
                             <div
-                              className='avatar'
                               style={{
-                                width: 34,
-                                height: 34,
-                                background: m.avatarColor,
-                                fontSize: 12,
+                                width: 36,
+                                height: 36,
+                                borderRadius: 'var(--r-sm)',
+                                background: 'var(--surface-2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
                               }}
                             >
-                              {m.initials}
+                              <Icon
+                                name={
+                                  /phone|ios|android/i.test(s.device ?? '')
+                                    ? 'phone'
+                                    : 'monitor'
+                                }
+                                size={16}
+                                style={{ color: 'var(--t-muted)' }}
+                              />
                             </div>
                             <div className='flex-1 min-w-0'>
                               <div
-                                className='font-medium text-primary'
+                                className='font-medium text-primary truncate'
                                 style={{ fontSize: 13 }}
                               >
-                                {m.name}
+                                {s.device || 'Signed-in device'}
                               </div>
                               <div
                                 className='text-faint'
-                                style={{
-                                  fontSize: 11,
-                                  textTransform: 'capitalize',
-                                }}
+                                style={{ fontSize: 11 }}
                               >
-                                {m.role} · {m.email}
+                                {s.location ? `${s.location} · ` : ''}Last
+                                active{' '}
+                                {new Date(s.lastActiveAt).toLocaleString()}
                               </div>
                             </div>
-                            {m.isCurrentUser ? (
+                            {s.current ? (
                               <span
-                                className='badge bg-brand-faint text-brand'
+                                className='badge bg-sig-done-bg text-sig-done'
                                 style={{ fontSize: 10 }}
                               >
-                                You
+                                Current
                               </span>
                             ) : (
                               <button
@@ -2424,668 +2173,945 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                                 style={{ fontSize: 11 }}
                                 onClick={() =>
                                   ctx.showConfirm({
-                                    title: `Remove ${m.name}?`,
-                                    message: `${m.name} will lose access to the space. Their tasks will remain.`,
-                                    confirmLabel: 'Remove',
+                                    title: 'Sign out this device?',
+                                    message: `This will end the session on ${s.device || 'this device'}.`,
+                                    confirmLabel: 'Sign out',
                                     danger: true,
                                     onConfirm: () =>
-                                      circle &&
-                                      void account.removeMember
-                                        .mutateAsync({
-                                          circleID: circle.id,
-                                          memberID: Number(m.id),
-                                        })
+                                      void account.revokeSession
+                                        .mutateAsync(s.id)
                                         .then(() =>
-                                          ctx.showToast(`${m.name} removed`),
+                                          ctx.showToast('Device signed out'),
                                         )
                                         .catch(err =>
                                           ctx.showToast(
                                             err instanceof Error
                                               ? err.message
-                                              : 'Could not remove this member',
+                                              : 'Could not sign out this device',
                                           ),
                                         ),
                                   })
                                 }
                               >
-                                Remove
+                                Sign out
                               </button>
                             )}
                           </div>
                         ))}
                       </div>
-                    </div>
-                  </Section>
-                ) : (
-                  <Section title='Space status'>
-                    <div className='px-5 py-5'>
-                      <div className='flex items-center gap-4 mb-4'>
-                        <div style={{ fontSize: 40, lineHeight: 1 }}>🏠</div>
-                        <div>
-                          <div
-                            className='font-bold text-primary'
-                            style={{ fontSize: 15 }}
-                          >
-                            Currently solo
-                          </div>
-                          <div
-                            className='text-muted'
-                            style={{
-                              fontSize: 13,
-                              marginTop: 2,
-                              lineHeight: 1.5,
-                            }}
-                          >
-                            Invite someone to unlock shared lists, family goals,
-                            space workload, and more.
-                          </div>
-                        </div>
-                      </div>
                       <button
-                        className='btn btn-primary btn-sm'
-                        onClick={() => setShowInvite(true)}
+                        className='btn btn-secondary btn-sm mt-4'
+                        style={{ fontSize: 12 }}
+                        onClick={() =>
+                          ctx.showConfirm({
+                            title: 'Sign out all other devices?',
+                            message:
+                              "All other sessions will be ended. You'll stay signed in on this device.",
+                            confirmLabel: 'Sign out all',
+                            danger: true,
+                            onConfirm: () =>
+                              void account.revokeOtherSessions
+                                .mutateAsync()
+                                .then(() =>
+                                  ctx.showToast('All other devices signed out'),
+                                )
+                                .catch(err =>
+                                  ctx.showToast(
+                                    err instanceof Error
+                                      ? err.message
+                                      : 'Could not sign out other devices',
+                                  ),
+                                ),
+                          })
+                        }
                       >
-                        <Icon name='plus' size={14} />
-                        Invite someone
+                        Sign out all other devices
                       </button>
                     </div>
                   </Section>
-                )}
+                </TabPanel>
 
-                {/* Categories are scoped to the Circle, which a solo account
-                  also has, so this section is deliberately outside the
-                  isSolo branches above. */}
-                <CategorySettings />
-              </TabPanel>
-
-              {/* ── Theme ── */}
-              <TabPanel value='theme' sx={{ p: 0 }}>
-                <Section title='Visual theme'>
-                  <div className='px-5 py-4'>
-                    <div className='settings-choice-grid'>
-                      {(['dydan', 'sovereign'] as Theme[]).map(t => (
+                {/* ── Space accounts ── */}
+                <TabPanel
+                  value='team'
+                  id='settings-tabs-panel-team'
+                  aria-labelledby='settings-tabs-team'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Space settings'>
+                    {!isSolo && (
+                      <Row icon='plus' label='Invite people'>
                         <button
-                          key={t}
-                          onClick={() => {
-                            ctx.setTheme(t)
-                            savePreferences({
-                              ...preferences,
-                              theme: t,
-                              appearance:
-                                t === 'sovereign'
-                                  ? 'dark'
-                                  : preferences.appearance,
-                            })
-                          }}
-                          className='settings-choice-card'
-                          aria-pressed={ctx.theme === t}
+                          className='btn btn-primary btn-sm'
+                          onClick={() => setShowInvite(true)}
                         >
-                          <div className='flex items-center gap-2 mb-2'>
+                          Invite
+                        </button>
+                      </Row>
+                    )}
+                    {pendingJoinCode && (
+                      <Row
+                        icon='users'
+                        label='Join shared space'
+                        detail={`Invite code: ${pendingJoinCode}`}
+                      >
+                        <button
+                          className='btn btn-primary btn-sm'
+                          onClick={() =>
+                            void account.joinCircle
+                              .mutateAsync(pendingJoinCode)
+                              .then(() => ctx.showToast('Join request sent'))
+                              .catch(err =>
+                                ctx.showToast(
+                                  err instanceof Error
+                                    ? err.message
+                                    : 'Could not join this space',
+                                ),
+                              )
+                          }
+                        >
+                          Request to join
+                        </button>
+                      </Row>
+                    )}
+                    <Row
+                      icon='home'
+                      label='Space name'
+                      detail={circle?.name ?? 'Loading space details…'}
+                    >
+                      <button
+                        className='btn btn-ghost btn-sm text-brand'
+                        onClick={() => setShowRenameTeam(true)}
+                        disabled={!circle}
+                      >
+                        Rename
+                      </button>
+                    </Row>
+                    <Row icon='clipboard' label='dydan code'>
+                      <span
+                        className='font-mono'
+                        style={{
+                          fontSize: 13,
+                          color: 'var(--t-primary)',
+                          background: 'var(--surface-2)',
+                          padding: '4px 8px',
+                          borderRadius: 'var(--r-sm)',
+                        }}
+                      >
+                        {inviteCode}
+                      </span>
+                    </Row>
+                    <Row icon='repeat' label='Regenerate dydan code'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() =>
+                          void account.regenerateInviteCode
+                            .mutateAsync()
+                            .then(result => {
+                              const nextCode =
+                                result.inviteCode ?? result.invite_code
+                              ctx.showToast(
+                                nextCode
+                                  ? `New dydan code: ${nextCode}`
+                                  : 'New dydan code generated',
+                              )
+                            })
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not regenerate dydan code',
+                              ),
+                            )
+                        }
+                      >
+                        Regenerate
+                      </button>
+                    </Row>
+                    {!isSolo && (
+                      <Row icon='log_out' label='Leave space'>
+                        <button
+                          className='btn btn-ghost btn-sm text-sig-over'
+                          onClick={() =>
+                            ctx.showConfirm({
+                              title: 'Leave the space?',
+                              message:
+                                "You'll lose access to shared lists, goals, and space activity.",
+                              confirmLabel: 'Leave',
+                              danger: true,
+                              onConfirm: () =>
+                                circle &&
+                                void account.leaveCircle
+                                  .mutateAsync(circle.id)
+                                  .then(() =>
+                                    ctx.showToast('You left the space'),
+                                  )
+                                  .catch(err =>
+                                    ctx.showToast(
+                                      err instanceof Error
+                                        ? err.message
+                                        : 'Could not leave this space',
+                                    ),
+                                  ),
+                            })
+                          }
+                        >
+                          Leave
+                        </button>
+                      </Row>
+                    )}
+                  </Section>
+                  {!isSolo ? (
+                    <Section title='Members'>
+                      <div className='px-5 py-4'>
+                        <div className='flex flex-col gap-3'>
+                          {members.map(m => (
+                            <div key={m.id} className='flex items-center gap-3'>
+                              <div
+                                className='avatar'
+                                style={{
+                                  width: 34,
+                                  height: 34,
+                                  background: m.avatarColor,
+                                  fontSize: 12,
+                                }}
+                              >
+                                {m.initials}
+                              </div>
+                              <div className='flex-1 min-w-0'>
+                                <div
+                                  className='font-medium text-primary'
+                                  style={{ fontSize: 13 }}
+                                >
+                                  {m.name}
+                                </div>
+                                <div
+                                  className='text-faint'
+                                  style={{
+                                    fontSize: 11,
+                                    textTransform: 'capitalize',
+                                  }}
+                                >
+                                  {m.role} · {m.email}
+                                </div>
+                              </div>
+                              {m.isCurrentUser ? (
+                                <span
+                                  className='badge bg-brand-faint text-brand'
+                                  style={{ fontSize: 10 }}
+                                >
+                                  You
+                                </span>
+                              ) : (
+                                <button
+                                  className='btn btn-ghost btn-sm text-sig-over'
+                                  style={{ fontSize: 11 }}
+                                  onClick={() =>
+                                    ctx.showConfirm({
+                                      title: `Remove ${m.name}?`,
+                                      message: `${m.name} will lose access to the space. Their tasks will remain.`,
+                                      confirmLabel: 'Remove',
+                                      danger: true,
+                                      onConfirm: () =>
+                                        circle &&
+                                        void account.removeMember
+                                          .mutateAsync({
+                                            circleID: circle.id,
+                                            memberID: Number(m.id),
+                                          })
+                                          .then(() =>
+                                            ctx.showToast(`${m.name} removed`),
+                                          )
+                                          .catch(err =>
+                                            ctx.showToast(
+                                              err instanceof Error
+                                                ? err.message
+                                                : 'Could not remove this member',
+                                            ),
+                                          ),
+                                    })
+                                  }
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Section>
+                  ) : (
+                    <Section title='Space status'>
+                      <div className='px-5 py-5'>
+                        <div className='flex items-center gap-4 mb-4'>
+                          <div style={{ fontSize: 40, lineHeight: 1 }}>🏠</div>
+                          <div>
                             <div
-                              style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: '50%',
-                                background:
-                                  t === 'dydan'
-                                    ? 'var(--pr-violet)'
-                                    : 'var(--sv-navy)',
-                                border: '2px solid var(--line)',
-                              }}
-                            />
-                            <span
-                              className='font-semibold'
+                              className='font-bold text-primary'
+                              style={{ fontSize: 15 }}
+                            >
+                              Currently solo
+                            </div>
+                            <div
+                              className='text-muted'
                               style={{
                                 fontSize: 13,
+                                marginTop: 2,
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              Invite someone to unlock shared lists, family
+                              goals, space workload, and more.
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          className='btn btn-primary btn-sm'
+                          onClick={() => setShowInvite(true)}
+                        >
+                          <Icon name='plus' size={14} />
+                          Invite someone
+                        </button>
+                      </div>
+                    </Section>
+                  )}
+
+                  {/* Categories are scoped to the Circle, which a solo account
+                  also has, so this section is deliberately outside the
+                  isSolo branches above. */}
+                  <CategorySettings />
+                </TabPanel>
+
+                {/* ── Theme ── */}
+                <TabPanel
+                  value='theme'
+                  id='settings-tabs-panel-theme'
+                  aria-labelledby='settings-tabs-theme'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Visual theme'>
+                    <div className='px-5 py-4'>
+                      <div className='settings-choice-grid'>
+                        {(['dydan', 'sovereign'] as Theme[]).map(t => (
+                          <button
+                            key={t}
+                            onClick={() => {
+                              ctx.setTheme(t)
+                              savePreferences({
+                                ...preferences,
+                                theme: t,
+                                appearance:
+                                  t === 'sovereign'
+                                    ? 'dark'
+                                    : preferences.appearance,
+                              })
+                            }}
+                            className='settings-choice-card'
+                            aria-pressed={ctx.theme === t}
+                          >
+                            <div className='flex items-center gap-2 mb-2'>
+                              <div
+                                style={{
+                                  width: 20,
+                                  height: 20,
+                                  borderRadius: '50%',
+                                  background:
+                                    t === 'dydan'
+                                      ? 'var(--pr-violet)'
+                                      : 'var(--sv-navy)',
+                                  border: '2px solid var(--line)',
+                                }}
+                              />
+                              <span
+                                className='font-semibold'
+                                style={{
+                                  fontSize: 13,
+                                  color:
+                                    ctx.theme === t
+                                      ? 'var(--selected-text)'
+                                      : 'var(--t-primary)',
+                                }}
+                              >
+                                {t}
+                              </span>
+                              {ctx.theme === t && (
+                                <Icon
+                                  name='check'
+                                  size={13}
+                                  style={{ color: 'var(--selected-text)' }}
+                                />
+                              )}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 11,
                                 color:
                                   ctx.theme === t
                                     ? 'var(--selected-text)'
-                                    : 'var(--t-primary)',
+                                    : 'var(--t-muted)',
                               }}
                             >
-                              {t}
-                            </span>
-                            {ctx.theme === t && (
-                              <Icon
-                                name='check'
-                                size={13}
-                                style={{ color: 'var(--selected-text)' }}
-                              />
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color:
-                                ctx.theme === t
-                                  ? 'var(--selected-text)'
-                                  : 'var(--t-muted)',
+                              {t === 'dydan'
+                                ? 'Rhythm Violet + Gold'
+                                : 'Navy & Brass'}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </Section>
+                  <Section title='Appearance'>
+                    <div className='px-5 py-4'>
+                      <div
+                        className='view-toggle settings-appearance-toggle'
+                        style={{ display: 'inline-flex' }}
+                      >
+                        {(['light', 'dark', 'system'] as const).map(m => (
+                          <button
+                            key={m}
+                            className={`view-toggle-btn ${mode === m ? 'active' : ''}`}
+                            onClick={() => {
+                              setMode(m)
+                              savePreferences({ ...preferences, appearance: m })
                             }}
                           >
-                            {t === 'dydan'
-                              ? 'Rhythm Violet + Gold'
-                              : 'Navy & Brass'}
-                          </div>
-                        </button>
-                      ))}
+                            {m === 'light'
+                              ? 'Light'
+                              : m === 'dark'
+                                ? 'Dark'
+                                : 'Automatic'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </Section>
-                <Section title='Appearance'>
-                  <div className='px-5 py-4'>
-                    <div
-                      className='view-toggle settings-appearance-toggle'
-                      style={{ display: 'inline-flex' }}
-                    >
-                      {(['light', 'dark', 'system'] as const).map(m => (
-                        <button
-                          key={m}
-                          className={`view-toggle-btn ${mode === m ? 'active' : ''}`}
-                          onClick={() => {
-                            setMode(m)
-                            savePreferences({ ...preferences, appearance: m })
-                          }}
-                        >
-                          {m === 'light'
-                            ? 'Light'
-                            : m === 'dark'
-                              ? 'Dark'
-                              : 'Automatic'}
-                        </button>
-                      ))}
+                  </Section>
+                  <Section title='Default view'>
+                    <div className='px-5 py-4'>
+                      <div
+                        className='view-toggle'
+                        style={{ display: 'inline-flex' }}
+                      >
+                        {(['focus', 'quest'] as View[]).map(v => (
+                          <button
+                            key={v}
+                            className={`view-toggle-btn ${ctx.view === v ? 'active' : ''}`}
+                            onClick={() => {
+                              ctx.setView(v)
+                              savePreferences({
+                                ...preferences,
+                                defaultView: v,
+                              })
+                            }}
+                          >
+                            <Icon
+                              name={v === 'focus' ? 'zap' : 'sparkle'}
+                              size={14}
+                            />
+                            {v === 'focus' ? 'Focus' : 'Quest'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </Section>
-                <Section title='Default view'>
-                  <div className='px-5 py-4'>
-                    <div
-                      className='view-toggle'
-                      style={{ display: 'inline-flex' }}
-                    >
-                      {(['focus', 'quest'] as View[]).map(v => (
-                        <button
-                          key={v}
-                          className={`view-toggle-btn ${ctx.view === v ? 'active' : ''}`}
-                          onClick={() => {
-                            ctx.setView(v)
-                            savePreferences({ ...preferences, defaultView: v })
-                          }}
-                        >
-                          <Icon
-                            name={v === 'focus' ? 'zap' : 'sparkle'}
-                            size={14}
-                          />
-                          {v === 'focus' ? 'Focus' : 'Quest'}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <Row icon='bars' label='Compact mode'>
-                    <JoyToggle
-                      on={preferences.compactMode}
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          compactMode: !preferences.compactMode,
-                        })
-                      }
-                    />
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Language & region ── */}
-              <TabPanel value='language' sx={{ p: 0 }}>
-                <Section title='Regional settings'>
-                  <Row icon='globe' label='Language'>
-                    <SelectField
-                      value={locale.language}
-                      onChange={v => {
-                        setLanguage(v as typeof language)
-                        // The confirmation is emitted by savePreferences only
-                        // after the server has accepted the write, so a failed
-                        // save never reports "Language updated".
-                        savePreferences(
-                          {
-                            ...preferences,
-                            language: v as SettingsPreferences['language'],
-                          },
-                          'Language updated',
-                        )
-                      }}
-                      options={[
-                        { value: 'en', label: 'English' },
-                        { value: 'ar-SA', label: 'العربية' },
-                      ]}
-                    />
-                  </Row>
-                  <Row icon='calendar' label='Date format'>
-                    <SelectField
-                      value={locale.dateFormat}
-                      onChange={v => {
-                        setDateFormat(v as typeof dateFormat)
-                        savePreferences(
-                          {
-                            ...preferences,
-                            dateFormat: v as SettingsPreferences['dateFormat'],
-                          },
-                          'Date format updated',
-                        )
-                      }}
-                      options={[
-                        { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-                        { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-                        { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
-                      ]}
-                    />
-                  </Row>
-                  <Row icon='clock' label='Time format'>
-                    <SelectField
-                      value={locale.timeFormat}
-                      onChange={v => {
-                        setTimeFormat(v as typeof timeFormat)
-                        savePreferences(
-                          {
-                            ...preferences,
-                            timeFormat: v as SettingsPreferences['timeFormat'],
-                          },
-                          'Time format updated',
-                        )
-                      }}
-                      options={[
-                        { value: 'HH:mm', label: '24-hour' },
-                        { value: 'h:mm A', label: '12-hour (AM/PM)' },
-                      ]}
-                    />
-                  </Row>
-                  <Row icon='today' label='First day of week'>
-                    <SelectField
-                      value={locale.firstDay}
-                      onChange={v => {
-                        setFirstDayOfWeek(Number(v))
-                        savePreferences(
-                          {
-                            ...preferences,
-                            firstDayOfWeek: Number(v),
-                          },
-                          'Week start updated',
-                        )
-                      }}
-                      options={[
-                        { value: '1', label: 'Monday' },
-                        { value: '0', label: 'Sunday' },
-                        { value: '6', label: 'Saturday' },
-                      ]}
-                    />
-                  </Row>
-                  <Row icon='tag' label='Currency'>
-                    <SelectField
-                      value={preferences.currency}
-                      onChange={v => {
-                        savePreferences(
-                          {
-                            ...preferences,
-                            currency: v as SettingsPreferences['currency'],
-                          },
-                          'Currency updated',
-                        )
-                      }}
-                      options={[
-                        { value: 'GBP', label: '£ GBP' },
-                        { value: 'USD', label: '$ USD' },
-                        { value: 'EUR', label: '€ EUR' },
-                        { value: 'AED', label: 'AED' },
-                        { value: 'SAR', label: 'SAR' },
-                      ]}
-                    />
-                  </Row>
-                  <Row icon='map' label='Timezone'>
-                    <SelectField
-                      value={locale.timezone}
-                      onChange={v => {
-                        void account.updateProfile
-                          .mutateAsync({ timezone: v })
-                          .then(() => ctx.showToast('Timezone updated'))
-                          .catch(err =>
-                            ctx.showToast(
-                              err instanceof Error
-                                ? err.message
-                                : 'Timezone update failed',
-                            ),
-                          )
-                      }}
-                      options={[
-                        { value: 'Asia/Riyadh', label: 'Riyadh (UTC+3)' },
-                        { value: 'Europe/London', label: 'London (UTC+0)' },
-                        { value: 'Europe/Paris', label: 'Paris (UTC+1)' },
-                        {
-                          value: 'America/New_York',
-                          label: 'New York (UTC−5)',
-                        },
-                        {
-                          value: 'America/Los_Angeles',
-                          label: 'Los Angeles (UTC−8)',
-                        },
-                        { value: 'Asia/Dubai', label: 'Dubai (UTC+4)' },
-                      ]}
-                    />
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Side panel ── */}
-              <TabPanel value='sidepanel' sx={{ p: 0 }}>
-                <Section title='Navigation options'>
-                  <Row icon='bars' label='Collapse side panel'>
-                    <JoyToggle
-                      on={ctx.sidebarCollapsed}
-                      onChange={() => {
-                        ctx.toggleSidebar()
-                        savePreferences({
-                          ...preferences,
-                          sidebarCollapsed: !ctx.sidebarCollapsed,
-                        })
-                      }}
-                    />
-                  </Row>
-                  <Row icon='star' label='Show item badges'>
-                    <JoyToggle
-                      on={preferences.showItemBadges}
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          showItemBadges: !preferences.showItemBadges,
-                        })
-                      }
-                    />
-                  </Row>
-                  <Row icon='repeat' label='Remember collapsed state'>
-                    <JoyToggle
-                      on={preferences.rememberSidebar}
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          rememberSidebar: !preferences.rememberSidebar,
-                        })
-                      }
-                    />
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Notifications ── */}
-              <TabPanel value='notifications' sx={{ p: 0 }}>
-                <Section title='Alerts'>
-                  {[
-                    {
-                      key: 'taskReminders' as const,
-                      label: 'Task reminders',
-                    },
-                    {
-                      key: 'routineNudges' as const,
-                      label: 'Routine nudges',
-                    },
-                    {
-                      key: 'familyActivity' as const,
-                      label: 'Family activity',
-                    },
-                    {
-                      key: 'rewards' as const,
-                      label: 'Rewards available',
-                    },
-                    {
-                      key: 'weeklySummary' as const,
-                      label: 'Weekly summary',
-                    },
-                    {
-                      key: 'quietHours' as const,
-                      label: 'Quiet hours (10 pm – 8 am)',
-                    },
-                  ].map(n => (
-                    <Row key={n.key} label={n.label}>
+                    <Row icon='bars' label='Compact mode'>
                       <JoyToggle
-                        on={preferences.notifications[n.key]}
+                        on={preferences.compactMode}
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            compactMode: !preferences.compactMode,
+                          })
+                        }
+                      />
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Language & region ── */}
+                <TabPanel
+                  value='language'
+                  id='settings-tabs-panel-language'
+                  aria-labelledby='settings-tabs-language'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Regional settings'>
+                    <Row icon='globe' label='Language'>
+                      <SelectField
+                        value={locale.language}
+                        onChange={v => {
+                          setLanguage(v as typeof language)
+                          // The confirmation is emitted by savePreferences only
+                          // after the server has accepted the write, so a failed
+                          // save never reports "Language updated".
+                          savePreferences(
+                            {
+                              ...preferences,
+                              language: v as SettingsPreferences['language'],
+                            },
+                            'Language updated',
+                          )
+                        }}
+                        options={[
+                          { value: 'en', label: 'English' },
+                          { value: 'ar-SA', label: 'العربية' },
+                        ]}
+                      />
+                    </Row>
+                    <Row icon='calendar' label='Date format'>
+                      <SelectField
+                        value={locale.dateFormat}
+                        onChange={v => {
+                          setDateFormat(v as typeof dateFormat)
+                          savePreferences(
+                            {
+                              ...preferences,
+                              dateFormat:
+                                v as SettingsPreferences['dateFormat'],
+                            },
+                            'Date format updated',
+                          )
+                        }}
+                        options={[
+                          { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                          { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                          { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                        ]}
+                      />
+                    </Row>
+                    <Row icon='clock' label='Time format'>
+                      <SelectField
+                        value={locale.timeFormat}
+                        onChange={v => {
+                          setTimeFormat(v as typeof timeFormat)
+                          savePreferences(
+                            {
+                              ...preferences,
+                              timeFormat:
+                                v as SettingsPreferences['timeFormat'],
+                            },
+                            'Time format updated',
+                          )
+                        }}
+                        options={[
+                          { value: 'HH:mm', label: '24-hour' },
+                          { value: 'h:mm A', label: '12-hour (AM/PM)' },
+                        ]}
+                      />
+                    </Row>
+                    <Row icon='today' label='First day of week'>
+                      <SelectField
+                        value={locale.firstDay}
+                        onChange={v => {
+                          setFirstDayOfWeek(Number(v))
+                          savePreferences(
+                            {
+                              ...preferences,
+                              firstDayOfWeek: Number(v),
+                            },
+                            'Week start updated',
+                          )
+                        }}
+                        options={[
+                          { value: '1', label: 'Monday' },
+                          { value: '0', label: 'Sunday' },
+                          { value: '6', label: 'Saturday' },
+                        ]}
+                      />
+                    </Row>
+                    <Row icon='tag' label='Currency'>
+                      <SelectField
+                        value={preferences.currency}
+                        onChange={v => {
+                          savePreferences(
+                            {
+                              ...preferences,
+                              currency: v as SettingsPreferences['currency'],
+                            },
+                            'Currency updated',
+                          )
+                        }}
+                        options={[
+                          { value: 'GBP', label: '£ GBP' },
+                          { value: 'USD', label: '$ USD' },
+                          { value: 'EUR', label: '€ EUR' },
+                          { value: 'AED', label: 'AED' },
+                          { value: 'SAR', label: 'SAR' },
+                        ]}
+                      />
+                    </Row>
+                    <Row icon='map' label='Timezone'>
+                      <SelectField
+                        value={locale.timezone}
+                        onChange={v => {
+                          void account.updateProfile
+                            .mutateAsync({ timezone: v })
+                            .then(() => ctx.showToast('Timezone updated'))
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Timezone update failed',
+                              ),
+                            )
+                        }}
+                        options={[
+                          { value: 'Asia/Riyadh', label: 'Riyadh (UTC+3)' },
+                          { value: 'Europe/London', label: 'London (UTC+0)' },
+                          { value: 'Europe/Paris', label: 'Paris (UTC+1)' },
+                          {
+                            value: 'America/New_York',
+                            label: 'New York (UTC−5)',
+                          },
+                          {
+                            value: 'America/Los_Angeles',
+                            label: 'Los Angeles (UTC−8)',
+                          },
+                          { value: 'Asia/Dubai', label: 'Dubai (UTC+4)' },
+                        ]}
+                      />
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Side panel ── */}
+                <TabPanel
+                  value='sidepanel'
+                  id='settings-tabs-panel-sidepanel'
+                  aria-labelledby='settings-tabs-sidepanel'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Navigation options'>
+                    <Row icon='bars' label='Collapse side panel'>
+                      <JoyToggle
+                        on={ctx.sidebarCollapsed}
+                        onChange={() => {
+                          ctx.toggleSidebar()
+                          savePreferences({
+                            ...preferences,
+                            sidebarCollapsed: !ctx.sidebarCollapsed,
+                          })
+                        }}
+                      />
+                    </Row>
+                    <Row icon='star' label='Show item badges'>
+                      <JoyToggle
+                        on={preferences.showItemBadges}
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            showItemBadges: !preferences.showItemBadges,
+                          })
+                        }
+                      />
+                    </Row>
+                    <Row icon='repeat' label='Remember collapsed state'>
+                      <JoyToggle
+                        on={preferences.rememberSidebar}
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            rememberSidebar: !preferences.rememberSidebar,
+                          })
+                        }
+                      />
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Notifications ── */}
+                <TabPanel
+                  value='notifications'
+                  id='settings-tabs-panel-notifications'
+                  aria-labelledby='settings-tabs-notifications'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Alerts'>
+                    {[
+                      {
+                        key: 'taskReminders' as const,
+                        label: 'Task reminders',
+                      },
+                      {
+                        key: 'routineNudges' as const,
+                        label: 'Routine nudges',
+                      },
+                      {
+                        key: 'familyActivity' as const,
+                        label: 'Family activity',
+                      },
+                      {
+                        key: 'rewards' as const,
+                        label: 'Rewards available',
+                      },
+                      {
+                        key: 'weeklySummary' as const,
+                        label: 'Weekly summary',
+                      },
+                      {
+                        key: 'quietHours' as const,
+                        label: 'Quiet hours (10 pm – 8 am)',
+                      },
+                    ].map(n => (
+                      <Row key={n.key} label={n.label}>
+                        <JoyToggle
+                          on={preferences.notifications[n.key]}
+                          onChange={() =>
+                            savePreferences({
+                              ...preferences,
+                              notifications: {
+                                ...preferences.notifications,
+                                [n.key]: !preferences.notifications[n.key],
+                              },
+                            })
+                          }
+                        />
+                      </Row>
+                    ))}
+                  </Section>
+                  <Section title='Channels'>
+                    <Row icon='phone' label='Push notifications'>
+                      <JoyToggle
+                        on={preferences.notifications.pushChannel}
                         onChange={() =>
                           savePreferences({
                             ...preferences,
                             notifications: {
                               ...preferences.notifications,
-                              [n.key]: !preferences.notifications[n.key],
+                              pushChannel:
+                                !preferences.notifications.pushChannel,
                             },
                           })
                         }
                       />
                     </Row>
-                  ))}
-                </Section>
-                <Section title='Channels'>
-                  <Row icon='phone' label='Push notifications'>
-                    <JoyToggle
-                      on={preferences.notifications.pushChannel}
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          notifications: {
-                            ...preferences.notifications,
-                            pushChannel: !preferences.notifications.pushChannel,
-                          },
-                        })
-                      }
-                    />
-                  </Row>
-                  <Row icon='mail' label='Email notifications'>
-                    <JoyToggle
-                      on={preferences.notifications.emailChannel}
-                      disabled={
-                        !integrationStatus?.settings.notificationEmail.available
-                      }
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          notifications: {
-                            ...preferences.notifications,
-                            emailChannel:
-                              !preferences.notifications.emailChannel,
-                          },
-                        })
-                      }
-                    />
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Privacy ── */}
-              <TabPanel value='privacy' sx={{ p: 0 }}>
-                <Section title='Sharing preferences'>
-                  <Row icon='eye' label='Activity visible to space'>
-                    <JoyToggle
-                      on={preferences.privacy.activityVisible}
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          privacy: {
-                            ...preferences.privacy,
-                            activityVisible:
-                              !preferences.privacy.activityVisible,
-                          },
-                        })
-                      }
-                    />
-                  </Row>
-                  <Row icon='activity' label='Usage analytics'>
-                    <JoyToggle
-                      on={preferences.privacy.analytics}
-                      disabled={
-                        !integrationStatus?.settings.analytics.available
-                      }
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          privacy: {
-                            ...preferences.privacy,
-                            analytics: !preferences.privacy.analytics,
-                          },
-                        })
-                      }
-                    />
-                  </Row>
-                  <Row icon='sparkle' label='Personalized suggestions'>
-                    <JoyToggle
-                      on={preferences.privacy.personalization}
-                      disabled={
-                        !integrationStatus?.settings.personalization.available
-                      }
-                      onChange={() =>
-                        savePreferences({
-                          ...preferences,
-                          privacy: {
-                            ...preferences.privacy,
-                            personalization:
-                              !preferences.privacy.personalization,
-                          },
-                        })
-                      }
-                    />
-                  </Row>
-                  <Row icon='eye' label='Privacy policy'>
-                    {integrationStatus?.legal.privacyPolicyUrl ? (
-                      <a
-                        className='btn btn-ghost btn-sm'
-                        href={integrationStatus.legal.privacyPolicyUrl}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                      >
-                        <Icon name='external' size={14} />
-                        Open
-                      </a>
-                    ) : (
-                      <span className='text-faint' style={{ fontSize: 12 }}>
-                        Not configured
-                      </span>
-                    )}
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Billing & plan ── */}
-              <TabPanel value='billing' sx={{ p: 0 }}>
-                <Section title='Current plan'>
-                  <div className='px-5 py-5 flex items-center gap-4 flex-wrap'>
-                    <div
-                      className='flex items-center justify-center'
-                      style={{
-                        width: 46,
-                        height: 46,
-                        borderRadius: 'var(--r-lg)',
-                        background: 'var(--brand-faint)',
-                        color: 'var(--brand)',
-                      }}
-                    >
-                      <Icon name='star' size={22} />
-                    </div>
-                    <div className='flex-1 min-w-0'>
-                      <div
-                        className='font-bold text-primary'
-                        style={{ fontSize: 16 }}
-                      >
-                        {profile?.subscription
-                          ? `dydan · ${profile.subscription}`
-                          : 'dydan Free'}
-                      </div>
-                      <div className='text-muted' style={{ fontSize: 13 }}>
-                        {profile?.expiration
-                          ? `Access through ${new Date(profile.expiration).toLocaleDateString()}`
-                          : 'No paid subscription is reported by the server'}
-                      </div>
-                    </div>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() =>
-                        void account.startSubscriptionCheckout
-                          .mutateAsync()
-                          .then(({ sessionURL }) => {
-                            if (!sessionURL)
-                              throw new Error(
-                                'The server did not provide a checkout link',
-                              )
-                            window.location.assign(sessionURL)
+                    <Row icon='mail' label='Email notifications'>
+                      <JoyToggle
+                        on={preferences.notifications.emailChannel}
+                        disabled={
+                          !integrationStatus?.settings.notificationEmail
+                            .available
+                        }
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            notifications: {
+                              ...preferences.notifications,
+                              emailChannel:
+                                !preferences.notifications.emailChannel,
+                            },
                           })
-                          .catch(err =>
-                            ctx.showToast(
-                              err instanceof Error
-                                ? err.message
-                                : 'Could not open subscription checkout',
-                            ),
-                          )
-                      }
-                    >
-                      Change plan
-                    </button>
-                  </div>
-                </Section>
-                <Section title='Payment'>
-                  <Row icon='tag' label='Payment method' />
-                  <Row
-                    icon='clipboard'
-                    label='Billing history'
-                    detail={
-                      integrationStatus?.billing.invoiceHistory &&
-                      invoiceQuery.data?.length
-                        ? `${invoiceQuery.data.length} invoice${invoiceQuery.data.length === 1 ? '' : 's'} on record`
-                        : undefined
-                    }
-                  >
-                    {integrationStatus?.billing.invoiceHistory ? (
+                        }
+                      />
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Privacy ── */}
+                <TabPanel
+                  value='privacy'
+                  id='settings-tabs-panel-privacy'
+                  aria-labelledby='settings-tabs-privacy'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Sharing preferences'>
+                    <Row icon='eye' label='Activity visible to space'>
+                      <JoyToggle
+                        on={preferences.privacy.activityVisible}
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            privacy: {
+                              ...preferences.privacy,
+                              activityVisible:
+                                !preferences.privacy.activityVisible,
+                            },
+                          })
+                        }
+                      />
+                    </Row>
+                    <Row icon='activity' label='Usage analytics'>
+                      <JoyToggle
+                        on={preferences.privacy.analytics}
+                        disabled={
+                          !integrationStatus?.settings.analytics.available
+                        }
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            privacy: {
+                              ...preferences.privacy,
+                              analytics: !preferences.privacy.analytics,
+                            },
+                          })
+                        }
+                      />
+                    </Row>
+                    <Row icon='sparkle' label='Personalized suggestions'>
+                      <JoyToggle
+                        on={preferences.privacy.personalization}
+                        disabled={
+                          !integrationStatus?.settings.personalization.available
+                        }
+                        onChange={() =>
+                          savePreferences({
+                            ...preferences,
+                            privacy: {
+                              ...preferences.privacy,
+                              personalization:
+                                !preferences.privacy.personalization,
+                            },
+                          })
+                        }
+                      />
+                    </Row>
+                    <Row icon='eye' label='Privacy policy'>
+                      {integrationStatus?.legal.privacyPolicyUrl ? (
+                        <a
+                          className='btn btn-ghost btn-sm'
+                          href={integrationStatus.legal.privacyPolicyUrl}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          <Icon name='external' size={14} />
+                          Open
+                        </a>
+                      ) : (
+                        <span className='text-faint' style={{ fontSize: 12 }}>
+                          Not configured
+                        </span>
+                      )}
+                    </Row>
+                  </Section>
+                </TabPanel>
+
+                {/* ── Billing & plan ── */}
+                <TabPanel
+                  value='billing'
+                  id='settings-tabs-panel-billing'
+                  aria-labelledby='settings-tabs-billing'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Current plan'>
+                    <div className='px-5 py-5 flex items-center gap-4 flex-wrap'>
+                      <div
+                        className='flex items-center justify-center'
+                        style={{
+                          width: 46,
+                          height: 46,
+                          borderRadius: 'var(--r-lg)',
+                          background: 'var(--brand-faint)',
+                          color: 'var(--brand)',
+                        }}
+                      >
+                        <Icon name='star' size={22} />
+                      </div>
+                      <div className='flex-1 min-w-0'>
+                        <div
+                          className='font-bold text-primary'
+                          style={{ fontSize: 16 }}
+                        >
+                          {profile?.subscription
+                            ? `dydan · ${profile.subscription}`
+                            : 'dydan Free'}
+                        </div>
+                        <div className='text-muted' style={{ fontSize: 13 }}>
+                          {profile?.expiration
+                            ? `Access through ${new Date(profile.expiration).toLocaleDateString()}`
+                            : 'No paid subscription is reported by the server'}
+                        </div>
+                      </div>
                       <button
                         className='btn btn-secondary btn-sm'
-                        onClick={() => setShowInvoices(true)}
-                      >
-                        View
-                      </button>
-                    ) : (
-                      <span className='text-faint' style={{ fontSize: 12 }}>
-                        Not configured
-                      </span>
-                    )}
-                  </Row>
-                  <Row icon='x' label='Cancel subscription'>
-                    <button
-                      className='btn btn-ghost btn-sm text-sig-over'
-                      onClick={() =>
-                        ctx.showConfirm({
-                          title: 'Cancel Premium?',
-                          message:
-                            'The server will cancel the active subscription at the end of its current billing period.',
-                          confirmLabel: 'Cancel plan',
-                          danger: true,
-                          onConfirm: () =>
-                            void account.cancelSubscription
-                              .mutateAsync()
-                              .then(() =>
-                                ctx.showToast(
-                                  'Subscription cancellation recorded',
-                                ),
-                              )
-                              .catch(err =>
-                                ctx.showToast(
-                                  err instanceof Error
-                                    ? err.message
-                                    : 'Could not cancel subscription',
-                                ),
+                        onClick={() =>
+                          void account.startSubscriptionCheckout
+                            .mutateAsync()
+                            .then(({ sessionURL }) => {
+                              if (!sessionURL)
+                                throw new Error(
+                                  'The server did not provide a checkout link',
+                                )
+                              window.location.assign(sessionURL)
+                            })
+                            .catch(err =>
+                              ctx.showToast(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not open subscription checkout',
                               ),
-                        })
+                            )
+                        }
+                      >
+                        Change plan
+                      </button>
+                    </div>
+                  </Section>
+                  <Section title='Payment'>
+                    <Row icon='tag' label='Payment method' />
+                    <Row
+                      icon='clipboard'
+                      label='Billing history'
+                      detail={
+                        integrationStatus?.billing.invoiceHistory &&
+                        invoiceQuery.data?.length
+                          ? `${invoiceQuery.data.length} invoice${invoiceQuery.data.length === 1 ? '' : 's'} on record`
+                          : undefined
                       }
                     >
-                      Cancel
-                    </button>
-                  </Row>
-                </Section>
-              </TabPanel>
+                      {integrationStatus?.billing.invoiceHistory ? (
+                        <button
+                          className='btn btn-secondary btn-sm'
+                          onClick={() => setShowInvoices(true)}
+                        >
+                          View
+                        </button>
+                      ) : (
+                        <span className='text-faint' style={{ fontSize: 12 }}>
+                          Not configured
+                        </span>
+                      )}
+                    </Row>
+                    <Row icon='x' label='Cancel subscription'>
+                      <button
+                        className='btn btn-ghost btn-sm text-sig-over'
+                        onClick={() =>
+                          ctx.showConfirm({
+                            title: 'Cancel Premium?',
+                            message:
+                              'The server will cancel the active subscription at the end of its current billing period.',
+                            confirmLabel: 'Cancel plan',
+                            danger: true,
+                            onConfirm: () =>
+                              void account.cancelSubscription
+                                .mutateAsync()
+                                .then(() =>
+                                  ctx.showToast(
+                                    'Subscription cancellation recorded',
+                                  ),
+                                )
+                                .catch(err =>
+                                  ctx.showToast(
+                                    err instanceof Error
+                                      ? err.message
+                                      : 'Could not cancel subscription',
+                                  ),
+                                ),
+                          })
+                        }
+                      >
+                        Cancel
+                      </button>
+                    </Row>
+                  </Section>
+                </TabPanel>
 
-              {/* ── Integrations ── */}
-              <TabPanel value='integrations' sx={{ p: 0 }}>
-                <Section title='Connected services'>
-                  {/*
+                {/* ── Integrations ── */}
+                <TabPanel
+                  value='integrations'
+                  id='settings-tabs-panel-integrations'
+                  aria-labelledby='settings-tabs-integrations'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Connected services'>
+                    {/*
                   The server advertises each provider through
                   `GET /users/integrations`. When it reports a provider as
                   unavailable there is no authorization endpoint to call, so
@@ -3094,279 +3120,290 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
                   turned on. Adding a provider means teaching the server its
                   connect flow, after which this row can offer a real action.
                 */}
-                  {INTEGRATION_ROWS.map(row => {
-                    const capability = integrationStatus
-                      ? integrationStatus[row.key]
-                      : undefined
-                    return (
-                      <Row key={row.key} icon={row.icon} label={row.label}>
-                        <span className='text-faint' style={{ fontSize: 12 }}>
-                          {capability === undefined
-                            ? '…'
-                            : capability.available
-                              ? 'Available'
-                              : 'Not configured'}
-                        </span>
-                      </Row>
-                    )
-                  })}
-                  <Row icon='external' label='Webhooks'>
-                    {integrationStatus?.webhooks.editable ? (
-                      <div
-                        className='flex items-center gap-2'
-                        style={{ maxWidth: 420 }}
-                      >
-                        <input
-                          className='input'
-                          aria-label='Webhook endpoint URL'
-                          value={webhookDraft}
-                          onChange={event =>
-                            setWebhookDraft(event.target.value)
-                          }
-                          placeholder='https://example.com/hooks/dydan'
-                        />
-                        <button
-                          className='btn btn-secondary btn-sm'
-                          disabled={webhookMutations.set.isPending}
-                          onClick={() => void saveWebhook()}
-                        >
-                          Save
-                        </button>
-                        {integrationStatus.webhooks.url && (
-                          <button
-                            className='btn btn-ghost btn-sm text-sig-over'
-                            disabled={webhookMutations.set.isPending}
-                            onClick={() => {
-                              setWebhookDraft('')
-                              void saveWebhook()
-                            }}
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <span className='text-faint' style={{ fontSize: 12 }}>
-                        {integrationStatus?.webhooks.plusOnly
-                          ? 'Plus plan required'
-                          : 'Admin only'}
-                      </span>
-                    )}
-                  </Row>
-                </Section>
-                <Section title='API access'>
-                  <Row
-                    icon='lock'
-                    label='Personal access token'
-                    detail={
-                      apiTokens.length
-                        ? `${apiTokens.length} active token${apiTokens.length === 1 ? '' : 's'}`
+                    {INTEGRATION_ROWS.map(row => {
+                      const capability = integrationStatus
+                        ? integrationStatus[row.key]
                         : undefined
-                    }
-                  >
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() => setShowCreateApiToken(true)}
-                    >
-                      Generate
-                    </button>
-                  </Row>
-                  <Row icon='external' label='API documentation'>
-                    <button
-                      className='btn btn-ghost btn-icon'
-                      disabled={!integrationStatus?.apiDocs.enabled}
-                      title={
-                        integrationStatus?.apiDocs.enabled
-                          ? 'Open API documentation'
-                          : 'API documentation is disabled on this server'
+                      return (
+                        <Row key={row.key} icon={row.icon} label={row.label}>
+                          <span className='text-faint' style={{ fontSize: 12 }}>
+                            {capability === undefined
+                              ? '…'
+                              : capability.available
+                                ? 'Available'
+                                : 'Not configured'}
+                          </span>
+                        </Row>
+                      )
+                    })}
+                    <Row icon='external' label='Webhooks'>
+                      {integrationStatus?.webhooks.editable ? (
+                        <div
+                          className='flex items-center gap-2'
+                          style={{ maxWidth: 420 }}
+                        >
+                          <input
+                            className='input'
+                            aria-label='Webhook endpoint URL'
+                            value={webhookDraft}
+                            onChange={event =>
+                              setWebhookDraft(event.target.value)
+                            }
+                            placeholder='https://example.com/hooks/dydan'
+                          />
+                          <button
+                            className='btn btn-secondary btn-sm'
+                            disabled={webhookMutations.set.isPending}
+                            onClick={() => void saveWebhook()}
+                          >
+                            Save
+                          </button>
+                          {integrationStatus.webhooks.url && (
+                            <button
+                              className='btn btn-ghost btn-sm text-sig-over'
+                              disabled={webhookMutations.set.isPending}
+                              onClick={() => {
+                                setWebhookDraft('')
+                                void saveWebhook()
+                              }}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className='text-faint' style={{ fontSize: 12 }}>
+                          {integrationStatus?.webhooks.plusOnly
+                            ? 'Plus plan required'
+                            : 'Admin only'}
+                        </span>
+                      )}
+                    </Row>
+                  </Section>
+                  <Section title='API access'>
+                    <Row
+                      icon='lock'
+                      label='Personal access token'
+                      detail={
+                        apiTokens.length
+                          ? `${apiTokens.length} active token${apiTokens.length === 1 ? '' : 's'}`
+                          : undefined
                       }
-                      onClick={() =>
-                        integrationStatus?.apiDocs.url &&
-                        window.open(
-                          integrationStatus.apiDocs.url,
-                          '_blank',
-                          'noopener,noreferrer',
-                        )
-                      }
                     >
-                      <Icon name='external' size={14} />
-                    </button>
-                  </Row>
-                </Section>
-              </TabPanel>
-
-              {/* ── Advanced ── */}
-              <TabPanel value='advanced' sx={{ p: 0 }}>
-                <Section title='Data & storage'>
-                  <Row icon='download' label='Export my data'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() => void exportMyData()}
-                    >
-                      Export
-                    </button>
-                  </Row>
-                  <Row icon='upload' label='Restore settings'>
-                    <input
-                      ref={importFileRef}
-                      type='file'
-                      accept='application/json,.json'
-                      hidden
-                      aria-label='Import data file'
-                      onChange={event => {
-                        void handleImportFile(event.target.files?.[0])
-                        event.target.value = ''
-                      }}
-                    />
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      disabled={importData.isPending}
-                      onClick={() => importFileRef.current?.click()}
-                    >
-                      Import
-                    </button>
-                  </Row>
-                  <Row icon='database' label='Storage used'>
-                    <span
-                      className='text-faint font-mono'
-                      style={{ fontSize: 12 }}
-                    >
-                      {storageUsage
-                        ? `${(storageUsage.used / (1024 * 1024)).toFixed(1)} MB`
-                        : 'Loading…'}
-                    </span>
-                  </Row>
-                  <Row icon='refresh' label='Clear local cache'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() =>
-                        void offlineDB
-                          .clearAll()
-                          .then(() => ctx.showToast('Local cache cleared'))
-                          .catch(() =>
-                            ctx.showToast('Could not clear the local cache'),
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() => setShowCreateApiToken(true)}
+                      >
+                        Generate
+                      </button>
+                    </Row>
+                    <Row icon='external' label='API documentation'>
+                      <button
+                        className='btn btn-ghost btn-icon'
+                        disabled={!integrationStatus?.apiDocs.enabled}
+                        title={
+                          integrationStatus?.apiDocs.enabled
+                            ? 'Open API documentation'
+                            : 'API documentation is disabled on this server'
+                        }
+                        onClick={() =>
+                          integrationStatus?.apiDocs.url &&
+                          window.open(
+                            integrationStatus.apiDocs.url,
+                            '_blank',
+                            'noopener,noreferrer',
                           )
-                      }
-                    >
-                      Clear
-                    </button>
-                  </Row>
-                  <Row icon='trash' label='Delete my account'>
-                    <button
-                      className='btn btn-ghost btn-sm text-sig-over'
-                      onClick={() => setShowDeleteAccount(true)}
-                    >
-                      Delete
-                    </button>
-                  </Row>
-                </Section>
+                        }
+                      >
+                        <Icon name='external' size={14} />
+                      </button>
+                    </Row>
+                  </Section>
+                </TabPanel>
 
-                <Section title='Email delivery'>
-                  <EmailDeliverySettings ctx={ctx} />
-                </Section>
+                {/* ── Advanced ── */}
+                <TabPanel
+                  value='advanced'
+                  id='settings-tabs-panel-advanced'
+                  aria-labelledby='settings-tabs-advanced'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Data & storage'>
+                    <Row icon='download' label='Export my data'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() => void exportMyData()}
+                      >
+                        Export
+                      </button>
+                    </Row>
+                    <Row icon='upload' label='Restore settings'>
+                      <input
+                        ref={importFileRef}
+                        type='file'
+                        accept='application/json,.json'
+                        hidden
+                        aria-label='Import data file'
+                        onChange={event => {
+                          void handleImportFile(event.target.files?.[0])
+                          event.target.value = ''
+                        }}
+                      />
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        disabled={importData.isPending}
+                        onClick={() => importFileRef.current?.click()}
+                      >
+                        Import
+                      </button>
+                    </Row>
+                    <Row icon='database' label='Storage used'>
+                      <span
+                        className='text-faint font-mono'
+                        style={{ fontSize: 12 }}
+                      >
+                        {storageUsage
+                          ? `${(storageUsage.used / (1024 * 1024)).toFixed(1)} MB`
+                          : 'Loading…'}
+                      </span>
+                    </Row>
+                    <Row icon='refresh' label='Clear local cache'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() =>
+                          void offlineDB
+                            .clearAll()
+                            .then(() => ctx.showToast('Local cache cleared'))
+                            .catch(() =>
+                              ctx.showToast('Could not clear the local cache'),
+                            )
+                        }
+                      >
+                        Clear
+                      </button>
+                    </Row>
+                    <Row icon='trash' label='Delete my account'>
+                      <button
+                        className='btn btn-ghost btn-sm text-sig-over'
+                        onClick={() => setShowDeleteAccount(true)}
+                      >
+                        Delete
+                      </button>
+                    </Row>
+                  </Section>
 
-                <Section title='Experimental'>
-                  <Row icon='zap' label='Beta features'>
-                    <JoyToggle
-                      on={preferences.betaFeatures}
-                      disabled={
-                        !integrationStatus?.settings.betaFeatures.available
-                      }
-                      onChange={() => {
-                        const next = !preferences.betaFeatures
-                        savePreferences(
-                          { ...preferences, betaFeatures: next },
-                          next
-                            ? 'Beta features enabled'
-                            : 'Beta features disabled',
-                        )
-                      }}
-                    />
-                  </Row>
-                  <Row icon='clipboard' label='Verbose logging'>
-                    <JoyToggle
-                      on={preferences.verboseLogging}
-                      onChange={() => {
-                        const next = !preferences.verboseLogging
-                        savePreferences(
-                          { ...preferences, verboseLogging: next },
-                          next
-                            ? 'Verbose logging enabled'
-                            : 'Verbose logging disabled',
-                        )
-                      }}
-                    />
-                  </Row>
-                  <Row icon='refresh' label='Reset all settings'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() =>
-                        ctx.showConfirm({
-                          title: 'Reset all settings?',
-                          message:
-                            'Your preferences will return to defaults. Your data is not affected.',
-                          confirmLabel: 'Reset',
-                          danger: true,
-                          onConfirm: () =>
-                            void preferenceMutations.reset
-                              .mutateAsync()
-                              .then(() => ctx.showToast('Settings reset'))
-                              .catch(err =>
-                                ctx.showToast(
-                                  err instanceof Error
-                                    ? err.message
-                                    : 'Could not reset settings',
+                  <Section title='Email delivery'>
+                    <EmailDeliverySettings ctx={ctx} />
+                  </Section>
+
+                  <Section title='Experimental'>
+                    <Row icon='zap' label='Beta features'>
+                      <JoyToggle
+                        on={preferences.betaFeatures}
+                        disabled={
+                          !integrationStatus?.settings.betaFeatures.available
+                        }
+                        onChange={() => {
+                          const next = !preferences.betaFeatures
+                          savePreferences(
+                            { ...preferences, betaFeatures: next },
+                            next
+                              ? 'Beta features enabled'
+                              : 'Beta features disabled',
+                          )
+                        }}
+                      />
+                    </Row>
+                    <Row icon='clipboard' label='Verbose logging'>
+                      <JoyToggle
+                        on={preferences.verboseLogging}
+                        onChange={() => {
+                          const next = !preferences.verboseLogging
+                          savePreferences(
+                            { ...preferences, verboseLogging: next },
+                            next
+                              ? 'Verbose logging enabled'
+                              : 'Verbose logging disabled',
+                          )
+                        }}
+                      />
+                    </Row>
+                    <Row icon='refresh' label='Reset all settings'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() =>
+                          ctx.showConfirm({
+                            title: 'Reset all settings?',
+                            message:
+                              'Your preferences will return to defaults. Your data is not affected.',
+                            confirmLabel: 'Reset',
+                            danger: true,
+                            onConfirm: () =>
+                              void preferenceMutations.reset
+                                .mutateAsync()
+                                .then(() => ctx.showToast('Settings reset'))
+                                .catch(err =>
+                                  ctx.showToast(
+                                    err instanceof Error
+                                      ? err.message
+                                      : 'Could not reset settings',
+                                  ),
                                 ),
-                              ),
-                        })
-                      }
-                    >
-                      Reset
-                    </button>
-                  </Row>
-                </Section>
-              </TabPanel>
+                          })
+                        }
+                      >
+                        Reset
+                      </button>
+                    </Row>
+                  </Section>
+                </TabPanel>
 
-              {/* ── About ── */}
-              <TabPanel value='about' sx={{ p: 0 }}>
-                <Section title='Build information'>
-                  <Row icon='info' label='Version'>
-                    <span
-                      className='font-mono text-primary'
-                      style={{ fontSize: 12 }}
-                    >
-                      {integrationStatus?.server.version || 'Loading…'}
-                    </span>
-                  </Row>
-                  <Row icon='database' label='Deployment'>
-                    <span
-                      className='font-mono text-primary'
-                      style={{ fontSize: 12 }}
-                    >
-                      {integrationStatus?.server.deployment || 'Loading…'}
-                    </span>
-                  </Row>
-                  <Row icon='copy' label='Copy device diagnostics'>
-                    <button
-                      className='btn btn-secondary btn-sm'
-                      onClick={() => {
-                        void copyToClipboard(
-                          diagnosticsReport(integrationStatus?.server),
-                        ).then(result =>
-                          ctx.showToast(
-                            result.ok ? 'Diagnostics copied' : 'Copy failed',
-                          ),
-                        )
-                      }}
-                    >
-                      Copy
-                    </button>
-                  </Row>
-                </Section>
-              </TabPanel>
-            </div>
-          </Tabs>
-        </div>
+                {/* ── About ── */}
+                <TabPanel
+                  value='about'
+                  id='settings-tabs-panel-about'
+                  aria-labelledby='settings-tabs-about'
+                  sx={{ p: 0 }}
+                >
+                  <Section title='Build information'>
+                    <Row icon='info' label='Version'>
+                      <span
+                        className='font-mono text-primary'
+                        style={{ fontSize: 12 }}
+                      >
+                        {integrationStatus?.server.version || 'Loading…'}
+                      </span>
+                    </Row>
+                    <Row icon='database' label='Deployment'>
+                      <span
+                        className='font-mono text-primary'
+                        style={{ fontSize: 12 }}
+                      >
+                        {integrationStatus?.server.deployment || 'Loading…'}
+                      </span>
+                    </Row>
+                    <Row icon='copy' label='Copy device diagnostics'>
+                      <button
+                        className='btn btn-secondary btn-sm'
+                        onClick={() => {
+                          void copyToClipboard(
+                            diagnosticsReport(integrationStatus?.server),
+                          ).then(result =>
+                            ctx.showToast(
+                              result.ok ? 'Diagnostics copied' : 'Copy failed',
+                            ),
+                          )
+                        }}
+                      >
+                        Copy
+                      </button>
+                    </Row>
+                  </Section>
+                </TabPanel>
+              </div>
+            </Tabs>
+          </div>
+        </PageFlow>
       </PageShell>
 
       {showInvite && (

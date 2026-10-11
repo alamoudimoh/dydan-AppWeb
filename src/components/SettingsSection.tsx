@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 
 import { Icon } from '../App'
+import { PageSection, PanelCard } from './page'
 
 /**
  * The Settings layout primitives.
  *
- * Extracted verbatim from SettingsScreen so a section that lives in its own
+ * Shared label headings and panels for Settings groups. Extracted from SettingsScreen so a section that lives in its own
  * component (CategorySettings) renders identically to the sections declared
  * inline, instead of either duplicating the markup or importing the screen
  * and creating a cycle.
@@ -18,16 +19,9 @@ export function Section({
   children: ReactNode
 }) {
   return (
-    <div className='mb-6'>
-      {title && (
-        <div style={{ padding: '0 0 8px' }}>
-          <div className='section-label' style={{ padding: 0 }}>
-            {title}
-          </div>
-        </div>
-      )}
-      <div className='card overflow-hidden'>{children}</div>
-    </div>
+    <PageSection headingVariant='label' {...(title ? { title } : {})}>
+      <PanelCard variant='flush'>{children}</PanelCard>
+    </PageSection>
   )
 }
 

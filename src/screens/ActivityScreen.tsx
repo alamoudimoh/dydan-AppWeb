@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
-import { EmptyState, FilterSegment, PageShell } from '../components/page'
+import { EntityList } from '../components/page'
+import { PageFlow } from '../components/page'
+import { FilterSegment, PageEmptyState, PageShell } from '../components/page'
 import PageHeader from '../components/PageHeader'
 import { formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
@@ -69,115 +71,119 @@ export default function ActivityScreen({
         />
       }
     >
-      <FilterSegment
-        ariaLabel='Activity filter'
-        testId='activity-filter'
-        value={filter}
-        onChange={id => setFilter(id as FilterType)}
-        options={filterLabels.map(f => ({ id: f.value, label: f.label }))}
-      />
-
-      {/* Activity feed */}
-      <div className='flex flex-col gap-1'>
-        {filtered.length === 0 && (
-          <EmptyState
-            testId='activity-zero'
-            icon={<span aria-hidden='true'>🗓</span>}
-            title='No activity yet'
-            description='Complete tasks to see your progress here.'
+      <PageFlow
+        navigation={
+          <FilterSegment
+            ariaLabel='Activity filter'
+            testId='activity-filter'
+            value={filter}
+            onChange={id => setFilter(id as FilterType)}
+            options={filterLabels.map(f => ({ id: f.value, label: f.label }))}
           />
-        )}
+        }
+      >
+        {/* Activity feed */}
+        <EntityList>
+          {filtered.length === 0 && (
+            <PageEmptyState
+              testId='activity-zero'
+              icon='activity'
+              title='No activity yet'
+              description='Complete tasks to see your progress here.'
+            />
+          )}
 
-        {filtered.map((item, i) => {
-          const actor = memberById(item.actorId)
-          const color = typeColor(item.type)
-          const icon = typeIcon(item.type)
-          const isLast = i === filtered.length - 1
+          {filtered.map((item, i) => {
+            const actor = memberById(item.actorId)
+            const color = typeColor(item.type)
+            const icon = typeIcon(item.type)
+            const isLast = i === filtered.length - 1
 
-          return (
-            <div key={item.id} className='flex items-start gap-4 py-4 px-1'>
-              {/* Timeline line */}
-              <div className='flex flex-col items-center flex-shrink-0'>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: `color-mix(in srgb, ${color} 10%, transparent)`,
-                    border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Icon name={icon} size={16} style={{ color }} />
-                </div>
-                {!isLast && (
+            return (
+              <div key={item.id} className='flex items-start gap-4 py-4 px-1'>
+                {/* Timeline line */}
+                <div className='flex flex-col items-center flex-shrink-0'>
                   <div
                     style={{
-                      width: 2,
-                      flex: 1,
-                      minHeight: 24,
-                      background: 'var(--line)',
-                      marginTop: 4,
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: `color-mix(in srgb, ${color} 10%, transparent)`,
+                      border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
-                  />
-                )}
-              </div>
-
-              <div className='flex-1 min-w-0 pb-1'>
-                <div className='flex items-start justify-between gap-2'>
-                  <div className='flex items-center gap-2 flex-wrap'>
-                    {actor && (
-                      <div
-                        className='avatar'
-                        style={{
-                          width: 22,
-                          height: 22,
-                          background: actor.avatarColor,
-                          fontSize: 9,
-                        }}
-                      >
-                        {actor.initials}
-                      </div>
-                    )}
-                    <span
-                      className='font-semibold text-primary'
-                      style={{ fontSize: 14 }}
-                    >
-                      {actor?.name ?? 'System'}
-                    </span>
-                    <span className='text-muted' style={{ fontSize: 14 }}>
-                      {item.text}
-                    </span>
-                  </div>
-                  <span
-                    className='text-faint flex-shrink-0'
-                    style={{ fontSize: 11 }}
                   >
-                    {formatTimestamp(item.timestamp)}
-                  </span>
+                    <Icon name={icon} size={16} style={{ color }} />
+                  </div>
+                  {!isLast && (
+                    <div
+                      style={{
+                        width: 2,
+                        flex: 1,
+                        minHeight: 24,
+                        background: 'var(--line)',
+                        marginTop: 4,
+                      }}
+                    />
+                  )}
                 </div>
 
-                {item.points != null && (
-                  <div className='mt-1'>
+                <div className='flex-1 min-w-0 pb-1'>
+                  <div className='flex items-start justify-between gap-2'>
+                    <div className='flex items-center gap-2 flex-wrap'>
+                      {actor && (
+                        <div
+                          className='avatar'
+                          style={{
+                            width: 22,
+                            height: 22,
+                            background: actor.avatarColor,
+                            fontSize: 9,
+                          }}
+                        >
+                          {actor.initials}
+                        </div>
+                      )}
+                      <span
+                        className='font-semibold text-primary'
+                        style={{ fontSize: 14 }}
+                      >
+                        {actor?.name ?? 'System'}
+                      </span>
+                      <span className='text-muted' style={{ fontSize: 14 }}>
+                        {item.text}
+                      </span>
+                    </div>
                     <span
-                      className='badge'
-                      style={{
-                        background: `color-mix(in srgb, ${color} 10%, transparent)`,
-                        color,
-                        fontSize: 11,
-                      }}
+                      className='text-faint flex-shrink-0'
+                      style={{ fontSize: 11 }}
                     >
-                      +{item.points} pts
+                      {formatTimestamp(item.timestamp)}
                     </span>
                   </div>
-                )}
+
+                  {item.points != null && (
+                    <div className='mt-1'>
+                      <span
+                        className='badge'
+                        style={{
+                          background: `color-mix(in srgb, ${color} 10%, transparent)`,
+                          color,
+                          fontSize: 11,
+                        }}
+                      >
+                        +{item.points} pts
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </EntityList>
+      </PageFlow>
     </PageShell>
   )
 }

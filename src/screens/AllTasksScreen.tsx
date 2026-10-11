@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import { PanelCard } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
   FilterSegment,
+  PageEmptyState,
   PageSection,
   PageShell,
 } from '../components/page'
@@ -221,157 +223,152 @@ export default function AllTasksScreen({
         />
       }
     >
-      {/* Summary chips */}
-      <div className='flex flex-wrap gap-2 mb-4'>
-        {statusCounts.overdue > 0 && (
-          <button
-            onClick={() => setFilter('overdue')}
-            className='badge bg-sig-over-bg text-sig-over'
-            style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-          >
-            {statusCounts.overdue} overdue
-          </button>
-        )}
-        <button
-          onClick={() => setFilter('todo')}
-          className='badge bg-surface-2 text-muted'
-          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-        >
-          {statusCounts.todo} to do
-        </button>
-        <button
-          onClick={() => setFilter('upcoming')}
-          className='badge bg-brand-faint text-brand'
-          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-        >
-          {statusCounts.upcoming} upcoming
-        </button>
-        <button
-          onClick={() => setFilter('done')}
-          className='badge bg-sig-done-bg text-sig-done'
-          style={{ cursor: 'pointer', padding: '5px 11px', fontSize: 12 }}
-        >
-          {statusCounts.done} done
-        </button>
-      </div>
-
-      {/* Search + filter bar */}
-      <div className='flex gap-2 mb-4'>
-        <div className='task-search-shell flex-1 relative'>
-          <Icon
-            name='search'
-            size={15}
-            style={{
-              position: 'absolute',
-              left: 11,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--t-faint)',
-            }}
-          />
-          <input
-            className='task-search-input'
-            aria-label='Filter all tasks'
-            style={{ paddingInlineStart: 34, fontSize: 14 }}
-            placeholder='Search tasks...'
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <button
-          className={`btn btn-secondary ${showFilters ? 'border-brand text-brand' : ''}`}
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Icon name='bars' size={15} />
-          Filters
-        </button>
-      </div>
-
-      {/* Filter panel */}
-      {showFilters && (
-        <div className='card p-4 mb-4'>
-          <div className='flex flex-wrap gap-4'>
-            <PageSection title='Status'>
-              <FilterSegment
-                ariaLabel='Task status filter'
-                value={filter}
-                onChange={id => setFilter(id as Filter)}
-                options={(
-                  ['all', 'todo', 'overdue', 'upcoming', 'done'] as Filter[]
-                ).map(f => ({ id: f, label: f }))}
-              />
-            </PageSection>
-            {!isChild && (
-              <PageSection title='Group by'>
-                <FilterSegment
-                  ariaLabel='Task group by'
-                  value={groupBy}
-                  onChange={id => setGroupBy(id as GroupBy)}
-                  options={(
-                    ['status', 'assignee', 'category', 'priority'] as GroupBy[]
-                  ).map(g => ({ id: g, label: g }))}
-                />
-              </PageSection>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Task groups */}
-      {groups.length === 0 ? (
-        search ? (
-          <EmptyState
-            testId='all-tasks-zero-results'
-            icon={<span aria-hidden='true'>🔍</span>}
-            title='No matching tasks'
-            description='Try a different search.'
-          />
-        ) : (
-          <EmptyState
-            testId='all-tasks-zero'
-            icon={<span aria-hidden='true'>🔍</span>}
-            title='No tasks found'
-            description='Add your first task to get started.'
-          />
-        )
-      ) : (
-        groups.map(group => (
-          <PageSection
-            key={group.key}
-            title={
-              <>
-                {group.label}{' '}
-                <span
-                  className='badge bg-surface-2 text-muted'
-                  style={{ fontSize: 11 }}
-                >
-                  {group.tasks.length}
-                </span>
-              </>
-            }
-          >
-            <div className='card overflow-hidden'>
-              {group.tasks.map((t, i) => (
-                <div
-                  key={t.id}
+      <PageFlow
+        navigation={
+          <PageSection>
+            {' '}
+            <FilterSegment
+              ariaLabel='Task summary filter'
+              value={filter}
+              onChange={id => setFilter(id as Filter)}
+              options={[
+                { id: 'all', label: 'All' },
+                { id: 'overdue', label: `${statusCounts.overdue} overdue` },
+                { id: 'todo', label: `${statusCounts.todo} to do` },
+                { id: 'upcoming', label: `${statusCounts.upcoming} upcoming` },
+                { id: 'done', label: `${statusCounts.done} done` },
+              ]}
+            />
+            {/* Search + filter bar */}
+            <div className='flex gap-2 '>
+              <div className='task-search-shell flex-1 relative'>
+                <Icon
+                  name='search'
+                  size={15}
                   style={{
-                    borderBottom:
-                      i < group.tasks.length - 1
-                        ? '1px solid var(--line)'
-                        : 'none',
+                    position: 'absolute',
+                    insetInlineStart: 11,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--t-faint)',
                   }}
-                >
-                  <TaskRow
-                    task={t}
-                    onOpen={() => ctx.openTask(t)}
-                    onComplete={onComplete}
-                  />
-                </div>
-              ))}
+                />
+                <input
+                  className='task-search-input'
+                  aria-label='Filter all tasks'
+                  style={{ paddingInlineStart: 34, fontSize: 14 }}
+                  placeholder='Search tasks...'
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <button
+                className={`btn btn-secondary ${showFilters ? 'border-brand text-brand' : ''}`}
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Icon name='bars' size={15} />
+                Filters
+              </button>
             </div>
+            {/* Filter panel */}
+            {showFilters && (
+              <PanelCard variant='standard'>
+                <div className='flex flex-wrap gap-4'>
+                  <PageSection title='Status'>
+                    <FilterSegment
+                      ariaLabel='Task status filter'
+                      value={filter}
+                      onChange={id => setFilter(id as Filter)}
+                      options={(
+                        [
+                          'all',
+                          'todo',
+                          'overdue',
+                          'upcoming',
+                          'done',
+                        ] as Filter[]
+                      ).map(f => ({ id: f, label: f }))}
+                    />
+                  </PageSection>
+                  {!isChild && (
+                    <PageSection title='Group by'>
+                      <FilterSegment
+                        ariaLabel='Task group by'
+                        value={groupBy}
+                        onChange={id => setGroupBy(id as GroupBy)}
+                        options={(
+                          [
+                            'status',
+                            'assignee',
+                            'category',
+                            'priority',
+                          ] as GroupBy[]
+                        ).map(g => ({ id: g, label: g }))}
+                      />
+                    </PageSection>
+                  )}
+                </div>
+              </PanelCard>
+            )}
           </PageSection>
-        ))
-      )}
+        }
+      >
+        {/* Task groups */}
+        {groups.length === 0 ? (
+          search ? (
+            <PageEmptyState
+              testId='all-tasks-zero-results'
+              icon='tasks'
+              title='No matching tasks'
+              description='Try a different search.'
+            />
+          ) : (
+            <PageEmptyState
+              testId='all-tasks-zero'
+              icon='tasks'
+              title='No tasks found'
+              description='Add your first task to get started.'
+            />
+          )
+        ) : (
+          groups.map(group => (
+            <PageSection
+              key={group.key}
+              title={
+                <>
+                  {group.label}{' '}
+                  <span
+                    className='badge bg-surface-2 text-muted'
+                    style={{ fontSize: 11 }}
+                  >
+                    {group.tasks.length}
+                  </span>
+                </>
+              }
+            >
+              <PanelCard variant='flush'>
+                {group.tasks.map((t, i) => (
+                  <div
+                    key={t.id}
+                    style={{
+                      borderBottom:
+                        i < group.tasks.length - 1
+                          ? '1px solid var(--line)'
+                          : 'none',
+                    }}
+                  >
+                    <TaskRow
+                      task={t}
+                      onOpen={() => ctx.openTask(t)}
+                      onComplete={onComplete}
+                    />
+                  </div>
+                ))}
+              </PanelCard>
+            </PageSection>
+          ))
+        )}
+      </PageFlow>
     </PageShell>
   )
 }

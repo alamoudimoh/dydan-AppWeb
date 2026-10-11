@@ -1,14 +1,16 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import { AppCtx } from '../App'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
   EntityCard,
   EntityGrid,
   EntityList,
-  PageHero,
+  PageEmptyState,
+  PageSection,
   PageShell,
   PageTabs,
+  SummaryCard,
 } from '../components/page'
 import PageHeader from '../components/PageHeader'
 import { formatTimestamp } from '../data'
@@ -117,204 +119,206 @@ export default function RewardsScreen({
           title='Rewards'
           subtitle='Server-backed reward catalog and approval requests'
           primaryAction={
-            isAdmin ? (
-              <button className='btn btn-primary' onClick={startNew}>
-                <Icon name='gift' size={14} />
-                New reward
-              </button>
-            ) : undefined
+            isAdmin
+              ? { label: 'New reward', icon: 'gift', onClick: startNew }
+              : undefined
           }
         />
       }
     >
-      <PageHero variant='callout' testId='rewards-hero'>
-        <div style={{ color: 'var(--callout-muted)' }}>
-          {currentUser.name}'s points available
-        </div>
-        <div
-          style={{
-            fontSize: 40,
-            fontWeight: 800,
-            color: 'var(--callout-text)',
-          }}
-        >
-          {currentUser.points.toLocaleString()}
-        </div>
-      </PageHero>
-      <PageTabs
-        ariaLabel='Rewards sections'
-        testId='rewards-tabs'
-        value={tab}
-        onChange={id => setTab(id as Tab)}
-        tabs={[
-          { id: 'catalog', label: 'Rewards' },
-          {
-            id: 'requests',
-            label: isAdmin
-              ? `Requests (${pendingRequests.length})`
-              : 'My Requests',
-          },
-          { id: 'points', label: 'Points' },
-        ]}
-      />
-      {tab === 'catalog' && (
-        <EntityGrid min={240} testId='rewards-catalog'>
-          {rewards.map(reward => {
-            const active = reward.isActive !== false
-            const canAfford = active && currentUser.points >= reward.pointsCost
-            return (
-              <EntityCard
-                key={reward.id}
-                className='flex flex-col gap-3'
-                style={{ opacity: active ? 1 : 0.7 }}
-              >
-                <div style={{ fontSize: 36 }}>{reward.icon}</div>
-                <div>
-                  <div className='font-bold text-primary'>{reward.name}</div>
-                  <div className='text-muted'>{reward.description}</div>
-                  <div className='text-faint mt-2'>
-                    {reward.pointsCost} points
-                  </div>
-                  {!active && (
-                    <span className='badge bg-surface-2 text-muted'>
-                      Inactive
-                    </span>
-                  )}
-                </div>
-                <button
-                  className={`btn btn-sm ${canAfford ? 'btn-primary' : 'btn-secondary'}`}
-                  disabled={!canAfford || pendingID === reward.id}
-                  onClick={() => request(reward.id)}
-                >
-                  {pendingID === reward.id
-                    ? 'Requesting…'
-                    : canAfford
-                      ? 'Request reward'
-                      : active
-                        ? 'Not enough points'
-                        : 'Inactive'}
-                </button>
-                {isAdmin && (
-                  <div className='flex gap-2'>
-                    <button
-                      className='btn btn-sm btn-secondary'
-                      onClick={() => startEdit(reward.id)}
-                    >
-                      Modify
-                    </button>
-                    <button
-                      className='btn btn-sm btn-ghost'
-                      onClick={() => setActive(reward.id, !active)}
-                    >
-                      {active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </div>
-                )}
-              </EntityCard>
-            )
-          })}
-          {rewards.length === 0 && (
-            <EmptyState
+      <PageFlow
+        navigation={
+          <PageTabs
+            ariaLabel='Rewards sections'
+            testId='rewards-tabs'
+            value={tab}
+            onChange={id => setTab(id as Tab)}
+            tabs={[
+              { id: 'catalog', label: 'Rewards' },
+              {
+                id: 'requests',
+                label: isAdmin
+                  ? `Requests (${pendingRequests.length})`
+                  : 'My Requests',
+              },
+              { id: 'points', label: 'Points' },
+            ]}
+          />
+        }
+        summary={
+          <SummaryCard
+            icon='gift'
+            label={`${currentUser.name}'s points available`}
+            value={currentUser.points.toLocaleString()}
+            meta='Use points to request rewards'
+            variant='callout'
+            testId='rewards-hero'
+          />
+        }
+      >
+        {tab === 'catalog' &&
+          (rewards.length === 0 ? (
+            <PageEmptyState
+              icon='gift'
               testId='rewards-zero-catalog'
               title='No rewards yet'
               description='Rewards created by your space will appear here.'
             />
-          )}
-        </EntityGrid>
-      )}
-      {tab === 'requests' && (
-        <EntityList>
-          {(isAdmin ? pendingRequests : myRequests).map(requestItem => {
-            const reward = rewards.find(
-              item => item.id === requestItem.rewardId,
-            )
-            const requester = memberById(requestItem.requesterId)
-            if (!reward) return null
-            return (
-              <div
-                key={requestItem.id}
-                className='card p-4 flex items-center gap-4'
-              >
-                <div style={{ fontSize: 28 }}>{reward.icon}</div>
-                <div className='flex-1'>
-                  <div className='font-bold text-primary'>{reward.name}</div>
-                  <div className='text-muted'>
-                    {isAdmin && requester ? `${requester.name} · ` : ''}
-                    {formatTimestamp(requestItem.requestedAt)}
-                  </div>
-                </div>
-                <span className='badge'>{requestItem.status}</span>
-                {isAdmin && requestItem.status === 'pending' && (
-                  <div className='flex gap-2'>
+          ) : (
+            <EntityGrid variant='compact' testId='rewards-catalog'>
+              {rewards.map(reward => {
+                const active = reward.isActive !== false
+                const canAfford =
+                  active && currentUser.points >= reward.pointsCost
+                return (
+                  <EntityCard
+                    key={reward.id}
+                    layout='stack'
+                    style={{ opacity: active ? 1 : 0.7 }}
+                  >
+                    <div style={{ fontSize: 36 }}>{reward.icon}</div>
+                    <div>
+                      <div className='font-bold text-primary'>
+                        {reward.name}
+                      </div>
+                      <div className='text-muted'>{reward.description}</div>
+                      <div className='text-faint mt-2'>
+                        {reward.pointsCost} points
+                      </div>
+                      {!active && (
+                        <span className='badge bg-surface-2 text-muted'>
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                     <button
-                      className='btn btn-sm btn-primary'
-                      onClick={() => resolve(requestItem.id, true)}
+                      className={`btn btn-sm ${canAfford ? 'btn-primary' : 'btn-secondary'}`}
+                      disabled={!canAfford || pendingID === reward.id}
+                      onClick={() => request(reward.id)}
                     >
-                      Approve
+                      {pendingID === reward.id
+                        ? 'Requesting…'
+                        : canAfford
+                          ? 'Request reward'
+                          : active
+                            ? 'Not enough points'
+                            : 'Inactive'}
                     </button>
+                    {isAdmin && (
+                      <div className='flex gap-2'>
+                        <button
+                          className='btn btn-sm btn-secondary'
+                          onClick={() => startEdit(reward.id)}
+                        >
+                          Modify
+                        </button>
+                        <button
+                          className='btn btn-sm btn-ghost'
+                          onClick={() => setActive(reward.id, !active)}
+                        >
+                          {active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </div>
+                    )}
+                  </EntityCard>
+                )
+              })}
+            </EntityGrid>
+          ))}
+        {tab === 'requests' && (
+          <EntityList>
+            {(isAdmin ? pendingRequests : myRequests).map(requestItem => {
+              const reward = rewards.find(
+                item => item.id === requestItem.rewardId,
+              )
+              const requester = memberById(requestItem.requesterId)
+              if (!reward) return null
+              return (
+                <EntityCard key={requestItem.id} layout='row' variant='compact'>
+                  <div style={{ fontSize: 28 }}>{reward.icon}</div>
+                  <div className='flex-1'>
+                    <div className='font-bold text-primary'>{reward.name}</div>
+                    <div className='text-muted'>
+                      {isAdmin && requester ? `${requester.name} · ` : ''}
+                      {formatTimestamp(requestItem.requestedAt)}
+                    </div>
+                  </div>
+                  <span className='badge'>{requestItem.status}</span>
+                  {isAdmin && requestItem.status === 'pending' && (
+                    <div className='flex gap-2'>
+                      <button
+                        className='btn btn-sm btn-primary'
+                        onClick={() => resolve(requestItem.id, true)}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className='btn btn-sm btn-ghost'
+                        onClick={() => resolve(requestItem.id, false)}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  {!isAdmin && requestItem.status === 'pending' && (
                     <button
                       className='btn btn-sm btn-ghost'
-                      onClick={() => resolve(requestItem.id, false)}
+                      onClick={async () => {
+                        try {
+                          await mutations.cancelRequest.mutateAsync(
+                            requestItem.id,
+                          )
+                          ctx.showToast('Request cancelled')
+                        } catch (error) {
+                          ctx.showToast(
+                            error instanceof Error
+                              ? error.message
+                              : 'Could not cancel request',
+                          )
+                        }
+                      }}
                     >
-                      Reject
+                      Cancel
                     </button>
+                  )}
+                </EntityCard>
+              )
+            })}
+            {(isAdmin ? pendingRequests : myRequests).length === 0 && (
+              <PageEmptyState
+                icon='gift'
+                testId='rewards-zero-requests'
+                title='No requests to show'
+                description='Reward requests will appear here for review.'
+              />
+            )}
+          </EntityList>
+        )}
+        {tab === 'points' && (
+          <PageSection>
+            <EntityGrid variant='dense'>
+              {members.map(member => (
+                <EntityCard key={member.id} variant='compact'>
+                  <div className='font-semibold text-primary'>
+                    {member.name}
                   </div>
-                )}
-                {!isAdmin && requestItem.status === 'pending' && (
-                  <button
-                    className='btn btn-sm btn-ghost'
-                    onClick={async () => {
-                      try {
-                        await mutations.cancelRequest.mutateAsync(
-                          requestItem.id,
-                        )
-                        ctx.showToast('Request cancelled')
-                      } catch (error) {
-                        ctx.showToast(
-                          error instanceof Error
-                            ? error.message
-                            : 'Could not cancel request',
-                        )
-                      }
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            )
-          })}
-          {(isAdmin ? pendingRequests : myRequests).length === 0 && (
-            <EmptyState
-              testId='rewards-zero-requests'
-              title='No requests to show'
-              description='Reward requests will appear here for review.'
-            />
-          )}
-        </EntityList>
-      )}
-      {tab === 'points' && (
-        <div>
-          <EntityGrid min={160}>
-            {members.map(member => (
-              <EntityCard key={member.id} variant='summary'>
-                <div className='font-semibold text-primary'>{member.name}</div>
-                <div style={{ fontSize: 24, fontWeight: 800 }}>
-                  {member.points.toLocaleString()}
-                </div>
-                <div className='text-faint'>points available</div>
-              </EntityCard>
-            ))}
-          </EntityGrid>
-          {activity
-            .filter(item => item.points != null)
-            .map(item => (
-              <div key={item.id} className='card p-3 mt-2'>
-                {item.text} · {item.points} points
-              </div>
-            ))}
-        </div>
-      )}
+                  <div style={{ fontSize: 24, fontWeight: 800 }}>
+                    {member.points.toLocaleString()}
+                  </div>
+                  <div className='text-faint'>points available</div>
+                </EntityCard>
+              ))}
+            </EntityGrid>
+            {activity
+              .filter(item => item.points != null)
+              .map(item => (
+                <EntityCard key={item.id} variant='compact'>
+                  {item.text} · {item.points} points
+                </EntityCard>
+              ))}
+          </PageSection>
+        )}
+      </PageFlow>
     </PageShell>
   )
 }

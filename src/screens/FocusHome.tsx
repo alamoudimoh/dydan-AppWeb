@@ -2,73 +2,20 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AppCtx, Icon } from '../App'
+import { PanelCard } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
-  EntityCard,
   EntityGrid,
+  InlineEmptyState,
   PageSection,
   PageShell,
+  SummaryCard,
 } from '../components/page'
 import PageHeader from '../components/PageHeader'
 import type { Member, Task } from '../data'
 import { formatDate, formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
 import { greetingPeriod } from '../utils/greeting.js'
-
-function StatCard({
-  color,
-  icon,
-  label,
-  sub,
-  value,
-}: {
-  label: string
-  value: string | number
-  sub?: string
-  color: string
-  icon: string
-}) {
-  return (
-    <EntityCard variant='summary' className='flex flex-col gap-2'>
-      <div className='flex items-center justify-between'>
-        <span
-          className='text-muted'
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.07em',
-          }}
-        >
-          {label}
-        </span>
-        <div
-          className='flex items-center justify-center'
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 'var(--r-md)',
-            background: `color-mix(in srgb, ${color} 10%, transparent)`,
-            color,
-          }}
-        >
-          <Icon name={icon} size={15} />
-        </div>
-      </div>
-      <div
-        className='font-bold text-primary'
-        style={{ fontSize: 28, lineHeight: 1, fontFamily: 'var(--font-mono)' }}
-      >
-        {value}
-      </div>
-      {sub && (
-        <div className='text-muted' style={{ fontSize: 12 }}>
-          {sub}
-        </div>
-      )}
-    </EntityCard>
-  )
-}
 
 function TaskRow({
   onClick,
@@ -265,449 +212,481 @@ export default function FocusHome({
         />
       }
     >
-      <PageSection>
-        {/* Stats row */}
-        <PageSection>
+      <PageFlow
+        summary={
           <EntityGrid variant='stats' testId='home-stats'>
-            <StatCard
+            <SummaryCard
               label='Done today'
               value={`${done.length}/${myTasks.length}`}
-              sub='your tasks'
-              color='var(--sig-done)'
+              meta='your tasks'
+              tone='done'
               icon='check'
             />
-            <StatCard
+            <SummaryCard
               label='Overdue'
               value={overdueList.length}
-              sub='need attention'
-              color='var(--sig-over)'
+              meta='need attention'
+              tone='overdue'
               icon='error'
             />
-            <StatCard
+            <SummaryCard
               label='Upcoming'
               value={upcoming.length}
-              sub='next 7 days'
-              color='var(--brand)'
+              meta='next 7 days'
+              tone='brand'
               icon='calendar'
             />
             {!isSolo && (
-              <StatCard
+              <SummaryCard
                 label='House streak'
                 value={`${me.streak}d`}
-                sub='consecutive days'
-                color='var(--accent-text)'
+                meta='consecutive days'
+                tone='accent'
                 icon='fire'
               />
             )}
           </EntityGrid>
-        </PageSection>
-
-        {/* Overdue alert */}
-        {overdueList.length > 0 && (
-          <div
-            className='mb-5 rounded-lg p-4 flex items-start gap-3'
-            style={{
-              background: 'var(--sig-over-bg)',
-              border: '1px solid var(--sig-over)',
-              borderRadius: 'var(--r-lg)',
-            }}
-          >
-            <Icon
-              name='error'
-              size={18}
-              style={{ color: 'var(--sig-over)', flexShrink: 0, marginTop: 1 }}
-            />
-            <div>
-              <div
-                className='font-bold'
-                style={{ fontSize: 14, color: 'var(--sig-over)' }}
-              >
-                {overdueList.length} overdue task
-                {overdueList.length > 1 ? 's' : ''}
-              </div>
-              {overdueList.map(t => (
+        }
+      >
+        <PageSection>
+          {/* Overdue alert */}
+          {overdueList.length > 0 && (
+            <div
+              className='rounded-lg p-4 flex items-start gap-3'
+              style={{
+                background: 'var(--sig-over-bg)',
+                border: '1px solid var(--sig-over)',
+                borderRadius: 'var(--r-lg)',
+              }}
+            >
+              <Icon
+                name='error'
+                size={18}
+                style={{
+                  color: 'var(--sig-over)',
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              />
+              <div>
                 <div
-                  key={t.id}
-                  className='flex items-center gap-1 mt-1'
-                  style={{ fontSize: 13, color: 'var(--sig-over)' }}
+                  className='font-bold'
+                  style={{ fontSize: 14, color: 'var(--sig-over)' }}
                 >
-                  <span>•</span> {t.title}
-                  <span className='text-faint ms-1' style={{ fontSize: 11 }}>
-                    {t.dueDate && formatDate(t.dueDate)}
-                  </span>
+                  {overdueList.length} overdue task
+                  {overdueList.length > 1 ? 's' : ''}
                 </div>
-              ))}
+                {overdueList.map(t => (
+                  <div
+                    key={t.id}
+                    className='flex items-center gap-1 mt-1'
+                    style={{ fontSize: 13, color: 'var(--sig-over)' }}
+                  >
+                    <span>•</span> {t.title}
+                    <span className='text-faint ms-1' style={{ fontSize: 11 }}>
+                      {t.dueDate && formatDate(t.dueDate)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Two-column layout (single column on mobile) */}
-        <div
-          className='grid gap-6 home-columns'
-          style={{ gridTemplateColumns: '1fr 1fr' }}
-        >
-          {/* Left: Today's tasks */}
-          <div className='flex flex-col gap-6'>
-            {/* Today section */}
-            <div className='card overflow-hidden'>
-              <div
-                className='flex items-center justify-between px-5 py-4 border-b border-line'
-                style={{ borderColor: 'var(--line)' }}
-              >
-                <div>
+          {/* Two-column layout (single column on mobile) */}
+          <div
+            className='grid gap-6 home-columns'
+            style={{ gridTemplateColumns: '1fr 1fr' }}
+          >
+            {/* Left: Today's tasks */}
+            <div className='flex flex-col gap-6'>
+              {/* Today section */}
+              <PanelCard variant='flush'>
+                <div
+                  className='flex items-center justify-between px-5 py-4 border-b border-line'
+                  style={{ borderColor: 'var(--line)' }}
+                >
+                  <div>
+                    <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 15 }}
+                    >
+                      Today
+                    </div>
+                    <div className='text-muted' style={{ fontSize: 12 }}>
+                      {done.length} of {myTasks.length} completed
+                    </div>
+                  </div>
+                  <div
+                    className='progress-track'
+                    style={{ height: 6, width: 80 }}
+                  >
+                    <div
+                      className='progress-fill done'
+                      style={{
+                        width: myTasks.length
+                          ? `${Math.round((done.length / myTasks.length) * 100)}%`
+                          : '0%',
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className='py-1'>
+                  {myTasks.length === 0 ? (
+                    <InlineEmptyState
+                      testId='home-zero-today'
+                      icon='check'
+                      title='All done for today!'
+                    />
+                  ) : (
+                    myTasks.map(t => (
+                      <TaskRow
+                        key={t.id}
+                        task={t}
+                        onClick={() => ctx.openTask(t)}
+                        onComplete={onComplete}
+                      />
+                    ))
+                  )}
+                </div>
+                <div
+                  className='px-4 py-3 border-t border-line'
+                  style={{ borderColor: 'var(--line)' }}
+                >
+                  <button
+                    className='btn btn-ghost btn-sm text-brand w-full'
+                    onClick={() => ctx.navigate('today')}
+                  >
+                    View all today →
+                  </button>
+                </div>
+              </PanelCard>
+
+              {/* Upcoming */}
+              <PanelCard variant='flush'>
+                <div
+                  className='px-5 py-4 border-b border-line'
+                  style={{ borderColor: 'var(--line)' }}
+                >
                   <div
                     className='font-bold text-primary'
                     style={{ fontSize: 15 }}
                   >
-                    Today
-                  </div>
-                  <div className='text-muted' style={{ fontSize: 12 }}>
-                    {done.length} of {myTasks.length} completed
+                    Coming up
                   </div>
                 </div>
-                <div
-                  className='progress-track'
-                  style={{ height: 6, width: 80 }}
-                >
-                  <div
-                    className='progress-fill done'
-                    style={{
-                      width: myTasks.length
-                        ? `${Math.round((done.length / myTasks.length) * 100)}%`
-                        : '0%',
-                    }}
-                  />
-                </div>
-              </div>
-              <div className='py-1'>
-                {myTasks.length === 0 ? (
-                  <EmptyState
-                    testId='home-zero-today'
-                    icon={<span aria-hidden='true'>🎉</span>}
-                    title='All done for today!'
-                  />
-                ) : (
-                  myTasks.map(t => (
+                <div className='py-1'>
+                  {upcoming.length === 0 && (
+                    <InlineEmptyState
+                      icon='calendar'
+                      title='Nothing coming up'
+                      description='Upcoming tasks will appear here.'
+                    />
+                  )}
+                  {upcoming.map(t => (
                     <TaskRow
                       key={t.id}
                       task={t}
                       onClick={() => ctx.openTask(t)}
                       onComplete={onComplete}
                     />
-                  ))
-                )}
-              </div>
-              <div
-                className='px-4 py-3 border-t border-line'
-                style={{ borderColor: 'var(--line)' }}
-              >
-                <button
-                  className='btn btn-ghost btn-sm text-brand w-full'
-                  onClick={() => ctx.navigate('today')}
-                >
-                  View all today →
-                </button>
-              </div>
-            </div>
-
-            {/* Upcoming */}
-            <div className='card overflow-hidden'>
-              <div
-                className='px-5 py-4 border-b border-line'
-                style={{ borderColor: 'var(--line)' }}
-              >
-                <div
-                  className='font-bold text-primary'
-                  style={{ fontSize: 15 }}
-                >
-                  Coming up
+                  ))}
                 </div>
-              </div>
-              <div className='py-1'>
-                {upcoming.map(t => (
-                  <TaskRow
-                    key={t.id}
-                    task={t}
-                    onClick={() => ctx.openTask(t)}
-                    onComplete={onComplete}
-                  />
-                ))}
-              </div>
-              <div
-                className='px-4 py-3 border-t border-line'
-                style={{ borderColor: 'var(--line)' }}
-              >
-                <button
-                  className='btn btn-ghost btn-sm text-brand w-full'
-                  onClick={() => ctx.navigate('calendar')}
+                <div
+                  className='px-4 py-3 border-t border-line'
+                  style={{ borderColor: 'var(--line)' }}
                 >
-                  Open calendar →
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Household + goals */}
-          <div className='flex flex-col gap-6'>
-            {/* Quick actions */}
-            <div className='grid grid-cols-2 gap-2'>
-              {[
-                {
-                  label: 'Projects',
-                  icon: 'projects',
-                  action: () => ctx.navigate('projects'),
-                },
-                {
-                  label: 'Shopping',
-                  icon: 'shopping',
-                  action: () => ctx.navigate('shopping'),
-                },
-                {
-                  label: 'Calendar',
-                  icon: 'calendar',
-                  action: () => ctx.navigate('calendar'),
-                },
-                {
-                  label: 'Routines',
-                  icon: 'routines',
-                  action: () => ctx.navigate('routines'),
-                },
-              ].map(a => (
-                <button
-                  key={a.label}
-                  className='btn btn-secondary flex flex-col gap-1'
-                  style={{
-                    height: 64,
-                    borderRadius: 'var(--r-lg)',
-                    fontSize: 12,
-                  }}
-                  onClick={a.action}
-                >
-                  <Icon
-                    name={a.icon}
-                    size={18}
-                    style={{ color: 'var(--brand)' }}
-                  />
-                  {a.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Family goal */}
-            {!isSolo && activeGoal && (
-              <div className='card p-5'>
-                <div className='flex items-center justify-between mb-3'>
-                  <div
-                    className='font-bold text-primary'
-                    style={{ fontSize: 14 }}
+                  <button
+                    className='btn btn-ghost btn-sm text-brand w-full'
+                    onClick={() => ctx.navigate('calendar')}
                   >
-                    Family goal
-                  </div>
-                  <span style={{ fontSize: 20 }}>{activeGoal.emoji}</span>
+                    Open calendar →
+                  </button>
                 </div>
-                <div
-                  className='text-primary font-semibold mb-1'
-                  style={{ fontSize: 13 }}
-                >
-                  {activeGoal.name}
-                </div>
-                <div
-                  className='flex justify-between text-faint mb-2'
-                  style={{ fontSize: 12 }}
-                >
-                  <span>
-                    {activeGoal.progress} of {activeGoal.target}{' '}
-                    {activeGoal.unit}
-                  </span>
-                  <span className='font-bold' style={{ color: 'var(--brand)' }}>
-                    {Math.round(
-                      (activeGoal.progress / activeGoal.target) * 100,
-                    )}
-                    %
-                  </span>
-                </div>
-                <div className='progress-track' style={{ height: 8 }}>
-                  <div
-                    className='progress-fill'
+              </PanelCard>
+            </div>
+
+            {/* Right: Household + goals */}
+            <div className='flex flex-col gap-6'>
+              {/* Quick actions */}
+              <div className='grid grid-cols-2 gap-2'>
+                {[
+                  {
+                    label: 'Projects',
+                    icon: 'projects',
+                    action: () => ctx.navigate('projects'),
+                  },
+                  {
+                    label: 'Shopping',
+                    icon: 'shopping',
+                    action: () => ctx.navigate('shopping'),
+                  },
+                  {
+                    label: 'Calendar',
+                    icon: 'calendar',
+                    action: () => ctx.navigate('calendar'),
+                  },
+                  {
+                    label: 'Routines',
+                    icon: 'routines',
+                    action: () => ctx.navigate('routines'),
+                  },
+                ].map(a => (
+                  <button
+                    key={a.label}
+                    className='btn btn-secondary flex flex-col gap-1'
                     style={{
-                      width: `${(activeGoal.progress / activeGoal.target) * 100}%`,
+                      height: 64,
+                      borderRadius: 'var(--r-lg)',
+                      fontSize: 12,
                     }}
-                  />
-                </div>
-                {activeGoal.reward && (
-                  <div
-                    className='flex items-center gap-1 mt-3 text-faint'
-                    style={{ fontSize: 12 }}
+                    onClick={a.action}
                   >
                     <Icon
-                      name='gift'
-                      size={12}
-                      style={{ color: 'var(--sig-flag)' }}
+                      name={a.icon}
+                      size={18}
+                      style={{ color: 'var(--brand)' }}
                     />
-                    Reward: {activeGoal.reward}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Workload (family only) */}
-            {!isSolo && (
-              <div className='card p-5'>
-                <div className='flex items-center justify-between mb-3'>
-                  <div
-                    className='font-bold text-primary'
-                    style={{ fontSize: 14 }}
-                  >
-                    Household workload
-                  </div>
-                  <button
-                    className='btn btn-ghost btn-sm text-brand'
-                    style={{ fontSize: 11 }}
-                    onClick={() => ctx.navigate('activity')}
-                  >
-                    Details
+                    {a.label}
                   </button>
-                </div>
-                {members.map(m => (
-                  <WorkloadRow key={m.id} member={m} max={maxCompleted} />
                 ))}
               </div>
-            )}
 
-            {/* Active projects */}
-            <div className='card p-5'>
-              <div className='flex items-center justify-between mb-3'>
-                <div
-                  className='font-bold text-primary'
-                  style={{ fontSize: 14 }}
-                >
-                  Active projects
-                </div>
-                <button
-                  className='btn btn-ghost btn-sm text-brand'
-                  style={{ fontSize: 11 }}
-                  onClick={() => ctx.navigate('projects')}
-                >
-                  All projects
-                </button>
-              </div>
-              {projects
-                .filter(p => p.status === 'active')
-                .map(p => (
-                  <div
-                    key={p.id}
-                    className='flex items-center gap-3 py-2.5 border-b border-line'
-                    style={{ borderColor: 'var(--line)' }}
-                  >
+              {/* Family goal */}
+              {!isSolo && activeGoal && (
+                <PanelCard variant='standard'>
+                  <div className='flex items-center justify-between mb-3'>
                     <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 14 }}
+                    >
+                      Family goal
+                    </div>
+                    <span style={{ fontSize: 20 }}>{activeGoal.emoji}</span>
+                  </div>
+                  <div
+                    className='text-primary font-semibold mb-1'
+                    style={{ fontSize: 13 }}
+                  >
+                    {activeGoal.name}
+                  </div>
+                  <div
+                    className='flex justify-between text-faint mb-2'
+                    style={{ fontSize: 12 }}
+                  >
+                    <span>
+                      {activeGoal.progress} of {activeGoal.target}{' '}
+                      {activeGoal.unit}
+                    </span>
+                    <span
+                      className='font-bold'
+                      style={{ color: 'var(--brand)' }}
+                    >
+                      {Math.round(
+                        (activeGoal.progress / activeGoal.target) * 100,
+                      )}
+                      %
+                    </span>
+                  </div>
+                  <div className='progress-track' style={{ height: 8 }}>
+                    <div
+                      className='progress-fill'
                       style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 'var(--r-xs)',
-                        background: p.color,
-                        flexShrink: 0,
+                        width: `${(activeGoal.progress / activeGoal.target) * 100}%`,
                       }}
                     />
-                    <div className='flex-1 min-w-0'>
-                      <div
-                        className='text-primary font-medium truncate'
-                        style={{ fontSize: 13 }}
-                      >
-                        {p.name}
-                      </div>
-                      <div className='flex items-center gap-2 mt-0.5'>
-                        <div
-                          className='progress-track flex-1'
-                          style={{ height: 4 }}
-                        >
-                          <div
-                            className='progress-fill'
-                            style={{
-                              width: `${p.progress}%`,
-                              background: p.color,
-                            }}
-                          />
-                        </div>
-                        <span
-                          className='text-faint font-mono'
-                          style={{ fontSize: 10 }}
-                        >
-                          {p.progress}%
-                        </span>
-                      </div>
-                    </div>
                   </div>
-                ))}
-              <button
-                className='btn btn-ghost btn-sm w-full mt-2 text-brand'
-                onClick={() => ctx.navigate('projects')}
-              >
-                <Icon name='projects' size={13} /> View projects
-              </button>
-            </div>
+                  {activeGoal.reward && (
+                    <div
+                      className='flex items-center gap-1 mt-3 text-faint'
+                      style={{ fontSize: 12 }}
+                    >
+                      <Icon
+                        name='gift'
+                        size={12}
+                        style={{ color: 'var(--sig-flag)' }}
+                      />
+                      Reward: {activeGoal.reward}
+                    </div>
+                  )}
+                </PanelCard>
+              )}
 
-            {/* Recent activity */}
-            {!isSolo && (
-              <div className='card p-5'>
+              {/* Workload (family only) */}
+              {!isSolo && (
+                <PanelCard variant='standard'>
+                  <div className='flex items-center justify-between mb-3'>
+                    <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 14 }}
+                    >
+                      Household workload
+                    </div>
+                    <button
+                      className='btn btn-ghost btn-sm text-brand'
+                      style={{ fontSize: 11 }}
+                      onClick={() => ctx.navigate('activity')}
+                    >
+                      Details
+                    </button>
+                  </div>
+                  {members.map(m => (
+                    <WorkloadRow key={m.id} member={m} max={maxCompleted} />
+                  ))}
+                </PanelCard>
+              )}
+
+              {/* Active projects */}
+              <PanelCard variant='standard'>
                 <div className='flex items-center justify-between mb-3'>
                   <div
                     className='font-bold text-primary'
                     style={{ fontSize: 14 }}
                   >
-                    Recent activity
+                    Active projects
                   </div>
                   <button
                     className='btn btn-ghost btn-sm text-brand'
                     style={{ fontSize: 11 }}
-                    onClick={() => ctx.navigate('activity')}
+                    onClick={() => ctx.navigate('projects')}
                   >
-                    See all
+                    All projects
                   </button>
                 </div>
-                {activity.slice(0, 4).map(a => {
-                  const actor = memberById(a.actorId)
-                  return (
+                {projects.filter(p => p.status === 'active').length === 0 && (
+                  <InlineEmptyState
+                    icon='projects'
+                    title='No active projects'
+                    description='Create a project to organize related tasks.'
+                  />
+                )}
+                {projects
+                  .filter(p => p.status === 'active')
+                  .map(p => (
                     <div
-                      key={a.id}
-                      className='flex items-start gap-3 py-2.5 border-b border-line'
+                      key={p.id}
+                      className='flex items-center gap-3 py-2.5 border-b border-line'
                       style={{ borderColor: 'var(--line)' }}
                     >
                       <div
-                        className='avatar'
                         style={{
-                          width: 26,
-                          height: 26,
-                          background: actor?.avatarColor || 'var(--brand)',
-                          fontSize: 9,
+                          width: 10,
+                          height: 10,
+                          borderRadius: 'var(--r-xs)',
+                          background: p.color,
                           flexShrink: 0,
                         }}
-                      >
-                        {actor?.initials}
-                      </div>
+                      />
                       <div className='flex-1 min-w-0'>
-                        <div className='text-primary' style={{ fontSize: 12 }}>
-                          {a.text}
+                        <div
+                          className='text-primary font-medium truncate'
+                          style={{ fontSize: 13 }}
+                        >
+                          {p.name}
                         </div>
-                        <div className='text-faint' style={{ fontSize: 10 }}>
-                          {formatTimestamp(a.timestamp)}
+                        <div className='flex items-center gap-2 mt-0.5'>
+                          <div
+                            className='progress-track flex-1'
+                            style={{ height: 4 }}
+                          >
+                            <div
+                              className='progress-fill'
+                              style={{
+                                width: `${p.progress}%`,
+                                background: p.color,
+                              }}
+                            />
+                          </div>
+                          <span
+                            className='text-faint font-mono'
+                            style={{ fontSize: 10 }}
+                          >
+                            {p.progress}%
+                          </span>
                         </div>
                       </div>
-                      {a.points && (
-                        <span
-                          className='text-brand font-bold font-mono'
-                          style={{ fontSize: 11 }}
-                        >
-                          +{a.points}
-                        </span>
-                      )}
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                  ))}
+                <button
+                  className='btn btn-ghost btn-sm w-full mt-2 text-brand'
+                  onClick={() => ctx.navigate('projects')}
+                >
+                  <Icon name='projects' size={13} /> View projects
+                </button>
+              </PanelCard>
+
+              {/* Recent activity */}
+              {!isSolo && (
+                <PanelCard variant='standard'>
+                  <div className='flex items-center justify-between mb-3'>
+                    <div
+                      className='font-bold text-primary'
+                      style={{ fontSize: 14 }}
+                    >
+                      Recent activity
+                    </div>
+                    <button
+                      className='btn btn-ghost btn-sm text-brand'
+                      style={{ fontSize: 11 }}
+                      onClick={() => ctx.navigate('activity')}
+                    >
+                      See all
+                    </button>
+                  </div>
+                  {activity.length === 0 && (
+                    <InlineEmptyState
+                      icon='activity'
+                      title='No recent activity'
+                      description='Complete tasks to see recent activity.'
+                    />
+                  )}
+                  {activity.slice(0, 4).map(a => {
+                    const actor = memberById(a.actorId)
+                    return (
+                      <div
+                        key={a.id}
+                        className='flex items-start gap-3 py-2.5 border-b border-line'
+                        style={{ borderColor: 'var(--line)' }}
+                      >
+                        <div
+                          className='avatar'
+                          style={{
+                            width: 26,
+                            height: 26,
+                            background: actor?.avatarColor || 'var(--brand)',
+                            fontSize: 9,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {actor?.initials}
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <div
+                            className='text-primary'
+                            style={{ fontSize: 12 }}
+                          >
+                            {a.text}
+                          </div>
+                          <div className='text-faint' style={{ fontSize: 10 }}>
+                            {formatTimestamp(a.timestamp)}
+                          </div>
+                        </div>
+                        {a.points && (
+                          <span
+                            className='text-brand font-bold font-mono'
+                            style={{ fontSize: 11 }}
+                          >
+                            +{a.points}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </PanelCard>
+              )}
+            </div>
           </div>
-        </div>
-      </PageSection>
+        </PageSection>
+      </PageFlow>
     </PageShell>
   )
 }

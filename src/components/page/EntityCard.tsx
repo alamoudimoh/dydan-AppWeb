@@ -1,14 +1,18 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
-export type EntityCardVariant = 'standard' | 'compact' | 'summary'
+export type EntityCardVariant = 'standard' | 'compact'
 
 type EntityCardProps = {
   children: ReactNode
   variant?: EntityCardVariant
   testId?: string
-  style?: React.CSSProperties
+  style?: Pick<
+    CSSProperties,
+    'opacity' | 'borderColor' | 'background' | 'color'
+  >
   onClick?: () => void
-  className?: string
+  layout?: 'block' | 'stack' | 'row'
+  align?: 'start' | 'center'
 }
 
 /**
@@ -18,8 +22,9 @@ type EntityCardProps = {
  * source. Fixed card widths are forbidden — grids own the width behavior.
  */
 export default function EntityCard({
+  align = 'start',
   children,
-  className = '',
+  layout = 'block',
   onClick,
   style,
   testId,
@@ -27,9 +32,18 @@ export default function EntityCard({
 }: EntityCardProps) {
   return (
     <div
-      className={`card entity-card entity-card--${variant}${className ? ` ${className}` : ''}`}
+      className={`card entity-card entity-card--${variant} entity-card--${layout}${onClick ? ' entity-card--interactive' : ''} card-align--${align}`}
       onClick={onClick}
-      style={style}
+      style={
+        style
+          ? {
+              opacity: style.opacity,
+              borderColor: style.borderColor,
+              background: style.background,
+              color: style.color,
+            }
+          : undefined
+      }
       {...(testId ? { 'data-testid': testId } : {})}
     >
       {children}
@@ -39,25 +53,16 @@ export default function EntityCard({
 
 export function EntityGrid({
   children,
-  min = 260,
   testId,
   variant = 'standard',
 }: {
   children: ReactNode
-  min?: number
   testId?: string
-  variant?: 'standard' | 'stats'
+  variant?: 'standard' | 'compact' | 'dense' | 'stats'
 }) {
   return (
     <div
-      className={`entity-grid${variant === 'stats' ? ' entity-grid--stats' : ''}`}
-      style={
-        variant === 'stats'
-          ? undefined
-          : {
-              gridTemplateColumns: `repeat(auto-fill, minmax(${min}px, 1fr))`,
-            }
-      }
+      className={`entity-grid entity-grid--${variant}`}
       {...(testId ? { 'data-testid': testId } : {})}
     >
       {children}

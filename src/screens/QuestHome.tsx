@@ -1,12 +1,15 @@
 import { AppCtx, Icon } from '../App'
+import { EntityList } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
   EntityCard,
   EntityGrid,
-  PageHero,
+  InlineEmptyState,
   PageSection,
   PageShell,
+  PanelCard,
 } from '../components/page'
+import PageHeader from '../components/PageHeader'
 import type { Reward, Task } from '../data'
 import { formatTimestamp } from '../data'
 import { todayKey, useLiveData } from '../model/liveData'
@@ -42,10 +45,9 @@ function QuestTaskCard({
 }) {
   const isDone = task.status === 'done'
   return (
-    <div
-      className='card p-4 cursor-pointer'
+    <EntityCard
       style={{
-        border: isDone ? `1px solid var(--sig-done)` : '1px solid var(--line)',
+        borderColor: isDone ? 'var(--sig-done)' : 'var(--line)',
         background: isDone ? 'var(--sig-done-bg)' : 'var(--surface)',
         opacity: 1,
       }}
@@ -103,7 +105,7 @@ function QuestTaskCard({
           </div>
         )}
       </div>
-    </div>
+    </EntityCard>
   )
 }
 
@@ -197,445 +199,454 @@ export default function QuestHome({
   )
 
   return (
-    <PageShell testId='home-page'>
-      {/* Hero */}
-      <PageHero variant='dashboard' testId='home-hero'>
-        <div
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Background circles */}
+    <PageShell
+      testId='home-page'
+      header={
+        <PageHeader title='Home' subtitle='Your daily quests and progress' />
+      }
+    >
+      <PageFlow>
+        {/* Hero */}
+        <PanelCard variant='callout' testId='home-hero'>
           <div
             style={{
-              position: 'absolute',
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              background:
-                'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
-              top: -60,
-              right: -40,
+              position: 'relative',
+              overflow: 'hidden',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              width: 100,
-              height: 100,
-              borderRadius: '50%',
-              background:
-                'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
-              bottom: -20,
-              left: 20,
-            }}
-          />
-
-          <div
-            className='flex items-start justify-between mb-5'
-            style={{ position: 'relative' }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: 'var(--home-hero-text)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  marginBottom: 6,
-                }}
-              >
-                Quest Mode
-              </div>
-              <h1
-                style={{
-                  fontSize: 24,
-                  fontWeight: 800,
-                  color: 'var(--home-hero-text)',
-                  margin: 0,
-                  lineHeight: 1.2,
-                }}
-              >
-                {persona === 'child'
-                  ? `Hey, ${liam?.name ?? 'there'}! 👋`
-                  : `Quest View`}
-              </h1>
-              <div
-                style={{
-                  fontSize: 14,
-                  color: 'var(--home-hero-text)',
-                  marginTop: 4,
-                }}
-              >
-                {done.length === todayTasks.length && todayTasks.length > 0
-                  ? 'All tasks done! Amazing! 🎉'
-                  : `${todo.length} quest${todo.length !== 1 ? 's' : ''} to complete today`}
-              </div>
-            </div>
-            <div className='flex flex-col items-end gap-1'>
-              <div
-                style={{
-                  background:
-                    'color-mix(in srgb, var(--home-hero-text) 14%, var(--home-hero-bg))',
-                  borderRadius: 'var(--r-full)',
-                  padding: '4px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <Icon
-                  name='star'
-                  size={13}
-                  style={{ color: 'var(--home-hero-accent)' }}
-                />
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 800,
-                    color: 'var(--home-hero-text)',
-                    fontFamily: 'var(--font-mono)',
-                  }}
-                >
-                  {currentMember?.points ?? 0}
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--home-hero-text)' }}>
-                  pts
-                </span>
-              </div>
-              <div
-                style={{
-                  background:
-                    'color-mix(in srgb, var(--home-hero-text) 12%, var(--home-hero-bg))',
-                  borderRadius: 'var(--r-full)',
-                  padding: '4px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                }}
-              >
-                <Icon
-                  name='fire'
-                  size={13}
-                  style={{ color: 'var(--home-hero-accent)' }}
-                />
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 800,
-                    color: 'var(--home-hero-text)',
-                  }}
-                >
-                  {currentMember?.streak ?? 0} day streak
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Daily progress bar */}
-          <div>
-            <div
-              className='flex justify-between mb-2'
-              style={{ fontSize: 12, color: 'var(--home-hero-text)' }}
-            >
-              <span>Today's progress</span>
-              <span style={{ fontWeight: 800 }}>
-                {done.length}/{todayTasks.length}
-              </span>
-            </div>
+            {/* Background circles */}
             <div
               style={{
-                height: 12,
+                position: 'absolute',
+                width: 200,
+                height: 200,
+                borderRadius: '50%',
                 background:
-                  'color-mix(in srgb, var(--home-hero-text) 20%, var(--home-hero-bg))',
-                borderRadius: 99,
-                overflow: 'hidden',
+                  'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
+                top: -60,
+                right: -40,
               }}
-            >
-              <div
-                style={{
-                  height: '100%',
-                  width: `${progressPct}%`,
-                  background: 'var(--home-hero-accent)',
-                  borderRadius: 99,
-                  transition: 'width 0.5s ease',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </PageHero>
-
-      <PageSection>
-        {/* Streak card */}
-        <EntityCard variant='summary' className='mb-4 flex items-center gap-4'>
-          <div style={{ fontSize: 32 }}>🔥</div>
-          <div className='flex-1'>
-            <div className='font-bold text-primary' style={{ fontSize: 14 }}>
-              {currentMember?.streak ?? 0}-day streak!
-            </div>
-            <div
-              className='text-muted'
-              style={{ fontSize: 12, marginBottom: 6 }}
-            >
-              Keep it going — 8 more days to reach your goal
-            </div>
-            <StreakPips streak={currentMember?.streak ?? 0} total={20} />
-          </div>
-        </EntityCard>
-
-        {/* Tasks for today */}
-        <PageSection
-          title='My quests today'
-          action={
-            <button
-              className='btn btn-ghost btn-sm text-brand'
-              onClick={() => ctx.navigate('today')}
-            >
-              See all
-            </button>
-          }
-        >
-          {todo.length === 0 && done.length > 0 ? (
-            <EmptyState
-              testId='home-zero-quests'
-              icon={<span aria-hidden='true'>🏆</span>}
-              title='All done! Amazing work!'
-              description={`You earned ${done.reduce((acc, t) => acc + (t.points || 0), 0)} points today`}
             />
-          ) : (
-            <div className='flex flex-col gap-2'>
-              {todo.map(t => (
-                <QuestTaskCard
-                  key={t.id}
-                  task={t}
-                  onComplete={onComplete}
-                  onOpen={() => ctx.openTask(t)}
-                />
-              ))}
-              {done.length > 0 && (
-                <>
-                  <div className='section-label mt-2'>Completed</div>
-                  {done.map(t => (
-                    <QuestTaskCard
-                      key={t.id}
-                      task={t}
-                      onComplete={onComplete}
-                      onOpen={() => ctx.openTask(t)}
-                    />
-                  ))}
-                </>
-              )}
-            </div>
-          )}
-        </PageSection>
+            <div
+              style={{
+                position: 'absolute',
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                background:
+                  'color-mix(in srgb, var(--home-hero-text) 6%, transparent)',
+                bottom: -20,
+                left: 20,
+              }}
+            />
 
-        {/* Goals section */}
-        <PageSection
-          title='My goals'
-          action={
-            <button
-              className='btn btn-ghost btn-sm text-brand'
-              onClick={() => ctx.navigate('goals')}
+            <div
+              className='flex items-start justify-between mb-5'
+              style={{ position: 'relative' }}
             >
-              Details
-            </button>
-          }
-        >
-          <div className='flex flex-col gap-3'>
-            {personalGoal && (
-              <EntityCard variant='summary'>
-                <div className='flex items-center gap-3 mb-3'>
-                  <span style={{ fontSize: 24 }}>{personalGoal.emoji}</span>
-                  <div>
-                    <div
-                      className='font-bold text-primary'
-                      style={{ fontSize: 13 }}
-                    >
-                      {personalGoal.name}
-                    </div>
-                    <div className='text-muted' style={{ fontSize: 11 }}>
-                      {personalGoal.progress}/{personalGoal.target}{' '}
-                      {personalGoal.unit}
-                    </div>
-                  </div>
-                  <div
-                    className='ms-auto font-bold'
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: 'var(--home-hero-text)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    marginBottom: 6,
+                  }}
+                >
+                  Quest Mode
+                </div>
+                <h1
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: 'var(--home-hero-text)',
+                    margin: 0,
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {persona === 'child'
+                    ? `Hey, ${liam?.name ?? 'there'}! 👋`
+                    : `Quest View`}
+                </h1>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: 'var(--home-hero-text)',
+                    marginTop: 4,
+                  }}
+                >
+                  {done.length === todayTasks.length && todayTasks.length > 0
+                    ? 'All tasks done! Amazing! 🎉'
+                    : `${todo.length} quest${todo.length !== 1 ? 's' : ''} to complete today`}
+                </div>
+              </div>
+              <div className='flex flex-col items-end gap-1'>
+                <div
+                  style={{
+                    background:
+                      'color-mix(in srgb, var(--home-hero-text) 14%, var(--home-hero-bg))',
+                    borderRadius: 'var(--r-full)',
+                    padding: '4px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}
+                >
+                  <Icon
+                    name='star'
+                    size={13}
+                    style={{ color: 'var(--home-hero-accent)' }}
+                  />
+                  <span
                     style={{
-                      fontSize: 18,
-                      color: 'var(--brand)',
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: 'var(--home-hero-text)',
                       fontFamily: 'var(--font-mono)',
                     }}
                   >
-                    {Math.round(
-                      (personalGoal.progress / personalGoal.target) * 100,
-                    )}
-                    %
-                  </div>
-                </div>
-                <div className='progress-track' style={{ height: 8 }}>
-                  <div
-                    className='progress-fill'
-                    style={{
-                      width: `${(personalGoal.progress / personalGoal.target) * 100}%`,
-                    }}
-                  />
-                </div>
-                {personalGoal.reward && (
-                  <div
-                    className='flex items-center gap-1 mt-2 text-faint'
-                    style={{ fontSize: 11 }}
+                    {currentMember?.points ?? 0}
+                  </span>
+                  <span
+                    style={{ fontSize: 11, color: 'var(--home-hero-text)' }}
                   >
-                    <Icon
-                      name='gift'
-                      size={11}
-                      style={{ color: 'var(--sig-flag)' }}
-                    />
-                    Reward: {personalGoal.reward}
-                  </div>
-                )}
-              </EntityCard>
-            )}
-            {!isSolo && familyGoal && (
-              <EntityCard
-                variant='summary'
-                style={{
-                  border: '1px solid var(--brand)',
-                  background: 'var(--brand-faint)',
-                }}
-              >
-                <div className='flex items-center gap-3 mb-3'>
-                  <span style={{ fontSize: 24 }}>{familyGoal.emoji}</span>
-                  <div>
-                    <div
-                      className='text-faint'
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.06em',
-                      }}
-                    >
-                      Family goal
-                    </div>
-                    <div
-                      className='font-bold text-primary'
-                      style={{ fontSize: 13 }}
-                    >
-                      {familyGoal.name}
-                    </div>
-                  </div>
-                  <div
-                    className='ms-auto font-bold text-brand'
-                    style={{ fontSize: 18, fontFamily: 'var(--font-mono)' }}
-                  >
-                    {familyGoal.progress}/{familyGoal.target}
-                  </div>
-                </div>
-                <div className='progress-track' style={{ height: 8 }}>
-                  <div
-                    className='progress-fill'
-                    style={{
-                      width: `${(familyGoal.progress / familyGoal.target) * 100}%`,
-                    }}
-                  />
-                </div>
-                <div className='flex gap-1 mt-3'>
-                  {members.map(m => (
-                    <div
-                      key={m.id}
-                      className='avatar'
-                      style={{
-                        width: 22,
-                        height: 22,
-                        background: m.avatarColor,
-                        fontSize: 8,
-                      }}
-                    >
-                      {m.initials}
-                    </div>
-                  ))}
-                  <span className='text-muted ms-2' style={{ fontSize: 11 }}>
-                    All contributing
+                    pts
                   </span>
                 </div>
-              </EntityCard>
-            )}
-          </div>
-        </PageSection>
-
-        {/* Rewards */}
-        <PageSection
-          title='Rewards'
-          action={
-            <div
-              className='flex items-center gap-1 text-brand font-bold'
-              style={{ fontSize: 13, fontFamily: 'var(--font-mono)' }}
-            >
-              <Icon name='star' size={13} />
-              {currentMember?.points ?? 0} pts
-            </div>
-          }
-        >
-          <EntityGrid min={160}>
-            {rewards.slice(0, 4).map(r => (
-              <RewardCard
-                key={r.id}
-                reward={r}
-                currentPoints={currentMember?.points ?? 0}
-              />
-            ))}
-          </EntityGrid>
-        </PageSection>
-
-        {/* Recent activity */}
-        {!isSolo && (
-          <PageSection title='Recent activity'>
-            <div className='card overflow-hidden mb-4'>
-              <div
-                className='px-4 py-3 border-b border-line font-bold text-primary'
-                style={{ borderColor: 'var(--line)', fontSize: 14 }}
-              >
-                Recent activity
-              </div>
-              {activity.slice(0, 5).map(a => {
-                const actor = memberById(a.actorId)
-                return (
-                  <div
-                    key={a.id}
-                    className='flex items-start gap-3 px-4 py-3 border-b border-line'
-                    style={{ borderColor: 'var(--line)' }}
+                <div
+                  style={{
+                    background:
+                      'color-mix(in srgb, var(--home-hero-text) 12%, var(--home-hero-bg))',
+                    borderRadius: 'var(--r-full)',
+                    padding: '4px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}
+                >
+                  <Icon
+                    name='fire'
+                    size={13}
+                    style={{ color: 'var(--home-hero-accent)' }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: 'var(--home-hero-text)',
+                    }}
                   >
+                    {currentMember?.streak ?? 0} day streak
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily progress bar */}
+            <div>
+              <div
+                className='flex justify-between mb-2'
+                style={{ fontSize: 12, color: 'var(--home-hero-text)' }}
+              >
+                <span>Today's progress</span>
+                <span style={{ fontWeight: 800 }}>
+                  {done.length}/{todayTasks.length}
+                </span>
+              </div>
+              <div
+                style={{
+                  height: 12,
+                  background:
+                    'color-mix(in srgb, var(--home-hero-text) 20%, var(--home-hero-bg))',
+                  borderRadius: 99,
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${progressPct}%`,
+                    background: 'var(--home-hero-accent)',
+                    borderRadius: 99,
+                    transition: 'width 0.5s ease',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </PanelCard>
+
+        <PageSection>
+          {/* Streak card */}
+          <EntityCard variant='compact' layout='row'>
+            <div style={{ fontSize: 32 }}>🔥</div>
+            <div className='flex-1'>
+              <div className='font-bold text-primary' style={{ fontSize: 14 }}>
+                {currentMember?.streak ?? 0}-day streak!
+              </div>
+              <div
+                className='text-muted'
+                style={{ fontSize: 12, marginBottom: 6 }}
+              >
+                Keep it going — 8 more days to reach your goal
+              </div>
+              <StreakPips streak={currentMember?.streak ?? 0} total={20} />
+            </div>
+          </EntityCard>
+
+          {/* Tasks for today */}
+          <PageSection
+            title='My quests today'
+            action={
+              <button
+                className='btn btn-ghost btn-sm text-brand'
+                onClick={() => ctx.navigate('today')}
+              >
+                See all
+              </button>
+            }
+          >
+            {todo.length === 0 && done.length > 0 ? (
+              <InlineEmptyState
+                testId='home-zero-quests'
+                icon='award'
+                title='All done! Amazing work!'
+                description={`You earned ${done.reduce((acc, t) => acc + (t.points || 0), 0)} points today`}
+              />
+            ) : (
+              <EntityList>
+                {todo.map(t => (
+                  <QuestTaskCard
+                    key={t.id}
+                    task={t}
+                    onComplete={onComplete}
+                    onOpen={() => ctx.openTask(t)}
+                  />
+                ))}
+                {done.length > 0 && (
+                  <>
+                    <div className='section-label mt-2'>Completed</div>
+                    {done.map(t => (
+                      <QuestTaskCard
+                        key={t.id}
+                        task={t}
+                        onComplete={onComplete}
+                        onOpen={() => ctx.openTask(t)}
+                      />
+                    ))}
+                  </>
+                )}
+              </EntityList>
+            )}
+          </PageSection>
+
+          {/* Goals section */}
+          <PageSection
+            title='My goals'
+            action={
+              <button
+                className='btn btn-ghost btn-sm text-brand'
+                onClick={() => ctx.navigate('goals')}
+              >
+                Details
+              </button>
+            }
+          >
+            <EntityList>
+              {personalGoal && (
+                <EntityCard variant='compact'>
+                  <div className='flex items-center gap-3 mb-3'>
+                    <span style={{ fontSize: 24 }}>{personalGoal.emoji}</span>
+                    <div>
+                      <div
+                        className='font-bold text-primary'
+                        style={{ fontSize: 13 }}
+                      >
+                        {personalGoal.name}
+                      </div>
+                      <div className='text-muted' style={{ fontSize: 11 }}>
+                        {personalGoal.progress}/{personalGoal.target}{' '}
+                        {personalGoal.unit}
+                      </div>
+                    </div>
                     <div
-                      className='avatar'
+                      className='ms-auto font-bold'
                       style={{
-                        width: 28,
-                        height: 28,
-                        background: actor?.avatarColor || 'var(--brand)',
-                        fontSize: 10,
-                        flexShrink: 0,
+                        fontSize: 18,
+                        color: 'var(--brand)',
+                        fontFamily: 'var(--font-mono)',
                       }}
                     >
-                      {actor?.initials}
+                      {Math.round(
+                        (personalGoal.progress / personalGoal.target) * 100,
+                      )}
+                      %
                     </div>
-                    <div className='flex-1 min-w-0'>
-                      <div className='text-primary' style={{ fontSize: 12 }}>
-                        {a.text}
-                      </div>
-                      <div className='text-faint' style={{ fontSize: 10 }}>
-                        {formatTimestamp(a.timestamp)}
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 16 }}>{a.icon}</span>
                   </div>
-                )
-              })}
-            </div>
+                  <div className='progress-track' style={{ height: 8 }}>
+                    <div
+                      className='progress-fill'
+                      style={{
+                        width: `${(personalGoal.progress / personalGoal.target) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  {personalGoal.reward && (
+                    <div
+                      className='flex items-center gap-1 mt-2 text-faint'
+                      style={{ fontSize: 11 }}
+                    >
+                      <Icon
+                        name='gift'
+                        size={11}
+                        style={{ color: 'var(--sig-flag)' }}
+                      />
+                      Reward: {personalGoal.reward}
+                    </div>
+                  )}
+                </EntityCard>
+              )}
+              {!isSolo && familyGoal && (
+                <EntityCard
+                  variant='compact'
+                  style={{
+                    borderColor: 'var(--brand)',
+                    background: 'var(--brand-faint)',
+                  }}
+                >
+                  <div className='flex items-center gap-3 mb-3'>
+                    <span style={{ fontSize: 24 }}>{familyGoal.emoji}</span>
+                    <div>
+                      <div
+                        className='text-faint'
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                        }}
+                      >
+                        Family goal
+                      </div>
+                      <div
+                        className='font-bold text-primary'
+                        style={{ fontSize: 13 }}
+                      >
+                        {familyGoal.name}
+                      </div>
+                    </div>
+                    <div
+                      className='ms-auto font-bold text-brand'
+                      style={{ fontSize: 18, fontFamily: 'var(--font-mono)' }}
+                    >
+                      {familyGoal.progress}/{familyGoal.target}
+                    </div>
+                  </div>
+                  <div className='progress-track' style={{ height: 8 }}>
+                    <div
+                      className='progress-fill'
+                      style={{
+                        width: `${(familyGoal.progress / familyGoal.target) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <div className='flex gap-1 mt-3'>
+                    {members.map(m => (
+                      <div
+                        key={m.id}
+                        className='avatar'
+                        style={{
+                          width: 22,
+                          height: 22,
+                          background: m.avatarColor,
+                          fontSize: 8,
+                        }}
+                      >
+                        {m.initials}
+                      </div>
+                    ))}
+                    <span className='text-muted ms-2' style={{ fontSize: 11 }}>
+                      All contributing
+                    </span>
+                  </div>
+                </EntityCard>
+              )}
+            </EntityList>
           </PageSection>
-        )}
-      </PageSection>
+
+          {/* Rewards */}
+          <PageSection
+            title='Rewards'
+            action={
+              <div
+                className='flex items-center gap-1 text-brand font-bold'
+                style={{ fontSize: 13, fontFamily: 'var(--font-mono)' }}
+              >
+                <Icon name='star' size={13} />
+                {currentMember?.points ?? 0} pts
+              </div>
+            }
+          >
+            <EntityGrid variant='dense'>
+              {rewards.slice(0, 4).map(r => (
+                <RewardCard
+                  key={r.id}
+                  reward={r}
+                  currentPoints={currentMember?.points ?? 0}
+                />
+              ))}
+            </EntityGrid>
+          </PageSection>
+
+          {/* Recent activity */}
+          {!isSolo && (
+            <PageSection title='Recent activity'>
+              <PanelCard variant='flush'>
+                <div
+                  className='px-4 py-3 border-b border-line font-bold text-primary'
+                  style={{ borderColor: 'var(--line)', fontSize: 14 }}
+                >
+                  Recent activity
+                </div>
+                {activity.slice(0, 5).map(a => {
+                  const actor = memberById(a.actorId)
+                  return (
+                    <div
+                      key={a.id}
+                      className='flex items-start gap-3 px-4 py-3 border-b border-line'
+                      style={{ borderColor: 'var(--line)' }}
+                    >
+                      <div
+                        className='avatar'
+                        style={{
+                          width: 28,
+                          height: 28,
+                          background: actor?.avatarColor || 'var(--brand)',
+                          fontSize: 10,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {actor?.initials}
+                      </div>
+                      <div className='flex-1 min-w-0'>
+                        <div className='text-primary' style={{ fontSize: 12 }}>
+                          {a.text}
+                        </div>
+                        <div className='text-faint' style={{ fontSize: 10 }}>
+                          {formatTimestamp(a.timestamp)}
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 16 }}>{a.icon}</span>
+                    </div>
+                  )
+                })}
+              </PanelCard>
+            </PageSection>
+          )}
+        </PageSection>
+      </PageFlow>
     </PageShell>
   )
 }

@@ -1,12 +1,15 @@
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
+
+import PageHeader from '../PageHeader'
+import PageFlow from './PageFlow'
 
 export type PageShellVariant = 'standard' | 'wide' | 'reading'
 
 type PageShellProps = {
   /** Page header (usually <PageHeader/>). Rendered outside the guttered body so the
    *  shared header padding stays the single source of truth for the title anchor. */
-  header?: ReactNode
-  children: ReactNode
+  header: ReactElement
+  children: ReactElement
   /** Centrally defined width variants only — no per-screen max-width values. */
   variant?: PageShellVariant
   /** Stable test anchor for the page root (e.g. shopping-page). */
@@ -29,13 +32,19 @@ export default function PageShell({
   testId,
   variant = 'standard',
 }: PageShellProps) {
+  if (children.type !== PageFlow || header.type !== PageHeader) {
+    throw new Error('PageShell requires PageHeader and a single PageFlow')
+  }
   return (
     <div
       className={`page page--${variant}`}
       {...(testId ? { 'data-testid': testId } : {})}
     >
       {header}
-      <div className='page-body'>{children}</div>
+      <div className='page-body'>
+        {children}
+        <div data-testid='page-end' aria-hidden='true' className='page-end' />
+      </div>
     </div>
   )
 }

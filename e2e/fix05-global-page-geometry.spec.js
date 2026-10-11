@@ -28,8 +28,8 @@ const PRIMARY = [
   '/settings',
 ]
 
-const box = (locator) =>
-  locator.evaluate((el) => {
+const box = locator =>
+  locator.evaluate(el => {
     const r = el.getBoundingClientRect()
     return { top: r.top, height: r.height, width: r.width, left: r.left }
   })
@@ -49,17 +49,17 @@ test('fix05: desktop title anchors + tab geometry + no overflow (EN LTR)', async
     if ((await title.count()) === 0) continue
     titles[path] = await box(title)
   }
-  // eslint-disable-next-line no-console
+
   console.log(`DESKTOP_TITLES ${JSON.stringify(titles)}`)
-  const tops = Object.values(titles).map((b) => b.top)
+  const tops = Object.values(titles).map(b => b.top)
   expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1)
 
-  // Rewards hero geometry first, so the tab offset below can be explained.
+  // Rewards uses the summary foundation below the canonical navigation slot.
   await page.goto('/rewards', { waitUntil: 'networkidle' })
   const hero = page.getByTestId('rewards-hero')
   await expect(hero).toBeVisible()
   const heroBox = await box(hero)
-  // eslint-disable-next-line no-console
+
   console.log(`DESKTOP_HERO ${JSON.stringify(heroBox)}`)
 
   const tabs = {}
@@ -72,33 +72,28 @@ test('fix05: desktop title anchors + tab geometry + no overflow (EN LTR)', async
     const el = page.getByTestId(id)
     await expect(el).toBeVisible()
     tabs[path] = await box(el)
-    const h = await el.evaluate((node) => getComputedStyle(node).height)
+    const h = await el.evaluate(node => getComputedStyle(node).height)
     tabs[path].cssHeight = h
   }
-  // eslint-disable-next-line no-console
+
   console.log(`DESKTOP_TABS ${JSON.stringify(tabs)}`)
   // Assets + Shopping have no hero so their tab tops must coincide.
   expect(
     Math.abs(tabs['/maintenance'].top - tabs['/shopping'].top),
   ).toBeLessThanOrEqual(1)
-  // Rewards renders the shared points hero above the same tabs primitive, so
-  // its top is offset by exactly hero height + hero->tabs rhythm (20px).
-  const heroBottomMargin = 20
   expect(
-    Math.abs(
-      tabs['/rewards'].top -
-        (tabs['/shopping'].top + heroBox.height + heroBottomMargin),
-    ),
-  ).toBeLessThanOrEqual(2)
+    Math.abs(tabs['/rewards'].top - tabs['/shopping'].top),
+  ).toBeLessThanOrEqual(1)
+  expect(heroBox.top).toBeGreaterThan(
+    tabs['/rewards'].top + tabs['/rewards'].height,
+  )
   // Equivalent instances share height/width/border geometry.
-  const tabHeights = Object.values(tabs).map((b) => b.height)
-  const tabWidths = Object.values(tabs).map((b) => b.width)
+  const tabHeights = Object.values(tabs).map(b => b.height)
+  const tabWidths = Object.values(tabs).map(b => b.width)
   expect(Math.max(...tabHeights) - Math.min(...tabHeights)).toBeLessThanOrEqual(
     1,
   )
-  expect(Math.max(...tabWidths) - Math.min(...tabWidths)).toBeLessThanOrEqual(
-    1,
-  )
+  expect(Math.max(...tabWidths) - Math.min(...tabWidths)).toBeLessThanOrEqual(1)
   // Content starts from a shared gap beneath the tabs on hero-less pages.
   const gaps = {}
   for (const [path, contentId] of [
@@ -107,22 +102,21 @@ test('fix05: desktop title anchors + tab geometry + no overflow (EN LTR)', async
   ]) {
     await page.goto(path, { waitUntil: 'networkidle' })
     const tabsEl = page.getByTestId(contentId)
-    const tabsBottom =
-      (await box(tabsEl)).top + (await box(tabsEl)).height
+    const tabsBottom = (await box(tabsEl)).top + (await box(tabsEl)).height
     const contentTop = await page.evaluate(() => {
       const tabsNode =
         document.querySelector('[data-testid="assets-tabs"]') ??
         document.querySelector('[data-testid="shopping-tabs"]')
-      const next = tabsNode?.nextElementSibling
+      const next = tabsNode?.parentElement?.nextElementSibling
       return next ? next.getBoundingClientRect().top : NaN
     })
     gaps[path] = contentTop - tabsBottom
   }
-  // eslint-disable-next-line no-console
+
   console.log(`DESKTOP_TABS_CONTENT_GAP ${JSON.stringify(gaps)}`)
-  expect(Math.abs(gaps['/maintenance'] - gaps['/shopping'])).toBeLessThanOrEqual(
-    1,
-  )
+  expect(
+    Math.abs(gaps['/maintenance'] - gaps['/shopping']),
+  ).toBeLessThanOrEqual(1)
 
   for (const path of PRIMARY) {
     await page.goto(path, { waitUntil: 'networkidle' })
@@ -145,9 +139,9 @@ test('fix05: mobile title anchors + tab geometry + no overflow (EN)', async ({
     if ((await title.count()) === 0) continue
     titles[path] = await box(title)
   }
-  // eslint-disable-next-line no-console
+
   console.log(`MOBILE_TITLES ${JSON.stringify(titles)}`)
-  const tops = Object.values(titles).map((b) => b.top)
+  const tops = Object.values(titles).map(b => b.top)
   expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1)
 
   const tabs = {}
@@ -161,17 +155,14 @@ test('fix05: mobile title anchors + tab geometry + no overflow (EN)', async ({
     await expect(el).toBeVisible()
     tabs[path] = await box(el)
   }
-  // eslint-disable-next-line no-console
+
   console.log(`MOBILE_TABS ${JSON.stringify(tabs)}`)
-  const heights = Object.values(tabs).map((b) => b.height)
-  const widths = Object.values(tabs).map((b) => b.width)
+  const heights = Object.values(tabs).map(b => b.height)
+  const widths = Object.values(tabs).map(b => b.width)
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1)
   expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(1)
-  // Mobile tab tops legitimately vary with header height: the shared header
-  // wraps long actions ("New shopping list") below the title while short ones
-  // ("New asset") fit beside it, and long subtitles wrap to two lines. The
-  // shared invariant is that tabs sit directly below the header with no extra
-  // gap, and every primary action stays visible and reachable.
+  const tabTops = Object.values(tabs).map(b => b.top)
+  expect(Math.max(...tabTops) - Math.min(...tabTops)).toBeLessThanOrEqual(1)
   for (const [path, id] of [
     ['/maintenance', 'assets-tabs'],
     ['/shopping', 'shopping-tabs'],
@@ -181,12 +172,12 @@ test('fix05: mobile title anchors + tab geometry + no overflow (EN)', async ({
     const headerBottom = await page
       .locator('.page-header')
       .first()
-      .evaluate((el) => el.getBoundingClientRect().bottom)
+      .evaluate(el => el.getBoundingClientRect().bottom)
     const tabsTop = await page
       .getByTestId(id)
-      .evaluate((el) => el.getBoundingClientRect().top)
-    // Tabs follow the header directly on hero-less pages; Rewards follows its hero.
-    if (path !== '/rewards') {
+      .evaluate(el => el.getBoundingClientRect().top)
+    // Every primary tab track follows the same header contract.
+    {
       expect(Math.abs(tabsTop - headerBottom)).toBeLessThanOrEqual(1)
     }
   }
@@ -233,7 +224,7 @@ test('fix05: RTL representative pages mirror without overflow', async ({
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(viewport.width)
     }
-    // eslint-disable-next-line no-console
+
     console.log(`RTL_${viewport.width}_TITLES ${JSON.stringify(tops)}`)
     expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1)
   }
@@ -244,7 +235,7 @@ test('fix05: empty states share one geometry', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
 
   // Shopping legitimate zero-list state (no duplicate CTA by design).
-  await page.route('**/api/v1/shopping-lists**', (route) =>
+  await page.route('**/api/v1/shopping-lists**', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -256,7 +247,7 @@ test('fix05: empty states share one geometry', async ({ page }) => {
   await expect(shoppingEmpty).toBeVisible()
   const shoppingBox = await box(shoppingEmpty)
   const shoppingPad = await shoppingEmpty.evaluate(
-    (el) => getComputedStyle(el).padding,
+    el => getComputedStyle(el).padding,
   )
 
   // Search with no query renders the canonical empty state.
@@ -265,14 +256,13 @@ test('fix05: empty states share one geometry', async ({ page }) => {
   await expect(searchEmpty).toBeVisible()
   const searchBox = await box(searchEmpty)
   const searchPad = await searchEmpty.evaluate(
-    (el) => getComputedStyle(el).padding,
+    el => getComputedStyle(el).padding,
   )
 
-  // eslint-disable-next-line no-console
   console.log(
     `EMPTY shopping=${JSON.stringify(shoppingBox)} pad=${shoppingPad}`,
   )
-  // eslint-disable-next-line no-console
+
   console.log(`EMPTY search=${JSON.stringify(searchBox)} pad=${searchPad}`)
   expect(shoppingPad).toBe(searchPad)
   expect(Math.abs(shoppingBox.width - searchBox.width)).toBeLessThanOrEqual(1)

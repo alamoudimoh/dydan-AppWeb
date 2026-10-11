@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 
+import type { PagePrimaryActionData } from './page/PagePrimaryAction'
+import PagePrimaryAction from './page/PagePrimaryAction'
+
 type PageHeaderProps = {
   /** Primary page title. Rendered as h1 with a stable test anchor. */
   title: ReactNode
@@ -13,7 +16,7 @@ type PageHeaderProps = {
   /** Optional header actions (buttons, toggles) on the trailing side. */
   actions?: ReactNode
   /** Page-level primary create control; a dedicated full-width mobile row. */
-  primaryAction?: ReactNode
+  primaryAction?: PagePrimaryActionData | undefined
 }
 
 /**
@@ -36,9 +39,7 @@ export default function PageHeader({
   title,
 }: PageHeaderProps) {
   return (
-    <div
-      className={`page-header pb-5${primaryAction ? ' page-header--primary' : ''}`}
-    >
+    <div className='page-header'>
       <div className='page-header__main'>
         <div
           className='page-header__eyebrow text-faint'
@@ -46,27 +47,27 @@ export default function PageHeader({
         >
           {eyebrow ?? ' '}
         </div>
-        <h1
-          className='text-primary'
-          data-testid='page-title'
-          style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-        >
+        <h1 className='text-primary' data-testid='page-title'>
           {title}
         </h1>
-        {subtitle ? (
-          <div className='text-muted page-header__subtitle'>{subtitle}</div>
+        <div className='text-muted page-header__subtitle'>
+          {subtitle ?? '\u00a0'}
+        </div>
+      </div>
+      <div className='page-header__action-row'>
+        {actions || primaryAction ? (
+          <div className='page-header__controls'>
+            {actions ? (
+              <div className='page-header__actions'>{actions}</div>
+            ) : null}
+            {primaryAction ? (
+              <div className='page-header__primary-action'>
+                <PagePrimaryAction {...primaryAction} />
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </div>
-      {actions || primaryAction ? (
-        <div className='page-header__controls'>
-          {actions ? (
-            <div className='page-header__actions'>{actions}</div>
-          ) : null}
-          {primaryAction ? (
-            <div className='page-header__primary-action'>{primaryAction}</div>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   )
 }

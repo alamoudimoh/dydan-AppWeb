@@ -1,8 +1,12 @@
 import { useState } from 'react'
 
 import { AppCtx, Icon } from '../App'
+import { EntityRow, PanelCard } from '../components/page'
+import { PageFlow } from '../components/page'
 import {
-  EmptyState,
+  EntityList,
+  InlineEmptyState,
+  PageEmptyState,
   PageSection,
   PageShell,
   PageTabs,
@@ -171,9 +175,9 @@ export default function ShoppingScreen({
   )
 
   const zeroLists = (
-    <EmptyState
+    <PageEmptyState
       testId='shopping-zero-lists'
-      icon={<Icon name='shopping' size={38} />}
+      icon='shopping'
       title={tr('shopping.empty.noListsTitle')}
       description={tr('shopping.empty.noListsDescription')}
     />
@@ -185,7 +189,7 @@ export default function ShoppingScreen({
 
     if (isEditingList) {
       return (
-        <section className='card p-5' data-testid='shopping-list-detail'>
+        <PanelCard testId='shopping-list-detail' variant='standard'>
           <div className='flex items-center justify-between mb-4'>
             <h2 className='form-title text-primary' style={{ margin: 0 }}>
               {tr('shopping.modifyList')}
@@ -269,7 +273,7 @@ export default function ShoppingScreen({
               </button>
             </div>
           </div>
-        </section>
+        </PanelCard>
       )
     }
 
@@ -332,11 +336,11 @@ export default function ShoppingScreen({
           </div>
         </PageSection>
         <PageSection>
-          <div className='card overflow-hidden'>
+          <PanelCard variant='flush'>
             {list.items.length === 0 ? (
-              <EmptyState
+              <InlineEmptyState
                 testId='shopping-zero-items'
-                icon={<Icon name='shopping_item' size={34} />}
+                icon='shopping_item'
                 title={tr('shopping.empty.listTitle')}
                 description={tr('shopping.empty.listDescription')}
               />
@@ -425,7 +429,7 @@ export default function ShoppingScreen({
                 ) : null}
               </>
             )}
-          </div>
+          </PanelCard>
         </PageSection>
       </section>
     )
@@ -434,11 +438,7 @@ export default function ShoppingScreen({
   const renderListsTab = () => {
     if (!visibleLists.length) return zeroLists
     return (
-      <div
-        className='shopping-lists-grid'
-        style={{ gridTemplateColumns: '250px minmax(0, 1fr)' }}
-        data-testid='shopping-lists-tab'
-      >
+      <div className='shopping-lists-grid' data-testid='shopping-lists-tab'>
         <div
           className='shopping-mobile-context'
           data-testid='shopping-mobile-context'
@@ -467,12 +467,10 @@ export default function ShoppingScreen({
             </div>
           ) : null}
         </div>
-        <div className='flex flex-col gap-2' data-testid='shopping-list-cards'>
+        <EntityList testId='shopping-list-cards'>
           {visibleLists.map(list => (
-            <button
+            <EntityRow
               key={list.id}
-              type='button'
-              className='card shopping-list-card text-start'
               aria-selected={list.id === activeId}
               onClick={() => {
                 setActiveListId(list.id)
@@ -490,9 +488,9 @@ export default function ShoppingScreen({
                   {listSummary(list)}
                 </div>
               </div>
-            </button>
+            </EntityRow>
           ))}
-        </div>
+        </EntityList>
         <div className='min-w-0'>
           {currentList && renderListDetail(currentList)}
         </div>
@@ -504,29 +502,29 @@ export default function ShoppingScreen({
     if (!visibleLists.length) return zeroLists
     if (!allItems.length)
       return (
-        <EmptyState
+        <PageEmptyState
           testId='shopping-zero-all-items'
-          icon={<Icon name='shopping_item' size={38} />}
+          icon='shopping_item'
           title={tr('shopping.empty.allItemsTitle')}
           description={tr('shopping.empty.allItemsDescription')}
         />
       )
     return (
-      <div className='card overflow-hidden' data-testid='shopping-items-tab'>
+      <PanelCard testId='shopping-items-tab' variant='flush'>
         {allItems.map(({ item, list }) => contextualItemRow(list, item, true))}
-      </div>
+      </PanelCard>
     )
   }
 
   const renderOverviewTab = () => {
     if (!visibleLists.length) return zeroLists
     return (
-      <div className='flex flex-col gap-3' data-testid='shopping-overview-tab'>
+      <PageSection testId='shopping-overview-tab'>
         {visibleLists.map(list => (
-          <section
+          <PanelCard
             key={list.id}
-            className='card shopping-overview-group overflow-hidden'
-            data-testid='shopping-overview-group'
+            testId='shopping-overview-group'
+            variant='flush'
           >
             <div className='shopping-overview-heading'>
               <div className='shopping-entity-icon'>
@@ -551,16 +549,15 @@ export default function ShoppingScreen({
                 {list.items.map(item => contextualItemRow(list, item, false))}
               </div>
             ) : (
-              <div
-                className='shopping-group-empty text-muted'
-                data-testid='shopping-overview-zero-items'
-              >
-                {tr('shopping.empty.group')}
-              </div>
+              <InlineEmptyState
+                icon='shopping'
+                title={tr('shopping.empty.group')}
+                testId='shopping-overview-zero-items'
+              />
             )}
-          </section>
+          </PanelCard>
         ))}
-      </div>
+      </PageSection>
     )
   }
 
@@ -575,94 +572,98 @@ export default function ShoppingScreen({
               ? tr('shopping.page.subtitleSolo')
               : tr('shopping.page.subtitleFamily')
           }
-          primaryAction={
-            <button
-              type='button'
-              className='btn btn-primary'
-              data-testid='shopping-create-list'
-              onClick={openCreateList}
-            >
-              <Icon name='shopping' size={14} />
-              {tr('create.shoppingList.title')}
-            </button>
-          }
+          primaryAction={{
+            label: tr('create.shoppingList.title'),
+            icon: 'shopping',
+            onClick: openCreateList,
+            testId: 'shopping-create-list',
+          }}
         />
       }
     >
-      <PageTabs
-        ariaLabel={tr('shopping.sectionsLabel')}
-        testId='shopping-tabs'
-        value={tab}
-        onChange={id => setTab(id as ShoppingTab)}
-        tabs={[
-          { id: 'lists', label: tr('shopping.tabs.lists') },
-          { id: 'items', label: tr('shopping.tabs.items') },
-          { id: 'overview', label: tr('shopping.tabs.overview') },
-        ]}
-      />
-
-      <PageSection testId='shopping-active-content'>
-        {shoppingQuery.isPending ? (
-          <div className='card' data-testid='shopping-loading'>
-            <EmptyState
-              icon={<Icon name='shopping' size={34} />}
-              title={tr('shopping.loading')}
-            />
-          </div>
-        ) : shoppingQuery.isError ? (
-          <div className='card' role='alert' data-testid='shopping-load-error'>
-            <EmptyState
-              icon={<Icon name='shopping' size={34} />}
-              title={tr('shopping.error.loadTitle')}
-              description={tr('shopping.error.loadDescription')}
-              action={
+      <PageFlow
+        navigation={
+          <PageTabs
+            ariaLabel={tr('shopping.sectionsLabel')}
+            testId='shopping-tabs'
+            value={tab}
+            onChange={id => setTab(id as ShoppingTab)}
+            tabs={[
+              { id: 'lists', label: tr('shopping.tabs.lists') },
+              { id: 'items', label: tr('shopping.tabs.items') },
+              { id: 'overview', label: tr('shopping.tabs.overview') },
+            ]}
+          />
+        }
+        secondary={
+          isSolo ? (
+            <PageSection>
+              <aside
+                className='shopping-share-row'
+                data-testid='shopping-sharing-action'
+              >
+                <Icon name='users' size={20} />
+                <div className='flex-1 min-w-0'>
+                  <div
+                    className='font-semibold text-primary'
+                    style={{ fontSize: 13 }}
+                  >
+                    {tr('shopping.sharing.title')}
+                  </div>
+                  <div className='text-muted' style={{ fontSize: 11 }}>
+                    {tr('shopping.sharing.description')}
+                  </div>
+                </div>
                 <button
                   type='button'
-                  className='btn btn-secondary mt-2'
-                  onClick={() => shoppingQuery.refetch()}
+                  className='btn btn-ghost btn-sm'
+                  onClick={() => ctx.navigate('settings')}
                 >
-                  {tr('shopping.retry')}
+                  {tr('shopping.sharing.action')}
                 </button>
-              }
-            />
-          </div>
-        ) : tab === 'lists' ? (
-          renderListsTab()
-        ) : tab === 'items' ? (
-          renderItemsTab()
-        ) : (
-          renderOverviewTab()
-        )}
-      </PageSection>
-
-      {isSolo ? (
-        <PageSection>
-          <aside
-            className='shopping-share-row'
-            data-testid='shopping-sharing-action'
-          >
-            <Icon name='users' size={20} />
-            <div className='flex-1 min-w-0'>
-              <div
-                className='font-semibold text-primary'
-                style={{ fontSize: 13 }}
-              >
-                {tr('shopping.sharing.title')}
-              </div>
-              <div className='text-muted' style={{ fontSize: 11 }}>
-                {tr('shopping.sharing.description')}
-              </div>
-            </div>
-            <button
-              type='button'
-              className='btn btn-ghost btn-sm'
-              onClick={() => ctx.navigate('settings')}
+              </aside>
+            </PageSection>
+          ) : null
+        }
+      >
+        <PageSection testId='shopping-active-content'>
+          {shoppingQuery.isPending ? (
+            <PanelCard testId='shopping-loading' variant='standard'>
+              <InlineEmptyState
+                icon='shopping'
+                title={tr('shopping.loading')}
+              />
+            </PanelCard>
+          ) : shoppingQuery.isError ? (
+            <PanelCard
+              role='alert'
+              testId='shopping-load-error'
+              variant='standard'
             >
-              {tr('shopping.sharing.action')}
-            </button>
-          </aside>
+              <InlineEmptyState
+                icon='shopping'
+                title={tr('shopping.error.loadTitle')}
+                description={tr('shopping.error.loadDescription')}
+                action={
+                  <button
+                    type='button'
+                    className='btn btn-secondary mt-2'
+                    onClick={() => shoppingQuery.refetch()}
+                  >
+                    {tr('shopping.retry')}
+                  </button>
+                }
+              />
+            </PanelCard>
+          ) : tab === 'lists' ? (
+            renderListsTab()
+          ) : tab === 'items' ? (
+            renderItemsTab()
+          ) : (
+            renderOverviewTab()
+          )}
         </PageSection>
-      ) : null}
+      </PageFlow>
     </PageShell>
   )
 }

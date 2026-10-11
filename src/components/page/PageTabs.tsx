@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react'
 import type { KeyboardEvent } from 'react'
+import { useCallback, useRef } from 'react'
 
 export type PageTabItem = {
   id: string
@@ -7,6 +7,8 @@ export type PageTabItem = {
 }
 
 type PageTabsProps = {
+  variant?: 'equal' | 'scroll'
+  semantics?: 'controls' | 'tabs'
   tabs: readonly PageTabItem[]
   value: string
   onChange: (id: string) => void
@@ -32,9 +34,11 @@ type PageTabsProps = {
 export default function PageTabs({
   ariaLabel,
   onChange,
+  semantics = 'controls',
   tabs,
   testId,
   value,
+  variant = 'equal',
 }: PageTabsProps) {
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
 
@@ -62,8 +66,8 @@ export default function PageTabs({
 
   return (
     <div
-      className='page-tabs'
-      role='group'
+      className={`page-tabs page-tabs--${variant}`}
+      role={semantics === 'tabs' ? 'tablist' : 'group'}
       aria-label={ariaLabel}
       {...(testId ? { 'data-testid': testId } : {})}
     >
@@ -76,7 +80,19 @@ export default function PageTabs({
               buttonRefs.current[index] = el
             }}
             type='button'
-            aria-pressed={selected}
+            id={
+              semantics === 'tabs'
+                ? `${testId ?? 'page-tabs'}-${item.id}`
+                : undefined
+            }
+            aria-controls={
+              semantics === 'tabs'
+                ? `${testId ?? 'page-tabs'}-panel-${item.id}`
+                : undefined
+            }
+            role={semantics === 'tabs' ? 'tab' : undefined}
+            aria-selected={semantics === 'tabs' ? selected : undefined}
+            aria-pressed={semantics === 'controls' ? selected : undefined}
             tabIndex={selected ? 0 : -1}
             className={`page-tab${selected ? ' active' : ''}`}
             onClick={() => onChange(item.id)}

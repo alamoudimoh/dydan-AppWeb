@@ -15,6 +15,8 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   use: {
     baseURL,
+    // The PWA worker can bypass API route mocks after taking control in WebKit.
+    serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'off',

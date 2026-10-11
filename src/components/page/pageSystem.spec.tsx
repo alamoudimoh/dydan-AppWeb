@@ -8,12 +8,18 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { cleanup, render, screen } from '@testing-library/react'
+import ts from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import {
+  authenticatedRoutes,
+  primaryRoutes,
+} from '../../../e2e/helpers/primaryRoutes.js'
 import PageHeader from '../PageHeader'
 import EmptyState from './EmptyState'
-import { EntityGrid } from './EntityCard'
+import EntityCard, { EntityGrid } from './EntityCard'
 import FilterSegment from './FilterSegment'
+import PageFlow from './PageFlow'
 import PageHero from './PageHero'
 import PageSection from './PageSection'
 import PageShell from './PageShell'
@@ -108,7 +114,9 @@ describe('C. empty states use the canonical primitive', () => {
     expect(read(file)).not.toContain("<div className='empty-state'")
   })
   it('EmptyState owns geometry, pages supply content only', () => {
-    render(<EmptyState title='Nothing here' description='Zero data.' />)
+    render(
+      <EmptyState icon='tasks' title='Nothing here' description='Zero data.' />,
+    )
     expect(screen.getByText('Nothing here')).toBeTruthy()
     const stylesheet = css()
     expect(stylesheet).toMatch(/\.empty-state__title/)
@@ -146,7 +154,7 @@ describe('F. tab geometry is equivalent across Assets/Shopping/Rewards', () => {
     const tabs = stylesheet.match(/\.page-tabs\s*\{/g) ?? []
     const tab = stylesheet.match(/\.page-tab\s*\{/g) ?? []
     expect(tabs.length).toBe(1)
-    expect(tab.length).toBe(1)
+    expect(tab.length).toBe(3) // base, shared mobile adaptation, and semantic scroll track
     expect(stylesheet).toMatch(/\.page-tab[\s\S]*?min-height:\s*36px/)
     expect(stylesheet).toMatch(/\.page-tab[\s\S]*?flex:\s*1/)
   })
@@ -156,7 +164,7 @@ describe('G. no horizontal overflow at 390px', () => {
   it('shell clips overflow and grids are fluid', () => {
     const stylesheet = css()
     expect(stylesheet).toMatch(/\.page\s*\{[\s\S]*?overflow-x:\s*clip/)
-    expect(read('src/components/page/EntityCard.tsx')).toMatch(/minmax/)
+    expect(stylesheet).toMatch(/minmax/)
     expect(stylesheet).toMatch(
       /\.shopping-lists-grid[\s\S]*?grid-template-columns:\s*1fr/,
     )
@@ -178,22 +186,30 @@ describe('H. RTL uses logical properties, not a second architecture', () => {
   it('shared primitives render in RTL without crashing', () => {
     document.documentElement.setAttribute('dir', 'rtl')
     render(
-      <PageShell header={<div>h</div>}>
-        <PageTabs
-          ariaLabel='s'
-          value='a'
-          onChange={() => {}}
-          tabs={[{ id: 'a', label: 'A' }]}
-        />
-        <FilterSegment
-          ariaLabel='f'
-          value='a'
-          onChange={() => {}}
-          options={[{ id: 'a', label: 'A' }]}
-        />
-        <PageHero variant='callout'>hero</PageHero>
-        <PageSection title='s'>body</PageSection>
-        <EmptyState title='empty' />
+      <PageShell header={<PageHeader title='Title' />}>
+        <PageFlow>
+          <PageTabs
+            ariaLabel='s'
+            value='a'
+            onChange={() => {}}
+            tabs={[{ id: 'a', label: 'A' }]}
+          />
+          <FilterSegment
+            ariaLabel='f'
+            value='a'
+            onChange={() => {}}
+            options={[{ id: 'a', label: 'A' }]}
+          />
+          <PageHero
+            icon='gift'
+            label='hero'
+            value='42'
+            meta='points'
+            variant='callout'
+          />
+          <PageSection title='s'>body</PageSection>
+          <EmptyState icon='tasks' title='empty' description='Zero data' />
+        </PageFlow>
       </PageShell>,
     )
     expect(screen.getByText('hero')).toBeTruthy()
@@ -208,7 +224,11 @@ describe('Fix 06 shared mobile contracts', () => {
         title='Projects'
         subtitle='Projects in this space'
         actions={<button>Filter</button>}
-        primaryAction={<button className='btn btn-primary'>New project</button>}
+        primaryAction={{
+          label: 'New project',
+          icon: 'projects',
+          onClick: () => {},
+        }}
       />,
     )
     expect(
@@ -217,7 +237,7 @@ describe('Fix 06 shared mobile contracts', () => {
     expect(container.querySelector('.page-header__actions')?.textContent).toBe(
       'Filter',
     )
-    expect(container.querySelector('.page-header--primary')).toBeTruthy()
+    expect(container.querySelector('.page-primary-action')).toBeTruthy()
     expect(screen.getByTestId('page-title').tagName).toBe('H1')
   })
 
@@ -263,5 +283,307 @@ describe('Fix 06 shared mobile contracts', () => {
     expect(read('src/utils/StatusBarManager.js')).not.toContain(
       'document.body.style.paddingBottom',
     )
+  })
+})
+
+// Fix 07: AST gates cover the actual authenticated route table, including future routes.
+const parse = (file: string) =>
+  ts.createSourceFile(
+    file,
+    read(file),
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+const tag = (node: ts.Node): string =>
+  ts.isJsxElement(node)
+    ? node.openingElement.tagName.getText()
+    : ts.isJsxSelfClosingElement(node)
+      ? node.tagName.getText()
+      : ''
+const props = (node: ts.Node) =>
+  (ts.isJsxElement(node)
+    ? node.openingElement
+    : ts.isJsxSelfClosingElement(node)
+      ? node
+      : undefined
+  )?.attributes.properties ?? []
+const prop = (node: ts.Node, key: string) =>
+  props(node).find(p => ts.isJsxAttribute(p) && p.name.getText() === key) as
+    ts.JsxAttribute | undefined
+const nodes = (root: ts.Node) => {
+  const result: ts.Node[] = []
+  const walk = (node: ts.Node) => {
+    result.push(node)
+    ts.forEachChild(node, walk)
+  }
+  walk(root)
+  return result
+}
+const routeFiles = [
+  ...new Set(
+    primaryRoutes().flatMap(route =>
+      route.screens.map((name: string) => `src/screens/${name}.tsx`),
+    ),
+  ),
+]
+const geometryProperties =
+  /\b(?:width|height|minWidth|maxWidth|minHeight|maxHeight|padding\w*|margin\w*|borderRadius|gridTemplateColumns)\s*:/
+
+describe('Fix 07 architecture enforcement', () => {
+  it('enumerates every authenticated route and both Home implementations', () => {
+    expect(authenticatedRoutes()).toHaveLength(19)
+    expect(primaryRoutes()).toHaveLength(15)
+    expect(routeFiles).toContain('src/screens/QuestHome.tsx')
+    expect(routeFiles).toContain('src/screens/NotificationsScreen.tsx')
+    expect(routeFiles).toContain('src/screens/SearchScreen.tsx')
+    // The inventory expands automatically; update this deliberate review gate when adding routes.
+  })
+  it.each(routeFiles)(
+    '%s obeys shell, flow, actions, grid, card and empty contracts',
+    file => {
+      const tree = parse(file)
+      const all = nodes(tree)
+      const shells = all.filter(node => tag(node) === 'PageShell')
+      expect(shells.length).toBeGreaterThan(0)
+      for (const shell of shells) {
+        expect(prop(shell, 'header')?.getText()).toContain('<PageHeader')
+        expect(ts.isJsxElement(shell)).toBe(true)
+        if (ts.isJsxElement(shell)) {
+          const children = shell.children.filter(
+            child =>
+              !(ts.isJsxText(child) && !child.text.trim()) &&
+              !(ts.isJsxExpression(child) && !child.expression),
+          )
+          expect(children.map(tag)).toEqual(['PageFlow'])
+        }
+      }
+      for (const node of all) {
+        const name = tag(node)
+        if (name === 'EntityGrid') {
+          expect(prop(node, 'min')).toBeUndefined()
+          expect(prop(node, 'style')).toBeUndefined()
+          expect(nodes(node).some(n => tag(n) === 'PageEmptyState')).toBe(false)
+        }
+        if (name === 'PageHeader') {
+          const action = prop(node, 'primaryAction')
+          if (action) {
+            expect(action.getText()).not.toMatch(/<|className|style=/)
+            expect(action.getText()).toMatch(/label:/)
+            expect(action.getText()).toMatch(/icon:/)
+            expect(action.getText()).toMatch(/onClick:/)
+            expect(action.getText()).not.toMatch(geometryProperties)
+          }
+          expect(prop(node, 'actions')?.getText() ?? '').not.toMatch(
+            /btn-primary|New (?:project|routine|asset|meter|tracker|shopping|goal|reward)/i,
+          )
+        }
+        if (name === 'PageEmptyState') {
+          for (const key of ['icon', 'title', 'description'])
+            expect(prop(node, key), `${file}: ${key}`).toBeTruthy()
+          expect(
+            prop(node, 'icon')?.initializer &&
+              ts.isStringLiteral(prop(node, 'icon')!.initializer!),
+          ).toBe(true)
+          expect(prop(node, 'icon')?.getText()).toMatch(
+            /^icon=['"][a-z_]+['"]$/,
+          )
+        }
+        if (
+          [
+            'PageFlow',
+            'PageSection',
+            'PageTabs',
+            'SummaryCard',
+            'PageHero',
+            'PagePrimaryAction',
+            'PageEmptyState',
+            'InlineEmptyState',
+          ].includes(name)
+        ) {
+          expect(prop(node, 'style')).toBeUndefined()
+          expect(prop(node, 'className')).toBeUndefined()
+        }
+        if (['EntityCard', 'EntityRow', 'PanelCard'].includes(name)) {
+          expect(prop(node, 'style')?.getText() ?? '').not.toMatch(
+            geometryProperties,
+          )
+          expect(prop(node, 'className')).toBeUndefined()
+          // Outer sizing/padding must not be overridden.
+          expect(prop(node, 'className')?.getText() ?? '').not.toMatch(
+            /\b(?:p[xytrblse]?|m[xytrblse]?|w|h|min-w|min-h|max-w|max-h|rounded)-[\w.[\]-]+/,
+          )
+        }
+        if (['EntityCard', 'EntityRow'].includes(name)) {
+          let owner = node.parent
+          while (owner && !['EntityGrid', 'EntityList'].includes(tag(owner))) {
+            expect(prop(owner, 'style')?.getText() ?? '').not.toMatch(
+              /gridTemplateColumns/,
+            )
+            expect(prop(owner, 'className')?.getText() ?? '').not.toMatch(
+              /(?:['"`]|\s)grid(?:['"`]|\s)/,
+            )
+            owner = owner.parent
+          }
+        }
+        if (name && !['EntityCard', 'EntityRow', 'PanelCard'].includes(name)) {
+          expect(prop(node, 'className')?.getText() ?? '').not.toMatch(
+            /(?:['"`]|\s)card(?:['"`]|\s)/,
+          )
+        }
+        if (
+          ['PageTabs', 'PageHero', 'SummaryCard', 'PageEmptyState'].includes(
+            name,
+          )
+        ) {
+          const owners: ts.Node[] = []
+          let parent = node.parent
+          while (parent) {
+            owners.push(parent)
+            parent = parent.parent
+          }
+          for (const owner of owners) {
+            expect(prop(owner, 'style')?.getText() ?? '').not.toMatch(
+              geometryProperties,
+            )
+            expect(prop(owner, 'className')?.getText() ?? '').not.toMatch(
+              /\b(?:mt|mb|my|w|h|min-w|max-w)-/,
+            )
+          }
+          const slot = owners.find(
+            n =>
+              ts.isJsxAttribute(n) &&
+              ['navigation', 'summary'].includes(n.name.getText()),
+          )
+          if (name === 'PageEmptyState') continue
+          // SummaryCard may be composed inside a semantic grid in the summary slot.
+          expect(
+            slot,
+            `${file}: ${name} must be in its semantic PageFlow slot`,
+          ).toBeTruthy()
+          expect((slot as ts.JsxAttribute).name.getText()).toBe(
+            name === 'PageTabs' ? 'navigation' : 'summary',
+          )
+        }
+        if (name) {
+          let parent = node.parent
+          while (
+            parent &&
+            (ts.isJsxExpression(parent) ||
+              ts.isBinaryExpression(parent) ||
+              ts.isParenthesizedExpression(parent) ||
+              ts.isConditionalExpression(parent) ||
+              ts.isJsxFragment(parent))
+          )
+            parent = parent.parent
+          if (parent && ['PageFlow', 'PageSection'].includes(tag(parent))) {
+            expect(prop(node, 'className')?.getText() ?? '').not.toMatch(
+              /\b(?:mt|mb|my)-/,
+            )
+            expect(prop(node, 'style')?.getText() ?? '').not.toMatch(
+              /margin\w*\s*:/,
+            )
+            expect(prop(node, 'className')?.getText() ?? '').not.toMatch(
+              /flex-col.*gap-/,
+            )
+          }
+        }
+      }
+    },
+  )
+  it('the required tabbed pages all consume the navigation slot', () => {
+    for (const name of ['Maintenance', 'Shopping', 'Rewards', 'Settings']) {
+      const source = read(`src/screens/${name}Screen.tsx`)
+      expect(source).toContain('<PageTabs')
+      expect(source).toMatch(/navigation=\{\s*<PageTabs/)
+    }
+  })
+  it('Home and Rewards use mandatory SummaryCard anatomy', () => {
+    for (const name of ['FocusHome', 'RewardsScreen'])
+      expect(read(`src/screens/${name}.tsx`)).toContain('<SummaryCard')
+    render(<PageHero icon='gift' label='Available' value={42} meta='Points' />)
+    for (const role of ['icon', 'label', 'value', 'meta'])
+      expect(document.querySelector(`.summary-card__${role}`)).toBeTruthy()
+    expect(document.querySelector('.summary-card__icon svg')).toBeTruthy()
+    expect(read('src/components/page/SummaryCard.tsx')).not.toContain(
+      'children:',
+    )
+    expect(css()).toMatch(/block-size: 140px/)
+  })
+  it('PageFlow owns region order and PageShell owns its end sentinel', () => {
+    const { container } = render(
+      <PageShell header={<PageHeader title='Page' />}>
+        <PageFlow
+          navigation={
+            <FilterSegment
+              ariaLabel='Navigation'
+              value='a'
+              onChange={() => {}}
+              options={[{ id: 'a', label: 'Navigation' }]}
+            />
+          }
+          summary={
+            <PageHero icon='gift' label='Summary' value={42} meta='Points' />
+          }
+          secondary='Secondary'
+        >
+          Content
+        </PageFlow>
+      </PageShell>,
+    )
+    expect(
+      [...container.querySelectorAll('[data-page-slot]')].map(n =>
+        n.getAttribute('data-page-slot'),
+      ),
+    ).toEqual(['navigation', 'summary', 'content', 'secondary'])
+    expect(
+      screen.getByTestId('page-end').previousElementSibling?.className,
+    ).toBe('page-flow')
+    expect(read('src/components/PageHeader.tsx')).toContain(
+      'primaryAction?: PagePrimaryActionData',
+    )
+    for (const name of [
+      'PageFlow',
+      'SummaryCard',
+      'EmptyState',
+      'PagePrimaryAction',
+      'PageTabs',
+    ])
+      expect(read(`src/components/page/${name}.tsx`)).not.toMatch(
+        /style\?:|className\?:/,
+      )
+  })
+  it('rejects arbitrary navigation/summary wrappers at runtime', () => {
+    expect(() =>
+      render(<PageFlow navigation={<div>Local tabs</div>}>Content</PageFlow>),
+    ).toThrow('PageFlow navigation requires')
+    expect(() =>
+      render(<PageFlow summary={<div>Local summary</div>}>Content</PageFlow>),
+    ).toThrow('PageFlow summary requires')
+  })
+  it('filters geometry out of entity styles even when a variable carries extra properties', () => {
+    const style = {
+      borderColor: 'red',
+      opacity: 0.5,
+      padding: 0,
+      height: 40,
+      width: 190,
+      borderRadius: 0,
+    }
+    const { container } = render(<EntityCard style={style}>Entity</EntityCard>)
+    const card = container.querySelector<HTMLElement>('.entity-card')!
+    expect(card.style.borderColor).toBe('red')
+    expect(card.style.opacity).toBe('0.5')
+    for (const key of ['padding', 'height', 'width', 'borderRadius'] as const)
+      expect(card.style[key]).toBe('')
+  })
+  it('rejects a bypass of the canonical shell flow', () => {
+    expect(() =>
+      render(
+        <PageShell header={<PageHeader title='Title' />}>
+          <div>Local flow</div>
+        </PageShell>,
+      ),
+    ).toThrow('PageShell requires')
   })
 })

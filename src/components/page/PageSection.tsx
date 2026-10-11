@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 type PageSectionProps = {
   title?: ReactNode
+  headingVariant?: 'standard' | 'label'
   action?: ReactNode
   children: ReactNode
   testId?: string
@@ -15,6 +16,7 @@ type PageSectionProps = {
 export default function PageSection({
   action,
   children,
+  headingVariant = 'standard',
   testId,
   title,
 }: PageSectionProps) {
@@ -25,7 +27,19 @@ export default function PageSection({
     >
       {title || action ? (
         <div className='page-section__header'>
-          {title ? <h2 className='page-section__title'>{title}</h2> : <span />}
+          {title ? (
+            <h2
+              className={
+                headingVariant === 'label'
+                  ? 'section-label page-section__label'
+                  : 'page-section__title'
+              }
+            >
+              {title}
+            </h2>
+          ) : (
+            <span />
+          )}
           {action ? <div className='page-section__action'>{action}</div> : null}
         </div>
       ) : null}

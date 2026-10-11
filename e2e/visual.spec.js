@@ -85,6 +85,9 @@ const captureRoute = async (page, descriptor, theme) => {
   await page.evaluate(() => document.fonts.ready)
   // Allow layout to settle after fonts load for stable output.
   await page.waitForTimeout(250)
+  // Settle sign-in autofocus explicitly; its existing baseline includes this focus.
+  if (descriptor.path === '/login')
+    await page.getByPlaceholder('your username').focus()
   await expect(page).toHaveScreenshot(snapshotName(theme, descriptor.path))
 }
 

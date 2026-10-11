@@ -557,14 +557,14 @@ for (const count of [1, 2, 3, 4]) {
     await page.setViewportSize({ width: 390, height: 900 })
     await page.goto('/', { waitUntil: 'networkidle' })
     const grid = page.getByTestId('home-stats')
-    await expect(grid.locator('.entity-card')).toHaveCount(3)
+    await expect(grid.locator('.summary-card')).toHaveCount(3)
     // Exercise the shared CSS with arbitrary counts without changing app data.
     await grid.evaluate((el, n) => {
       while (el.children.length < n)
         el.append(el.firstElementChild.cloneNode(true))
       while (el.children.length > n) el.lastElementChild.remove()
     }, count)
-    const cards = await grid.locator('.entity-card').all()
+    const cards = await grid.locator('.summary-card').all()
     const full = (await bounds(grid)).width
     const boxes = await Promise.all(cards.map(bounds))
     expect(boxes.at(-1).width).toBe(count % 2 ? full : boxes[0].width)

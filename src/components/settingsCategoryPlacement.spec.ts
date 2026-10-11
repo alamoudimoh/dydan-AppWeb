@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -31,12 +32,33 @@ const tabIds = [...settingsScreen.matchAll(/\{ id: '([^']+)', label:/g)].map(
   match => match[1],
 )
 
-/** The text of the TabPanel that starts at `value`, up to the next panel. */
+/** JSX-aware panel lookup survives formatting and accessibility attributes. */
+const source = ts.createSourceFile(
+  'SettingsScreen.tsx',
+  settingsScreen,
+  ts.ScriptTarget.Latest,
+  true,
+  ts.ScriptKind.TSX,
+)
+const panels = new Map<string, ts.JsxElement>()
+const visit = (node: ts.Node) => {
+  if (
+    ts.isJsxElement(node) &&
+    node.openingElement.tagName.getText(source) === 'TabPanel'
+  ) {
+    const value = node.openingElement.attributes.properties.find(
+      p => ts.isJsxAttribute(p) && p.name.getText(source) === 'value',
+    ) as ts.JsxAttribute | undefined
+    if (value?.initializer && ts.isStringLiteral(value.initializer))
+      panels.set(value.initializer.text, node)
+  }
+  ts.forEachChild(node, visit)
+}
+visit(source)
 const panelBody = (value: string) => {
-  const start = settingsScreen.indexOf(`<TabPanel value='${value}'`)
-  expect(start, `TabPanel value='${value}' not found`).toBeGreaterThan(-1)
-  const next = settingsScreen.indexOf('<TabPanel value=', start + 1)
-  return settingsScreen.slice(start, next === -1 ? undefined : next)
+  const panel = panels.get(value)
+  expect(panel, `TabPanel value='${value}' not found`).toBeTruthy()
+  return panel!.getText(source)
 }
 
 describe('Categories section placement', () => {
@@ -76,7 +98,7 @@ describe('Categories section placement', () => {
   })
 
   it('keeps the Space panel itself reachable for Solo users', () => {
-    const at = settingsScreen.indexOf("<TabPanel value='team'")
+    const at = panels.get('team')!.getStart(source)
     const before = settingsScreen.slice(0, at)
     const boundary = Math.max(
       before.lastIndexOf(')}'),
@@ -96,7 +118,7 @@ describe('Settings Space terminology', () => {
     // The id is a contract, not copy: the TabPanel, any deep link and the
     // i18n key are all keyed off it, so it must survive the rename untouched.
     expect(tabIds).toContain('team')
-    expect(settingsScreen).toContain("<TabPanel value='team'")
+    expect(panels.has('team')).toBe(true)
     expect(tabIds).toHaveLength(13)
   })
 
@@ -124,7 +146,13 @@ describe('Settings Space terminology', () => {
       ...settingsScreen.matchAll(/'([^'\n]*)'/g),
       ...settingsScreen.matchAll(/"([^"\n]*)"/g),
     ].map(match => match[1])
-    const userFacing = [...new Set(literals.filter(text => /team/i.test(text)))]
+    const userFacing = [
+      ...new Set(
+        literals.filter(
+          text => /team/i.test(text) && !text.startsWith('settings-tabs-'),
+        ),
+      ),
+    ]
     expect(userFacing).toEqual(['team'])
   })
 
