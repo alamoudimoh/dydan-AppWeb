@@ -41,17 +41,23 @@ export function EntityGrid({
   children,
   min = 260,
   testId,
+  variant = 'standard',
 }: {
   children: ReactNode
   min?: number
   testId?: string
+  variant?: 'standard' | 'stats'
 }) {
   return (
     <div
-      className='entity-grid'
-      style={{
-        gridTemplateColumns: `repeat(auto-fill, minmax(${min}px, 1fr))`,
-      }}
+      className={`entity-grid${variant === 'stats' ? ' entity-grid--stats' : ''}`}
+      style={
+        variant === 'stats'
+          ? undefined
+          : {
+              gridTemplateColumns: `repeat(auto-fill, minmax(${min}px, 1fr))`,
+            }
+      }
       {...(testId ? { 'data-testid': testId } : {})}
     >
       {children}

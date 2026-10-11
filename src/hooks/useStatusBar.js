@@ -1,6 +1,7 @@
 import { useColorScheme } from '@mui/joy'
 import { useEffect } from 'react'
 
+import { useProductTheme } from '../contexts/ThemeContext'
 import statusBarManager from '../utils/StatusBarManager'
 
 /**
@@ -9,8 +10,10 @@ import statusBarManager from '../utils/StatusBarManager'
  */
 export const useStatusBar = () => {
   const { mode, systemMode } = useColorScheme()
+  const { presentationReady } = useProductTheme()
 
   useEffect(() => {
+    if (!presentationReady) return
     // Initialize status bar on mount
     const initializeStatusBar = async () => {
       await statusBarManager.initialize(mode)
@@ -22,9 +25,10 @@ export const useStatusBar = () => {
     return () => {
       statusBarManager.cleanup()
     }
-  }, [mode]) // Include mode dependency
+  }, [mode, presentationReady])
 
   useEffect(() => {
+    if (!presentationReady) return
     // Update status bar when theme changes
     const updateStatusBarTheme = async () => {
       let resolvedTheme = mode
@@ -42,7 +46,7 @@ export const useStatusBar = () => {
     }
 
     updateStatusBarTheme()
-  }, [mode, systemMode]) // Update when either mode or systemMode changes
+  }, [mode, presentationReady, systemMode])
 
   return {
     statusBarManager,

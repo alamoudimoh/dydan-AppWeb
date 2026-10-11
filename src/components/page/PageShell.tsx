@@ -15,8 +15,8 @@ type PageShellProps = {
 
 /**
  * Canonical page shell. Owns page content width, logical horizontal gutters
- * (via .page-body), page bottom rhythm and overflow behavior. The top inset
- * lives on .main-scroll so the title anchor is identical across pages.
+ * (via .page-body), desktop bottom rhythm and overflow behavior. Mobile bottom
+ * clearance and the top inset live on .main-scroll for every route.
  *
  * Variants:
  * - standard: 1080px — default for all primary screens

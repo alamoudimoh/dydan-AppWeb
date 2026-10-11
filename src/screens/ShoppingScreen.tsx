@@ -275,151 +275,158 @@ export default function ShoppingScreen({
 
     return (
       <section data-testid='shopping-list-detail'>
-        <div className='flex items-start justify-between gap-3 flex-wrap mb-4'>
-          <div className='flex items-start gap-3 min-w-0'>
-            <div className='shopping-entity-icon'>
-              <Icon name='shopping' size={18} />
-            </div>
-            <div className='min-w-0'>
-              <div className='flex items-center gap-2 flex-wrap'>
-                <h2 className='text-primary font-bold' style={{ margin: 0 }}>
-                  {list.name}
-                </h2>
-                {list.isShared ? (
-                  <span className='badge bg-brand-faint text-brand'>
-                    {tr('shopping.shared')}
-                  </span>
-                ) : null}
+        <PageSection>
+          <div className='shopping-list-actions'>
+            <div className='flex items-start gap-3 min-w-0 shopping-detail-identity'>
+              <div className='shopping-entity-icon'>
+                <Icon name='shopping' size={18} />
               </div>
-              <div className='text-muted mt-0.5' style={{ fontSize: 12 }}>
-                {listSummary(list)}
+              <div className='min-w-0'>
+                <div className='flex items-center gap-2 flex-wrap'>
+                  <h2 className='text-primary font-bold' style={{ margin: 0 }}>
+                    {list.name}
+                  </h2>
+                  {list.isShared ? (
+                    <span className='badge bg-brand-faint text-brand'>
+                      {tr('shopping.shared')}
+                    </span>
+                  ) : null}
+                </div>
+                <div className='text-muted mt-0.5' style={{ fontSize: 12 }}>
+                  {listSummary(list)}
+                </div>
               </div>
             </div>
-          </div>
-          <div className='flex items-center gap-2 flex-wrap'>
-            {done.length ? (
+            <div className='shopping-list-action-controls'>
+              {done.length ? (
+                <button
+                  type='button'
+                  className='btn btn-ghost btn-sm text-muted'
+                  onClick={() => clearDone(list)}
+                >
+                  {tr('shopping.clearCompleted')}
+                </button>
+              ) : null}
               <button
                 type='button'
-                className='btn btn-ghost btn-sm text-muted'
-                onClick={() => clearDone(list)}
+                className='btn btn-secondary btn-sm'
+                onClick={() => {
+                  setEditListName(list.name)
+                  setIsEditingList(true)
+                }}
               >
-                {tr('shopping.clearCompleted')}
+                <Icon name='edit' size={14} />
+                {tr('shopping.modify')}
               </button>
-            ) : null}
-            <button
-              type='button'
-              className='btn btn-secondary btn-sm'
-              onClick={() => {
-                setEditListName(list.name)
-                setIsEditingList(true)
-              }}
-            >
-              <Icon name='edit' size={14} />
-              {tr('shopping.modify')}
-            </button>
+              <button
+                type='button'
+                className='btn btn-primary'
+                onClick={() =>
+                  ctx.openCreate('shopping-item', { listId: list.id })
+                }
+              >
+                <Icon name='shopping_item' size={15} />
+                {tr('create.shoppingItem.title')}
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className='flex justify-end mb-3'>
-          <button
-            type='button'
-            className='btn btn-primary'
-            onClick={() => ctx.openCreate('shopping-item', { listId: list.id })}
-          >
-            <Icon name='shopping_item' size={15} />
-            {tr('create.shoppingItem.title')}
-          </button>
-        </div>
-
-        <div className='card overflow-hidden'>
-          {list.items.length === 0 ? (
-            <EmptyState
-              testId='shopping-zero-items'
-              icon={<Icon name='shopping_item' size={34} />}
-              title={tr('shopping.empty.listTitle')}
-              description={tr('shopping.empty.listDescription')}
-            />
-          ) : (
-            <>
-              {todo.map(item => {
-                const addedBy = item.addedById
-                  ? memberById(item.addedById)
-                  : null
-                return (
-                  <div
-                    key={item.id}
-                    className='shopping-item-row'
-                    data-testid='shopping-list-item'
-                  >
-                    {checkButton(list, item)}
-                    <div className='flex-1 min-w-0'>
-                      {editingId === item.id ? (
-                        <input
-                          className='input w-full'
-                          value={editText}
-                          autoFocus
-                          onChange={event => setEditText(event.target.value)}
-                          onBlur={() => saveEdit(list, item)}
-                          onKeyDown={event => {
-                            if (event.key === 'Enter') saveEdit(list, item)
-                          }}
-                          style={{ padding: '3px 8px', fontSize: 14 }}
-                        />
-                      ) : (
-                        <div className='text-primary' style={{ fontSize: 14 }}>
-                          {item.text}
-                          {item.quantity ? (
-                            <span className='text-faint'>
-                              {' '}
-                              · {item.quantity}
-                            </span>
-                          ) : null}
-                        </div>
-                      )}
-                      {addedBy && list.isShared ? (
-                        <div
-                          className='text-faint mt-0.5'
-                          style={{ fontSize: 10 }}
-                        >
-                          {tr('shopping.addedBy', { name: addedBy.name })}
-                        </div>
-                      ) : null}
+        </PageSection>
+        <PageSection>
+          <div className='card overflow-hidden'>
+            {list.items.length === 0 ? (
+              <EmptyState
+                testId='shopping-zero-items'
+                icon={<Icon name='shopping_item' size={34} />}
+                title={tr('shopping.empty.listTitle')}
+                description={tr('shopping.empty.listDescription')}
+              />
+            ) : (
+              <>
+                {todo.map(item => {
+                  const addedBy = item.addedById
+                    ? memberById(item.addedById)
+                    : null
+                  return (
+                    <div
+                      key={item.id}
+                      className='shopping-item-row'
+                      data-testid='shopping-list-item'
+                    >
+                      {checkButton(list, item)}
+                      <div className='flex-1 min-w-0'>
+                        {editingId === item.id ? (
+                          <input
+                            className='input w-full'
+                            value={editText}
+                            autoFocus
+                            onChange={event => setEditText(event.target.value)}
+                            onBlur={() => saveEdit(list, item)}
+                            onKeyDown={event => {
+                              if (event.key === 'Enter') saveEdit(list, item)
+                            }}
+                            style={{ padding: '3px 8px', fontSize: 14 }}
+                          />
+                        ) : (
+                          <div
+                            className='text-primary'
+                            style={{ fontSize: 14 }}
+                          >
+                            {item.text}
+                            {item.quantity ? (
+                              <span className='text-faint'>
+                                {' '}
+                                · {item.quantity}
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
+                        {addedBy && list.isShared ? (
+                          <div
+                            className='text-faint mt-0.5'
+                            style={{ fontSize: 10 }}
+                          >
+                            {tr('shopping.addedBy', { name: addedBy.name })}
+                          </div>
+                        ) : null}
+                      </div>
+                      <button
+                        type='button'
+                        className='btn btn-ghost btn-icon'
+                        aria-label={tr('shopping.editItem', {
+                          item: item.text,
+                        })}
+                        onClick={() => {
+                          setEditingId(item.id)
+                          setEditText(item.text)
+                        }}
+                      >
+                        <Icon name='edit' size={13} />
+                      </button>
+                      <button
+                        type='button'
+                        className='btn btn-ghost btn-icon text-sig-over'
+                        aria-label={tr('shopping.deleteItem', {
+                          item: item.text,
+                        })}
+                        onClick={() => removeItem(list, item)}
+                      >
+                        <Icon name='trash' size={13} />
+                      </button>
                     </div>
-                    <button
-                      type='button'
-                      className='btn btn-ghost btn-icon'
-                      aria-label={tr('shopping.editItem', { item: item.text })}
-                      onClick={() => {
-                        setEditingId(item.id)
-                        setEditText(item.text)
-                      }}
-                    >
-                      <Icon name='edit' size={13} />
-                    </button>
-                    <button
-                      type='button'
-                      className='btn btn-ghost btn-icon text-sig-over'
-                      aria-label={tr('shopping.deleteItem', {
-                        item: item.text,
-                      })}
-                      onClick={() => removeItem(list, item)}
-                    >
-                      <Icon name='trash' size={13} />
-                    </button>
+                  )
+                })}
+                {done.length ? (
+                  <div className='shopping-completed-section'>
+                    <div className='shopping-completed-heading'>
+                      {tr('shopping.checkedOff', { count: done.length })}
+                    </div>
+                    {done.map(item => contextualItemRow(list, item, false))}
                   </div>
-                )
-              })}
-              {done.length ? (
-                <div className='shopping-completed-section'>
-                  <div className='shopping-completed-heading'>
-                    {tr('shopping.checkedOff', { count: done.length })}
-                  </div>
-                  {done.map(item => contextualItemRow(list, item, false))}
-                </div>
-              ) : null}
-            </>
-          )}
-        </div>
+                ) : null}
+              </>
+            )}
+          </div>
+        </PageSection>
       </section>
     )
   }
@@ -428,10 +435,38 @@ export default function ShoppingScreen({
     if (!visibleLists.length) return zeroLists
     return (
       <div
-        className='grid gap-5 shopping-lists-grid'
+        className='shopping-lists-grid'
         style={{ gridTemplateColumns: '250px minmax(0, 1fr)' }}
         data-testid='shopping-lists-tab'
       >
+        <div
+          className='shopping-mobile-context'
+          data-testid='shopping-mobile-context'
+        >
+          <label className='section-label' htmlFor='shopping-list-switcher'>
+            {tr('shopping.tabs.lists')}
+          </label>
+          <select
+            id='shopping-list-switcher'
+            className='input w-full'
+            value={activeId ?? ''}
+            onChange={event => {
+              setActiveListId(event.target.value)
+              setIsEditingList(false)
+            }}
+          >
+            {visibleLists.map(list => (
+              <option key={list.id} value={list.id}>
+                {list.name}
+              </option>
+            ))}
+          </select>
+          {currentList ? (
+            <div className='text-muted shopping-mobile-summary'>
+              {listSummary(currentList)}
+            </div>
+          ) : null}
+        </div>
         <div className='flex flex-col gap-2' data-testid='shopping-list-cards'>
           {visibleLists.map(list => (
             <button
@@ -540,7 +575,7 @@ export default function ShoppingScreen({
               ? tr('shopping.page.subtitleSolo')
               : tr('shopping.page.subtitleFamily')
           }
-          actions={
+          primaryAction={
             <button
               type='button'
               className='btn btn-primary'
@@ -566,42 +601,44 @@ export default function ShoppingScreen({
         ]}
       />
 
-      {shoppingQuery.isPending ? (
-        <div className='card' data-testid='shopping-loading'>
-          <EmptyState
-            icon={<Icon name='shopping' size={34} />}
-            title={tr('shopping.loading')}
-          />
-        </div>
-      ) : shoppingQuery.isError ? (
-        <div className='card' role='alert' data-testid='shopping-load-error'>
-          <EmptyState
-            icon={<Icon name='shopping' size={34} />}
-            title={tr('shopping.error.loadTitle')}
-            description={tr('shopping.error.loadDescription')}
-            action={
-              <button
-                type='button'
-                className='btn btn-secondary mt-2'
-                onClick={() => shoppingQuery.refetch()}
-              >
-                {tr('shopping.retry')}
-              </button>
-            }
-          />
-        </div>
-      ) : tab === 'lists' ? (
-        renderListsTab()
-      ) : tab === 'items' ? (
-        renderItemsTab()
-      ) : (
-        renderOverviewTab()
-      )}
+      <PageSection testId='shopping-active-content'>
+        {shoppingQuery.isPending ? (
+          <div className='card' data-testid='shopping-loading'>
+            <EmptyState
+              icon={<Icon name='shopping' size={34} />}
+              title={tr('shopping.loading')}
+            />
+          </div>
+        ) : shoppingQuery.isError ? (
+          <div className='card' role='alert' data-testid='shopping-load-error'>
+            <EmptyState
+              icon={<Icon name='shopping' size={34} />}
+              title={tr('shopping.error.loadTitle')}
+              description={tr('shopping.error.loadDescription')}
+              action={
+                <button
+                  type='button'
+                  className='btn btn-secondary mt-2'
+                  onClick={() => shoppingQuery.refetch()}
+                >
+                  {tr('shopping.retry')}
+                </button>
+              }
+            />
+          </div>
+        ) : tab === 'lists' ? (
+          renderListsTab()
+        ) : tab === 'items' ? (
+          renderItemsTab()
+        ) : (
+          renderOverviewTab()
+        )}
+      </PageSection>
 
       {isSolo ? (
         <PageSection>
           <aside
-            className='shopping-share-row mt-5'
+            className='shopping-share-row'
             data-testid='shopping-sharing-action'
           >
             <Icon name='users' size={20} />

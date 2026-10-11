@@ -5,6 +5,7 @@ import { AppCtx, Icon } from '../App'
 import {
   EmptyState,
   EntityCard,
+  EntityGrid,
   PageSection,
   PageShell,
 } from '../components/page'
@@ -266,43 +267,40 @@ export default function FocusHome({
     >
       <PageSection>
         {/* Stats row */}
-        <div
-          className='grid gap-3 mb-6'
-          style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          }}
-        >
-          <StatCard
-            label='Done today'
-            value={`${done.length}/${myTasks.length}`}
-            sub='your tasks'
-            color='var(--sig-done)'
-            icon='check'
-          />
-          <StatCard
-            label='Overdue'
-            value={overdueList.length}
-            sub='need attention'
-            color='var(--sig-over)'
-            icon='error'
-          />
-          <StatCard
-            label='Upcoming'
-            value={upcoming.length}
-            sub='next 7 days'
-            color='var(--brand)'
-            icon='calendar'
-          />
-          {!isSolo && (
+        <PageSection>
+          <EntityGrid variant='stats' testId='home-stats'>
             <StatCard
-              label='House streak'
-              value={`${me.streak}d`}
-              sub='consecutive days'
-              color='var(--accent-text)'
-              icon='fire'
+              label='Done today'
+              value={`${done.length}/${myTasks.length}`}
+              sub='your tasks'
+              color='var(--sig-done)'
+              icon='check'
             />
-          )}
-        </div>
+            <StatCard
+              label='Overdue'
+              value={overdueList.length}
+              sub='need attention'
+              color='var(--sig-over)'
+              icon='error'
+            />
+            <StatCard
+              label='Upcoming'
+              value={upcoming.length}
+              sub='next 7 days'
+              color='var(--brand)'
+              icon='calendar'
+            />
+            {!isSolo && (
+              <StatCard
+                label='House streak'
+                value={`${me.streak}d`}
+                sub='consecutive days'
+                color='var(--accent-text)'
+                icon='fire'
+              />
+            )}
+          </EntityGrid>
+        </PageSection>
 
         {/* Overdue alert */}
         {overdueList.length > 0 && (

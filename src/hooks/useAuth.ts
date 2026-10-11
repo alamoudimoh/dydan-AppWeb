@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { ApiProfile } from '../model/api'
 import { useNotification } from '../service/NotificationProvider'
@@ -40,6 +40,7 @@ export type AuthState = {
 export function useAuth() {
   const queryClient = useQueryClient()
   const { showError, showSuccess } = useNotification()
+  const [restoreCompleted, setRestoreCompleted] = useState(hasAccessToken)
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     isLoading: true,
@@ -98,13 +99,22 @@ export function useAuth() {
   // Web session restore: a page reload starts with no in-memory access token;
   // the HttpOnly refresh cookie still exists, so try a single-flight refresh
   // (no forced-logout fallback) before giving up on the session.
-  const restoreAttemptedRef = useRef(false)
   useEffect(() => {
-    if (hasAccessToken() || restoreAttemptedRef.current) return
-    restoreAttemptedRef.current = true
+    if (hasAccessToken()) {
+      setRestoreCompleted(true)
+      return
+    }
     let cancelled = false
-    apiClient
-      .refreshToken({ allowLogoutFallback: false })
+    // All hook instances share this boot attempt, including the in-place sign-in
+    // screen mounted after a failure. Mounting it must not silently retry login.
+    // Logout clears this query with the rest of the account-scoped query cache.
+    queryClient
+      .fetchQuery({
+        queryKey: ['sessionRestore'],
+        queryFn: () => apiClient.refreshToken({ allowLogoutFallback: false }),
+        staleTime: Infinity,
+        retry: false,
+      })
       .then((result: { success?: boolean } | undefined) => {
         if (cancelled) return
         if (result?.success) {
@@ -115,6 +125,7 @@ export function useAuth() {
         // Re-render so the profile query re-evaluates `enabled` now that the
         // token presence may have changed.
         setAuthState(prev => ({ ...prev, isLoading: false }))
+        setRestoreCompleted(true)
       })
     return () => {
       cancelled = true
@@ -247,6 +258,9 @@ export function useAuth() {
 
   return {
     ...authState,
+    // No token before refresh finishes is an unresolved session, not a guest.
+    // The shared transport makes StrictMode's second subscription single-flight.
+    isLoading: authState.isLoading || !restoreCompleted,
     signIn,
     verifyMfa,
     signOut,

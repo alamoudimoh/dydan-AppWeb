@@ -119,7 +119,7 @@ class StatusBarManager {
       // and adding it causes double padding
       // document.body.style.paddingTop = `${insets.top}px`
       document.body.style.paddingInlineEnd = `${insets.right}px`
-      document.body.style.paddingBottom = `${insets.bottom}px`
+      // The shared scroll shell and fixed dock consume the bottom inset once.
       document.body.style.paddingInlineStart = `${insets.left}px`
     }
   }

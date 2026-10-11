@@ -1,6 +1,13 @@
 import Avatar from '@mui/joy/Avatar'
 import IconButton from '@mui/joy/IconButton'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Navigate,
   Route,
@@ -632,7 +639,7 @@ export default function App() {
   useSyncOnReconnect()
 
   const { brand, setBrand } = useProductBrand()
-  const { setMode } = useProductTheme()
+  const { resolvePresentation, suspendPresentation } = useProductTheme()
   const { setView, view } = useProductView()
   const { persona, setPersona } = useProductPersona()
   const {
@@ -659,7 +666,8 @@ export default function App() {
     triggerSessionExpiry: realSessionExpiry,
   } = useAuth()
   useRealtimeSync(isAuthenticated)
-  const { data: settingsPreferences } = useSettingsPreferences()
+  const preferencesQuery = useSettingsPreferences()
+  const { data: settingsPreferences } = preferencesQuery
   const preferenceMutations = useSettingsPreferencesMutation()
 
   /**
@@ -720,10 +728,41 @@ export default function App() {
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const searchInputRef = useRef<HTMLInputElement>(null)
 
+  // The profile query can finish one render before useAuth promotes its
+  // result into isAuthenticated. That intermediate render is not a guest.
+  const sessionResolving =
+    authLoading ||
+    profileLoading ||
+    (!isAuthenticated && Boolean(getAccessToken()) && !isSessionExpired)
+
+  useLayoutEffect(() => {
+    if (sessionResolving) {
+      suspendPresentation()
+      return
+    }
+    if (!isAuthenticated) {
+      resolvePresentation('dydan', 'light')
+    } else if (settingsPreferences) {
+      resolvePresentation(
+        settingsPreferences.theme,
+        settingsPreferences.appearance,
+      )
+    } else {
+      suspendPresentation()
+      document.documentElement.dataset['presentation'] =
+        preferencesQuery.isError ? 'error' : 'pending'
+    }
+  }, [
+    isAuthenticated,
+    preferencesQuery.isError,
+    resolvePresentation,
+    sessionResolving,
+    settingsPreferences,
+    suspendPresentation,
+  ])
+
   useEffect(() => {
     if (!settingsPreferences) return
-    setBrand(settingsPreferences.theme)
-    setMode(settingsPreferences.appearance)
     setView(settingsPreferences.defaultView)
     setLanguage(settingsPreferences.language)
     setDateFormat(settingsPreferences.dateFormat)
@@ -735,11 +774,9 @@ export default function App() {
     document.documentElement.dataset['density'] =
       settingsPreferences.compactMode ? 'compact' : 'comfortable'
   }, [
-    setBrand,
     setDateFormat,
     setFirstDayOfWeek,
     setLanguage,
-    setMode,
     setTimeFormat,
     setView,
     settingsPreferences,
@@ -937,7 +974,7 @@ export default function App() {
     return <EmailChangeVerificationScreen onComplete={realSignOut} />
   }
 
-  if (authLoading || profileLoading) {
+  if (sessionResolving) {
     return <SplashScreen theme={brand} />
   }
 
@@ -963,6 +1000,17 @@ export default function App() {
         <ToastContainer toasts={toasts} />
       </>
     )
+  }
+
+  if (!settingsPreferences) {
+    return preferencesQuery.isError ? (
+      <div className='presentation-error' role='alert'>
+        <p>Presentation preferences could not be loaded.</p>
+        <button type='button' onClick={() => preferencesQuery.refetch()}>
+          Try again
+        </button>
+      </div>
+    ) : null
   }
 
   return (

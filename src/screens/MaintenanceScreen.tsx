@@ -280,7 +280,7 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
         <PageHeader
           title={t('nav.assets')}
           subtitle={t('assets.page.subtitle')}
-          actions={
+          primaryAction={
             tab === 'assets' ? (
               <button
                 className='btn btn-primary'

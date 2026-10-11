@@ -59,7 +59,7 @@ export default function GoalsScreen({
         <PageHeader
           title='Goals'
           subtitle='Live circle goals and measured progress'
-          actions={
+          primaryAction={
             !isChild ? (
               <button
                 className='btn btn-primary'

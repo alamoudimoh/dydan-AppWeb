@@ -163,6 +163,15 @@
      the main top bar both resolve their height from this one token, so their
      1px bottom borders always land on the same horizontal pixel line. */
   --app-topbar-height: 60px;
+  --mobile-nav-height: 60px;
+  /* Native and browser insets describe the same edge, never add them together. */
+  --app-safe-bottom: max(
+    env(safe-area-inset-bottom, 0px),
+    var(--safe-area-inset-bottom, 0px)
+  );
+  --mobile-bottom-clearance: calc(
+    var(--mobile-nav-height) + var(--app-safe-bottom) + var(--page-bottom)
+  );
 }
 
 @media (max-width: 768px) {
@@ -825,7 +834,8 @@ html[dir='ltr'] .main-scroll > * {
   z-index: 50;
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(var(--mobile-nav-height) + var(--app-safe-bottom));
+  padding-bottom: var(--app-safe-bottom);
 }
 
 @media (max-width: 768px) {
@@ -835,8 +845,9 @@ html[dir='ltr'] .main-scroll > * {
   .mobile-nav {
     display: flex;
   }
-  .main-content {
-    padding-bottom: 70px;
+  .main-scroll {
+    padding-block-end: var(--mobile-bottom-clearance);
+    scroll-padding-block-end: var(--mobile-bottom-clearance);
   }
 }
 
@@ -851,6 +862,13 @@ html[dir='ltr'] .main-scroll > * {
   /* Shopping: stack the list sidebar above the list content. */
   .shopping-lists-grid {
     grid-template-columns: 1fr !important;
+  }
+  .shopping-lists-grid [data-testid='shopping-list-cards'],
+  .shopping-detail-identity {
+    display: none;
+  }
+  .shopping-lists-grid .shopping-mobile-context {
+    display: block;
   }
   /* Enlarge the task-check hit area without changing its 20px visual. */
   .task-check {
@@ -2100,6 +2118,42 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
   flex-wrap: wrap;
   align-items: flex-start;
 }
+.page-header__controls {
+  display: flex;
+  gap: var(--grid-gap);
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.page-header__primary-action {
+  display: flex;
+  min-width: 0;
+}
+@media (max-width: 768px) {
+  .page-header--primary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--grid-gap);
+  }
+  .page-header--primary .page-header__subtitle {
+    /* Stable two-line subtitle block keeps equivalent action rows aligned. */
+    min-height: 3em;
+  }
+  .page-header--primary .page-header__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-header__primary-action > .btn {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    padding-inline: 14px;
+    border-radius: var(--r-md);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    gap: 6px;
+  }
+}
 /* Consistent typography: lowercase display and actions, uppercase field labels. */
 .form-title {
   font-family: var(--font-ui);
@@ -2381,6 +2435,27 @@ html[data-density='compact'] .page-container .card > .px-5.py-5 {
 /* ─── Global page UI system (Fix 05) ─────────────────────
    One canonical implementation per UI pattern. Screens compose these
    primitives instead of redefining geometry. */
+.shopping-lists-grid {
+  display: grid;
+  gap: var(--section-gap);
+}
+.shopping-mobile-context {
+  display: none;
+}
+.shopping-mobile-summary {
+  margin-top: var(--header-rhythm);
+  font-size: 12px;
+}
+.shopping-list-actions,
+.shopping-list-action-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--grid-gap);
+}
+.shopping-list-actions {
+  justify-content: space-between;
+}
 .page {
   width: 100%;
   max-width: var(--page-max-standard);
@@ -2388,6 +2463,12 @@ html[data-density='compact'] .page-container .card > .px-5.py-5 {
   padding: 0 0 var(--page-bottom);
   min-width: 0;
   overflow-x: clip;
+}
+@media (max-width: 768px) {
+  .page {
+    /* The scroll container owns dock + inset + page breathing space. */
+    padding-block-end: 0;
+  }
 }
 .page--standard {
   max-width: var(--page-max-standard);
@@ -2609,6 +2690,18 @@ html[data-density='compact'] .page-container .card > .px-5.py-5 {
   display: grid;
   gap: var(--grid-gap);
   min-width: 0;
+}
+.entity-grid--stats {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+@media (max-width: 768px) {
+  .entity-grid--stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .entity-grid--stats > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 .entity-list {
   display: flex;

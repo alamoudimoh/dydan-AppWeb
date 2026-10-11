@@ -78,7 +78,7 @@ export default function ProjectsScreen({ ctx }: { ctx: AppCtx }) {
         <PageHeader
           title='Projects'
           subtitle='Organized work with multiple tasks'
-          actions={
+          primaryAction={
             !isChild ? (
               <button className='btn btn-primary' onClick={startNew}>
                 <Icon name='projects' size={14} />

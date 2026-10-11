@@ -10,7 +10,9 @@ import { resolve } from 'node:path'
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
+import PageHeader from '../PageHeader'
 import EmptyState from './EmptyState'
+import { EntityGrid } from './EntityCard'
 import FilterSegment from './FilterSegment'
 import PageHero from './PageHero'
 import PageSection from './PageSection'
@@ -196,5 +198,70 @@ describe('H. RTL uses logical properties, not a second architecture', () => {
     )
     expect(screen.getByText('hero')).toBeTruthy()
     document.documentElement.setAttribute('dir', 'ltr')
+  })
+})
+
+describe('Fix 06 shared mobile contracts', () => {
+  it('PageHeader separates semantic primary actions from arbitrary controls', () => {
+    const { container } = render(
+      <PageHeader
+        title='Projects'
+        subtitle='Projects in this space'
+        actions={<button>Filter</button>}
+        primaryAction={<button className='btn btn-primary'>New project</button>}
+      />,
+    )
+    expect(
+      container.querySelector('.page-header__primary-action')?.textContent,
+    ).toBe('New project')
+    expect(container.querySelector('.page-header__actions')?.textContent).toBe(
+      'Filter',
+    )
+    expect(container.querySelector('.page-header--primary')).toBeTruthy()
+    expect(screen.getByTestId('page-title').tagName).toBe('H1')
+  })
+
+  it.each([
+    'Projects',
+    'Routines',
+    'Maintenance',
+    'Shopping',
+    'Goals',
+    'Rewards',
+  ])(
+    '%s uses the shared primary-action slot without positioning overrides',
+    name => {
+      const source = read(`src/screens/${name}Screen.tsx`)
+      expect(source).toContain('primaryAction={')
+      const header = source.slice(
+        source.indexOf('<PageHeader'),
+        source.indexOf('/>', source.indexOf('<PageHeader')),
+      )
+      expect(header).not.toMatch(/position:\s*'absolute'|marginInline|width:/)
+    },
+  )
+
+  it('stats layout is semantic and CSS-owned, not data branching', () => {
+    const { container } = render(
+      <EntityGrid variant='stats'>
+        <div>One</div>
+      </EntityGrid>,
+    )
+    expect(container.querySelector('.entity-grid--stats')).toBeTruthy()
+    expect(css()).toMatch(
+      /\.entity-grid--stats > :last-child:nth-child\(odd\)[\s\S]*?grid-column:\s*1 \/ -1/,
+    )
+  })
+
+  it('dock clearance has one safe-area calculation and one shared scroll owner', () => {
+    const stylesheet = css()
+    expect(stylesheet).toMatch(/--app-safe-bottom:\s*max\(/)
+    expect(stylesheet).toMatch(/--mobile-bottom-clearance:\s*calc\(/)
+    expect(stylesheet).toMatch(
+      /padding-block-end:\s*var\(--mobile-bottom-clearance\)/,
+    )
+    expect(read('src/utils/StatusBarManager.js')).not.toContain(
+      'document.body.style.paddingBottom',
+    )
   })
 })

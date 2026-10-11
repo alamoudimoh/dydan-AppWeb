@@ -1,9 +1,10 @@
+import { useColorScheme } from '@mui/joy/styles'
 import {
   createContext,
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useState,
 } from 'react'
 
@@ -25,6 +26,9 @@ type ThemeState = {
   setBrand: (b: Brand) => void
   mode: Mode
   setMode: (m: Mode) => void
+  resolvePresentation: (brand: Brand, mode: Mode) => void
+  suspendPresentation: () => void
+  presentationReady: boolean
   view: View
   setView: (v: View) => void
   persona: Persona
@@ -36,6 +40,8 @@ const ThemeCtx = createContext<ThemeState | null>(null)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [brand, setBrandState] = useState<Brand>('dydan')
   const [mode, setMode] = useState<Mode>('light')
+  const [presentationResolved, setPresentationResolved] = useState(false)
+  const { mode: joyMode, setMode: setJoyMode } = useColorScheme()
   const [view, setView] = useState<View>('focus')
   const [persona, setPersonaState] = useState<Persona>('parent')
 
@@ -45,6 +51,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setMode(b === 'sovereign' ? 'dark' : 'light')
   }, [])
 
+  // No browser cache is authoritative or reused across accounts. The shell
+  // resolves the session first, then supplies the current server preference.
+  const resolvePresentation = useCallback((b: Brand, m: Mode) => {
+    setBrandState(b)
+    setMode(m)
+    setPresentationResolved(true)
+  }, [])
+  const suspendPresentation = useCallback(() => {
+    document.documentElement.dataset['presentation'] = 'pending'
+    setPresentationResolved(false)
+  }, [])
+
   /* Children only ever see the Quest lens. */
   const setPersona = useCallback((p: Persona) => {
     setPersonaState(p)
@@ -52,18 +70,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   /* Drive the CSS token set + Joy color scheme. */
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!presentationResolved) return
     const html = document.documentElement
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
       const resolvedMode =
         mode === 'system' ? (media.matches ? 'dark' : 'light') : mode
       html.setAttribute('data-joy-color-scheme', resolvedMode)
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute(
+          'content',
+          getComputedStyle(html).getPropertyValue('--page').trim(),
+        )
     }
-    document.body.classList.add('theme-transitioning')
+    const wasVisible = html.dataset['presentation'] === 'ready'
+    if (wasVisible) document.body.classList.add('theme-transitioning')
     if (brand === 'sovereign') html.setAttribute('data-theme', 'sovereign')
     else html.removeAttribute('data-theme')
     apply()
+    // Joy also owns component styling and native status-bar appearance.
+    // Both owners must agree before any themed content becomes visible.
+    setJoyMode(mode)
+    if (joyMode === mode) html.dataset['presentation'] = 'ready'
     if (mode === 'system') media.addEventListener('change', apply)
     const t = setTimeout(
       () => document.body.classList.remove('theme-transitioning'),
@@ -73,7 +103,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       clearTimeout(t)
       media.removeEventListener('change', apply)
     }
-  }, [brand, mode])
+  }, [brand, joyMode, mode, presentationResolved, setJoyMode])
 
   return (
     <ThemeCtx.Provider
@@ -82,6 +112,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setBrand,
         mode,
         setMode,
+        resolvePresentation,
+        suspendPresentation,
+        presentationReady: presentationResolved && joyMode === mode,
         view,
         setView,
         persona,
@@ -105,8 +138,20 @@ export function useProductBrand() {
   return { brand, setBrand }
 }
 export function useProductTheme() {
-  const { mode, setMode } = useThemeState()
-  return { mode, setMode }
+  const {
+    mode,
+    presentationReady,
+    resolvePresentation,
+    setMode,
+    suspendPresentation,
+  } = useThemeState()
+  return {
+    mode,
+    presentationReady,
+    resolvePresentation,
+    setMode,
+    suspendPresentation,
+  }
 }
 export function useProductView() {
   const { setView, view } = useThemeState()

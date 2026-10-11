@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-presentation="pending">
   <head>
     <meta charset="UTF-8" />
     <!-- <link rel="icon" type="image/svg+xml" href="/logo.svg" /> -->
@@ -16,10 +16,43 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#34236d" />
     <meta name="msapplication-TileColor" content="#34236d" />
-    <meta name="theme-color" content="#fff8e8" />
+    <meta name="theme-color" content="#f0f0f0" />
+    <!-- Server-owned presentation: do not paint themed content before resolution. -->
+    <style>
+      html:not([data-presentation='ready']),
+      html:not([data-presentation='ready']) body {
+        background: #f0f0f0 !important;
+      }
+      html:not([data-presentation='ready']) #root,
+      html:not([data-presentation='ready']) body > :not(#presentation-boot) {
+        visibility: hidden;
+      }
+      #presentation-boot,
+      .presentation-error {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        gap: 16px;
+        background: #f0f0f0;
+        color: #444;
+        font:
+          14px system-ui,
+          sans-serif;
+        text-align: center;
+      }
+      .presentation-error {
+        visibility: visible;
+      }
+      html[data-presentation='ready'] #presentation-boot,
+      html[data-presentation='error'] #presentation-boot {
+        display: none;
+      }
+    </style>
   </head>
   <body>
+    <div id="presentation-boot" role="status">Loading…</div>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

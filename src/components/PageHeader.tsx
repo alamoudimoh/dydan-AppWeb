@@ -12,6 +12,8 @@ type PageHeaderProps = {
   subtitle?: ReactNode
   /** Optional header actions (buttons, toggles) on the trailing side. */
   actions?: ReactNode
+  /** Page-level primary create control; a dedicated full-width mobile row. */
+  primaryAction?: ReactNode
 }
 
 /**
@@ -29,11 +31,14 @@ type PageHeaderProps = {
 export default function PageHeader({
   actions,
   eyebrow,
+  primaryAction,
   subtitle,
   title,
 }: PageHeaderProps) {
   return (
-    <div className='page-header pb-5'>
+    <div
+      className={`page-header pb-5${primaryAction ? ' page-header--primary' : ''}`}
+    >
       <div className='page-header__main'>
         <div
           className='page-header__eyebrow text-faint'
@@ -52,7 +57,16 @@ export default function PageHeader({
           <div className='text-muted page-header__subtitle'>{subtitle}</div>
         ) : null}
       </div>
-      {actions ? <div className='page-header__actions'>{actions}</div> : null}
+      {actions || primaryAction ? (
+        <div className='page-header__controls'>
+          {actions ? (
+            <div className='page-header__actions'>{actions}</div>
+          ) : null}
+          {primaryAction ? (
+            <div className='page-header__primary-action'>{primaryAction}</div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

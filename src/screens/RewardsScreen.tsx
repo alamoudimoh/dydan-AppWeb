@@ -116,7 +116,7 @@ export default function RewardsScreen({
         <PageHeader
           title='Rewards'
           subtitle='Server-backed reward catalog and approval requests'
-          actions={
+          primaryAction={
             isAdmin ? (
               <button className='btn btn-primary' onClick={startNew}>
                 <Icon name='gift' size={14} />

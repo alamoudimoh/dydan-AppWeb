@@ -67,7 +67,7 @@ export default function RoutinesScreen({ ctx }: { ctx: AppCtx }) {
         <PageHeader
           title='Routines'
           subtitle='Server-backed recurring task templates'
-          actions={
+          primaryAction={
             !isChild ? (
               <button className='btn btn-primary' onClick={() => startEdit()}>
                 <Icon name='repeat' size={14} /> New routine
