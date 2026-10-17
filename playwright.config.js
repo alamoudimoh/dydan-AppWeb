@@ -15,6 +15,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   use: {
     baseURL,
+    serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'off',
@@ -70,7 +71,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `VITE_APP_BRAND=${process.env.VITE_APP_BRAND || ''} npm run build:smoke && npm run preview -- --host ${smokeHost} --port ${smokePort} --strictPort`,
+    command: `npm run build:smoke && npm run preview -- --host ${smokeHost} --port ${smokePort} --strictPort`,
+    env: {
+      ...process.env,
+      VITE_APP_BRAND: process.env.VITE_APP_BRAND || '',
+    },
     url: baseURL,
     // A server on this port can belong to another checkout and serve an older
     // build. Always start this worktree's smoke build instead of reusing it.

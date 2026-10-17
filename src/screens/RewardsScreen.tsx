@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import { formatTimestamp } from '../data'
 import { useRewardMutations, useRewardRequests } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout, SegmentedControl } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 type Tab = 'catalog' | 'requests' | 'points'
 type RewardForm = { name: string; description: string; costPoints: string }
@@ -146,26 +148,20 @@ export default function RewardsScreen({
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Rewards
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Server-backed reward catalog and approval requests
-          </div>
-        </div>
-        {isAdmin && (
-          <button className='btn btn-primary' onClick={startNew}>
-            <Icon name='plus' size={14} />
-            New reward
-          </button>
-        )}
-      </div>
+    <PageLayout>
+      <ModulePageHeader
+        module='rewards'
+        className='pb-5'
+        description='Server-backed reward catalog and approval requests'
+        actions={
+          isAdmin ? (
+            <button className='btn btn-primary' onClick={startNew}>
+              <Icon name='plus' size={14} />
+              New reward
+            </button>
+          ) : undefined
+        }
+      />
       <div className='px-4 md:px-7'>
         {isAdmin && editingId !== undefined && (
           <div
@@ -268,34 +264,22 @@ export default function RewardsScreen({
             {currentUser.points.toLocaleString()}
           </div>
         </div>
-        <div
-          className='seg-tabs mb-5'
-          role='group'
-          aria-label='Rewards sections'
-        >
-          {(
-            [
-              { id: 'catalog', label: 'Rewards' },
-              {
-                id: 'requests',
-                label: isAdmin
-                  ? `Requests (${pendingRequests.length})`
-                  : 'My Requests',
-              },
-              { id: 'points', label: 'Points' },
-            ] as const
-          ).map(item => (
-            <button
-              key={item.id}
-              type='button'
-              onClick={() => setTab(item.id)}
-              className={`seg-tab ${tab === item.id ? 'active' : ''}`}
-              aria-pressed={tab === item.id}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          className='mb-5'
+          label='Rewards sections'
+          value={tab}
+          onChange={setTab}
+          options={[
+            { id: 'catalog', label: 'Rewards' },
+            {
+              id: 'requests',
+              label: isAdmin
+                ? `Requests (${pendingRequests.length})`
+                : 'My Requests',
+            },
+            { id: 'points', label: 'Points' },
+          ]}
+        />
         {tab === 'catalog' && (
           <div
             className='grid gap-4'
@@ -460,6 +444,6 @@ export default function RewardsScreen({
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

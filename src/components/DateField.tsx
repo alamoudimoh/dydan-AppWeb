@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { Icon } from '../App'
+import { Icon } from '../ui/Icon'
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const iso = (date: Date) =>

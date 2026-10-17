@@ -1,7 +1,9 @@
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Reward, Task } from '../data'
 import { formatTimestamp } from '../data'
 import { todayKey, useLiveData } from '../model/liveData'
+import { PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 function StreakPips({
   streak,
@@ -189,7 +191,7 @@ export default function QuestHome({
   )
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
+    <PageLayout className='quest-home'>
       {/* Hero */}
       <div
         style={{
@@ -647,6 +649,6 @@ export default function QuestHome({
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

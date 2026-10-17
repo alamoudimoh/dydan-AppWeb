@@ -1,8 +1,10 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Task } from '../data'
 import { todayKey, useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout, SegmentedControl } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 type Range = '7d' | '30d' | '90d'
 
@@ -95,49 +97,29 @@ export default function ProgressScreen({
   const goalsDone = goals.filter(g => g.progress >= g.target).length
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Progress
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+    <PageLayout>
+      <ModulePageHeader
+        module='progress'
+        className='pb-5'
+        description={
+          <>
             team workload and completion reporting for the last{' '}
             {RANGE_LABELS[range].toLowerCase()}
-          </div>
-        </div>
-        {/* Range selector */}
-        <div
-          className='flex gap-1 p-1 rounded-full'
-          style={{
-            background: 'var(--surface-2)',
-            borderRadius: 'var(--r-full)',
-          }}
-        >
-          {(['7d', '30d', '90d'] as Range[]).map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className='px-4 py-1.5 font-semibold'
-              style={{
-                background: range === r ? 'var(--brand)' : 'transparent',
-                color: range === r ? 'var(--brand-contrast)' : 'var(--t-muted)',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: 'var(--r-full)',
-                fontSize: 12,
-                fontFamily: 'var(--font-ui)',
-                transition: 'all 0.15s',
-              }}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          ))}
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <SegmentedControl
+            label='Reporting range'
+            value={range}
+            onChange={setRange}
+            options={[
+              { id: '7d', label: '7 days' },
+              { id: '30d', label: '30 days' },
+              { id: '90d', label: '90 days' },
+            ]}
+          />
+        }
+      />
 
       <div className='px-4 md:px-7 flex flex-col gap-6'>
         {/* Overview stat row */}
@@ -579,6 +561,6 @@ export default function ProgressScreen({
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

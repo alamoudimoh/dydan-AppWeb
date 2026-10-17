@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Task } from '../data'
 import { formatDate } from '../data'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 type GroupBy = 'status' | 'assignee' | 'category' | 'priority'
 type Filter = 'all' | 'todo' | 'done' | 'overdue' | 'upcoming'
@@ -200,21 +202,17 @@ export default function AllTasksScreen({
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            All Tasks
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
+    <PageLayout>
+      <ModulePageHeader
+        module='all-tasks'
+        className='pb-5'
+        description={
+          <>
             {filtered.length} task{filtered.length !== 1 ? 's' : ''}{' '}
             {search ? `matching "${search}"` : ''}
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Summary chips */}
@@ -408,6 +406,6 @@ export default function AllTasksScreen({
           ))
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

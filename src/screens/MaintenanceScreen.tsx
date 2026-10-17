@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AppCtx } from '../App'
+import type { AppCtx } from '../App'
 import { formatDate } from '../data'
 import {
   useAssetDetail,
@@ -14,6 +14,7 @@ import {
   useThings,
 } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout, SegmentedControl } from '../ui/GlobalUI'
 
 type Tab = 'assets' | 'meters' | 'things'
 
@@ -350,47 +351,24 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Maintenance
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Live maintenance assets, meters, and things
-          </div>
-        </div>
-      </div>
+    <PageLayout>
+      <ModulePageHeader
+        module='assets'
+        className='pb-5'
+        description='Assets, meters, maintenance, and connected things in one place'
+      />
       <div className='px-4 md:px-7'>
-        <div
-          className='seg-tabs mb-5'
-          role='group'
-          aria-label='Maintenance sections'
-        >
-          {(
-            [
-              {
-                id: 'assets',
-                label: `Maintenance (${maintenanceItems.length})`,
-              },
-              { id: 'meters', label: `Meters (${meters.length})` },
-              { id: 'things', label: `Things (${things.length})` },
-            ] as const
-          ).map(item => (
-            <button
-              key={item.id}
-              type='button'
-              className={`seg-tab ${tab === item.id ? 'active' : ''}`}
-              aria-pressed={tab === item.id}
-              onClick={() => setTab(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          className='mb-5'
+          label='Asset sections'
+          value={tab}
+          onChange={setTab}
+          options={[
+            { id: 'assets', label: `All Assets (${assets.length})` },
+            { id: 'meters', label: `Meters (${meters.length})` },
+            { id: 'things', label: `Things (${things.length})` },
+          ]}
+        />
 
         {tab === 'assets' && (
           <div className='flex flex-col gap-3'>
@@ -1209,6 +1187,6 @@ export default function MaintenanceScreen({ ctx }: { ctx: AppCtx }) {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

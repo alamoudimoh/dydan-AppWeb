@@ -16,7 +16,7 @@ const CASES = [
   { path: '/routines', width: 390, mode: 'light', language: 'ar-SA' },
   { path: '/calendar', width: 768, mode: 'dark', language: 'en' },
   { path: '/shopping', width: 1440, mode: 'light', language: 'en' },
-  { path: '/maintenance', width: 390, mode: 'dark', language: 'en' },
+  { path: '/assets', width: 390, mode: 'dark', language: 'en' },
   { path: '/settings', width: 768, mode: 'light', language: 'ar-SA' },
   { path: '/progress', width: 390, mode: 'dark', language: 'ar-SA' },
   { path: '/activity', width: 1440, mode: 'dark', language: 'en' },

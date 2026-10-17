@@ -701,6 +701,10 @@ body.theme-transitioning * {
   padding: 0 0 48px;
 }
 
+.page-body {
+  min-width: 0;
+}
+
 /* ─── Collapsible sidebar ─── */
 .app-shell.sidebar-collapsed {
   --sidebar-w: 74px;
@@ -1675,6 +1679,87 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
   gap: 12px;
   flex-wrap: wrap;
 }
+.page-header-copy {
+  min-width: 0;
+  flex: 1 1 280px;
+}
+.page-header h1 {
+  margin: 0;
+}
+.page-description {
+  font-size: 13px;
+  margin-top: 4px;
+}
+.page-eyebrow {
+  color: var(--t-faint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+[dir='rtl'] .page-eyebrow {
+  letter-spacing: 0;
+}
+.page-actions,
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.global-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.global-section-header h2 {
+  color: var(--t-primary);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+.global-tabs-sticky {
+  background: var(--page);
+}
+.global-breadcrumbs {
+  padding: 12px 28px 0;
+  color: var(--t-muted);
+  font-size: 12px;
+}
+.global-breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.global-breadcrumbs li + li::before {
+  content: '/';
+  margin-inline-end: 8px;
+  color: var(--t-faint);
+}
+.global-breadcrumbs [aria-current='page'] {
+  color: var(--t-primary);
+  font-weight: 700;
+}
+.empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  font-size: 48px;
+}
+.empty-state-title {
+  font-size: 16px;
+}
+.empty-state-description {
+  font-size: 13px;
+  max-width: 42rem;
+}
 /* Consistent typography: lowercase display and actions, uppercase field labels. */
 .form-title {
   font-family: var(--font-ui);
@@ -1831,6 +1916,9 @@ html[data-joy-color-scheme='dark'] input[type='date'].input {
 @media (max-width: 768px) {
   .page-header {
     padding: 20px 16px 26px;
+  }
+  .global-breadcrumbs {
+    padding: 10px 16px 0;
   }
 }
 .calendar-layout {

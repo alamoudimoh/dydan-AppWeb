@@ -1,7 +1,9 @@
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Member, Task } from '../data'
 import { formatDate, formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
+import { PageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 function StatCard({
   color,
@@ -224,45 +226,25 @@ export default function FocusHome({
   const activeGoal = goals[0]
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
+    <PageLayout>
       {/* Hero greeting */}
-      <div className='page-header pb-6'>
-        <div>
-          <div
-            className='text-faint'
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: 4,
-            }}
-          >
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </div>
-          <h1
-            className='text-primary'
-            style={{
-              fontSize: 26,
-              fontWeight: 800,
-              margin: 0,
-              lineHeight: 1.2,
-            }}
-          >
-            Good morning, {me.name}
-          </h1>
-          <p className='text-muted' style={{ fontSize: 14, margin: '6px 0 0' }}>
+      <PageHeader
+        className='pb-6'
+        eyebrow={new Date().toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })}
+        title={`Good morning, ${me.name}`}
+        description={
+          <>
             {overdueList.length > 0
               ? `${overdueList.length} task${overdueList.length > 1 ? 's' : ''} overdue — let's clear them first.`
               : `You're on track. ${done.length} of ${myTasks.length} tasks done today.`}
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {/* Stats row */}
@@ -711,6 +693,6 @@ export default function FocusHome({
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

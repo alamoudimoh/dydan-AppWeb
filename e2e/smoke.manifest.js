@@ -76,18 +76,18 @@ const PAGE = Object.freeze({
     heading: /^routines$/i,
     nav: true,
   },
-  maintenance: {
-    id: 'maintenance',
-    path: '/maintenance',
+  assets: {
+    id: 'assets',
+    path: '/assets',
     auth: true,
-    heading: /^maintenance$/i,
+    heading: /^assets$/i,
     nav: true,
   },
   shopping: {
     id: 'shopping',
     path: '/shopping',
     auth: true,
-    heading: /^shopping$/i,
+    heading: /^shopping lists$/i,
     nav: true,
   },
   goals: {
@@ -171,7 +171,7 @@ export const GROUP_SMOKE_PAGES = Object.freeze({
   public: [PAGE.login, PAGE.getStarted],
   daily: [PAGE.today, PAGE.calendar, PAGE.notifications],
   chores: [PAGE.allTasks],
-  organize: [PAGE.projects, PAGE.maintenance, PAGE.search],
+  organize: [PAGE.projects, PAGE.assets, PAGE.search],
   family: [PAGE.goals, PAGE.activity, PAGE.rewards, PAGE.progress],
   settings: [PAGE.settings],
 })

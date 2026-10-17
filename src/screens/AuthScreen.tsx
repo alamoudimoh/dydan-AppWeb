@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import { version as appVersion } from '../../package.json'
-import { Icon, LogoMark, Theme } from '../App'
+import type { Theme } from '../App'
 import { useAuth } from '../hooks/useAuth'
+import { Icon, LogoMark } from '../ui/Icon'
 import { ResetPassword } from '../utils/Fetcher'
 
 type AuthStep = 'signin' | 'mfa' | 'forgot'

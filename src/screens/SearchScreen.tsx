@@ -1,6 +1,8 @@
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Task } from '../data'
 import { useLiveData } from '../model/liveData'
+import { EmptyState, ModulePageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 export default function SearchScreen({
   ctx,
@@ -42,46 +44,40 @@ export default function SearchScreen({
     shoppingResults.length
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 60px' }}>
-      {q && (
-        <div className='px-4 md:px-7 pt-2 pb-4'>
-          <div className='text-primary font-bold' style={{ fontSize: 18 }}>
-            Results for "{query.trim()}"
-          </div>
-          <div className='text-muted mt-1' style={{ fontSize: 12 }}>
-            {total} results
-          </div>
-        </div>
-      )}
+    <PageLayout className='search-screen'>
+      <ModulePageHeader
+        module='search'
+        className='pb-5'
+        description={
+          q
+            ? `${total} results for "${query.trim()}"`
+            : 'Find tasks, projects, routines, and shopping items'
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {!q && (
-          <div className='empty-state py-16'>
-            <div style={{ fontSize: 48 }}>🔍</div>
-            <div className='font-bold text-primary' style={{ fontSize: 16 }}>
-              Find anything in dydan
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              Type into the top search field to find tasks, projects, routines,
-              and shopping items.
-            </div>
-          </div>
+          <EmptyState
+            className='py-16'
+            icon='🔍'
+            title='Find anything in dydan'
+            description='Type into the top search field to find tasks, projects, routines, and shopping items.'
+          />
         )}
 
         {q && total === 0 && (
-          <div className='empty-state py-16'>
-            <div style={{ fontSize: 48 }}>🤷</div>
-            <div className='font-bold text-primary'>
-              Nothing found for "{query}"
-            </div>
-            <div className='text-muted' style={{ fontSize: 13 }}>
-              Try a different search term
-            </div>
-            <button className='btn btn-primary mt-4' onClick={ctx.openCreate}>
-              <Icon name='plus' size={14} />
-              Create a task
-            </button>
-          </div>
+          <EmptyState
+            className='py-16'
+            icon='🤷'
+            title={`Nothing found for "${query}"`}
+            description='Try a different search term'
+            action={
+              <button className='btn btn-primary mt-4' onClick={ctx.openCreate}>
+                <Icon name='plus' size={14} />
+                Create a task
+              </button>
+            }
+          />
         )}
 
         {taskResults.length > 0 && (
@@ -246,6 +242,6 @@ export default function SearchScreen({
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

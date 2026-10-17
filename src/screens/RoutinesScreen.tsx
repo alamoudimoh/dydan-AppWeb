@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import MemberPicker from '../components/MemberPicker'
 import ThemeSelect from '../components/ThemeSelect'
 import { useRoutineMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 type FilterMode = 'all' | 'active' | 'inactive'
 type RoutineForm = {
@@ -144,25 +146,19 @@ export default function RoutinesScreen({ ctx }: { ctx: AppCtx }) {
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Routines
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Server-backed recurring task templates
-          </div>
-        </div>
-        {!isChild && (
-          <button className='btn btn-primary' onClick={() => startEdit()}>
-            <Icon name='plus' size={14} /> New routine
-          </button>
-        )}
-      </div>
+    <PageLayout>
+      <ModulePageHeader
+        module='routines'
+        className='pb-5'
+        description='Server-backed recurring task templates'
+        actions={
+          !isChild ? (
+            <button className='btn btn-primary' onClick={() => startEdit()}>
+              <Icon name='plus' size={14} /> New routine
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className='px-4 md:px-7'>
         {editingId && !isChild && (
@@ -416,6 +412,6 @@ export default function RoutinesScreen({ ctx }: { ctx: AppCtx }) {
           )}
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

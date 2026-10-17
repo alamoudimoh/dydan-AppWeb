@@ -150,7 +150,7 @@ for (const [theme, appearance] of [
     await installSmokeSession(page)
     await overrideUserPreferences(page, smokePreferences({ theme, appearance }))
 
-    await page.goto('/maintenance', { waitUntil: 'domcontentloaded' })
+    await page.goto('/assets', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle')
     await expect(page.locator('html')).toHaveAttribute(
       'data-joy-color-scheme',
@@ -210,7 +210,7 @@ for (const [theme, appearance] of [
     await installSmokeSession(page)
     await overrideUserPreferences(page, smokePreferences({ theme, appearance }))
 
-    await page.goto('/maintenance', { waitUntil: 'domcontentloaded' })
+    await page.goto('/assets', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle')
 
     for (const [name, expected] of Object.entries(APPROVED.dydan[appearance])) {

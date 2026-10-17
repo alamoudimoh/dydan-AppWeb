@@ -13,7 +13,7 @@ import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 const ROUTES = [
   '/calendar',
   '/notifications',
-  '/maintenance',
+  '/assets',
   '/goals',
   '/activity',
   '/rewards',

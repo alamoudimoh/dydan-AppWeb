@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import { useLiveData } from '../model/liveData'
+import { Icon } from '../ui/Icon'
 import { parseAccountResponse } from '../utils/AccountResponse'
 import * as Fetcher from '../utils/Fetcher'
 import { getAccessToken } from '../utils/TokenStorage'

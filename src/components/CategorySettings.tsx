@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { Icon } from '../App'
 import {
   CATEGORY_NAME_MAX_LENGTH,
   normalizeCategoryName,
@@ -11,6 +10,7 @@ import {
   useCategoryMutations,
   useChoreCategories,
 } from '../hooks/useChoreCategories'
+import { Icon } from '../ui/Icon'
 import { COLORS } from '../utils/Colors'
 import ColorPicker from './ColorPicker'
 import { Row, Section } from './SettingsSection'

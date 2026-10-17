@@ -1,4 +1,5 @@
-import { ConfirmDialogConfig, Icon } from '../App'
+import type { ConfirmDialogConfig } from '../App'
+import { Icon } from '../ui/Icon'
 
 type Props = {
   config: ConfirmDialogConfig

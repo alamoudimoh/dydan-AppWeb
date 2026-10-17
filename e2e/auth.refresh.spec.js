@@ -24,7 +24,7 @@ const REFRESH_ROUTES = [
   {
     name: 'Shopping',
     url: '/shopping?sort=alpha#lists',
-    heading: /^shopping$/i,
+    heading: /^shopping lists$/i,
   },
   {
     name: 'Settings',
@@ -226,7 +226,7 @@ test('authenticated deep link to a parameterized route restores and survives ref
 
   await page.goto('/shopping?sort=alpha#lists', { waitUntil: 'networkidle' })
   await expect(
-    page.getByRole('heading', { name: 'Shopping', exact: true }),
+    page.getByRole('heading', { name: 'Shopping lists', exact: true }),
   ).toBeVisible()
 
   await page.reload({ waitUntil: 'networkidle' })
@@ -236,7 +236,7 @@ test('authenticated deep link to a parameterized route restores and survives ref
   expect(page.url()).toContain('sort=alpha')
   expect(page.url()).toContain('#lists')
   await expect(
-    page.getByRole('heading', { name: 'Shopping', exact: true }),
+    page.getByRole('heading', { name: 'Shopping lists', exact: true }),
   ).toBeVisible()
   runtimeGuard.assertClean()
 })

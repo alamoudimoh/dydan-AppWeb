@@ -1,8 +1,10 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import { useShoppingMutations } from '../hooks/useHousehold'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 export default function ShoppingScreen({
   ctx,
@@ -132,27 +134,23 @@ export default function ShoppingScreen({
   const done = currentList?.items.filter(i => i.done) ?? []
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
+    <PageLayout>
+      <ModulePageHeader
+        module='shopping'
+        className='pb-5'
+        description={
+          isSolo ? 'Personal lists' : 'Personal and shared space lists'
+        }
+        actions={
+          <button
+            className='btn btn-primary'
+            onClick={() => setIsCreatingList(true)}
           >
-            Shopping
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            {isSolo ? 'Personal lists' : 'Personal and shared space lists'}
-          </div>
-        </div>
-        <button
-          className='btn btn-primary'
-          onClick={() => setIsCreatingList(true)}
-        >
-          <Icon name='plus' size={14} />
-          New list
-        </button>
-      </div>
+            <Icon name='plus' size={14} />
+            New list
+          </button>
+        }
+      />
 
       <div className='px-4 md:px-7'>
         <div
@@ -740,6 +738,6 @@ export default function ShoppingScreen({
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

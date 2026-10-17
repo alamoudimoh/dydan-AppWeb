@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Task } from '../data'
 import { useChoreCategories } from '../hooks/useChoreCategories'
 import { useLiveData } from '../model/liveData'
+import { Icon } from '../ui/Icon'
 import DateField from './DateField'
 import MemberPicker from './MemberPicker'
 

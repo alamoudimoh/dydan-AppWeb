@@ -2,14 +2,11 @@
 import Option from '@mui/joy/Option'
 import Select from '@mui/joy/Select'
 import Switch from '@mui/joy/Switch'
-import Tab from '@mui/joy/Tab'
-import TabList from '@mui/joy/TabList'
 import TabPanel from '@mui/joy/TabPanel'
-import Tabs from '@mui/joy/Tabs'
 import QRCode from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 
-import { AppCtx, Icon, Theme, View } from '../App'
+import type { AppCtx, Theme, View } from '../App'
 import CategorySettings from '../components/CategorySettings'
 import { Row, Section } from '../components/SettingsSection'
 import { useLocalization } from '../contexts/LocalizationContext'
@@ -42,6 +39,8 @@ import {
   useWebhookMutation,
 } from '../hooks/useSettingsResources'
 import { useLiveData } from '../model/liveData'
+import { GlobalTabs, ModulePageHeader } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 import { copyToClipboard } from '../utils/Clipboard'
 import * as Fetcher from '../utils/Fetcher'
 import { offlineDB } from '../utils/OfflineDB'
@@ -1827,69 +1826,21 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
         className='page-container settings-screen'
         style={{ paddingBottom: 80 }}
       >
-        <div className='page-header pb-4'>
-          <div>
-            <h1
-              className='text-primary'
-              style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-            >
-              Settings
-            </h1>
-            <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-              Manage your account, space, and preferences
-            </div>
-          </div>
-        </div>
+        <ModulePageHeader
+          module='settings'
+          className='pb-4'
+          description='Manage your account, space, and preferences'
+        />
 
-        <Tabs
+        <GlobalTabs
           value={tab}
-          onChange={(_, v) => v && setTabPersisted(v as string)}
-          sx={{ bgcolor: 'transparent' }}
+          onChange={setTabPersisted}
+          options={TABS.map(tb => ({
+            id: tb.id,
+            label: tb.label,
+            icon: <Icon name={tb.icon} size={14} />,
+          }))}
         >
-          {/* Horizontal, scrollable tab strip */}
-          <div
-            className='px-4 md:px-7 sticky top-0 z-30'
-            style={{ background: 'var(--page)' }}
-          >
-            <TabList
-              disableUnderline
-              sx={{
-                gap: 0.5,
-                overflowX: 'auto',
-                flexWrap: 'nowrap',
-                scrollbarWidth: 'none',
-                borderBottom: '1px solid var(--line)',
-                pb: '6px',
-                '&::-webkit-scrollbar': { display: 'none' },
-                '& .MuiTab-root': {
-                  flex: 'none',
-                  whiteSpace: 'nowrap',
-                  borderRadius: 'var(--r-md)',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: 'var(--t-muted)',
-                  minHeight: 34,
-                  px: 1.5,
-                },
-                '& .MuiTab-root:hover': {
-                  bgcolor: 'var(--surface-2)',
-                  color: 'var(--t-primary)',
-                },
-                "& .MuiTab-root[aria-selected='true']": {
-                  bgcolor: 'var(--selected-bg)',
-                  color: 'var(--selected-text)',
-                },
-              }}
-            >
-              {TABS.map(tb => (
-                <Tab key={tb.id} value={tb.id} disableIndicator>
-                  <Icon name={tb.icon} size={14} />
-                  <span className='ms-1.5'>{tb.label}</span>
-                </Tab>
-              ))}
-            </TabList>
-          </div>
-
           <div className='px-4 md:px-7 pt-6'>
             {/* ── Overview ── */}
             <TabPanel value='overview' sx={{ p: 0 }}>
@@ -3367,7 +3318,7 @@ export default function SettingsScreen({ ctx, isSolo }: Props) {
               </Section>
             </TabPanel>
           </div>
-        </Tabs>
+        </GlobalTabs>
       </div>
 
       {showInvite && (

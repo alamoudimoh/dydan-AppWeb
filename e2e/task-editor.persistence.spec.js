@@ -5,7 +5,7 @@ import { installSmokeSession } from './fixtures/auth.js'
 import { attachRuntimeErrorGuard } from './helpers/runtimeErrors.js'
 
 const openTaskEditor = async page => {
-  await page.goto('/all-tasks?create=1', { waitUntil: 'networkidle' })
+  await page.goto('/all-tasks?create=1', { waitUntil: 'domcontentloaded' })
   await expect(
     page.getByRole('heading', { name: 'new task', exact: true }),
   ).toBeVisible()

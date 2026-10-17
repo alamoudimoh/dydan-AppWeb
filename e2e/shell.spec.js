@@ -212,13 +212,13 @@ test('shell: mobile bottom navigation renders five labeled items and navigates',
   await mobileNav.getByRole('button', { name: 'Shopping' }).click()
   await expect(page).toHaveURL(/\/shopping$/)
   await expect(
-    page.getByRole('heading', { name: 'Shopping', exact: true }),
+    page.getByRole('heading', { name: 'Shopping lists', exact: true }),
   ).toBeVisible()
 
   runtimeGuard.assertClean()
 })
 
-test('shell: settings renders a horizontal tab strip above the content', async ({
+test('shell: settings renders the global tab strip above the content without clipping', async ({
   page,
 }) => {
   const runtimeGuard = attachRuntimeErrorGuard(page)
@@ -232,19 +232,34 @@ test('shell: settings renders a horizontal tab strip above the content', async (
   await expect(tabs.first()).toBeVisible()
   await expect(tabs).toHaveCount(13)
 
-  // The strip sits in one horizontal row above the tab panels.
+  // The global strip stays above the panel. On desktop it may wrap to a
+  // second row so every settings destination remains visible without clipping.
   const stripBounds = await page.evaluate(() => {
     const tabEls = [...document.querySelectorAll('[role="tab"]')]
-    const ys = tabEls.map(el => el.getBoundingClientRect().top)
+    const ys = tabEls.map(el => Math.round(el.getBoundingClientRect().top))
+    const rows = new Set(ys)
+    const tabList = document.querySelector('[role="tablist"]')
+    const listRect = tabList?.getBoundingClientRect()
+    const tabRects = tabEls.map(el => el.getBoundingClientRect())
     const tabPanel = document.querySelector('.MuiTabPanel-root')
     return {
-      singleRow: Math.max(...ys) - Math.min(...ys) <= 2,
+      rowCount: rows.size,
+      tabsInsideList:
+        !!listRect &&
+        tabRects.every(
+          rect =>
+            rect.left >= listRect.left - 2 &&
+            rect.right <= listRect.right + 2 &&
+            rect.bottom <= listRect.bottom + 2,
+        ),
       stripAboveContent:
         Math.min(...ys) <
         (tabPanel?.getBoundingClientRect().top ?? Number.MAX_SAFE_INTEGER),
     }
   })
-  expect(stripBounds.singleRow).toBe(true)
+  expect(stripBounds.rowCount).toBeGreaterThanOrEqual(1)
+  expect(stripBounds.rowCount).toBeLessThanOrEqual(2)
+  expect(stripBounds.tabsInsideList).toBe(true)
   expect(stripBounds.stripAboveContent).toBe(true)
 
   // Switching a tab swaps the rendered panel.

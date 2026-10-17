@@ -1,8 +1,10 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import { formatTimestamp } from '../data'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 type FilterType = 'all' | 'task' | 'reward' | 'goal' | 'streak'
 
@@ -56,20 +58,12 @@ export default function ActivityScreen({
       : activity.filter(a => typeCategory(a.type) === filter)
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Activity
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Recent actions across your {isSolo ? 'account' : 'household'}
-          </div>
-        </div>
-      </div>
+    <PageLayout>
+      <ModulePageHeader
+        module='activity'
+        className='pb-5'
+        description={`Recent actions across your ${isSolo ? 'account' : 'household'}`}
+      />
 
       <div className='px-4 md:px-7'>
         {/* Filter tabs */}
@@ -188,6 +182,6 @@ export default function ActivityScreen({
           })}
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

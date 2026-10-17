@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-import { LogoMark, Theme } from '../App'
+import type { Theme } from '../App'
 import { useAuth } from '../hooks/useAuth'
+import { LogoMark } from '../ui/Icon'
 import { signUp } from '../utils/Fetcher'
 
 type Step = 'welcome' | 'profile' | 'done'

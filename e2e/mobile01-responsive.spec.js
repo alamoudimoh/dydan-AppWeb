@@ -170,7 +170,7 @@ const MOBILE_ROUTES = [
   '/calendar',
   '/projects',
   '/routines',
-  '/maintenance',
+  '/assets',
   '/shopping',
   '/goals',
   '/activity',

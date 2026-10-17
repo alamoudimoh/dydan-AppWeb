@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import type { Task } from '../data'
 import { formatDate } from '../data'
 import { useLiveData } from '../model/liveData'
+import { ModulePageHeader, PageLayout, SegmentedControl } from '../ui/GlobalUI'
+import { Icon } from '../ui/Icon'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const MONTHS = [
@@ -111,43 +113,23 @@ export default function CalendarScreen({
   }
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 0 40px' }}>
-      <div className='page-header pb-5'>
-        <div>
-          <h1
-            className='text-primary'
-            style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
-          >
-            Calendar
-          </h1>
-          <div className='text-muted' style={{ fontSize: 13, marginTop: 4 }}>
-            Scheduled tasks and events
-          </div>
-        </div>
-        <div className='flex gap-2 flex-wrap'>
-          <div
-            className='view-toggle'
-            style={{ width: 'auto' }}
-            role='group'
-            aria-label='Calendar view'
-          >
-            <button
-              className={`view-toggle-btn ${viewMode === 'month' ? 'active' : ''}`}
-              aria-pressed={viewMode === 'month'}
-              onClick={() => setViewMode('month')}
-            >
-              Month
-            </button>
-            <button
-              className={`view-toggle-btn ${viewMode === 'week' ? 'active' : ''}`}
-              aria-pressed={viewMode === 'week'}
-              onClick={() => setViewMode('week')}
-            >
-              Week
-            </button>
-          </div>
-        </div>
-      </div>
+    <PageLayout>
+      <ModulePageHeader
+        module='calendar'
+        className='pb-5'
+        description='Scheduled tasks and events'
+        actions={
+          <SegmentedControl
+            label='Calendar view'
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { id: 'month', label: 'Month' },
+              { id: 'week', label: 'Week' },
+            ]}
+          />
+        }
+      />
 
       <div className='px-4 md:px-7'>
         <div className='grid gap-5 calendar-layout'>
@@ -500,6 +482,6 @@ export default function CalendarScreen({
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }

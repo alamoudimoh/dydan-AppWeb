@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Icon } from '../App'
 import { useLiveData } from '../model/liveData'
+import { Icon } from '../ui/Icon'
 
 export default function MemberMultiPicker({
   label = 'Members',

@@ -67,7 +67,6 @@ export const defineRouteSmokeTests = (test, pages) => {
         }
 
         await page.goto(smokePage.path, { waitUntil: 'domcontentloaded' })
-        await page.waitForLoadState('networkidle')
         await assertPageShell(page, smokePage, {
           viewportWidth: viewport.width,
         })

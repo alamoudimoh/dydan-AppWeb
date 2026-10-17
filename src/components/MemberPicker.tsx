@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Icon } from '../App'
 import type { Member } from '../data'
 import { useLiveData } from '../model/liveData'
+import { Icon } from '../ui/Icon'
 
 type Props = {
   value: string

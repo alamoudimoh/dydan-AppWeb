@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Icon } from '../App'
+import { Icon } from '../ui/Icon'
 
 /* Compact icon library: add new [emoji, searchable label] pairs without increasing form height. */
 export const ICON_LIBRARY = [

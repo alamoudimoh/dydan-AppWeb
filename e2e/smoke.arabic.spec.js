@@ -53,11 +53,11 @@ const AR_ROUTES = [
     arabic: /الروتين/,
   },
   {
-    path: '/maintenance',
+    path: '/assets',
     auth: true,
     dir: 'rtl',
     lang: 'ar-SA',
-    arabic: /الصيانة/,
+    arabic: /الأصول/,
   },
   {
     path: '/shopping',

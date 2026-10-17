@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Icon } from '../App'
+import { Icon } from '../ui/Icon'
 
 export type ThemeOption = {
   value: string

@@ -1,7 +1,8 @@
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
+import { Icon } from '../ui/Icon'
 
 /**
  * A network probe against the API origin rather than `navigator.onLine`.

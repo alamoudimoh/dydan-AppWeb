@@ -1,6 +1,7 @@
-import { AppCtx, Icon } from '../App'
+import type { AppCtx } from '../App'
 import { formatDate, Task } from '../data'
 import { useLiveData } from '../model/liveData'
+import { Icon } from '../ui/Icon'
 
 export default function TaskDetailModal({
   ctx,

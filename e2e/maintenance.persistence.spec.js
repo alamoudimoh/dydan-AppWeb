@@ -10,7 +10,7 @@ test('maintenance links, readings, thing state, and metadata persist across relo
   const runtimeGuard = attachRuntimeErrorGuard(page)
   await installApiMocks(page)
   await installSmokeSession(page)
-  await page.goto('/maintenance', { waitUntil: 'networkidle' })
+  await page.goto('/assets', { waitUntil: 'networkidle' })
 
   // Asset and meter creation use the real mutation contracts and stateful mock
   // server; both records must remain after a browser reload.
@@ -27,7 +27,7 @@ test('maintenance links, readings, thing state, and metadata persist across relo
   await page.getByRole('button', { name: 'Save reading' }).click()
   await expect(page.getByText(/125 km/)).toBeVisible()
 
-  await page.getByRole('button', { name: /Maintenance \(0\)/ }).click()
+  await page.getByRole('button', { name: /All Assets \(1\)/ }).click()
   const asset = page.locator('.card', { hasText: 'Family car' })
   await asset.getByRole('button', { name: 'Details' }).click()
   await asset

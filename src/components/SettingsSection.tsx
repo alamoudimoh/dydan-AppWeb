@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { Icon } from '../App'
+import { Icon } from '../ui/Icon'
 
 /**
  * The Settings layout primitives.

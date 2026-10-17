@@ -62,7 +62,7 @@ for (const { appearance, theme } of COMBINATIONS) {
     await installSmokeSession(page)
     await overrideUserPreferences(page, smokePreferences({ theme, appearance }))
 
-    await page.goto('/maintenance', { waitUntil: 'domcontentloaded' })
+    await page.goto('/assets', { waitUntil: 'domcontentloaded' })
     await page.waitForLoadState('networkidle')
 
     const html = page.locator('html')
